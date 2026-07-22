@@ -1,0 +1,89 @@
+/* ============================================================
+   Globale Grundstile für die ganze App.
+   Hier stehen Farben ("Design-Tokens"), Schriftart und ein
+   kleiner "Reset", der Browser-Standardabstände entfernt.
+   ============================================================ */
+
+:root {
+  /* --- Farbpalette (helles Design) --- */
+  --bg: #f4f5fb; /* Seitenhintergrund */
+  --surface: #ffffff; /* Karten / Buttons */
+  --surface-2: #eef0f9; /* leicht abgesetzte Flächen */
+  --text: #1a1b2e; /* Haupttext */
+  --text-soft: #6b6d85; /* gedämpfter Text */
+  --border: #e4e6f2;
+
+  --primary: #5b4bff; /* Hauptfarbe (Indigo/Violett) */
+  --primary-soft: #ece9ff;
+  --accent: #ff7a59; /* warmer Akzent (Streak-Flamme) */
+  --accent-soft: #ffe9e2;
+
+  --shadow-sm: 0 2px 8px rgba(24, 24, 60, 0.06);
+  --shadow-md: 0 8px 24px rgba(24, 24, 60, 0.1);
+
+  /* Schriftstapel inkl. koreanischer Fallback-Fonts */
+  --sans: system-ui, -apple-system, 'Segoe UI', 'Apple SD Gothic Neo',
+    'Malgun Gothic', 'Noto Sans KR', Roboto, sans-serif;
+
+  color-scheme: light dark;
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* --- Dunkles Design (folgt der Systemeinstellung des Handys) --- */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f1020;
+    --surface: #1a1c33;
+    --surface-2: #23264180;
+    --text: #f2f3fb;
+    --text-soft: #a0a3c0;
+    --border: #2b2e4d;
+
+    --primary: #8b7cff;
+    --primary-soft: #262452;
+    --accent: #ff8a6b;
+    --accent-soft: #3a2a26;
+
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.4);
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100svh;
+  /* Verhindert versehentliches Verschieben/Überscrollen am Handy */
+  overscroll-behavior-y: none;
+}
+
+/* Der Wurzel-Container: schmal wie ein Handy, mittig zentriert,
+   damit die App auch am Laptop wie eine App aussieht. */
+#root {
+  max-width: 460px;
+  margin: 0 auto;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: inherit;
+}
