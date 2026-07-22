@@ -79,7 +79,6 @@ function DailyWord({ candidates, onIntroduce, onExit }) {
           <div className="daily-ko" lang="ko">
             {entry.ko}
           </div>
-          {entry.roman && <div className="daily-roman">{entry.roman}</div>}
           <div className="daily-en">{entry.en}</div>
           {entry.ex && (
             <div className="daily-example">
