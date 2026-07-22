@@ -17,6 +17,11 @@ import {
   completeNumberChallenge,
   sinoKorean,
   nativeKorean,
+  loadDailyLog,
+  markDayDone,
+  computeStreak,
+  last7Days,
+  todayStr,
   writeWordsCache,
   writeCardsCache,
 } from './storage'
@@ -25,16 +30,8 @@ import Library from './Library'
 import Review from './Review'
 import DailyWord from './DailyWord'
 import NumberChallenge from './NumberChallenge'
+import Calendar from './Calendar'
 import { HomeIcon, BookIcon } from './icons'
-
-/* ============================================================
-   APP = der "Verteiler".
-   - lädt beim Start die Daten aus der Cloud (mit Ladeanzeige)
-   - view: 'home' | 'library' | 'review'
-   - words / cards: der aktuelle Stand im Speicher der App
-   Änderungen: sofort in die Anzeige + lokalen Puffer, und im
-   Hintergrund dauerhaft in die Cloud.
-   ============================================================ */
 
 function App() {
   const [loading, setLoading] = useState(true)
@@ -43,13 +40,15 @@ function App() {
   const [words, setWords] = useState([])
   const [cards, setCards] = useState([])
   const [numberState, setNumberState] = useState(getNumberChallenge)
+  const [dailyLog, setDailyLog] = useState([])
 
-  // Beim allerersten Anzeigen: Daten laden.
+  // Beim Start: Vokabeln/Karten + Streak-Log laden.
   useEffect(() => {
-    loadInitial().then(({ words, cards, online }) => {
-      setWords(words)
-      setCards(cards)
-      setOffline(!online)
+    Promise.all([loadInitial(), loadDailyLog()]).then(([data, log]) => {
+      setWords(data.words)
+      setCards(data.cards)
+      setOffline(!data.online)
+      setDailyLog(log)
       setLoading(false)
     })
   }, [])
@@ -57,8 +56,20 @@ function App() {
   const due = dueCards(words, cards)
   const daily = dailyStatus(words)
 
-  // Eine "Vokabel des Tages" einführen -> Wort + zwei Karten (sofort
-  // fällig, also direkt auf den Stapel), speichern, Tageszähler hoch.
+  // Sind heute alle drei Tagesaufgaben erledigt?
+  const allDone = daily.done && numberState.done && due.length === 0
+
+  // Wenn alle Aufgaben fertig sind, den Tag als erledigt eintragen.
+  useEffect(() => {
+    if (loading || !allDone) return
+    const today = todayStr()
+    const already = dailyLog.some((r) => r.day === today && r.done)
+    if (!already) markDayDone(dailyLog, today).then(setDailyLog)
+  }, [allDone, loading]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const streak = computeStreak(dailyLog)
+  const week = last7Days(dailyLog)
+
   function handleIntroduce(poolEntry) {
     const { word, c1, c2 } = makeIntroducedWord(poolEntry)
     const newWords = [word, ...words]
@@ -69,30 +80,30 @@ function App() {
     writeCardsCache(newCards)
     countIntroductionToday()
     persistNewWord(word, c1, c2).catch((err) =>
-      console.warn('Cloud-Speichern (Vokabel des Tages) fehlgeschlagen:', err?.message || err)
+      console.warn('Cloud save (word of the day) failed:', err?.message || err)
     )
   }
 
-  // Vokabel hinzufügen -> Wort + zwei Karten
+  function handleCompleteNumber() {
+    completeNumberChallenge()
+    setNumberState((s) => ({ ...s, done: true }))
+  }
+
   function handleAdd(en, ko) {
     const res = validateNewWord(words, en, ko)
     if (res.error) return res
-
     const newWords = [res.word, ...words]
     const newCards = [res.c1, res.c2, ...cards]
     setWords(newWords)
     setCards(newCards)
     writeWordsCache(newWords)
     writeCardsCache(newCards)
-    // dauerhaft in die Cloud (im Hintergrund)
     persistNewWord(res.word, res.c1, res.c2).catch((err) =>
-      console.warn('Cloud-Speichern (neue Vokabel) fehlgeschlagen:', err?.message || err)
+      console.warn('Cloud save (new word) failed:', err?.message || err)
     )
     return { word: res.word }
   }
 
-  // Vokabel bearbeiten (en/ko). Beide Karten aktualisieren sich mit,
-  // weil sie am Wort hängen; ihr Lernstand bleibt.
   function handleEditWord(id, en, ko) {
     const res = validateEdit(words, id, en, ko)
     if (res.error) return res
@@ -100,12 +111,11 @@ function App() {
     setWords(newWords)
     writeWordsCache(newWords)
     updateWordCloud(id, res.en, res.ko).catch((err) =>
-      console.warn('Cloud-Speichern (bearbeiten) fehlgeschlagen:', err?.message || err)
+      console.warn('Cloud save (edit) failed:', err?.message || err)
     )
     return { ok: true }
   }
 
-  // Vokabel löschen (samt ihrer beiden Karten)
   function handleDeleteWord(id) {
     const newWords = words.filter((w) => w.id !== id)
     const newCards = cards.filter((c) => c.wordId !== id)
@@ -113,18 +123,9 @@ function App() {
     setCards(newCards)
     writeWordsCache(newWords)
     writeCardsCache(newCards)
-    deleteWordCloud(id).catch((err) =>
-      console.warn('Cloud-Löschen fehlgeschlagen:', err?.message || err)
-    )
+    deleteWordCloud(id).catch((err) => console.warn('Cloud delete failed:', err?.message || err))
   }
 
-  // Zahlen-Challenge als erledigt markieren
-  function handleCompleteNumber() {
-    completeNumberChallenge()
-    setNumberState((s) => ({ ...s, done: true }))
-  }
-
-  // Eine Karte bewerten -> neuen Lernstand speichern
   function handleRate(cardId, rating) {
     const target = cards.find((c) => c.id === cardId)
     if (!target) return
@@ -133,7 +134,7 @@ function App() {
     setCards(next)
     writeCardsCache(next)
     persistCard(updatedCard).catch((err) =>
-      console.warn('Cloud-Speichern (Bewertung) fehlgeschlagen:', err?.message || err)
+      console.warn('Cloud save (rating) failed:', err?.message || err)
     )
   }
 
@@ -142,7 +143,7 @@ function App() {
       <div className="app">
         <div className="loading">
           <div className="loading-hangul">한국어</div>
-          <p>Lade deine Vokabeln…</p>
+          <p>Loading your words…</p>
         </div>
       </div>
     )
@@ -150,9 +151,7 @@ function App() {
 
   return (
     <div className="app">
-      {offline && (
-        <div className="offline-banner">Offline – Änderungen werden lokal gespeichert.</div>
-      )}
+      {offline && <div className="offline-banner">Offline – changes are saved locally.</div>}
 
       <div className="page">
         {view === 'home' && (
@@ -162,9 +161,19 @@ function App() {
             dailyDone={daily.done}
             dailyLeft={daily.left}
             numberDone={numberState.done}
+            streak={streak}
+            week={week}
             onReview={() => setView('review')}
             onDaily={() => setView('daily')}
             onNumber={() => setView('number')}
+            onCalendar={() => setView('calendar')}
+          />
+        )}
+        {view === 'daily' && (
+          <DailyWord
+            candidates={daily.candidates}
+            onIntroduce={handleIntroduce}
+            onExit={() => setView('home')}
           />
         )}
         {view === 'number' && (
@@ -174,13 +183,6 @@ function App() {
             native={nativeKorean(numberState.number)}
             alreadyDone={numberState.done}
             onComplete={handleCompleteNumber}
-            onExit={() => setView('home')}
-          />
-        )}
-        {view === 'daily' && (
-          <DailyWord
-            candidates={daily.candidates}
-            onIntroduce={handleIntroduce}
             onExit={() => setView('home')}
           />
         )}
@@ -195,23 +197,24 @@ function App() {
         {view === 'review' && (
           <Review initialQueue={due} onRate={handleRate} onExit={() => setView('home')} />
         )}
+        {view === 'calendar' && <Calendar log={dailyLog} onExit={() => setView('home')} />}
       </div>
 
-      {view !== 'review' && view !== 'daily' && view !== 'number' && (
+      {(view === 'home' || view === 'library') && (
         <nav className="tabbar">
           <button
             className={view === 'home' ? 'tab tab-active' : 'tab'}
             onClick={() => setView('home')}
           >
             <HomeIcon />
-            <span>Start</span>
+            <span>Home</span>
           </button>
           <button
             className={view === 'library' ? 'tab tab-active' : 'tab'}
             onClick={() => setView('library')}
           >
             <BookIcon />
-            <span>Bibliothek</span>
+            <span>Library</span>
           </button>
         </nav>
       )}

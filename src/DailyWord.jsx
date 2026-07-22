@@ -1,52 +1,52 @@
 import { useState } from 'react'
 
 /* ============================================================
-   VOKABEL DES TAGES
+   WORD OF THE DAY
 
-   Zeigt die heutige(n) neue(n) Vokabel(n). Für jede musst du das
-   Wort 3× korrekt auf Koreanisch eintippen – danach wird es sofort
-   in die Bibliothek + auf den Wiederholungsstapel übernommen.
-
-   Props:
-   - candidates: die heute einzuführenden Pool-Einträge (Snapshot)
-   - onIntroduce(entry): speichert das Wort (Bibliothek + Cloud)
-   - onExit(): zurück zur Startseite
+   Shows today's new word(s). Type each one correctly 3× in Korean;
+   then it's added to your library and review stack right away.
+   The card border flashes green on a correct entry, red on a wrong
+   one, for a satisfying moment of feedback.
    ============================================================ */
 
-const NEEDED = 3 // so oft korrekt eintippen
+const NEEDED = 3
 
 function DailyWord({ candidates, onIntroduce, onExit }) {
-  const [queue] = useState(candidates) // beim Start festgehalten
+  const [queue] = useState(candidates)
   const [index, setIndex] = useState(0)
-  const [typed, setTyped] = useState(0) // wie oft schon korrekt getippt
+  const [typed, setTyped] = useState(0)
   const [input, setInput] = useState('')
-  const [wrong, setWrong] = useState(false)
-  const [learned, setLearned] = useState(0) // wie viele heute geschafft
+  const [flash, setFlash] = useState(null) // 'ok' | 'bad' | null
+  const [learned, setLearned] = useState(0)
 
   const entry = queue[index]
 
-  // Nichts (mehr) zu tun
   if (!entry) {
     const nothingAtAll = queue.length === 0
     return (
       <div className="daily">
-        <DailyHeader onExit={onExit} label="Vokabel des Tages" />
+        <DailyHeader onExit={onExit} label="Word of the Day" />
         <div className="daily-done">
           <div className="done-emoji">{nothingAtAll ? '☕' : '🌱'}</div>
           <p className="done-title">
-            {nothingAtAll ? 'Für heute erledigt' : `${learned} neue gelernt!`}
+            {nothingAtAll ? 'Done for today' : `${learned} new learned!`}
           </p>
           <p className="done-sub">
             {nothingAtAll
-              ? 'Komm morgen wieder für neue Vokabeln.'
-              : 'Sie sind jetzt in deiner Bibliothek und auf dem Stapel.'}
+              ? 'Come back tomorrow for new words.'
+              : "They're now in your library and on your stack."}
           </p>
           <button className="done-btn" onClick={onExit}>
-            Zurück zur Startseite
+            Back to home
           </button>
         </div>
       </div>
     )
+  }
+
+  function flashThen(kind) {
+    setFlash(kind)
+    setTimeout(() => setFlash(null), 600)
   }
 
   function submit(e) {
@@ -54,9 +54,9 @@ function DailyWord({ candidates, onIntroduce, onExit }) {
     if (input.trim() === entry.ko.trim()) {
       const n = typed + 1
       setInput('')
-      setWrong(false)
+      flashThen('ok')
       if (n >= NEEDED) {
-        onIntroduce(entry) // speichern (Bibliothek + Cloud)
+        onIntroduce(entry)
         setLearned((l) => l + 1)
         setTyped(0)
         setIndex((i) => i + 1)
@@ -64,18 +64,19 @@ function DailyWord({ candidates, onIntroduce, onExit }) {
         setTyped(n)
       }
     } else {
-      setWrong(true)
       setInput('')
+      flashThen('bad')
     }
   }
 
+  const flashClass = flash === 'ok' ? 'flash-ok' : flash === 'bad' ? 'flash-bad' : ''
+
   return (
     <div className="daily">
-      <DailyHeader onExit={onExit} label={`Neue Vokabel ${index + 1}/${queue.length}`} />
+      <DailyHeader onExit={onExit} label={`New word ${index + 1}/${queue.length}`} />
 
       <div className="daily-body">
-        {/* Die neue Vokabel + Beispielsatz */}
-        <div className="daily-card">
+        <div className={`daily-card ${flashClass}`}>
           <div className="daily-ko" lang="ko">
             {entry.ko}
           </div>
@@ -88,29 +89,26 @@ function DailyWord({ candidates, onIntroduce, onExit }) {
           )}
         </div>
 
-        {/* 3× eintippen */}
         <form className="type-area" onSubmit={submit}>
           <div className="type-progress">
             {Array.from({ length: NEEDED }).map((_, i) => (
               <span key={i} className={i < typed ? 'tp-dot tp-on' : 'tp-dot'} />
             ))}
-            <span className="type-hint">{typed}/{NEEDED} · auf Koreanisch eintippen</span>
+            <span className="type-hint">
+              {typed}/{NEEDED} · type in Korean
+            </span>
           </div>
           <input
             autoFocus
             value={input}
-            onChange={(e) => {
-              setInput(e.target.value)
-              setWrong(false)
-            }}
+            onChange={(e) => setInput(e.target.value)}
             placeholder="한국어…"
             lang="ko"
             autoComplete="off"
-            className={wrong ? 'shake' : ''}
+            className={flash === 'bad' ? 'shake' : ''}
           />
-          {wrong && <p className="add-msg add-error">Stimmt noch nicht – versuch's nochmal.</p>}
           <button type="submit" className="check-btn">
-            Bestätigen
+            Confirm
           </button>
         </form>
       </div>
@@ -121,7 +119,7 @@ function DailyWord({ candidates, onIntroduce, onExit }) {
 function DailyHeader({ onExit, label }) {
   return (
     <div className="review-header">
-      <button className="back-btn" onClick={onExit} aria-label="Zurück">
+      <button className="back-btn" onClick={onExit} aria-label="Back">
         <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="m15 6-6 6 6 6" />
         </svg>

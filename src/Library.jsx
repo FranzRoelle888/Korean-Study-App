@@ -2,10 +2,9 @@ import { useState } from 'react'
 import { PlusIcon, SearchIcon, EditIcon, TrashIcon } from './icons'
 
 /* ============================================================
-   BIBLIOTHEK
-   - oben ein Formular zum Hinzufügen (Englisch + Koreanisch)
-   - darunter eine durchsuchbare Liste
-   - jede Zeile lässt sich bearbeiten oder löschen
+   LIBRARY
+   - add form (English + Korean)
+   - searchable list; each row can be edited or deleted
    ============================================================ */
 
 function Library({ vocab, onAdd, onEdit, onDelete }) {
@@ -23,7 +22,7 @@ function Library({ vocab, onAdd, onEdit, onDelete }) {
       setJustAdded('')
       return
     }
-    setJustAdded(`„${result.word.ko}" hinzugefügt ✓`)
+    setJustAdded(`"${result.word.ko}" added ✓`)
     setError('')
     setEn('')
     setKo('')
@@ -31,33 +30,31 @@ function Library({ vocab, onAdd, onEdit, onDelete }) {
 
   const q = query.trim().toLowerCase()
   const shown = q
-    ? vocab.filter(
-        (v) => v.en.toLowerCase().includes(q) || v.ko.includes(query.trim())
-      )
+    ? vocab.filter((v) => v.en.toLowerCase().includes(q) || v.ko.includes(query.trim()))
     : vocab
 
   return (
     <div className="library">
-      <h1 className="page-title">Bibliothek</h1>
-      <p className="page-sub">{vocab.length} Vokabeln</p>
+      <h1 className="page-title">Library</h1>
+      <p className="page-sub">{vocab.length} words</p>
 
-      {/* ---------- Hinzufügen ---------- */}
+      {/* ---------- Add ---------- */}
       <form className="add-card" onSubmit={handleSubmit}>
         <label className="field">
-          <span>Englisch</span>
+          <span>English</span>
           <input
             value={en}
             onChange={(e) => setEn(e.target.value)}
-            placeholder="z. B. water"
+            placeholder="e.g. water"
             autoComplete="off"
           />
         </label>
         <label className="field">
-          <span>Koreanisch</span>
+          <span>Korean</span>
           <input
             value={ko}
             onChange={(e) => setKo(e.target.value)}
-            placeholder="z. B. 물"
+            placeholder="e.g. 물"
             lang="ko"
             autoComplete="off"
           />
@@ -67,31 +64,29 @@ function Library({ vocab, onAdd, onEdit, onDelete }) {
         {justAdded && <p className="add-msg add-ok">{justAdded}</p>}
 
         <button type="submit" className="add-btn">
-          <PlusIcon /> Hinzufügen
+          <PlusIcon /> Add
         </button>
       </form>
 
-      {/* ---------- Suche ---------- */}
+      {/* ---------- Search ---------- */}
       <div className="search">
         <SearchIcon />
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Suchen…"
+          placeholder="Search…"
           autoComplete="off"
         />
       </div>
 
-      {/* ---------- Liste ---------- */}
+      {/* ---------- List ---------- */}
       <ul className="vocab-list">
         {shown.map((v) => (
           <VocabRow key={v.id} vocab={v} onEdit={onEdit} onDelete={onDelete} />
         ))}
         {shown.length === 0 && (
           <li className="vocab-empty">
-            {vocab.length === 0
-              ? 'Noch keine Vokabeln – füge oben deine erste hinzu.'
-              : 'Nichts gefunden.'}
+            {vocab.length === 0 ? 'No words yet – add your first one above.' : 'Nothing found.'}
           </li>
         )}
       </ul>
@@ -99,12 +94,6 @@ function Library({ vocab, onAdd, onEdit, onDelete }) {
   )
 }
 
-/* ------------------------------------------------------------
-   Eine einzelne Vokabel-Zeile. Sie kann drei Zustände haben:
-   - normal (anzeigen + Stift/Papierkorb)
-   - bearbeiten (zwei Eingabefelder + Speichern/Abbrechen)
-   - löschen bestätigen
-   ------------------------------------------------------------ */
 function VocabRow({ vocab, onEdit, onDelete }) {
   const [mode, setMode] = useState('view') // 'view' | 'edit' | 'confirmDelete'
   const [en, setEn] = useState(vocab.en)
@@ -137,23 +126,23 @@ function VocabRow({ vocab, onEdit, onDelete }) {
             value={ko}
             onChange={(e) => setKo(e.target.value)}
             lang="ko"
-            placeholder="Koreanisch"
+            placeholder="Korean"
             autoComplete="off"
           />
           <input
             className="edit-input"
             value={en}
             onChange={(e) => setEn(e.target.value)}
-            placeholder="Englisch"
+            placeholder="English"
             autoComplete="off"
           />
           {error && <p className="add-msg add-error">{error}</p>}
           <div className="edit-actions">
             <button type="button" className="edit-cancel" onClick={() => setMode('view')}>
-              Abbrechen
+              Cancel
             </button>
             <button type="submit" className="edit-save">
-              Speichern
+              Save
             </button>
           </div>
         </form>
@@ -164,13 +153,13 @@ function VocabRow({ vocab, onEdit, onDelete }) {
   if (mode === 'confirmDelete') {
     return (
       <li className="vocab-row vocab-row-confirm">
-        <span className="confirm-text">„{vocab.ko}" wirklich löschen?</span>
+        <span className="confirm-text">Delete "{vocab.ko}"?</span>
         <div className="confirm-actions">
           <button className="edit-cancel" onClick={() => setMode('view')}>
-            Nein
+            No
           </button>
           <button className="confirm-delete" onClick={() => onDelete(vocab.id)}>
-            Löschen
+            Delete
           </button>
         </div>
       </li>
@@ -186,13 +175,13 @@ function VocabRow({ vocab, onEdit, onDelete }) {
         <span className="vocab-en">{vocab.en}</span>
       </div>
       <div className="row-actions">
-        <button className="row-btn" onClick={startEdit} aria-label="Bearbeiten">
+        <button className="row-btn" onClick={startEdit} aria-label="Edit">
           <EditIcon />
         </button>
         <button
           className="row-btn row-btn-danger"
           onClick={() => setMode('confirmDelete')}
-          aria-label="Löschen"
+          aria-label="Delete"
         >
           <TrashIcon />
         </button>

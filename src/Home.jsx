@@ -1,16 +1,10 @@
 import { FlameIcon, SparkIcon, CardsIcon, ChevronIcon, HashIcon } from './icons'
 
 /* ============================================================
-   STARTSEITE (Begrüßung, Streak, zwei Aktions-Buttons)
-   Bekommt von außen "vocabCount" (Anzahl Vokabeln) übergeben.
-   Streak- und Wiederholungszahlen sind noch Platzhalter.
+   HOME SCREEN (greeting, streak, three action buttons)
    ============================================================ */
 
 const name = 'Franz'
-const streakDays = 7
-
-const lastWeek = [true, true, false, true, true, true, false]
-const weekdayLabels = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So']
 
 function Home({
   vocabCount,
@@ -18,48 +12,52 @@ function Home({
   dailyDone,
   dailyLeft,
   numberDone,
+  streak,
+  week,
   onReview,
   onDaily,
   onNumber,
+  onCalendar,
 }) {
   return (
     <div className="screen">
-      {/* ---------- Begrüßung + Streak ---------- */}
+      {/* ---------- Greeting + streak ---------- */}
       <header className="header">
         <div className="greeting">
           <p className="greeting-hello">안녕하세요, {name} 👋</p>
-          <p className="greeting-sub">Bereit für heute?</p>
+          <p className="greeting-sub">Ready for today?</p>
         </div>
 
-        <div className="streak-card">
+        <button className="streak-card" onClick={onCalendar}>
           <div className="streak-top">
             <FlameIcon />
-            <span className="streak-count">{streakDays}</span>
-            <span className="streak-label">Tage in Folge</span>
+            <span className="streak-count">{streak}</span>
+            <span className="streak-label">day streak</span>
+            <ChevronIcon />
           </div>
           <div className="streak-days">
-            {lastWeek.map((done, i) => (
-              <div key={i} className="streak-day">
-                <div className={done ? 'dot dot-on' : 'dot'} />
-                <span className="dot-label">{weekdayLabels[i]}</span>
+            {week.map((d) => (
+              <div key={d.day} className="streak-day">
+                <div className={d.done ? 'dot dot-on' : 'dot'} />
+                <span className="dot-label">{d.label}</span>
               </div>
             ))}
           </div>
-        </div>
+        </button>
       </header>
 
-      {/* ---------- Zwei große Buttons ---------- */}
+      {/* ---------- Three action buttons ---------- */}
       <main className="actions">
         <button className="action action-primary" onClick={onDaily}>
           <div className="action-icon">
             <SparkIcon />
           </div>
           <div className="action-text">
-            <span className="action-title">Vokabel des Tages</span>
+            <span className="action-title">Word of the Day</span>
             <span className="action-sub">
               {dailyDone
-                ? 'Heute schon erledigt ✓'
-                : `${dailyLeft} neue ${dailyLeft === 1 ? 'Vokabel' : 'Vokabeln'} lernen`}
+                ? 'Done for today ✓'
+                : `Learn ${dailyLeft} new ${dailyLeft === 1 ? 'word' : 'words'}`}
             </span>
           </div>
           <ChevronIcon />
@@ -70,11 +68,9 @@ function Home({
             <CardsIcon />
           </div>
           <div className="action-text">
-            <span className="action-title">Wiederholen</span>
+            <span className="action-title">Review</span>
             <span className="action-sub">
-              {dueCount > 0
-                ? `Noch ${dueCount} heute offen`
-                : 'Alles erledigt für heute ✓'}
+              {dueCount > 0 ? `${dueCount} left today` : 'All done for today ✓'}
             </span>
           </div>
           {dueCount > 0 && <span className="badge">{dueCount}</span>}
@@ -85,15 +81,15 @@ function Home({
             <HashIcon />
           </div>
           <div className="action-text">
-            <span className="action-title">Zahlen des Tages</span>
+            <span className="action-title">Number of the Day</span>
             <span className="action-sub">
-              {numberDone ? 'Heute schon erledigt ✓' : 'Eine Zahl auf Koreanisch tippen'}
+              {numberDone ? 'Done for today ✓' : 'Type a number in Korean'}
             </span>
           </div>
           {!numberDone && <ChevronIcon />}
         </button>
 
-        <p className="vocab-count-note">{vocabCount} Vokabeln in deiner Bibliothek</p>
+        <p className="vocab-count-note">{vocabCount} words in your library</p>
       </main>
     </div>
   )

@@ -93,7 +93,12 @@ function toISO(d) {
   return `${y}-${m}-${day}`
 }
 export function todayStr() {
-  return toISO(new Date())
+  // Ein "Lerntag" läuft von 4:00 bis 4:00 Uhr: vor 4 Uhr morgens zählt
+  // noch zum Vortag. So bezieht sich "heute" überall (fällige Karten,
+  // Tagesaufgaben, Streak) auf denselben Zeitraum.
+  const d = new Date()
+  if (d.getHours() < 4) d.setDate(d.getDate() - 1)
+  return toISO(d)
 }
 function addDays(iso, n) {
   const d = new Date(iso + 'T00:00:00')
@@ -151,10 +156,10 @@ export function validateNewWord(words, en, ko) {
   const cleanEn = en.trim()
   const cleanKo = ko.trim()
   if (!cleanEn || !cleanKo) {
-    return { error: 'Bitte beide Felder ausfüllen.' }
+    return { error: 'Please fill in both fields.' }
   }
   if (isDuplicate(words, cleanKo)) {
-    return { error: `„${cleanKo}" ist schon in deiner Bibliothek.` }
+    return { error: `"${cleanKo}" is already in your library.` }
   }
   const word = { id: crypto.randomUUID(), en: cleanEn, ko: cleanKo, createdAt: Date.now() }
   return { word, c1: newCard(word.id, 'en'), c2: newCard(word.id, 'ko') }
@@ -181,11 +186,11 @@ export function validateEdit(words, id, en, ko) {
   const cleanEn = en.trim()
   const cleanKo = ko.trim()
   if (!cleanEn || !cleanKo) {
-    return { error: 'Bitte beide Felder ausfüllen.' }
+    return { error: 'Please fill in both fields.' }
   }
   const dup = words.some((w) => w.id !== id && w.ko.trim() === cleanKo)
   if (dup) {
-    return { error: `„${cleanKo}" ist schon in deiner Bibliothek.` }
+    return { error: `"${cleanKo}" is already in your library.` }
   }
   return { en: cleanEn, ko: cleanKo }
 }
@@ -375,12 +380,92 @@ export function completeNumberChallenge() {
   return next
 }
 
+/* ============================================================
+   STREAK (Tage in Folge) + Kalender
+
+   In der Cloud-Tabelle daily_log steht je erledigtem Lerntag eine
+   Zeile { day, done }. Ein Tag gilt als erledigt, wenn ALLE drei
+   Tagesaufgaben fertig sind (Vokabel des Tages + Wiederholungsstapel
+   leer + Zahlen-Challenge). Die Streak = wie viele Tage am Stück.
+   ============================================================ */
+
+const LOG_CACHE = 'korean-app:log'
+
+function writeLogCache(rows) {
+  localStorage.setItem(LOG_CACHE, JSON.stringify(rows))
+}
+function readLogCache() {
+  try {
+    return JSON.parse(localStorage.getItem(LOG_CACHE)) || []
+  } catch {
+    return []
+  }
+}
+
+// Alle erledigten Tage laden (mit Offline-Puffer).
+export async function loadDailyLog() {
+  try {
+    const { data, error } = await supabase.from('daily_log').select('*')
+    if (error) throw error
+    writeLogCache(data)
+    return data
+  } catch (e) {
+    console.warn('Streak-Laden fehlgeschlagen, benutze Puffer:', e?.message || e)
+    return readLogCache()
+  }
+}
+
+// Einen Tag als erledigt markieren (dauerhaft + Puffer).
+export async function markDayDone(logRows, day) {
+  const next = logRows.some((r) => r.day === day)
+    ? logRows.map((r) => (r.day === day ? { ...r, done: true } : r))
+    : [...logRows, { day, done: true }]
+  writeLogCache(next)
+  supabase
+    .from('daily_log')
+    .upsert({ day, done: true })
+    .then(({ error }) => {
+      if (error) console.warn('Streak-Speichern fehlgeschlagen:', error.message)
+    })
+  return next
+}
+
+// Wie viele Tage am Stück (bis heute, sonst bis gestern) erledigt?
+export function computeStreak(logRows) {
+  const done = new Set(logRows.filter((r) => r.done).map((r) => r.day))
+  let streak = 0
+  let d = todayStr()
+  if (!done.has(d)) d = addDays(d, -1) // heute noch offen -> zähle bis gestern
+  while (done.has(d)) {
+    streak++
+    d = addDays(d, -1)
+  }
+  return streak
+}
+
+// Die letzten 7 Tage mit Wochentags-Kürzel + erledigt-Status.
+export function last7Days(logRows) {
+  const done = new Set(logRows.filter((r) => r.done).map((r) => r.day))
+  const out = []
+  for (let i = 6; i >= 0; i--) {
+    const ds = addDays(todayStr(), -i)
+    const label = new Date(ds + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short' })
+    out.push({ day: ds, label, done: done.has(ds) })
+  }
+  return out
+}
+
+// Set der erledigten Tage (für den Kalender).
+export function doneDaysSet(logRows) {
+  return new Set(logRows.filter((r) => r.done).map((r) => r.day))
+}
+
 /* ---------- Intervall-Vorschau für die Buttons ---------- */
 export function previewInterval(card, rating) {
   return applyRating(card, rating).intervalDays
 }
 export function formatInterval(days) {
-  if (days <= 0) return 'heute'
-  if (days === 1) return '1 Tag'
-  return `${days} Tage`
+  if (days <= 0) return 'today'
+  if (days === 1) return '1 day'
+  return `${days} days`
 }

@@ -1,23 +1,15 @@
 import { useState } from 'react'
 
 /* ============================================================
-   ZAHLEN DES TAGES
+   NUMBER OF THE DAY
 
-   Eine Zufallszahl (1–99) muss in BEIDEN Zahlensystemen richtig
-   eingetippt werden:
-   - sino-koreanisch (일, 이, 삼 …)
-   - nativ-koreanisch (하나, 둘, 셋 …)
+   A random number (1–99) must be typed correctly in BOTH systems:
+   - Sino-Korean (일, 이, 삼 …)
+   - Native Korean (하나, 둘, 셋 …)
 
-   Regel: Falsch ist NICHT "verloren" – man darf beliebig oft neu
-   versuchen. Erst wenn beide einmal korrekt sind, ist die Aufgabe
-   für heute abgehakt. Es gibt bewusst keine Auflösung.
-
-   Props:
-   - number: die Zahl
-   - sino / native: die korrekten Schreibweisen
-   - alreadyDone: heute schon geschafft?
-   - onComplete(): markiert die Tagesaufgabe als erledigt
-   - onExit(): zurück
+   A wrong answer is NOT a "loss" – you can retry as often as you
+   like. The task is only checked off once both are correct. There
+   is deliberately no reveal.
    ============================================================ */
 
 const norm = (s) => s.replace(/\s+/g, '').trim()
@@ -25,7 +17,7 @@ const norm = (s) => s.replace(/\s+/g, '').trim()
 function NumberChallenge({ number, sino, native, alreadyDone, onComplete, onExit }) {
   const [sinoIn, setSinoIn] = useState('')
   const [nativeIn, setNativeIn] = useState('')
-  const [feedback, setFeedback] = useState(null) // null | { sino, native }
+  const [feedback, setFeedback] = useState(null)
   const [done, setDone] = useState(alreadyDone)
 
   function submit(e) {
@@ -46,25 +38,24 @@ function NumberChallenge({ number, sino, native, alreadyDone, onComplete, onExit
         <NumberHeader onExit={onExit} />
         <div className="number-done">
           <div className="done-emoji">🔢</div>
-          <p className="done-title">Heute erledigt!</p>
+          <p className="done-title">Done for today!</p>
           <div className="number-recap">
             <span className="recap-num">{number}</span>
             <span className="recap-line">
-              <b lang="ko">{sino}</b> · sino-koreanisch
+              <b lang="ko">{sino}</b> · Sino-Korean
             </span>
             <span className="recap-line">
-              <b lang="ko">{native}</b> · nativ-koreanisch
+              <b lang="ko">{native}</b> · Native Korean
             </span>
           </div>
           <button className="done-btn" onClick={onExit}>
-            Zurück zur Startseite
+            Back to home
           </button>
         </div>
       </div>
     )
   }
 
-  // Feld-Markierung: nur nach einem Versuch, und nur wenn falsch/richtig
   const sinoMark = feedback ? (feedback.sino ? 'ok' : 'bad') : ''
   const nativeMark = feedback ? (feedback.native ? 'ok' : 'bad') : ''
 
@@ -73,13 +64,13 @@ function NumberChallenge({ number, sino, native, alreadyDone, onComplete, onExit
       <NumberHeader onExit={onExit} />
 
       <div className="number-body">
-        <p className="number-prompt">Tippe die Zahl auf Koreanisch</p>
+        <p className="number-prompt">Type the number in Korean</p>
         <div className="big-number">{number}</div>
 
         <form className="number-form" onSubmit={submit}>
           <label className={`num-field ${sinoMark}`}>
             <span className="num-label">
-              sino-koreanisch <em>(일, 이, 삼 …)</em>
+              Sino-Korean <em>(일, 이, 삼 …)</em>
             </span>
             <input
               autoFocus
@@ -88,7 +79,7 @@ function NumberChallenge({ number, sino, native, alreadyDone, onComplete, onExit
                 setSinoIn(e.target.value)
                 setFeedback(null)
               }}
-              placeholder="z. B. 이십일"
+              placeholder="e.g. 이십일"
               lang="ko"
               autoComplete="off"
             />
@@ -96,7 +87,7 @@ function NumberChallenge({ number, sino, native, alreadyDone, onComplete, onExit
 
           <label className={`num-field ${nativeMark}`}>
             <span className="num-label">
-              nativ-koreanisch <em>(하나, 둘, 셋 …)</em>
+              Native Korean <em>(하나, 둘, 셋 …)</em>
             </span>
             <input
               value={nativeIn}
@@ -104,7 +95,7 @@ function NumberChallenge({ number, sino, native, alreadyDone, onComplete, onExit
                 setNativeIn(e.target.value)
                 setFeedback(null)
               }}
-              placeholder="z. B. 스물하나"
+              placeholder="e.g. 스물하나"
               lang="ko"
               autoComplete="off"
             />
@@ -113,13 +104,13 @@ function NumberChallenge({ number, sino, native, alreadyDone, onComplete, onExit
           {feedback && (
             <p className="add-msg add-error">
               {feedback.sino || feedback.native
-                ? 'Fast! Korrigier das rot markierte Feld und versuch es nochmal.'
-                : 'Stimmt noch nicht – versuch es nochmal.'}
+                ? 'Almost! Fix the field marked red and try again.'
+                : 'Not quite – try again.'}
             </p>
           )}
 
           <button type="submit" className="check-btn">
-            Prüfen
+            Check
           </button>
         </form>
       </div>
@@ -130,12 +121,12 @@ function NumberChallenge({ number, sino, native, alreadyDone, onComplete, onExit
 function NumberHeader({ onExit }) {
   return (
     <div className="review-header">
-      <button className="back-btn" onClick={onExit} aria-label="Zurück">
+      <button className="back-btn" onClick={onExit} aria-label="Back">
         <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="m15 6-6 6 6 6" />
         </svg>
       </button>
-      <span className="daily-label">Zahlen des Tages</span>
+      <span className="daily-label">Number of the Day</span>
     </div>
   )
 }

@@ -3,45 +3,37 @@ import { previewInterval, formatInterval } from './storage'
 import Confetti from './Confetti'
 
 /* ============================================================
-   WIEDERHOLUNGSSTAPEL
+   REVIEW STACK
 
-   Bekommt:
-   - initialQueue: die heute fälligen Karten (mit en/ko), Reihenfolge
-   - onRate(cardId, rating): speichert die Bewertung (in App/Speicher)
-   - onExit(): zurück zur Startseite
+   Two card types:
+   - front 'en': English shown -> type the Korean answer
+   - front 'ko': Korean shown, hidden -> tap to flip to English
 
-   Zwei Kartentypen:
-   - front 'en': Englisch vorne -> koreanische Antwort EINTIPPEN
-   - front 'ko': Koreanisch vorne, verdeckt -> KLICK dreht auf Englisch
-
-   Beide enden mit denselben 4 Bewertungs-Buttons.
-   Unterbrechbar: bewertete Karten sind sofort gespeichert; wer
-   rausgeht und wiederkommt, sieht nur noch die restlichen fälligen.
+   Both end with the same 4 rating buttons. When you type an answer,
+   the card border flashes green (correct) or red (wrong) for a
+   satisfying moment of feedback.
    ============================================================ */
 
 const RATINGS = [
-  { key: 'again', label: 'Nochmal', cls: 'rate-again' },
-  { key: 'hard', label: 'Schwer', cls: 'rate-hard' },
-  { key: 'good', label: 'Gut', cls: 'rate-good' },
-  { key: 'easy', label: 'Einfach', cls: 'rate-easy' },
+  { key: 'again', label: 'Again', cls: 'rate-again' },
+  { key: 'hard', label: 'Hard', cls: 'rate-hard' },
+  { key: 'good', label: 'Good', cls: 'rate-good' },
+  { key: 'easy', label: 'Easy', cls: 'rate-easy' },
 ]
 
 function Review({ initialQueue, onRate, onExit }) {
-  // Sitzungs-Warteschlange (Kopie, die wir hier abarbeiten).
-  // Beides wird EINMAL beim Start festgehalten – die live nachgerechnete
-  // Fälligkeitsliste draußen darf den Sitzungszähler nicht verändern.
   const [queue, setQueue] = useState(initialQueue)
   const [total] = useState(initialQueue.length)
-  const [revealed, setRevealed] = useState(false) // Karte aufgedeckt?
-  const [typed, setTyped] = useState('') // eingetippte Antwort
-  const [checked, setChecked] = useState(false) // schon geprüft?
+  const [revealed, setRevealed] = useState(false)
+  const [typed, setTyped] = useState('')
+  const [checked, setChecked] = useState(false)
+  const [flash, setFlash] = useState(null) // 'ok' | 'bad' | null
 
   const done = total - queue.length
   const card = queue[0]
 
-  // Fertig-Ansicht, wenn keine Karten mehr übrig sind.
+  // Finished screen
   if (!card) {
-    // Konfetti + Jubel nur, wenn wirklich Karten geschafft wurden.
     const celebrate = total > 0
     return (
       <div className="review">
@@ -54,17 +46,17 @@ function Review({ initialQueue, onRate, onExit }) {
               <p className="done-title done-ko pop" lang="ko">
                 좋아요!
               </p>
-              <p className="done-sub">Du hast heute alle fälligen Karten geschafft.</p>
+              <p className="done-sub">You've cleared all your cards for today.</p>
             </>
           ) : (
             <>
               <div className="done-emoji">☕</div>
-              <p className="done-title">Nichts zu wiederholen</p>
-              <p className="done-sub">Für heute ist dein Stapel schon leer.</p>
+              <p className="done-title">Nothing to review</p>
+              <p className="done-sub">Your stack is already empty for today.</p>
             </>
           )}
           <button className="done-btn" onClick={onExit}>
-            Zurück zur Startseite
+            Back to home
           </button>
         </div>
       </div>
@@ -83,22 +75,31 @@ function Review({ initialQueue, onRate, onExit }) {
     setRevealed(false)
     setTyped('')
     setChecked(false)
+    setFlash(null)
   }
 
   function handleRate(rating) {
-    onRate(card.id, rating) // dauerhaft speichern
-    nextCard(rating === 'again') // bei "Nochmal" hinten wieder anstellen
+    onRate(card.id, rating)
+    nextCard(rating === 'again')
   }
+
+  function checkTyping(e) {
+    e.preventDefault()
+    setChecked(true)
+    setFlash(correct ? 'ok' : 'bad')
+    setTimeout(() => setFlash(null), 700)
+  }
+
+  const flashClass = flash === 'ok' ? 'flash-ok' : flash === 'bad' ? 'flash-bad' : ''
 
   return (
     <div className="review">
       <ReviewHeader done={done} total={total} onExit={onExit} />
 
       <div className="review-body">
-        {/* -------- Die Karte -------- */}
-        <div className="flashcard">
+        <div className={`flashcard ${flashClass}`}>
           <span className="card-tag">
-            {isTyping ? '🇬🇧 → 🇰🇷  eintippen' : '🇰🇷 → 🇬🇧  umdrehen'}
+            {isTyping ? '🇬🇧 → 🇰🇷  type' : '🇰🇷 → 🇬🇧  flip'}
           </span>
 
           {isTyping ? (
@@ -112,7 +113,7 @@ function Review({ initialQueue, onRate, onExit }) {
                     {card.ko}
                   </span>
                   <span className="answer-note">
-                    {correct ? 'Richtig getippt ✓' : 'Deine Eingabe stimmte nicht'}
+                    {correct ? 'Correct ✓' : "Your answer wasn't right"}
                   </span>
                 </div>
               )}
@@ -133,37 +134,29 @@ function Review({ initialQueue, onRate, onExit }) {
           )}
         </div>
 
-        {/* -------- Eingabe / Aufdecken -------- */}
         {!answerShown && isTyping && (
-          <form
-            className="type-area"
-            onSubmit={(e) => {
-              e.preventDefault()
-              setChecked(true)
-            }}
-          >
+          <form className="type-area" onSubmit={checkTyping}>
             <input
               autoFocus
               value={typed}
               onChange={(e) => setTyped(e.target.value)}
-              placeholder="Koreanisch eintippen…"
+              placeholder="Type Korean…"
               lang="ko"
               autoComplete="off"
             />
             <button type="submit" className="check-btn">
-              Prüfen
+              Check
             </button>
           </form>
         )}
 
         {!answerShown && !isTyping && (
           <button className="reveal-btn" onClick={() => setRevealed(true)}>
-            Umdrehen
+            Flip
           </button>
         )}
       </div>
 
-      {/* -------- Die 4 Bewertungs-Buttons (erst nach dem Aufdecken) -------- */}
       {answerShown && (
         <div className="ratings">
           {RATINGS.map((r) => (
@@ -182,7 +175,7 @@ function ReviewHeader({ done, total, onExit }) {
   const pct = total > 0 ? (done / total) * 100 : 0
   return (
     <div className="review-header">
-      <button className="back-btn" onClick={onExit} aria-label="Zurück">
+      <button className="back-btn" onClick={onExit} aria-label="Back">
         <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="m15 6-6 6 6 6" />
         </svg>

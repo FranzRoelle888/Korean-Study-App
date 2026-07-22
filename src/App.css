@@ -1067,6 +1067,139 @@
   }
 }
 
+/* ---------- Grün/Rot-Aufleuchten bei richtig/falsch ---------- */
+.flash-ok {
+  animation: flashOk 0.65s ease;
+}
+.flash-bad {
+  animation: flashBad 0.65s ease;
+}
+@keyframes flashOk {
+  0% {
+    box-shadow: var(--shadow-md);
+  }
+  25% {
+    box-shadow: 0 0 0 4px rgba(46, 158, 107, 0.6), 0 0 34px 6px rgba(46, 158, 107, 0.45);
+  }
+  100% {
+    box-shadow: var(--shadow-md);
+  }
+}
+@keyframes flashBad {
+  0% {
+    box-shadow: var(--shadow-md);
+  }
+  25% {
+    box-shadow: 0 0 0 4px rgba(229, 72, 77, 0.6), 0 0 34px 6px rgba(229, 72, 77, 0.4);
+  }
+  100% {
+    box-shadow: var(--shadow-md);
+  }
+}
+
+/* ---------- Streak-Karte ist jetzt anklickbar (Kalender) ---------- */
+.streak-card {
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+}
+.streak-top > svg:last-of-type {
+  margin-left: auto;
+  color: var(--text-soft);
+}
+
+/* ---------- Kalender ---------- */
+.calendar {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: max(16px, env(safe-area-inset-top)) 20px 24px;
+}
+
+.cal-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 20px 4px 14px;
+}
+
+.cal-month {
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.cal-arrow {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  font-size: 22px;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  display: grid;
+  place-items: center;
+}
+.cal-arrow:disabled {
+  opacity: 0.35;
+}
+
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+.cal-head {
+  margin-bottom: 6px;
+}
+
+.cal-wd {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-soft);
+  padding: 2px 0;
+}
+
+.cal-day {
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-soft);
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.cal-done {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(255, 122, 89, 0.4);
+}
+
+.cal-today {
+  outline: 2px solid var(--primary);
+  outline-offset: 1px;
+  color: var(--text);
+}
+.cal-done.cal-today {
+  color: #fff;
+}
+
+.cal-empty {
+  aspect-ratio: 1;
+}
+
+.cal-summary {
+  text-align: center;
+  color: var(--text-soft);
+  font-size: 13.5px;
+  margin-top: 18px;
+}
+
 /* ---------- Untere Navigationsleiste ---------- */
 .tabbar {
   display: flex;
