@@ -1,4 +1,5 @@
 import { supabase } from './supabaseClient'
+import { dailyPool } from './dailyPool'
 
 /* ============================================================
    DATENSCHICHT + WIEDERHOLUNGS-ALGORITHMUS
@@ -21,6 +22,8 @@ import { supabase } from './supabaseClient'
 
 const START_EASE = 2.5
 const MIN_EASE = 1.3
+const DAILY_NEW = 2 // neue Vokabeln pro Tag (leicht änderbar)
+const REVIEW_CAP = 50 // max. Nachhol-Karten pro Tag
 
 const WORDS_CACHE = 'korean-app:words'
 const CARDS_CACHE = 'korean-app:cards'
@@ -237,13 +240,88 @@ export function applyRating(card, rating) {
   }
 }
 
-/* ---------- Heute fällige Karten (mit en/ko verbunden) ---------- */
+/* ---------- Heute fällige Karten (mit en/ko verbunden) ----------
+   - Frisch eingeführte Karten (reps 0) sind IMMER dabei (sollen ja
+     direkt auf den Stapel).
+   - Nachhol-Karten (reps > 0) werden auf REVIEW_CAP pro Tag gedeckelt,
+     die überfälligsten zuerst. */
 export function dueCards(words, cards) {
   const t = todayStr()
   const byId = Object.fromEntries(words.map((w) => [w.id, w]))
-  return cards
+  const all = cards
     .filter((c) => c.due <= t && byId[c.wordId])
     .map((c) => ({ ...c, en: byId[c.wordId].en, ko: byId[c.wordId].ko }))
+
+  const fresh = all.filter((c) => c.reps === 0)
+  const review = all
+    .filter((c) => c.reps > 0)
+    .sort((a, b) => (a.due < b.due ? -1 : a.due > b.due ? 1 : 0))
+    .slice(0, REVIEW_CAP)
+
+  return [...fresh, ...review]
+}
+
+/* ============================================================
+   VOKABEL DES TAGES (Nachziehstapel)
+   ============================================================ */
+
+const DAILY_KEY = 'korean-app:daily' // { date, introduced } – Tageszähler
+
+function getDailyProgress() {
+  try {
+    const d = JSON.parse(localStorage.getItem(DAILY_KEY))
+    if (d && d.date === todayStr()) return d
+  } catch {
+    /* egal */
+  }
+  return { date: todayStr(), introduced: 0 }
+}
+function bumpDailyProgress() {
+  const p = getDailyProgress()
+  const next = { date: todayStr(), introduced: p.introduced + 1 }
+  localStorage.setItem(DAILY_KEY, JSON.stringify(next))
+}
+
+// Die nächsten Pool-Einträge, die noch NICHT in der Bibliothek sind.
+function nextFromPool(words, count) {
+  const have = new Set(words.map((w) => w.ko.trim()))
+  const list = []
+  for (const e of dailyPool) {
+    if (list.length >= count) break
+    if (!have.has(e.ko.trim())) list.push(e)
+  }
+  return list
+}
+
+// Was steht heute an? left = wie viele heute noch, candidates = Einträge.
+export function dailyStatus(words) {
+  const introduced = getDailyProgress().introduced
+  const left = Math.max(0, DAILY_NEW - introduced)
+  const candidates = nextFromPool(words, left)
+  return {
+    left,
+    candidates,
+    introducedToday: introduced,
+    done: left === 0 || candidates.length === 0,
+    poolEmpty: nextFromPool(words, 1).length === 0,
+  }
+}
+
+// Ein Pool-Wort einführen: Wort + zwei Karten (SOFORT fällig -> direkt
+// auf den Stapel), dauerhaft speichern, Tageszähler hochsetzen.
+export function makeIntroducedWord(poolEntry) {
+  const word = {
+    id: crypto.randomUUID(),
+    en: poolEntry.en,
+    ko: poolEntry.ko,
+    createdAt: Date.now(),
+  }
+  // newCard setzt due = heute, reps = 0 -> neue Karte, sofort fällig
+  return { word, c1: newCard(word.id, 'en'), c2: newCard(word.id, 'ko') }
+}
+
+export function countIntroductionToday() {
+  bumpDailyProgress()
 }
 
 /* ---------- Intervall-Vorschau für die Buttons ---------- */

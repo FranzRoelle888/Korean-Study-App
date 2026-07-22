@@ -8,12 +8,11 @@ import { FlameIcon, SparkIcon, CardsIcon, ChevronIcon } from './icons'
 
 const name = 'Franz'
 const streakDays = 7
-const dailyWordDone = false
 
 const lastWeek = [true, true, false, true, true, true, false]
 const weekdayLabels = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So']
 
-function Home({ vocabCount, dueCount, onReview }) {
+function Home({ vocabCount, dueCount, dailyDone, dailyLeft, onReview, onDaily }) {
   return (
     <div className="screen">
       {/* ---------- Begrüßung + Streak ---------- */}
@@ -42,14 +41,16 @@ function Home({ vocabCount, dueCount, onReview }) {
 
       {/* ---------- Zwei große Buttons ---------- */}
       <main className="actions">
-        <button className="action action-primary">
+        <button className="action action-primary" onClick={onDaily}>
           <div className="action-icon">
             <SparkIcon />
           </div>
           <div className="action-text">
             <span className="action-title">Vokabel des Tages</span>
             <span className="action-sub">
-              {dailyWordDone ? 'Heute schon erledigt ✓' : 'Eine neue Vokabel lernen'}
+              {dailyDone
+                ? 'Heute schon erledigt ✓'
+                : `${dailyLeft} neue ${dailyLeft === 1 ? 'Vokabel' : 'Vokabeln'} lernen`}
             </span>
           </div>
           <ChevronIcon />

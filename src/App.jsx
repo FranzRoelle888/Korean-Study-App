@@ -10,12 +10,16 @@ import {
   deleteWordCloud,
   applyRating,
   dueCards,
+  dailyStatus,
+  makeIntroducedWord,
+  countIntroductionToday,
   writeWordsCache,
   writeCardsCache,
 } from './storage'
 import Home from './Home'
 import Library from './Library'
 import Review from './Review'
+import DailyWord from './DailyWord'
 import { HomeIcon, BookIcon } from './icons'
 
 /* ============================================================
@@ -45,6 +49,23 @@ function App() {
   }, [])
 
   const due = dueCards(words, cards)
+  const daily = dailyStatus(words)
+
+  // Eine "Vokabel des Tages" einführen -> Wort + zwei Karten (sofort
+  // fällig, also direkt auf den Stapel), speichern, Tageszähler hoch.
+  function handleIntroduce(poolEntry) {
+    const { word, c1, c2 } = makeIntroducedWord(poolEntry)
+    const newWords = [word, ...words]
+    const newCards = [c1, c2, ...cards]
+    setWords(newWords)
+    setCards(newCards)
+    writeWordsCache(newWords)
+    writeCardsCache(newCards)
+    countIntroductionToday()
+    persistNewWord(word, c1, c2).catch((err) =>
+      console.warn('Cloud-Speichern (Vokabel des Tages) fehlgeschlagen:', err?.message || err)
+    )
+  }
 
   // Vokabel hinzufügen -> Wort + zwei Karten
   function handleAdd(en, ko) {
@@ -126,7 +147,17 @@ function App() {
           <Home
             vocabCount={words.length}
             dueCount={due.length}
+            dailyDone={daily.done}
+            dailyLeft={daily.left}
             onReview={() => setView('review')}
+            onDaily={() => setView('daily')}
+          />
+        )}
+        {view === 'daily' && (
+          <DailyWord
+            candidates={daily.candidates}
+            onIntroduce={handleIntroduce}
+            onExit={() => setView('home')}
           />
         )}
         {view === 'library' && (
@@ -142,7 +173,7 @@ function App() {
         )}
       </div>
 
-      {view !== 'review' && (
+      {view !== 'review' && view !== 'daily' && (
         <nav className="tabbar">
           <button
             className={view === 'home' ? 'tab tab-active' : 'tab'}
