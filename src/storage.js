@@ -170,6 +170,36 @@ export async function persistCard(card) {
   if (error) throw error
 }
 
+/* ---------- Vokabel bearbeiten ----------
+   Prüft die neuen Werte (Duplikat gegen ANDERE Wörter). Die beiden
+   Karten hängen am Wort und aktualisieren sich dadurch automatisch;
+   ihr Lernstand/Termin bleibt unangetastet. */
+export function validateEdit(words, id, en, ko) {
+  const cleanEn = en.trim()
+  const cleanKo = ko.trim()
+  if (!cleanEn || !cleanKo) {
+    return { error: 'Bitte beide Felder ausfüllen.' }
+  }
+  const dup = words.some((w) => w.id !== id && w.ko.trim() === cleanKo)
+  if (dup) {
+    return { error: `„${cleanKo}" ist schon in deiner Bibliothek.` }
+  }
+  return { en: cleanEn, ko: cleanKo }
+}
+
+export async function updateWordCloud(id, en, ko) {
+  const { error } = await supabase.from('words').update({ en, ko }).eq('id', id)
+  if (error) throw error
+}
+
+/* ---------- Vokabel löschen ----------
+   Die zwei zugehörigen Karten werden in der DB automatisch mit
+   gelöscht (on delete cascade). */
+export async function deleteWordCloud(id) {
+  const { error } = await supabase.from('words').delete().eq('id', id)
+  if (error) throw error
+}
+
 /* ============================================================
    DER ALGORITHMUS (SM-2, vereinfacht, tagesgenau)
    ============================================================ */

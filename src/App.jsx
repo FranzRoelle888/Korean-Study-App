@@ -5,6 +5,9 @@ import {
   validateNewWord,
   persistNewWord,
   persistCard,
+  validateEdit,
+  updateWordCloud,
+  deleteWordCloud,
   applyRating,
   dueCards,
   writeWordsCache,
@@ -61,6 +64,33 @@ function App() {
     return { word: res.word }
   }
 
+  // Vokabel bearbeiten (en/ko). Beide Karten aktualisieren sich mit,
+  // weil sie am Wort hängen; ihr Lernstand bleibt.
+  function handleEditWord(id, en, ko) {
+    const res = validateEdit(words, id, en, ko)
+    if (res.error) return res
+    const newWords = words.map((w) => (w.id === id ? { ...w, en: res.en, ko: res.ko } : w))
+    setWords(newWords)
+    writeWordsCache(newWords)
+    updateWordCloud(id, res.en, res.ko).catch((err) =>
+      console.warn('Cloud-Speichern (bearbeiten) fehlgeschlagen:', err?.message || err)
+    )
+    return { ok: true }
+  }
+
+  // Vokabel löschen (samt ihrer beiden Karten)
+  function handleDeleteWord(id) {
+    const newWords = words.filter((w) => w.id !== id)
+    const newCards = cards.filter((c) => c.wordId !== id)
+    setWords(newWords)
+    setCards(newCards)
+    writeWordsCache(newWords)
+    writeCardsCache(newCards)
+    deleteWordCloud(id).catch((err) =>
+      console.warn('Cloud-Löschen fehlgeschlagen:', err?.message || err)
+    )
+  }
+
   // Eine Karte bewerten -> neuen Lernstand speichern
   function handleRate(cardId, rating) {
     const target = cards.find((c) => c.id === cardId)
@@ -99,7 +129,14 @@ function App() {
             onReview={() => setView('review')}
           />
         )}
-        {view === 'library' && <Library vocab={words} onAdd={handleAdd} />}
+        {view === 'library' && (
+          <Library
+            vocab={words}
+            onAdd={handleAdd}
+            onEdit={handleEditWord}
+            onDelete={handleDeleteWord}
+          />
+        )}
         {view === 'review' && (
           <Review initialQueue={due} onRate={handleRate} onExit={() => setView('home')} />
         )}
