@@ -26,7 +26,7 @@ function Library({ vocab, onAdd }) {
       return
     }
     // Erfolg: Felder leeren, kurze Bestätigung zeigen
-    setJustAdded(`„${result.entry.ko}" hinzugefügt ✓`)
+    setJustAdded(`„${result.word.ko}" hinzugefügt ✓`)
     setError('')
     setEn('')
     setKo('')

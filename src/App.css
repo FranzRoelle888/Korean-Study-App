@@ -361,6 +361,261 @@
   padding: 24px 0;
 }
 
+/* ---------- Wiederholungsstapel ---------- */
+.review {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: max(16px, env(safe-area-inset-top)) 20px 24px;
+}
+
+.review-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-top: 6px;
+}
+
+.back-btn {
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+
+.progress {
+  flex: 1;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  background: var(--primary);
+  border-radius: 4px;
+  transition: width 0.25s ease;
+}
+
+.progress-count {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-soft);
+  min-width: 40px;
+  text-align: right;
+}
+
+.review-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 20px;
+}
+
+.flashcard {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  box-shadow: var(--shadow-md);
+  padding: 48px 24px 32px;
+  min-height: 240px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  text-align: center;
+}
+
+.card-tag {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-soft);
+  background: var(--surface-2);
+  padding: 5px 12px;
+  border-radius: 999px;
+}
+
+.card-front {
+  font-size: 34px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.card-answer {
+  width: 100%;
+  padding-top: 18px;
+  border-top: 1px dashed var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.answer-ko {
+  font-size: 30px;
+  font-weight: 700;
+}
+
+.answer-en {
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.answer-note {
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.card-answer.ok .answer-note {
+  color: #2e9e6b;
+}
+.card-answer.bad .answer-note {
+  color: #e5484d;
+}
+.card-answer.ok .answer-ko {
+  color: #2e9e6b;
+}
+.card-answer.bad .answer-ko {
+  color: var(--text);
+}
+
+/* Eingabefeld zum Eintippen */
+.type-area {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.type-area input {
+  font-family: inherit;
+  font-size: 18px;
+  text-align: center;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px;
+  outline: none;
+}
+
+.type-area input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-soft);
+}
+
+.check-btn,
+.reveal-btn {
+  padding: 15px;
+  border-radius: 16px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  transition: transform 0.12s ease;
+}
+
+.check-btn:active,
+.reveal-btn:active {
+  transform: scale(0.98);
+}
+
+/* Die 4 Bewertungs-Buttons */
+.ratings {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.rate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 12px 4px;
+  border-radius: 14px;
+  color: #fff;
+  transition: transform 0.12s ease, opacity 0.12s ease;
+}
+
+.rate:active {
+  transform: scale(0.96);
+  opacity: 0.92;
+}
+
+.rate-label {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.rate-when {
+  font-size: 11px;
+  opacity: 0.9;
+}
+
+.rate-again {
+  background: #e5484d;
+}
+.rate-hard {
+  background: #f2994a;
+}
+.rate-good {
+  background: #2e9e6b;
+}
+.rate-easy {
+  background: var(--primary);
+}
+
+/* Fertig-Ansicht */
+.review-done {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-align: center;
+}
+
+.done-emoji {
+  font-size: 56px;
+}
+
+.done-title {
+  margin: 8px 0 0;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.done-sub {
+  margin: 0;
+  color: var(--text-soft);
+  font-size: 14.5px;
+}
+
+.done-btn {
+  margin-top: 20px;
+  padding: 14px 22px;
+  border-radius: 16px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+}
+
 /* ---------- Untere Navigationsleiste ---------- */
 .tabbar {
   display: flex;

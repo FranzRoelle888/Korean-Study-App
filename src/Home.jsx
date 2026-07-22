@@ -8,13 +8,12 @@ import { FlameIcon, SparkIcon, CardsIcon, ChevronIcon } from './icons'
 
 const name = 'Franz'
 const streakDays = 7
-const reviewsRemaining = 12
 const dailyWordDone = false
 
 const lastWeek = [true, true, false, true, true, true, false]
 const weekdayLabels = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So']
 
-function Home({ vocabCount }) {
+function Home({ vocabCount, dueCount, onReview }) {
   return (
     <div className="screen">
       {/* ---------- Begrüßung + Streak ---------- */}
@@ -56,19 +55,19 @@ function Home({ vocabCount }) {
           <ChevronIcon />
         </button>
 
-        <button className="action action-secondary">
+        <button className="action action-secondary" onClick={onReview}>
           <div className="action-icon action-icon-accent">
             <CardsIcon />
           </div>
           <div className="action-text">
             <span className="action-title">Wiederholen</span>
             <span className="action-sub">
-              {reviewsRemaining > 0
-                ? `Noch ${reviewsRemaining} heute offen`
+              {dueCount > 0
+                ? `Noch ${dueCount} heute offen`
                 : 'Alles erledigt für heute ✓'}
             </span>
           </div>
-          {reviewsRemaining > 0 && <span className="badge">{reviewsRemaining}</span>}
+          {dueCount > 0 && <span className="badge">{dueCount}</span>}
         </button>
 
         <p className="vocab-count-note">{vocabCount} Vokabeln in deiner Bibliothek</p>
