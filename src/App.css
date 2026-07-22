@@ -12,6 +12,45 @@
   min-height: 100svh;
 }
 
+/* Ladeanzeige beim Start */
+.loading {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  color: var(--text-soft);
+}
+
+.loading-hangul {
+  font-size: 44px;
+  font-weight: 800;
+  color: var(--primary);
+  letter-spacing: 1px;
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Offline-Hinweis */
+.offline-banner {
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 12.5px;
+  font-weight: 600;
+  text-align: center;
+  padding: 7px 12px;
+}
+
 /* Wechselnder Inhaltsbereich – scrollt bei Bedarf */
 .page {
   flex: 1;
