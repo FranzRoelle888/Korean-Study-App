@@ -443,13 +443,16 @@ export function computeStreak(logRows) {
   return streak
 }
 
-// Die letzten 7 Tage mit Wochentags-Kürzel + erledigt-Status.
+// Wochentag auf Koreanisch (0=So … 6=Sa).
+const KO_WEEKDAY = ['일', '월', '화', '수', '목', '금', '토']
+
+// Die letzten 7 Tage mit koreanischem Wochentags-Kürzel + Status.
 export function last7Days(logRows) {
   const done = new Set(logRows.filter((r) => r.done).map((r) => r.day))
   const out = []
   for (let i = 6; i >= 0; i--) {
     const ds = addDays(todayStr(), -i)
-    const label = new Date(ds + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short' })
+    const label = KO_WEEKDAY[new Date(ds + 'T00:00:00').getDay()]
     out.push({ day: ds, label, done: done.has(ds) })
   }
   return out

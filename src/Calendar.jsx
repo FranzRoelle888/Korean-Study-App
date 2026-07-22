@@ -6,7 +6,8 @@ import { doneDaysSet } from './storage'
    ============================================================ */
 
 const pad = (n) => String(n).padStart(2, '0')
-const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+// Wochentage Mo–So auf Koreanisch (die Woche startet hier montags)
+const WEEKDAYS = ['월', '화', '수', '목', '금', '토', '일']
 
 function Calendar({ log, onExit }) {
   const done = doneDaysSet(log)
@@ -16,7 +17,8 @@ function Calendar({ log, onExit }) {
   const view = new Date(base.getFullYear(), base.getMonth() + offset, 1)
   const year = view.getFullYear()
   const month = view.getMonth()
-  const monthName = view.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+  // Monat/Jahr auf Koreanisch, z.B. "2026년 7월"
+  const monthName = `${year}년 ${month + 1}월`
 
   const todayIso = `${base.getFullYear()}-${pad(base.getMonth() + 1)}-${pad(base.getDate())}`
   const startWeekday = (new Date(year, month, 1).getDay() + 6) % 7 // 0 = Monday

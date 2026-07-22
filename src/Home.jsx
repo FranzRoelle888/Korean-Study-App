@@ -1,4 +1,4 @@
-import { FlameIcon, SparkIcon, CardsIcon, ChevronIcon, HashIcon } from './icons'
+import { FlameIcon, SparkIcon, CardsIcon, ChevronIcon, HashIcon, CheckIcon } from './icons'
 
 /* ============================================================
    HOME SCREEN (greeting, streak, three action buttons)
@@ -24,7 +24,12 @@ function Home({
       {/* ---------- Greeting + streak ---------- */}
       <header className="header">
         <div className="greeting">
-          <p className="greeting-hello">안녕하세요, {name} 👋</p>
+          <h1 className="greeting-hello">
+            <span className="greeting-ko" lang="ko">
+              안녕하세요
+            </span>
+            <span className="greeting-name">{name}</span>
+          </h1>
           <p className="greeting-sub">Ready for today?</p>
         </div>
 
@@ -39,7 +44,9 @@ function Home({
             {week.map((d) => (
               <div key={d.day} className="streak-day">
                 <div className={d.done ? 'dot dot-on' : 'dot'} />
-                <span className="dot-label">{d.label}</span>
+                <span className="dot-label" lang="ko">
+                  {d.label}
+                </span>
               </div>
             ))}
           </div>
@@ -54,13 +61,17 @@ function Home({
           </div>
           <div className="action-text">
             <span className="action-title">Word of the Day</span>
-            <span className="action-sub">
-              {dailyDone
-                ? 'Done for today ✓'
-                : `Learn ${dailyLeft} new ${dailyLeft === 1 ? 'word' : 'words'}`}
+            <span className="action-sub" lang="ko">
+              오늘의 단어
             </span>
           </div>
-          <ChevronIcon />
+          {dailyDone ? (
+            <span className="done-check">
+              <CheckIcon />
+            </span>
+          ) : (
+            <ChevronIcon />
+          )}
         </button>
 
         <button className="action action-secondary" onClick={onReview}>
@@ -69,11 +80,17 @@ function Home({
           </div>
           <div className="action-text">
             <span className="action-title">Review</span>
-            <span className="action-sub">
-              {dueCount > 0 ? `${dueCount} left today` : 'All done for today ✓'}
+            <span className="action-sub" lang="ko">
+              복습
             </span>
           </div>
-          {dueCount > 0 && <span className="badge">{dueCount}</span>}
+          {dueCount > 0 ? (
+            <span className="badge">{dueCount}</span>
+          ) : (
+            <span className="done-check">
+              <CheckIcon />
+            </span>
+          )}
         </button>
 
         <button className="action action-secondary" onClick={onNumber}>
@@ -82,11 +99,17 @@ function Home({
           </div>
           <div className="action-text">
             <span className="action-title">Number of the Day</span>
-            <span className="action-sub">
-              {numberDone ? 'Done for today ✓' : 'Type a number in Korean'}
+            <span className="action-sub" lang="ko">
+              오늘의 숫자
             </span>
           </div>
-          {!numberDone && <ChevronIcon />}
+          {numberDone ? (
+            <span className="done-check">
+              <CheckIcon />
+            </span>
+          ) : (
+            <ChevronIcon />
+          )}
         </button>
 
         <p className="vocab-count-note">{vocabCount} words in your library</p>
