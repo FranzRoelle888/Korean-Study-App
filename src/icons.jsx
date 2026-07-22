@@ -48,8 +48,8 @@ export function HomeIcon() {
 export function BookIcon() {
   return (
     <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M4 4h11a3 3 0 0 1 3 3v13a2.5 2.5 0 0 0-2.5-2.5H4z" />
-      <path d="M4 4v13.5" />
+      <path d="M12 6.5v14" />
+      <path d="M3 5.5c2.5-1 6-1 9 1 3-2 6.5-2 9-1v13c-2.5-1-6-1-9 1-3-2-6.5-2-9-1z" />
     </svg>
   )
 }
