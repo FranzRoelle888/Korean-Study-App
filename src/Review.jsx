@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { previewInterval, formatInterval } from './storage'
+import Confetti from './Confetti'
 
 /* ============================================================
    WIEDERHOLUNGSSTAPEL
@@ -40,13 +41,28 @@ function Review({ initialQueue, onRate, onExit }) {
 
   // Fertig-Ansicht, wenn keine Karten mehr übrig sind.
   if (!card) {
+    // Konfetti + Jubel nur, wenn wirklich Karten geschafft wurden.
+    const celebrate = total > 0
     return (
       <div className="review">
         <ReviewHeader done={total} total={total} onExit={onExit} />
+        {celebrate && <Confetti />}
         <div className="review-done">
-          <div className="done-emoji">🎉</div>
-          <p className="done-title">Alles erledigt!</p>
-          <p className="done-sub">Du hast heute alle fälligen Karten geschafft.</p>
+          {celebrate ? (
+            <>
+              <div className="done-emoji pop">🎉</div>
+              <p className="done-title done-ko pop" lang="ko">
+                좋아요!
+              </p>
+              <p className="done-sub">Du hast heute alle fälligen Karten geschafft.</p>
+            </>
+          ) : (
+            <>
+              <div className="done-emoji">☕</div>
+              <p className="done-title">Nichts zu wiederholen</p>
+              <p className="done-sub">Für heute ist dein Stapel schon leer.</p>
+            </>
+          )}
           <button className="done-btn" onClick={onExit}>
             Zurück zur Startseite
           </button>
