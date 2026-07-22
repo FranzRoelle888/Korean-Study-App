@@ -1,4 +1,4 @@
-import { FlameIcon, SparkIcon, CardsIcon, ChevronIcon } from './icons'
+import { FlameIcon, SparkIcon, CardsIcon, ChevronIcon, HashIcon } from './icons'
 
 /* ============================================================
    STARTSEITE (Begrüßung, Streak, zwei Aktions-Buttons)
@@ -12,7 +12,16 @@ const streakDays = 7
 const lastWeek = [true, true, false, true, true, true, false]
 const weekdayLabels = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So']
 
-function Home({ vocabCount, dueCount, dailyDone, dailyLeft, onReview, onDaily }) {
+function Home({
+  vocabCount,
+  dueCount,
+  dailyDone,
+  dailyLeft,
+  numberDone,
+  onReview,
+  onDaily,
+  onNumber,
+}) {
   return (
     <div className="screen">
       {/* ---------- Begrüßung + Streak ---------- */}
@@ -69,6 +78,19 @@ function Home({ vocabCount, dueCount, dailyDone, dailyLeft, onReview, onDaily })
             </span>
           </div>
           {dueCount > 0 && <span className="badge">{dueCount}</span>}
+        </button>
+
+        <button className="action action-secondary" onClick={onNumber}>
+          <div className="action-icon action-icon-number">
+            <HashIcon />
+          </div>
+          <div className="action-text">
+            <span className="action-title">Zahlen des Tages</span>
+            <span className="action-sub">
+              {numberDone ? 'Heute schon erledigt ✓' : 'Eine Zahl auf Koreanisch tippen'}
+            </span>
+          </div>
+          {!numberDone && <ChevronIcon />}
         </button>
 
         <p className="vocab-count-note">{vocabCount} Vokabeln in deiner Bibliothek</p>

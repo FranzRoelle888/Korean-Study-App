@@ -324,6 +324,57 @@ export function countIntroductionToday() {
   bumpDailyProgress()
 }
 
+/* ============================================================
+   ZAHLEN-CHALLENGE (1–99, sino- + nativ-koreanisch)
+   ============================================================ */
+
+const SINO_ONES = ['', '일', '이', '삼', '사', '오', '육', '칠', '팔', '구']
+const NATIVE_ONES = ['', '하나', '둘', '셋', '넷', '다섯', '여섯', '일곱', '여덟', '아홉']
+const NATIVE_TENS = ['', '열', '스물', '서른', '마흔', '쉰', '예순', '일흔', '여든', '아흔']
+
+// Sino-koreanisch: 21 -> 이십일, 10 -> 십, 5 -> 오
+export function sinoKorean(n) {
+  const t = Math.floor(n / 10)
+  const o = n % 10
+  let s = ''
+  if (t >= 1) s += (t === 1 ? '' : SINO_ONES[t]) + '십'
+  if (o >= 1) s += SINO_ONES[o]
+  return s
+}
+
+// Nativ-koreanisch: 21 -> 스물하나, 10 -> 열, 5 -> 다섯
+export function nativeKorean(n) {
+  const t = Math.floor(n / 10)
+  const o = n % 10
+  let s = ''
+  if (t >= 1) s += NATIVE_TENS[t]
+  if (o >= 1) s += NATIVE_ONES[o]
+  return s
+}
+
+const NUMBER_KEY = 'korean-app:number' // { date, number, done }
+
+// Die Zahl des Tages (einmal pro Tag festgelegt, damit man nicht
+// neu würfeln kann, bis eine leichte kommt).
+export function getNumberChallenge() {
+  try {
+    const d = JSON.parse(localStorage.getItem(NUMBER_KEY))
+    if (d && d.date === todayStr()) return d
+  } catch {
+    /* egal */
+  }
+  const fresh = { date: todayStr(), number: 1 + Math.floor(Math.random() * 99), done: false }
+  localStorage.setItem(NUMBER_KEY, JSON.stringify(fresh))
+  return fresh
+}
+
+export function completeNumberChallenge() {
+  const c = getNumberChallenge()
+  const next = { ...c, done: true }
+  localStorage.setItem(NUMBER_KEY, JSON.stringify(next))
+  return next
+}
+
 /* ---------- Intervall-Vorschau für die Buttons ---------- */
 export function previewInterval(card, rating) {
   return applyRating(card, rating).intervalDays

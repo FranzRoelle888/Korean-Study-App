@@ -13,6 +13,10 @@ import {
   dailyStatus,
   makeIntroducedWord,
   countIntroductionToday,
+  getNumberChallenge,
+  completeNumberChallenge,
+  sinoKorean,
+  nativeKorean,
   writeWordsCache,
   writeCardsCache,
 } from './storage'
@@ -20,6 +24,7 @@ import Home from './Home'
 import Library from './Library'
 import Review from './Review'
 import DailyWord from './DailyWord'
+import NumberChallenge from './NumberChallenge'
 import { HomeIcon, BookIcon } from './icons'
 
 /* ============================================================
@@ -37,6 +42,7 @@ function App() {
   const [view, setView] = useState('home')
   const [words, setWords] = useState([])
   const [cards, setCards] = useState([])
+  const [numberState, setNumberState] = useState(getNumberChallenge)
 
   // Beim allerersten Anzeigen: Daten laden.
   useEffect(() => {
@@ -112,6 +118,12 @@ function App() {
     )
   }
 
+  // Zahlen-Challenge als erledigt markieren
+  function handleCompleteNumber() {
+    completeNumberChallenge()
+    setNumberState((s) => ({ ...s, done: true }))
+  }
+
   // Eine Karte bewerten -> neuen Lernstand speichern
   function handleRate(cardId, rating) {
     const target = cards.find((c) => c.id === cardId)
@@ -149,8 +161,20 @@ function App() {
             dueCount={due.length}
             dailyDone={daily.done}
             dailyLeft={daily.left}
+            numberDone={numberState.done}
             onReview={() => setView('review')}
             onDaily={() => setView('daily')}
+            onNumber={() => setView('number')}
+          />
+        )}
+        {view === 'number' && (
+          <NumberChallenge
+            number={numberState.number}
+            sino={sinoKorean(numberState.number)}
+            native={nativeKorean(numberState.number)}
+            alreadyDone={numberState.done}
+            onComplete={handleCompleteNumber}
+            onExit={() => setView('home')}
           />
         )}
         {view === 'daily' && (
@@ -173,7 +197,7 @@ function App() {
         )}
       </div>
 
-      {view !== 'review' && view !== 'daily' && (
+      {view !== 'review' && view !== 'daily' && view !== 'number' && (
         <nav className="tabbar">
           <button
             className={view === 'home' ? 'tab tab-active' : 'tab'}

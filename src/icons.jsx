@@ -80,6 +80,14 @@ export function EditIcon() {
   )
 }
 
+export function HashIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M9 4 7 20M17 4l-2 16M4 9h16M3 15h16" />
+    </svg>
+  )
+}
+
 export function TrashIcon() {
   return (
     <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
