@@ -760,7 +760,8 @@
 }
 
 /* Fertig-Ansicht */
-.review-done {
+.review-done,
+.daily-done {
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -932,12 +933,23 @@
 }
 
 .big-number {
-  text-align: center;
+  width: fit-content;
+  margin: 0 auto;
   font-size: 80px;
   font-weight: 800;
   letter-spacing: -2px;
-  color: var(--text);
   line-height: 1;
+  background: linear-gradient(120deg, var(--primary), var(--accent));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* Erfolgs-Symbol auf den Abschluss-Screens */
+.success-mark {
+  line-height: 0;
+  margin-bottom: 6px;
 }
 
 .number-form {

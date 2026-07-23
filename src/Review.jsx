@@ -37,7 +37,6 @@ function Review({ initialQueue, onRate, onExit }) {
     const celebrate = total > 0
     return (
       <div className="review">
-        <ReviewHeader done={total} total={total} onExit={onExit} />
         {celebrate && <Confetti />}
         <div className="review-done">
           {celebrate ? (

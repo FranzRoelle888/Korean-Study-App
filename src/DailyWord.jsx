@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { SuccessMark } from './icons'
 
 /* ============================================================
    WORD OF THE DAY
@@ -25,9 +26,14 @@ function DailyWord({ candidates, onIntroduce, onExit }) {
     const nothingAtAll = queue.length === 0
     return (
       <div className="daily">
-        <DailyHeader onExit={onExit} label="Word of the Day" />
         <div className="daily-done">
-          <div className="done-emoji">{nothingAtAll ? '☕' : '🌱'}</div>
+          {nothingAtAll ? (
+            <div className="done-emoji">☕</div>
+          ) : (
+            <div className="success-mark pop">
+              <SuccessMark />
+            </div>
+          )}
           <p className="done-title">
             {nothingAtAll ? 'Done for today' : `${learned} new learned!`}
           </p>

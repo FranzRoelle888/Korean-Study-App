@@ -35,7 +35,6 @@ function NumberChallenge({ number, sino, native, alreadyDone, onComplete, onExit
   if (done) {
     return (
       <div className="number">
-        <NumberHeader onExit={onExit} />
         <div className="number-done">
           <div className="done-emoji">🔢</div>
           <p className="done-title">Done for today!</p>

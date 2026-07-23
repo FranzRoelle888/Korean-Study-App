@@ -80,6 +80,25 @@ export function EditIcon() {
   )
 }
 
+export function SuccessMark() {
+  return (
+    <svg width="92" height="92" viewBox="0 0 92 92" fill="none" aria-hidden="true">
+      <defs>
+        <linearGradient id="successGrad" x1="16" y1="16" x2="76" y2="76" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#5b4bff" />
+          <stop offset="1" stopColor="#ff7a59" />
+        </linearGradient>
+      </defs>
+      <circle cx="46" cy="46" r="30" fill="url(#successGrad)" />
+      <path d="M34 46.5 42.5 55 60 37" stroke="#fff" strokeWidth="5.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M73 15l1.7 4.6 4.6 1.7-4.6 1.7L73 27.6l-1.7-4.6-4.6-1.7 4.6-1.7z" fill="#f2c94c" />
+      <circle cx="16" cy="30" r="3" fill="#56ccf2" />
+      <circle cx="24" cy="71" r="2.5" fill="#2e9e6b" />
+      <circle cx="73" cy="67" r="2.5" fill="#ff7a59" />
+    </svg>
+  )
+}
+
 export function CheckIcon() {
   return (
     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
