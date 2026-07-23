@@ -42,7 +42,7 @@ function Home({
           </div>
           <div className="streak-days">
             {week.map((d) => (
-              <div key={d.day} className="streak-day">
+              <div key={d.day} className={d.isToday ? 'streak-day streak-day-today' : 'streak-day'}>
                 <div className={d.done ? 'dot dot-on' : 'dot'} />
                 <span className="dot-label" lang="ko">
                   {d.label}
@@ -55,7 +55,10 @@ function Home({
 
       {/* ---------- Three action buttons ---------- */}
       <main className="actions">
-        <button className="action action-primary" onClick={onDaily}>
+        <button
+          className={dailyDone ? 'action action-secondary' : 'action action-full action-full-purple'}
+          onClick={onDaily}
+        >
           <div className="action-icon">
             <SparkIcon />
           </div>
@@ -74,7 +77,10 @@ function Home({
           )}
         </button>
 
-        <button className="action action-secondary" onClick={onReview}>
+        <button
+          className={dueCount > 0 ? 'action action-full action-full-orange' : 'action action-secondary'}
+          onClick={onReview}
+        >
           <div className="action-icon action-icon-accent">
             <CardsIcon />
           </div>
@@ -93,7 +99,10 @@ function Home({
           )}
         </button>
 
-        <button className="action action-secondary" onClick={onNumber}>
+        <button
+          className={numberDone ? 'action action-secondary' : 'action action-full action-full-green'}
+          onClick={onNumber}
+        >
           <div className="action-icon action-icon-number">
             <HashIcon />
           </div>

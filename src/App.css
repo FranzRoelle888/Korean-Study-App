@@ -9,7 +9,8 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  min-height: 0; /* erlaubt dem Inhaltsbereich, intern zu scrollen */
+  min-height: 0;
+  /* erlaubt dem Inhaltsbereich, intern zu scrollen */
 }
 
 /* Ladeanzeige beim Start */
@@ -32,10 +33,12 @@
 }
 
 @keyframes pulse {
+
   0%,
   100% {
     opacity: 0.4;
   }
+
   50% {
     opacity: 1;
   }
@@ -178,6 +181,18 @@
   color: var(--text-soft);
 }
 
+/* Heutiger Tag in der Streak-Leiste (immer die 3. Position): deutlich
+   hervorgehoben durch einen Ring um den Punkt und ein farbiges Label. */
+.streak-day-today .dot {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.streak-day-today .dot-label {
+  color: var(--primary);
+  font-weight: 700;
+}
+
 .actions {
   flex: 1;
   display: flex;
@@ -210,6 +225,38 @@
   border-color: transparent;
   color: #fff;
   box-shadow: var(--shadow-md);
+}
+
+/* Vollfarbige Buttons = Tagesaufgabe heute noch NICHT erledigt.
+   Die Farbe signalisiert "das steht noch an". Sobald erledigt, wird
+   der Button per .action-secondary wieder weiß dargestellt. */
+.action-full {
+  border-color: transparent;
+  color: #fff;
+  box-shadow: var(--shadow-md);
+}
+
+.action-full-purple {
+  background: linear-gradient(135deg, var(--primary) 0%, #7a6bff 100%);
+}
+
+.action-full-orange {
+  background: linear-gradient(135deg, var(--accent) 0%, #ff9a72 100%);
+}
+
+.action-full-green {
+  background: linear-gradient(135deg, #2e9e6b 0%, #3fbc82 100%);
+}
+
+/* Innerhalb eines Vollfarb-Buttons: Zähler-Badge hell hinterlegen,
+   damit sie sich vom farbigen Hintergrund abhebt. */
+.action-full .badge {
+  background: rgba(255, 255, 255, 0.28);
+  color: #fff;
+}
+
+.action-full .action-text+svg {
+  opacity: 0.9;
 }
 
 .action-icon {
@@ -255,7 +302,7 @@
   opacity: 1;
 }
 
-.action-primary .action-text + svg {
+.action-primary .action-text+svg {
   opacity: 0.9;
 }
 
@@ -324,7 +371,8 @@
 .field input,
 .search input {
   font-family: inherit;
-  font-size: 16px; /* >=16px verhindert Zoom beim Tippen am iPhone */
+  font-size: 16px;
+  /* >=16px verhindert Zoom beim Tippen am iPhone */
   color: var(--text);
   background: var(--bg);
   border: 1px solid var(--border);
@@ -662,12 +710,15 @@
 .card-answer.ok .answer-note {
   color: #2e9e6b;
 }
+
 .card-answer.bad .answer-note {
   color: #e5484d;
 }
+
 .card-answer.ok .answer-ko {
   color: #2e9e6b;
 }
+
 .card-answer.bad .answer-ko {
   color: var(--text);
 }
@@ -749,12 +800,15 @@
 .rate-again {
   background: #e5484d;
 }
+
 .rate-hard {
   background: #f2994a;
 }
+
 .rate-good {
   background: #2e9e6b;
 }
+
 .rate-easy {
   background: var(--primary);
 }
@@ -896,9 +950,21 @@
 }
 
 @keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  20%, 60% { transform: translateX(-6px); }
-  40%, 80% { transform: translateX(6px); }
+
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  20%,
+  60% {
+    transform: translateX(-6px);
+  }
+
+  40%,
+  80% {
+    transform: translateX(6px);
+  }
 }
 
 /* Icon-Farbe des Zahlen-Buttons (Selektor etwas spezifischer, damit
@@ -1060,6 +1126,7 @@
     transform: translateY(-24px) translateX(0) rotate(0deg);
     opacity: 1;
   }
+
   100% {
     transform: translateY(105vh) translateX(var(--drift)) rotate(var(--spin));
     opacity: 0.9;
@@ -1082,6 +1149,7 @@
     transform: scale(0.4);
     opacity: 0;
   }
+
   100% {
     transform: scale(1);
     opacity: 1;
@@ -1089,7 +1157,7 @@
 }
 
 /* Sanftes Einblenden beim Wechsel der Ansicht */
-.page > * {
+.page>* {
   animation: viewIn 0.28s ease both;
 }
 
@@ -1098,6 +1166,7 @@
     opacity: 0;
     transform: translateY(8px);
   }
+
   100% {
     opacity: 1;
     transform: translateY(0);
@@ -1106,8 +1175,11 @@
 
 /* Wer Bewegung reduziert haben will, bekommt keine Animationen */
 @media (prefers-reduced-motion: reduce) {
-  .confetti { display: none; }
-  .page > *,
+  .confetti {
+    display: none;
+  }
+
+  .page>*,
   .pop {
     animation: none;
   }
@@ -1117,27 +1189,34 @@
 .flash-ok {
   animation: flashOk 0.65s ease;
 }
+
 .flash-bad {
   animation: flashBad 0.65s ease;
 }
+
 @keyframes flashOk {
   0% {
     box-shadow: var(--shadow-md);
   }
+
   25% {
     box-shadow: 0 0 0 4px rgba(46, 158, 107, 0.6), 0 0 34px 6px rgba(46, 158, 107, 0.45);
   }
+
   100% {
     box-shadow: var(--shadow-md);
   }
 }
+
 @keyframes flashBad {
   0% {
     box-shadow: var(--shadow-md);
   }
+
   25% {
     box-shadow: 0 0 0 4px rgba(229, 72, 77, 0.6), 0 0 34px 6px rgba(229, 72, 77, 0.4);
   }
+
   100% {
     box-shadow: var(--shadow-md);
   }
@@ -1149,7 +1228,8 @@
   text-align: left;
   cursor: pointer;
 }
-.streak-top > svg:last-of-type {
+
+.streak-top>svg:last-of-type {
   margin-left: auto;
   color: var(--text-soft);
 }
@@ -1185,6 +1265,7 @@
   display: grid;
   place-items: center;
 }
+
 .cal-arrow:disabled {
   opacity: 0.35;
 }
@@ -1231,6 +1312,7 @@
   outline-offset: 1px;
   color: var(--text);
 }
+
 .cal-done.cal-today {
   color: #fff;
 }
