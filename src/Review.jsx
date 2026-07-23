@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { previewInterval, formatInterval } from './storage'
 import Confetti from './Confetti'
+import { MoonIcon } from './icons'
 
 /* ============================================================
    REVIEW STACK
@@ -28,6 +29,7 @@ function Review({ initialQueue, onRate, onExit }) {
   const [typed, setTyped] = useState('')
   const [checked, setChecked] = useState(false)
   const [flash, setFlash] = useState(null) // 'ok' | 'bad' | null
+  const [exiting, setExiting] = useState(false) // Karte fliegt gerade nach rechts weg
 
   const done = total - queue.length
   const card = queue[0]
@@ -49,7 +51,9 @@ function Review({ initialQueue, onRate, onExit }) {
             </>
           ) : (
             <>
-              <div className="done-emoji">☕</div>
+              <div className="success-mark">
+                <MoonIcon />
+              </div>
               <p className="done-title">Nothing to review</p>
               <p className="done-sub">Your stack is already empty for today.</p>
             </>
@@ -75,14 +79,28 @@ function Review({ initialQueue, onRate, onExit }) {
     setTyped('')
     setChecked(false)
     setFlash(null)
+    setExiting(false)
   }
 
   function handleRate(rating) {
-    onRate(card.id, rating)
-    nextCard(rating === 'again')
+    if (exiting) return
+    // Bei richtiger Antwort (bzw. gewusster Flip-Karte) fliegt die Karte
+    // erst nach rechts weg, dann kommt die nächste. "Again" (nicht gewusst)
+    // wechselt direkt ohne Flug.
+    const knewIt = isTyping ? correct : rating !== 'again'
+    if (knewIt) {
+      setExiting(true)
+      setTimeout(() => {
+        onRate(card.id, rating)
+        nextCard(rating === 'again')
+      }, 320)
+    } else {
+      onRate(card.id, rating)
+      nextCard(rating === 'again')
+    }
   }
 
-  function checkTyping(e) {
+  function checkTyping(e) { ${ exiting ? 'card-fly-right' : '' }
     e.preventDefault()
     setChecked(true)
     setFlash(correct ? 'ok' : 'bad')

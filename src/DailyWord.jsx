@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { SuccessMark } from './icons'
+import { SuccessMark, MoonIcon } from './icons'
 
 /* ============================================================
    WORD OF THE DAY
@@ -28,7 +28,9 @@ function DailyWord({ candidates, onIntroduce, onExit }) {
       <div className="daily">
         <div className="daily-done">
           {nothingAtAll ? (
-            <div className="done-emoji">☕</div>
+            <div className="success-mark pop">
+              <MoonIcon />
+            </div>
           ) : (
             <div className="success-mark pop">
               <SuccessMark />

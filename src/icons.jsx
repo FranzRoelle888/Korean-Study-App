@@ -107,6 +107,25 @@ export function CheckIcon() {
   )
 }
 
+export function MoonIcon() {
+  return (
+    <svg width="88" height="88" viewBox="0 0 88 88" fill="none" aria-hidden="true">
+      <defs>
+        <linearGradient id="moonGrad" x1="20" y1="20" x2="68" y2="68" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#5b4bff" />
+          <stop offset="1" stopColor="#7a6bff" />
+        </linearGradient>
+      </defs>
+      <circle cx="44" cy="44" r="30" fill="url(#moonGrad)" />
+      <circle cx="41" cy="44" r="13" fill="#fff" />
+      <circle cx="47" cy="40" r="12" fill="url(#moonGrad)" />
+      <circle cx="56" cy="52" r="1.8" fill="#fff" />
+      <circle cx="59" cy="45" r="1.2" fill="#fff" opacity="0.85" />
+      <circle cx="52" cy="59" r="1.1" fill="#fff" opacity="0.7" />
+    </svg>
+  )
+}
+
 export function HashIcon() {
   return (
     <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

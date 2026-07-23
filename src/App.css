@@ -595,6 +595,7 @@
   display: flex;
   flex-direction: column;
   padding: max(16px, env(safe-area-inset-top)) 20px 24px;
+  overflow: hidden;
 }
 
 .review-header {
@@ -1183,6 +1184,12 @@
   .pop {
     animation: none;
   }
+
+  /* Karte nicht wegfliegen lassen, nur ausblenden */
+  .card-fly-right {
+    animation: none;
+    opacity: 0;
+  }
 }
 
 /* ---------- Grün/Rot-Aufleuchten bei richtig/falsch ---------- */
@@ -1192,6 +1199,24 @@
 
 .flash-bad {
   animation: flashBad 0.65s ease;
+}
+
+/* ---------- Karte fliegt nach rechts weg (richtig beantwortet) ---------- */
+.card-fly-right {
+  animation: cardFlyRight 0.32s cubic-bezier(0.45, 0, 0.9, 0.5) forwards;
+  pointer-events: none;
+}
+
+@keyframes cardFlyRight {
+  0% {
+    transform: translateX(0) rotate(0deg);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateX(135%) rotate(9deg);
+    opacity: 0;
+  }
 }
 
 @keyframes flashOk {
