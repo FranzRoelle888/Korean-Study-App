@@ -75,7 +75,10 @@ body {
 #root {
   max-width: 460px;
   margin: 0 auto;
-  height: 100svh; /* feste Bildschirmhöhe -> nur der Inhalt scrollt */
+  /* Höhe = tatsächlich sichtbarer Bereich. Klappt die Tastatur auf,
+     schrumpft dieser Wert (siehe App.jsx), damit die Eingabefelder
+     nicht verdeckt werden. Fallback: volle Bildschirmhöhe. */
+  height: var(--app-h, 100svh);
   display: flex;
   flex-direction: column;
 }

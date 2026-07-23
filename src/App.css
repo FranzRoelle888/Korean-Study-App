@@ -1238,7 +1238,8 @@
 .tabbar {
   display: flex;
   gap: 8px;
-  padding: 10px 20px max(12px, env(safe-area-inset-bottom));
+  /* etwas tiefer: weniger Abstand zum unteren Rand (Home-Indikator) */
+  padding: 8px 20px max(6px, calc(env(safe-area-inset-bottom) - 12px));
   border-top: 1px solid var(--border);
   background: var(--bg);
 }

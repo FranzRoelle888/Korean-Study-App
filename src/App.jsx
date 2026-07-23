@@ -53,6 +53,34 @@ function App() {
     })
   }, [])
 
+  // Höhe der App an den sichtbaren Bereich koppeln. Auf dem Handy
+  // schrumpft dieser, wenn die Tastatur aufklappt -> Eingabefelder
+  // bleiben sichtbar statt verdeckt zu werden.
+  useEffect(() => {
+    const vv = window.visualViewport
+    if (!vv) return
+    const setH = () => document.documentElement.style.setProperty('--app-h', `${vv.height}px`)
+    setH()
+    vv.addEventListener('resize', setH)
+    vv.addEventListener('scroll', setH)
+    return () => {
+      vv.removeEventListener('resize', setH)
+      vv.removeEventListener('scroll', setH)
+    }
+  }, [])
+
+  // Angetipptes Eingabefeld in den sichtbaren Bereich holen (nach dem
+  // Aufklappen der Tastatur).
+  useEffect(() => {
+    const onFocus = (e) => {
+      if (e.target.tagName === 'INPUT') {
+        setTimeout(() => e.target.scrollIntoView({ block: 'center', behavior: 'smooth' }), 280)
+      }
+    }
+    document.addEventListener('focusin', onFocus)
+    return () => document.removeEventListener('focusin', onFocus)
+  }, [])
+
   const due = dueCards(words, cards)
   const daily = dailyStatus(words)
 
