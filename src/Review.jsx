@@ -100,7 +100,7 @@ function Review({ initialQueue, onRate, onExit }) {
     }
   }
 
-  function checkTyping(e) { ${ exiting ? 'card-fly-right' : '' }
+  function checkTyping(e) {
     e.preventDefault()
     setChecked(true)
     setFlash(correct ? 'ok' : 'bad')
@@ -114,7 +114,7 @@ function Review({ initialQueue, onRate, onExit }) {
       <ReviewHeader done={done} total={total} onExit={onExit} />
 
       <div className="review-body">
-        <div className={`flashcard ${flashClass}`}>
+        <div className={`flashcard ${flashClass} ${exiting ? 'card-fly-right' : ''}`}>
           <span className="card-tag">
             {isTyping ? '🇬🇧 → 🇰🇷  type' : '🇰🇷 → 🇬🇧  flip'}
           </span>
