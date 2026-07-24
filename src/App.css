@@ -248,6 +248,20 @@
   background: linear-gradient(135deg, #2e9e6b 0%, #3fbc82 100%);
 }
 
+/* Gelber Button: dunkler Text, damit auf dem hellen Gelb alles lesbar bleibt */
+.action-full-yellow {
+  background: linear-gradient(135deg, #ffd23f 0%, #ffb300 100%);
+  color: #3a2c00;
+}
+.action-full-yellow .action-icon {
+  background: rgba(255, 255, 255, 0.35);
+  color: #a85e00;
+}
+.action-full-yellow .badge {
+  background: rgba(0, 0, 0, 0.16);
+  color: #3a2c00;
+}
+
 /* Innerhalb eines Vollfarb-Buttons: Zähler-Badge hell hinterlegen,
    damit sie sich vom farbigen Hintergrund abhebt. */
 .action-full .badge {

@@ -4,7 +4,7 @@ import { FlameIcon, SparkIcon, CardsIcon, ChevronIcon, HashIcon, CheckIcon } fro
    HOME SCREEN (greeting, streak, three action buttons)
    ============================================================ */
 
-const name = 'Franz'
+const name = 'Michael'
 
 function Home({
   vocabCount,
@@ -78,7 +78,7 @@ function Home({
         </button>
 
         <button
-          className={dueCount > 0 ? 'action action-full action-full-orange' : 'action action-secondary'}
+          className={dueCount > 0 ? 'action action-full action-full-yellow' : 'action action-secondary'}
           onClick={onReview}
         >
           <div className="action-icon action-icon-accent">
