@@ -13,6 +13,7 @@ function Library({ vocab, onAdd, onEdit, onDelete }) {
   const [error, setError] = useState('')
   const [justAdded, setJustAdded] = useState('')
   const [query, setQuery] = useState('')
+  const [sort, setSort] = useState('newest') // 'newest' | 'alpha'
 
   function handleSubmit(e) {
     e.preventDefault()
@@ -29,9 +30,14 @@ function Library({ vocab, onAdd, onEdit, onDelete }) {
   }
 
   const q = query.trim().toLowerCase()
-  const shown = q
+  const filtered = q
     ? vocab.filter((v) => v.en.toLowerCase().includes(q) || v.ko.includes(query.trim()))
     : vocab
+  const shown = [...filtered].sort((a, b) =>
+    sort === 'alpha'
+      ? a.en.toLowerCase().localeCompare(b.en.toLowerCase())
+      : (b.createdAt || 0) - (a.createdAt || 0)
+  )
 
   return (
     <div className="library">
@@ -77,6 +83,23 @@ function Library({ vocab, onAdd, onEdit, onDelete }) {
           placeholder="Search…"
           autoComplete="off"
         />
+      </div>
+
+      {/* ---------- Sort ---------- */}
+      <div className="sort-row">
+        <span className="sort-label">Sort:</span>
+        <button
+          className={sort === 'newest' ? 'sort-pill sort-active' : 'sort-pill'}
+          onClick={() => setSort('newest')}
+        >
+          Newest
+        </button>
+        <button
+          className={sort === 'alpha' ? 'sort-pill sort-active' : 'sort-pill'}
+          onClick={() => setSort('alpha')}
+        >
+          A–Z
+        </button>
       </div>
 
       {/* ---------- List ---------- */}

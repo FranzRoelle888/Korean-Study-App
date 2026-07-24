@@ -443,6 +443,37 @@
   box-shadow: none;
 }
 
+/* Sortier-Leiste in der Bibliothek */
+.sort-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 2px 2px 14px;
+}
+
+.sort-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-soft);
+}
+
+.sort-pill {
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-soft);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.sort-pill.sort-active {
+  background: var(--primary-soft);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
 .vocab-list {
   list-style: none;
   margin: 0;
