@@ -128,13 +128,48 @@ export async function loadInitial() {
   }
 }
 
+/* ---------- Streuung ("Zufall mit Gedächtnis") ----------
+   Ohne Streuung bekommt jede Karte bei gleichem Stand exakt denselben
+   Termin. Wer mit vielen Vokabeln auf einmal anfängt, schiebt dadurch
+   für immer einen Klumpen im Gleichschritt vor sich her.
+
+   Wichtig: nicht bei jedem Klick neu würfeln, sondern die Abweichung
+   AUS DER KARTE berechnen (id + Anzahl Wiederholungen + Knopf).
+   Dieselbe Karte ergibt so immer dieselbe Zahl -> die Vorschau auf den
+   Knöpfen stimmt mit dem, was danach wirklich passiert. Verschiedene
+   Karten driften trotzdem auseinander, und nach jeder Wiederholung
+   (reps ändert sich) wird neu gestreut. */
+function seeded(...parts) {
+  const s = parts.join('|')
+  let h = 2166136261
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i)
+    h = Math.imul(h, 16777619)
+  }
+  return (h >>> 0) / 4294967296 // 0 … knapp unter 1
+}
+
+// Ganze Zahl aus [lo, hi] – ausgewürfelt, aber reproduzierbar.
+function pick(seed, lo, hi) {
+  return lo + Math.floor(seed * (hi - lo + 1))
+}
+
+// Intervall leicht verschieben: bis 4 Tage um ±1 Tag, darüber um ±15 %.
+function fuzzDays(days, seed) {
+  if (days <= 1) return days
+  const spread = days <= 4 ? 1 : Math.max(1, Math.round(days * 0.15))
+  return Math.max(1, days + pick(seed, -spread, spread))
+}
+
 /* ---------- Neue Karte (neu = sofort fällig) ---------- */
 function newCard(wordId, front) {
   return {
     id: crypto.randomUUID(),
     wordId,
     front,
-    ease: START_EASE,
+    // Auch das Tempo (ease) startet leicht gestreut, damit nicht alle
+    // Karten mit exakt derselben Beschleunigung loslaufen.
+    ease: Math.round((START_EASE + (Math.random() - 0.5) * 0.3) * 100) / 100,
     intervalDays: 0,
     reps: 0,
     lapses: 0,
@@ -214,6 +249,9 @@ export async function deleteWordCloud(id) {
 export function applyRating(card, rating) {
   let { ease, intervalDays, reps, lapses } = card
 
+  // Die Streuung dieser Karte für genau diesen Knopf (siehe seeded()).
+  const seed = seeded(card.id, reps, rating)
+
   if (rating === 'again') {
     ease = Math.max(MIN_EASE, ease - 0.2)
     reps = 0
@@ -224,12 +262,15 @@ export function applyRating(card, rating) {
     else if (rating === 'easy') ease = ease + 0.15
 
     if (reps === 0) {
-      intervalDays = rating === 'easy' ? 4 : 1
+      // Erste Wiederholung: statt bei allen Karten stur 1 bzw. 4 Tage
+      // eine kleine Spanne, damit der Anfangs-Klumpen sofort aufbricht.
+      intervalDays = rating === 'hard' ? 1 : rating === 'easy' ? pick(seed, 3, 5) : pick(seed, 1, 2)
     } else if (reps === 1) {
-      intervalDays = rating === 'hard' ? 2 : rating === 'easy' ? 6 : 3
+      intervalDays =
+        rating === 'hard' ? pick(seed, 2, 3) : rating === 'easy' ? pick(seed, 6, 9) : pick(seed, 3, 5)
     } else {
       const factor = rating === 'hard' ? 1.2 : rating === 'easy' ? ease * 1.3 : ease
-      intervalDays = Math.max(1, Math.round(intervalDays * factor))
+      intervalDays = fuzzDays(Math.max(1, Math.round(intervalDays * factor)), seed)
     }
     reps = reps + 1
   }
@@ -245,11 +286,46 @@ export function applyRating(card, rating) {
   }
 }
 
+/* ---------- Reihenfolge des Tagesstapels ----------
+   1) Mischen: alle heute fälligen Karten in eine zufällige Reihenfolge.
+      Der Seed ist Datum + Karten-Id -> jeden Morgen neu gemischt, aber
+      über den Tag stabil (der Stapel springt nicht herum, wenn man die
+      App zwischendurch verlässt und wieder reingeht).
+   2) Paare trennen: die zwei Karten eines Wortes (eintippen / umdrehen)
+      dürfen nicht direkt hintereinander liegen – sonst verrät die erste
+      die Antwort der zweiten und der Lerneffekt ist weg. */
+const PAIR_GAP = 3 // mindestens so viele andere Karten zwischen zwei Karten eines Wortes
+
+function shuffleForToday(list) {
+  const t = todayStr()
+  return list
+    .map((c) => ({ c, k: seeded('order', t, c.id) }))
+    .sort((a, b) => a.k - b.k)
+    .map((x) => x.c)
+}
+
+// Geht die gemischte Liste durch und nimmt immer die erste Karte, deren
+// Wort nicht gerade eben dran war. Notfalls (Stapel fast leer, es geht
+// nicht besser) einfach die nächste.
+function spaceOutPairs(list) {
+  const rest = [...list]
+  const out = []
+  while (rest.length > 0) {
+    const recent = out.slice(-PAIR_GAP).map((c) => c.wordId)
+    let i = rest.findIndex((c) => !recent.includes(c.wordId))
+    if (i === -1) i = 0
+    out.push(rest.splice(i, 1)[0])
+  }
+  return out
+}
+
 /* ---------- Heute fällige Karten (mit en/ko verbunden) ----------
    - Frisch eingeführte Karten (reps 0) sind IMMER dabei (sollen ja
      direkt auf den Stapel).
    - Nachhol-Karten (reps > 0) werden auf REVIEW_CAP pro Tag gedeckelt,
-     die überfälligsten zuerst. */
+     die überfälligsten zuerst.
+   - Danach wird der ganze Stapel gemischt (neu + Nachholer gemeinsam)
+     und die Wort-Paare werden auseinandergezogen. */
 export function dueCards(words, cards) {
   const t = todayStr()
   const byId = Object.fromEntries(words.map((w) => [w.id, w]))
@@ -263,7 +339,7 @@ export function dueCards(words, cards) {
     .sort((a, b) => (a.due < b.due ? -1 : a.due > b.due ? 1 : 0))
     .slice(0, REVIEW_CAP)
 
-  return [...fresh, ...review]
+  return spaceOutPairs(shuffleForToday([...fresh, ...review]))
 }
 
 /* ============================================================
