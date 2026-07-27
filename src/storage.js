@@ -320,12 +320,21 @@ function spaceOutPairs(list) {
 }
 
 /* ---------- Heute fällige Karten (mit en/ko verbunden) ----------
-   - Frisch eingeführte Karten (reps 0) sind IMMER dabei (sollen ja
-     direkt auf den Stapel).
-   - Nachhol-Karten (reps > 0) werden auf REVIEW_CAP pro Tag gedeckelt,
-     die überfälligsten zuerst.
-   - Danach wird der ganze Stapel gemischt (neu + Nachholer gemeinsam)
-     und die Wort-Paare werden auseinandergezogen. */
+   Der Stapel besteht aus drei Gruppen:
+
+   1) WIEDERHOLUNGEN (reps > 0) – die regulär wieder dran sind.
+      Auf REVIEW_CAP pro Tag gedeckelt; ausgewählt werden die
+      überfälligsten zuerst, damit nichts liegen bleibt.
+   2) NOCHMAL-KARTEN (reps 0, aber schon mal gesehen) – bei denen
+      "Nochmal" gedrückt wurde. Die gehören zum heutigen Pensum und
+      werden nicht gedeckelt.
+   3) NEUE KARTEN (noch nie wiederholt) – heute frisch dazugekommen,
+      über "Vokabel des Tages" oder von Hand angelegt.
+
+   Reihenfolge: 1) + 2) werden zusammen gemischt, 3) hängt hinten dran
+   (in normaler Reihenfolge). So kommt eine Vokabel, die man gerade
+   erst dreimal eingetippt hat, nicht Sekunden später schon wieder –
+   und der Rest des Tages bleibt trotzdem gut durchmischt. */
 export function dueCards(words, cards) {
   const t = todayStr()
   const byId = Object.fromEntries(words.map((w) => [w.id, w]))
@@ -333,13 +342,22 @@ export function dueCards(words, cards) {
     .filter((c) => c.due <= t && byId[c.wordId])
     .map((c) => ({ ...c, en: byId[c.wordId].en, ko: byId[c.wordId].ko }))
 
-  const fresh = all.filter((c) => c.reps === 0)
+  // Noch nie wiederholt = wirklich neu. (Nur reps === 0 reicht nicht:
+  // "Nochmal" setzt reps ebenfalls auf 0, und die importierten
+  // Anki-Karten haben zwar kein lastReviewed, aber reps > 0.)
+  const isNew = (c) => c.reps === 0 && !c.lastReviewed
+
+  const fresh = all.filter(isNew)
+  const again = all.filter((c) => c.reps === 0 && c.lastReviewed)
   const review = all
     .filter((c) => c.reps > 0)
     .sort((a, b) => (a.due < b.due ? -1 : a.due > b.due ? 1 : 0))
     .slice(0, REVIEW_CAP)
 
-  return spaceOutPairs(shuffleForToday([...fresh, ...review]))
+  return [
+    ...spaceOutPairs(shuffleForToday([...again, ...review])),
+    ...spaceOutPairs(fresh),
+  ]
 }
 
 /* ============================================================
