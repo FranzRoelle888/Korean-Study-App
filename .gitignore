@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Design-Bundles als ZIP (der entpackte Ordner liegt im Repo)
+*.zip

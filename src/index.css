@@ -4,52 +4,34 @@
    kleiner "Reset", der Browser-Standardabstände entfernt.
    ============================================================ */
 
+/* --- Hanji-Theme: warmes Papier, Taegeuk-Rot und -Blau als Akzente --- */
 :root {
-  /* --- Farbpalette (helles Design) --- */
-  --bg: #f4f5fb; /* Seitenhintergrund */
-  --surface: #ffffff; /* Karten / Buttons */
-  --surface-2: #eef0f9; /* leicht abgesetzte Flächen */
-  --text: #1a1b2e; /* Haupttext */
-  --text-soft: #6b6d85; /* gedämpfter Text */
-  --border: #e4e6f2;
+  /* --- Grundflächen (warmes Hanji-Papier) --- */
+  --bg: #f4eee3; /* Seitenhintergrund */
+  --surface: #fbf7ef; /* Karten / Buttons */
+  --surface-2: #efe7d8; /* leicht abgesetzte Flächen, leere Punkte */
+  --text: #1f1b18; /* Haupttext (Tusche) */
+  --text-soft: #857a6c; /* gedämpfter Text */
+  --border: #e2d8c6;
 
-  --primary: #5b4bff; /* Hauptfarbe (Indigo/Violett) */
-  --primary-soft: #ece9ff;
-  --accent: #ff7a59; /* warmer Akzent (Streak-Flamme) */
-  --accent-soft: #ffe9e2;
+  --primary: #2a4a8b; /* Taegeuk-Blau: Vokabel des Tages, Fokus, Fortschritt */
+  --primary-soft: #e5eaf4;
+  --accent: #c1443b; /* Taegeuk-Rot: Streak, Wiederholung, aktiver Tab */
+  --accent-soft: #f7e6e2;
 
-  --shadow-sm: 0 2px 8px rgba(24, 24, 60, 0.06);
-  --shadow-md: 0 8px 24px rgba(24, 24, 60, 0.1);
+  --shadow-sm: 0 2px 8px rgba(31, 27, 24, 0.06);
+  --shadow-md: 0 8px 24px rgba(31, 27, 24, 0.1);
 
   /* Schriftstapel inkl. koreanischer Fallback-Fonts */
   --sans: system-ui, -apple-system, 'Segoe UI', 'Apple SD Gothic Neo',
-    'Malgun Gothic', 'Noto Sans KR', Roboto, sans-serif;
+    'Malgun Gothic', 'Noto Sans KR', sans-serif;
 
-  color-scheme: light dark;
+  /* Bewusst nur helles Design — kein Dark Mode. */
+  color-scheme: light;
   font-family: var(--sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
-}
-
-/* --- Dunkles Design (folgt der Systemeinstellung des Handys) --- */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0f1020;
-    --surface: #1a1c33;
-    --surface-2: #23264180;
-    --text: #f2f3fb;
-    --text-soft: #a0a3c0;
-    --border: #2b2e4d;
-
-    --primary: #8b7cff;
-    --primary-soft: #262452;
-    --accent: #ff8a6b;
-    --accent-soft: #3a2a26;
-
-    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
-    --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.4);
-  }
 }
 
 * {

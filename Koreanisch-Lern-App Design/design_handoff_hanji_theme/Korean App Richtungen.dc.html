@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+  body { margin: 0; background: #EDEAE3; font-family: "Noto Sans KR", system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  a { color: #C1443B; text-decoration: none; }
+  a:hover { color: #8E2F28; text-decoration: underline; }
+</style>
+</helmet>
+
+<section style="padding: 64px 72px 40px; display: flex; flex-direction: column; gap: 40px">
+
+  <div style="display: flex; flex-direction: column; gap: 10px; max-width: 780px">
+    <div style="font-size: 13px; letter-spacing: 0.18em; text-transform: uppercase; color: #9A8F80; font-weight: 600">Runde 2 · Auf den echten Code gelegt</div>
+    <div style="font-size: 34px; font-weight: 700; color: #1F1B18; letter-spacing: -0.02em">1a Hanji — jetzt mit dem echten Layout</div>
+    <div style="font-size: 16px; line-height: 1.6; color: #6E6459; text-wrap: pretty">Gelesen aus <code style="font-size: 14px">Home.jsx</code>, <code style="font-size: 14px">Review.jsx</code>, <code style="font-size: 14px">DailyWord.jsx</code>, <code style="font-size: 14px">NumberChallenge.jsx</code>. Struktur, Reihenfolge, Zustände und englische Texte sind 1:1 übernommen — Streak-Karte mit Wochenpunkten, drei Aktionen mit Done-Zustand, Library-Zähler, Tab-Bar, Tipp-Karte mit 3er-Fortschritt, Review mit Typ- und Flip-Karte, Zahl in beiden Systemen. Nur Farbe, Typo und Motivik sind neu. Maße sind aus <code style="font-size: 14px">App.css</code> übernommen (Screen-Padding 20, Streak-Punkte 26px, Aktionen 20px/Radius 22 mit 52er-Icon, Karte min. 240px mit 48/24/32, Fortschrittsbalken 8px, Bewertungsraster 8px Abstand), die Intervall-Texte folgen <code style="font-size: 14px">formatInterval</code> („today / 3 days / 4 days / 8 days"). Zwei bewusste Eingriffe: das Karten-Tag <span style="color: #1F1B18">🇬🇧 → 🇰🇷 type</span> wird zum gesetzten Label <span style="color: #1F1B18">EN → KO · type</span>, und die koreanische Kartenvorderseite steht auf 60px statt 34px — dein Wunsch „Hangul riesig". Oben rechts hängt jetzt die Taegukgi (Taegeuk + alle vier Trigramme), das Home-Icon ist ein Hanok-Tor als reine Konturlinie im Stil des Buch-Icons, und die Bergketten haben Schneekuppen, Kiefern und ein Vogelpaar.</div>
+  </div>
+
+  <div id="2a" style="display: flex; gap: 28px; flex-wrap: wrap">
+
+    <div style="width: 390px; height: 800px; border-radius: 44px; background: #F4EEE3; box-shadow: 0 2px 3px rgba(31,27,24,.08), 0 24px 60px rgba(31,27,24,.16); overflow: hidden; position: relative; display: flex; flex-direction: column">
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px 26px 0; font-size: 13px; font-weight: 600; color: #1F1B18">
+        <div>9:41</div>
+        <div style="display: flex; gap: 5px; align-items: center">
+          <div style="width: 17px; height: 10px; border: 1.5px solid #1F1B18; border-radius: 3px"></div>
+          <div style="width: 2px; height: 4px; background: #1F1B18; border-radius: 0 1px 1px 0"></div>
+        </div>
+      </div>
+      <div style="flex: 1; display: flex; flex-direction: column; padding: 20px 20px 0; position: relative">
+        <svg viewBox="0 0 390 74" preserveAspectRatio="none" style="position: absolute; bottom: 0; left: -20px; width: 430px; height: 74px">
+          <path d="M0 40 L56 16 L96 30 L150 8 L206 34 L262 14 L318 36 L390 20 L390 74 L0 74 Z" fill="#E7DECE"></path>
+          <path d="M150 8 L141 20 L146 18 L151 22 L157 17 L162 20 Z" fill="#FAF6EE"></path>
+          <path d="M262 14 L254 24 L258 22 L263 26 L268 21 L273 24 Z" fill="#FAF6EE"></path>
+          <path d="M0 56 L48 38 L102 52 L160 32 L220 50 L272 36 L326 54 L390 45 L390 74 L0 74 Z" fill="#DACEB9"></path>
+          <path d="M160 32 L152 43 L157 41 L162 45 L167 40 L172 43 Z" fill="#F2EBDD"></path>
+          <path d="M0 67 L62 60 L132 65 L202 58 L282 67 L348 61 L390 65 L390 74 L0 74 Z" fill="#CBBBA0"></path>
+          <path d="M84 54 L87.6 62 L80.4 62 Z" fill="#9E8C71"></path><rect x="83.4" y="62" width="1.2" height="2" fill="#9E8C71"></rect>
+          <path d="M95 57 L97.8 63 L92.2 63 Z" fill="#9E8C71"></path><rect x="94.4" y="63" width="1.2" height="2" fill="#9E8C71"></rect>
+          <path d="M250 56 L253.2 63 L246.8 63 Z" fill="#9E8C71"></path><rect x="249.4" y="63" width="1.2" height="2" fill="#9E8C71"></rect>
+          </svg>
+
+        <div style="position: relative; padding-top: 12px; display: flex; align-items: flex-start; justify-content: space-between; gap: 14px">
+          <div>
+            <div style="display: flex; flex-direction: column; line-height: 1.08">
+              <div style="width: fit-content; font-size: 34px; font-weight: 800; letter-spacing: -0.5px; background: linear-gradient(120deg, #C1443B 0%, #2A4A8B 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent">안녕하세요</div>
+              <div style="margin-top: 3px; font-size: 20px; font-weight: 700; color: #1F1B18">Franz</div>
+            </div>
+            <div style="margin-top: 4px; font-size: 15px; color: #857A6C">Ready for today?</div>
+          </div>
+          <svg viewBox="0 0 36 24" width="34" height="23" style="flex: none; margin-top: 8px; border-radius: 2px; box-shadow: 0 1px 3px rgba(31,27,24,.2)">
+            <rect width="36" height="24" fill="#FBF7EF"></rect>
+            <g transform="rotate(-33.69 18 12)">
+              <circle cx="18" cy="12" r="5.4" fill="#2A4A8B"></circle>
+              <path d="M12.6 12 A5.4 5.4 0 0 0 23.4 12 A2.7 2.7 0 0 1 18 12 A2.7 2.7 0 0 0 12.6 12 Z" fill="#C1443B"></path>
+            </g>
+            <g transform="translate(8 6.2) rotate(-59.9)" fill="#1F1B18"><rect x="-3.50" y="-2.63" width="7" height="1.05" rx="0.3"></rect><rect x="-3.50" y="-0.53" width="7" height="1.05" rx="0.3"></rect><rect x="-3.50" y="1.57" width="7" height="1.05" rx="0.3"></rect></g>
+            <g transform="translate(28 6.2) rotate(59.9)" fill="#1F1B18"><rect x="-3.5" y="-2.63" width="2.75" height="1.05" rx="0.3"></rect><rect x="0.75" y="-2.63" width="2.75" height="1.05" rx="0.3"></rect><rect x="-3.50" y="-0.53" width="7" height="1.05" rx="0.3"></rect><rect x="-3.5" y="1.57" width="2.75" height="1.05" rx="0.3"></rect><rect x="0.75" y="1.57" width="2.75" height="1.05" rx="0.3"></rect></g>
+            <g transform="translate(8 17.8) rotate(59.9)" fill="#1F1B18"><rect x="-3.50" y="-2.63" width="7" height="1.05" rx="0.3"></rect><rect x="-3.5" y="-0.53" width="2.75" height="1.05" rx="0.3"></rect><rect x="0.75" y="-0.53" width="2.75" height="1.05" rx="0.3"></rect><rect x="-3.50" y="1.57" width="7" height="1.05" rx="0.3"></rect></g>
+            <g transform="translate(28 17.8) rotate(-59.9)" fill="#1F1B18"><rect x="-3.5" y="-2.63" width="2.75" height="1.05" rx="0.3"></rect><rect x="0.75" y="-2.63" width="2.75" height="1.05" rx="0.3"></rect><rect x="-3.5" y="-0.53" width="2.75" height="1.05" rx="0.3"></rect><rect x="0.75" y="-0.53" width="2.75" height="1.05" rx="0.3"></rect><rect x="-3.5" y="1.57" width="2.75" height="1.05" rx="0.3"></rect><rect x="0.75" y="1.57" width="2.75" height="1.05" rx="0.3"></rect></g>
+          </svg>
+        </div>
+
+        <div style="position: relative; margin-top: 20px; background: #FBF7EF; border: 1px solid #E2D8C6; border-radius: 20px; padding: 18px 18px 16px; box-shadow: 0 2px 8px rgba(24,24,60,.06)">
+          <div style="display: flex; align-items: center; gap: 8px">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="#C1443B"><path d="M12 2c1 3-1 4-2 6-1 1.5-1 3 .5 4 .8-.6 1-1.6 1-2.5 2 1.5 3 3.5 3 5.5a5.5 5.5 0 1 1-11 0c0-2.3 1.3-4.2 2.8-5.8C10.6 6.8 12 5 12 2z"></path></svg>
+            <div style="font-size: 24px; font-weight: 800; color: #1F1B18; font-variant-numeric: tabular-nums">7</div>
+            <div style="font-size: 14px; font-weight: 500; color: #857A6C">day streak</div>
+            <div style="margin-left: auto"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#A2967F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"></path></svg></div>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-top: 16px"><div style="display: flex; flex-direction: column; align-items: center; gap: 6px"><div style="width: 26px; height: 26px; border-radius: 50%; background: #C1443B; box-shadow: 0 2px 8px rgba(193,68,59,.35)"></div><div style="font-size: 11px; color: #A2967F; font-weight: 400">금</div></div><div style="display: flex; flex-direction: column; align-items: center; gap: 6px"><div style="width: 26px; height: 26px; border-radius: 50%; background: #C1443B; box-shadow: 0 2px 8px rgba(193,68,59,.35)"></div><div style="font-size: 11px; color: #A2967F; font-weight: 400">토</div></div><div style="display: flex; flex-direction: column; align-items: center; gap: 6px"><div style="width: 26px; height: 26px; border-radius: 50%; background: #EFE7D8; border: 1px solid #E2D8C6; box-sizing: border-box; box-shadow: 0 0 0 2px #FBF7EF, 0 0 0 4px #2A4A8B"></div><div style="font-size: 11px; color: #2A4A8B; font-weight: 700">일</div></div><div style="display: flex; flex-direction: column; align-items: center; gap: 6px"><div style="width: 26px; height: 26px; border-radius: 50%; background: #EFE7D8; border: 1px solid #E2D8C6; box-sizing: border-box"></div><div style="font-size: 11px; color: #A2967F; font-weight: 400">월</div></div><div style="display: flex; flex-direction: column; align-items: center; gap: 6px"><div style="width: 26px; height: 26px; border-radius: 50%; background: #EFE7D8; border: 1px solid #E2D8C6; box-sizing: border-box"></div><div style="font-size: 11px; color: #A2967F; font-weight: 400">화</div></div><div style="display: flex; flex-direction: column; align-items: center; gap: 6px"><div style="width: 26px; height: 26px; border-radius: 50%; background: #EFE7D8; border: 1px solid #E2D8C6; box-sizing: border-box"></div><div style="font-size: 11px; color: #A2967F; font-weight: 400">수</div></div><div style="display: flex; flex-direction: column; align-items: center; gap: 6px"><div style="width: 26px; height: 26px; border-radius: 50%; background: #EFE7D8; border: 1px solid #E2D8C6; box-sizing: border-box"></div><div style="font-size: 11px; color: #A2967F; font-weight: 400">목</div></div></div>
+        </div>
+
+        <div style="position: relative; flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 16px; padding: 24px 0">
+
+        <div style="display: flex; align-items: center; gap: 16px; padding: 20px; border-radius: 22px; background: #2A4A8B; border: 1px solid transparent; box-shadow: 0 2px 8px rgba(24,24,60,.06)">
+          <div style="flex: none; width: 52px; height: 52px; border-radius: 16px; background: rgba(255,255,255,.18); display: flex; align-items: center; justify-content: center">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#FBF7EF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M18 6l-2.5 2.5M8.5 15.5 6 18"></path></svg>
+          </div>
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 3px">
+            <div style="font-size: 17px; font-weight: 700; color: #FBF7EF">Word of the Day</div>
+            <div style="font-size: 13.5px; color: #C3CFE5">오늘의 단어</div>
+          </div>
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#C3CFE5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"></path></svg>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 16px; padding: 20px; border-radius: 22px; background: #C1443B; border: 1px solid transparent; box-shadow: 0 2px 8px rgba(24,24,60,.06)">
+          <div style="flex: none; width: 52px; height: 52px; border-radius: 16px; background: rgba(255,255,255,.2); display: flex; align-items: center; justify-content: center">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#FFF3EE" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="13" height="14" rx="2"></rect><path d="M8 3h9a2 2 0 0 1 2 2v11"></path></svg>
+          </div>
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 3px">
+            <div style="font-size: 17px; font-weight: 700; color: #FFF3EE">Review</div>
+            <div style="font-size: 13.5px; color: #F2CCC7">복습</div>
+          </div>
+          <div style="flex: none; min-width: 28px; height: 28px; padding: 0 8px; box-sizing: border-box; border-radius: 14px; background: rgba(255,255,255,.28); color: #FFF3EE; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center; font-variant-numeric: tabular-nums">14</div>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 16px; padding: 20px; border-radius: 22px; background: #FBF7EF; border: 1px solid #E2D8C6; box-shadow: 0 2px 8px rgba(24,24,60,.06)">
+          <div style="flex: none; width: 52px; height: 52px; border-radius: 16px; background: rgba(79,107,84,.14); display: flex; align-items: center; justify-content: center">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#4F6B54" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4 7 20M17 4l-2 16M4 9h16M3 15h16"></path></svg>
+          </div>
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 3px">
+            <div style="font-size: 17px; font-weight: 700; color: #1F1B18">Number of the Day</div>
+            <div style="font-size: 13.5px; color: #857A6C">오늘의 숫자</div>
+          </div>
+          <div style="flex: none; width: 28px; height: 28px; border-radius: 50%; background: #4F6B54; display: flex; align-items: center; justify-content: center"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#F6F2E8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5 10 17 19 7"></path></svg></div>
+        </div>
+          <div style="text-align: center; font-size: 13px; color: #40382E; margin-top: 4px">128 words in your library</div>
+          <div style="position: absolute; bottom: 0; left: -20px; width: 430px; height: 30px; background: linear-gradient(180deg, rgba(248,243,233,0) 0%, rgba(248,243,233,.75) 55%, #F8F3E9 100%); pointer-events: none"></div>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 8px; padding: 8px 20px 22px; border-top: 1px solid #EFE6D6; background: #F8F3E9">
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 0; color: #C1443B">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 11.5C6 5.5 18 5.5 22 11.5"></path><path d="M7 11.5v8M12 11.5v8M17 11.5v8"></path><path d="M4.5 19.5h15"></path></svg>
+          <div style="font-size: 11px; font-weight: 600">Home</div>
+        </div>
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 0; color: #A2967F">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6.5v14"></path><path d="M3 5.5c2.5-1 6-1 9 1 3-2 6.5-2 9-1v13c-2.5-1-6-1-9 1-3-2-6.5-2-9-1z"></path></svg>
+          <div style="font-size: 11px; font-weight: 600">Library</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="width: 390px; height: 800px; border-radius: 44px; background: #F4EEE3; box-shadow: 0 2px 3px rgba(31,27,24,.08), 0 24px 60px rgba(31,27,24,.16); overflow: hidden; position: relative; display: flex; flex-direction: column">
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px 26px 0; font-size: 13px; font-weight: 600; color: #1F1B18">
+        <div>9:41</div>
+        <div style="display: flex; gap: 5px; align-items: center">
+          <div style="width: 17px; height: 10px; border: 1.5px solid #1F1B18; border-radius: 3px"></div>
+          <div style="width: 2px; height: 4px; background: #1F1B18; border-radius: 0 1px 1px 0"></div>
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; padding: 22px 20px 0">
+        <div style="flex: none; width: 38px; height: 38px; border-radius: 12px; background: #FBF7EF; border: 1px solid #E2D8C6; display: flex; align-items: center; justify-content: center"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#1F1B18" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"></path></svg></div>
+        <div style="font-size: 15px; font-weight: 700; color: #857A6C">New word 1/2</div>
+      </div>
+      <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 22px; padding: 0 20px 24px">
+        <div style="background: #2A4A8B; color: #FBF7EF; border-radius: 24px; box-shadow: 0 8px 24px rgba(42,74,139,.24); padding: 30px 24px; text-align: center">
+          <div style="font-size: 40px; font-weight: 800; line-height: 1.2">사랑</div>
+          <div style="margin-top: 10px; font-size: 20px; font-weight: 600">love</div>
+          <div style="margin-top: 18px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,.25); display: flex; flex-direction: column; gap: 4px; font-size: 15.5px">
+            <div>사랑해요.</div>
+            <div style="font-size: 13.5px; opacity: .85">I love you.</div>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 10px">
+          <div style="display: flex; align-items: center; gap: 8px">
+            <div style="width: 12px; height: 12px; border-radius: 50%; background: #2A4A8B"></div>
+            <div style="width: 12px; height: 12px; border-radius: 50%; background: #2A4A8B"></div>
+            <div style="width: 12px; height: 12px; border-radius: 50%; background: #EFE7D8; border: 1px solid #E2D8C6; box-sizing: border-box"></div>
+            <div style="margin-left: 6px; font-size: 12.5px; font-weight: 600; color: #857A6C">2/3 · type in Korean</div>
+          </div>
+          <div style="border-radius: 14px; background: #FBF7EF; border: 1px solid #2A4A8B; box-shadow: 0 0 0 3px rgba(42,74,139,.12); padding: 14px; text-align: center; font-size: 18px; color: #1F1B18">사랑</div>
+          <div style="border-radius: 16px; background: #1F1B18; color: #FBF7EF; padding: 15px; text-align: center; font-size: 16px; font-weight: 700">Confirm</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="width: 390px; height: 800px; border-radius: 44px; background: #F4EEE3; box-shadow: 0 2px 3px rgba(31,27,24,.08), 0 24px 60px rgba(31,27,24,.16); overflow: hidden; position: relative; display: flex; flex-direction: column">
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px 26px 0; font-size: 13px; font-weight: 600; color: #1F1B18">
+        <div>9:41</div>
+        <div style="display: flex; gap: 5px; align-items: center">
+          <div style="width: 17px; height: 10px; border: 1.5px solid #1F1B18; border-radius: 3px"></div>
+          <div style="width: 2px; height: 4px; background: #1F1B18; border-radius: 0 1px 1px 0"></div>
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; padding: 22px 20px 0">
+        <div style="flex: none; width: 38px; height: 38px; border-radius: 12px; background: #FBF7EF; border: 1px solid #E2D8C6; display: flex; align-items: center; justify-content: center"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#1F1B18" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"></path></svg></div>
+        <div style="flex: 1; height: 8px; border-radius: 4px; background: #E7DDCB; overflow: hidden">
+          <div style="width: 43%; height: 100%; background: #C1443B; border-radius: 4px"></div>
+        </div>
+        <div style="min-width: 40px; text-align: right; font-size: 13px; font-weight: 700; color: #857A6C; font-variant-numeric: tabular-nums">6/14</div>
+      </div>
+      <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 20px; padding: 0 20px 24px">
+        <div style="position: relative; background: #FBF7EF; border: 1px solid #E2D8C6; border-radius: 24px; box-shadow: 0 8px 24px rgba(24,24,60,.10); padding: 48px 24px 32px; min-height: 240px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; text-align: center; overflow: hidden">
+          <div style="position: absolute; top: 16px; left: 50%; transform: translateX(-50%); white-space: nowrap; font-size: 12px; font-weight: 700; color: #857A6C; background: #F0E7D6; padding: 5px 12px; border-radius: 999px">EN → KO · type</div>
+          <div style="font-size: 34px; font-weight: 700; line-height: 1.25; color: #1F1B18">love</div>
+          <svg viewBox="0 0 342 60" preserveAspectRatio="none" style="position: absolute; bottom: 0; left: 0; width: 100%; height: 60px">
+            <path d="M0 46 L62 22 L112 44 L172 12 L230 42 L288 20 L342 40 L342 60 L0 60 Z" fill="#EFE5D3"></path>
+            <path d="M172 12 L162 22 L167 20 L172 24 L178 19 L184 23 Z" fill="#FBF8F1"></path>
+            <path d="M36 20 q5.4 -5.1 10.9 0 q5.4 -5.1 10.9 0" fill="none" stroke="#B0A188" stroke-width="1.7" stroke-linecap="round"></path>
+            <path d="M66 13 q3.7 -3.4 7.4 0 q3.7 -3.4 7.4 0" fill="none" stroke="#B0A188" stroke-width="1.7" stroke-linecap="round"></path>
+          </svg>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 10px">
+          <div style="border-radius: 14px; background: #FBF7EF; border: 1px solid #E2D8C6; padding: 14px; text-align: center; font-size: 18px; color: #B3A794">Type Korean…</div>
+          <div style="border-radius: 16px; background: #1F1B18; color: #FBF7EF; padding: 15px; text-align: center; font-size: 16px; font-weight: 700">Check</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="width: 390px; height: 800px; border-radius: 44px; background: #F4EEE3; box-shadow: 0 2px 3px rgba(31,27,24,.08), 0 24px 60px rgba(31,27,24,.16); overflow: hidden; position: relative; display: flex; flex-direction: column">
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px 26px 0; font-size: 13px; font-weight: 600; color: #1F1B18">
+        <div>9:41</div>
+        <div style="display: flex; gap: 5px; align-items: center">
+          <div style="width: 17px; height: 10px; border: 1.5px solid #1F1B18; border-radius: 3px"></div>
+          <div style="width: 2px; height: 4px; background: #1F1B18; border-radius: 0 1px 1px 0"></div>
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; padding: 22px 20px 0">
+        <div style="flex: none; width: 38px; height: 38px; border-radius: 12px; background: #FBF7EF; border: 1px solid #E2D8C6; display: flex; align-items: center; justify-content: center"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#1F1B18" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"></path></svg></div>
+        <div style="flex: 1; height: 8px; border-radius: 4px; background: #E7DDCB; overflow: hidden">
+          <div style="width: 43%; height: 100%; background: #C1443B; border-radius: 4px"></div>
+        </div>
+        <div style="min-width: 40px; text-align: right; font-size: 13px; font-weight: 700; color: #857A6C; font-variant-numeric: tabular-nums">6/14</div>
+      </div>
+      <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 0 20px 24px">
+        <div style="position: relative; background: #FBF7EF; border: 1px solid #E2D8C6; border-radius: 24px; box-shadow: 0 0 0 4px rgba(79,107,84,.35), 0 8px 24px rgba(24,24,60,.10); padding: 48px 24px 32px; min-height: 240px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; text-align: center">
+          <div style="position: absolute; top: 16px; left: 50%; transform: translateX(-50%); white-space: nowrap; font-size: 12px; font-weight: 700; color: #857A6C; background: #F0E7D6; padding: 5px 12px; border-radius: 999px">EN → KO · type</div>
+          <div style="font-size: 34px; font-weight: 700; line-height: 1.25; color: #1F1B18">love</div>
+          <div style="width: 100%; padding-top: 18px; border-top: 1px dashed #E2D8C6; display: flex; flex-direction: column; gap: 4px">
+            <div style="font-size: 30px; font-weight: 700; color: #4F6B54">사랑</div>
+            <div style="font-size: 13.5px; font-weight: 600; color: #4F6B54">Correct ✓</div>
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 20px">
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 12px 4px; border-radius: 14px; background: #C1443B; color: #FFF6EE"><div style="font-size: 13px; font-weight: 700">Again</div><div style="font-size: 11px; opacity: .9">today</div></div>
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 12px 4px; border-radius: 14px; background: #B4863C; color: #FFF6EE"><div style="font-size: 13px; font-weight: 700">Hard</div><div style="font-size: 11px; opacity: .9">3 days</div></div>
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 12px 4px; border-radius: 14px; background: #4F6B54; color: #FFF6EE"><div style="font-size: 13px; font-weight: 700">Good</div><div style="font-size: 11px; opacity: .9">4 days</div></div>
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 12px 4px; border-radius: 14px; background: #2A4A8B; color: #FFF6EE"><div style="font-size: 13px; font-weight: 700">Easy</div><div style="font-size: 11px; opacity: .9">8 days</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="width: 390px; height: 800px; border-radius: 44px; background: #F4EEE3; box-shadow: 0 2px 3px rgba(31,27,24,.08), 0 24px 60px rgba(31,27,24,.16); overflow: hidden; position: relative; display: flex; flex-direction: column">
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px 26px 0; font-size: 13px; font-weight: 600; color: #1F1B18">
+        <div>9:41</div>
+        <div style="display: flex; gap: 5px; align-items: center">
+          <div style="width: 17px; height: 10px; border: 1.5px solid #1F1B18; border-radius: 3px"></div>
+          <div style="width: 2px; height: 4px; background: #1F1B18; border-radius: 0 1px 1px 0"></div>
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; padding: 22px 20px 0">
+        <div style="flex: none; width: 38px; height: 38px; border-radius: 12px; background: #FBF7EF; border: 1px solid #E2D8C6; display: flex; align-items: center; justify-content: center"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#1F1B18" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"></path></svg></div>
+        <div style="flex: 1; height: 8px; border-radius: 4px; background: #E7DDCB; overflow: hidden">
+          <div style="width: 50%; height: 100%; background: #C1443B; border-radius: 4px"></div>
+        </div>
+        <div style="min-width: 40px; text-align: right; font-size: 13px; font-weight: 700; color: #857A6C; font-variant-numeric: tabular-nums">7/14</div>
+      </div>
+      <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 20px; padding: 0 20px 24px">
+        <div style="position: relative; background: #FBF7EF; border: 1px solid #E2D8C6; border-radius: 24px; box-shadow: 0 8px 24px rgba(24,24,60,.10); padding: 48px 24px 32px; min-height: 240px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; text-align: center; overflow: hidden">
+          <div style="position: absolute; top: 16px; left: 50%; transform: translateX(-50%); white-space: nowrap; font-size: 12px; font-weight: 700; color: #857A6C; background: #F0E7D6; padding: 5px 12px; border-radius: 999px">KO → EN · flip</div>
+          <div style="font-size: 60px; font-weight: 500; line-height: 1.15; color: #1F1B18">기억</div>
+          <svg viewBox="0 0 342 60" preserveAspectRatio="none" style="position: absolute; bottom: 0; left: 0; width: 100%; height: 60px">
+            <path d="M0 46 L62 22 L112 44 L172 12 L230 42 L288 20 L342 40 L342 60 L0 60 Z" fill="#EFE5D3"></path>
+            <path d="M172 12 L162 22 L167 20 L172 24 L178 19 L184 23 Z" fill="#FBF8F1"></path>
+            <path d="M36 20 q5.4 -5.1 10.9 0 q5.4 -5.1 10.9 0" fill="none" stroke="#B0A188" stroke-width="1.7" stroke-linecap="round"></path>
+            <path d="M66 13 q3.7 -3.4 7.4 0 q3.7 -3.4 7.4 0" fill="none" stroke="#B0A188" stroke-width="1.7" stroke-linecap="round"></path>
+          </svg>
+        </div>
+        <div style="border-radius: 16px; background: #1F1B18; color: #FBF7EF; padding: 15px; text-align: center; font-size: 16px; font-weight: 700">Flip</div>
+      </div>
+    </div>
+
+    <div style="width: 390px; height: 800px; border-radius: 44px; background: #F4EEE3; box-shadow: 0 2px 3px rgba(31,27,24,.08), 0 24px 60px rgba(31,27,24,.16); overflow: hidden; position: relative; display: flex; flex-direction: column">
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px 26px 0; font-size: 13px; font-weight: 600; color: #1F1B18">
+        <div>9:41</div>
+        <div style="display: flex; gap: 5px; align-items: center">
+          <div style="width: 17px; height: 10px; border: 1.5px solid #1F1B18; border-radius: 3px"></div>
+          <div style="width: 2px; height: 4px; background: #1F1B18; border-radius: 0 1px 1px 0"></div>
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; padding: 22px 20px 0">
+        <div style="flex: none; width: 38px; height: 38px; border-radius: 12px; background: #FBF7EF; border: 1px solid #E2D8C6; display: flex; align-items: center; justify-content: center"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#1F1B18" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"></path></svg></div>
+        <div style="font-size: 15px; font-weight: 700; color: #857A6C">Number of the Day</div>
+      </div>
+      <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 18px; padding: 0 20px 24px; position: relative">
+        <svg viewBox="0 0 390 120" preserveAspectRatio="none" style="position: absolute; bottom: 0; left: -20px; width: 430px; height: 120px">
+          <path d="M0 92 L64 44 L118 82 L182 32 L244 86 L302 50 L390 88 L390 120 L0 120 Z" fill="#E7DECE"></path>
+          <path d="M182 32 L169 46 L175 43 L181 48 L188 42 L195 47 Z" fill="#FAF6EE"></path>
+          <path d="M64 44 L53 56 L59 54 L64 59 L71 53 L77 57 Z" fill="#F4EDE1"></path>
+          <path d="M268 26 q6.4 -6.0 12.8 0 q6.4 -6.0 12.8 0" fill="none" stroke="#B0A188" stroke-width="1.7" stroke-linecap="round"></path>
+          <path d="M305 16 q4.3 -4.1 8.6 0 q4.3 -4.1 8.6 0" fill="none" stroke="#B0A188" stroke-width="1.7" stroke-linecap="round"></path>
+          <path d="M330 94 L334 104 L326 104 Z" fill="#9E8C71"></path><rect x="329.4" y="104" width="1.2" height="2.4" fill="#9E8C71"></rect>
+        </svg>
+        <div style="position: relative; text-align: center; font-size: 14.5px; font-weight: 600; color: #857A6C">Type the number in Korean</div>
+        <div style="position: relative; width: fit-content; margin: 0 auto; font-size: 80px; font-weight: 800; letter-spacing: -2px; line-height: 1; background: linear-gradient(120deg, #C1443B, #2A4A8B); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent">17</div>
+        <div style="position: relative; display: flex; flex-direction: column; gap: 14px; margin-top: 6px">
+
+          <div style="display: flex; flex-direction: column; gap: 6px">
+            <div style="font-size: 12.5px; font-weight: 600; color: #857A6C">Sino-Korean <span style="opacity: .7">(일, 이, 삼 …)</span></div>
+            <div style="border-radius: 14px; background: #FBF7EF; border: 1px solid #E2D8C6; padding: 14px; text-align: center; font-size: 18px; color: #B3A794">e.g. 이십일</div>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 6px">
+            <div style="font-size: 12.5px; font-weight: 600; color: #857A6C">Native Korean <span style="opacity: .7">(하나, 둘, 셋 …)</span></div>
+            <div style="border-radius: 14px; background: #FBF7EF; border: 1px solid #E2D8C6; padding: 14px; text-align: center; font-size: 18px; color: #B3A794">e.g. 스물하나</div>
+          </div>
+          <div style="border-radius: 16px; background: #1F1B18; color: #FBF7EF; padding: 15px; text-align: center; font-size: 16px; font-weight: 700">Check</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<section style="padding: 24px 72px 96px; display: flex; flex-direction: column; gap: 72px">
+
+  <div style="display: flex; flex-direction: column; gap: 10px; max-width: 760px">
+    <div style="font-size: 13px; letter-spacing: 0.18em; text-transform: uppercase; color: #9A8F80; font-weight: 600">Runde 1 · Visuelle Richtungen</div>
+    <div style="font-size: 34px; font-weight: 700; color: #1F1B18; letter-spacing: -0.02em">Home &amp; Lernkarte — drei Richtungen</div>
+    <div style="font-size: 16px; line-height: 1.6; color: #6E6459; text-wrap: pretty">Alle drei bauen auf warmem Hanji-Papier auf, halten die Bedienung bei einem Tap pro Schritt und übernehmen die Anki-Logik (Aufdecken → 4 Bewertungen). Unterschied ist Akzentfarbe, Motivik und Dichte. Sag mir welche Richtung — <a href="#1a">1a</a>, <a href="#1b">1b</a> oder <a href="#1c">1c</a> — und ich baue sie als kompletten Klick-Prototyp aus.</div>
+  </div>
+
+  <div style="display: flex; flex-wrap: wrap; gap: 72px">
+
+    <div id="1a" style="display: flex; flex-direction: column; gap: 20px">
+      <div style="display: flex; align-items: baseline; gap: 14px">
+        <div style="font-size: 12px; font-weight: 700; letter-spacing: 0.1em; color: #FBF7EF; background: #C1443B; padding: 5px 10px; border-radius: 5px">1a</div>
+        <div style="font-size: 21px; font-weight: 600; color: #1F1B18">Hanji &amp; Tusche</div>
+        <div style="font-size: 14px; color: #857A6C">Papierton, Tuschelinien, Taegeuk-Rot als einziger Akzent</div>
+      </div>
+
+      <div style="display: flex; gap: 28px">
+
+        <!-- 1a HOME -->
+        <div style="width: 390px; height: 800px; border-radius: 44px; background: #F4EEE3; box-shadow: 0 2px 3px rgba(31,27,24,.08), 0 24px 60px rgba(31,27,24,.16); overflow: hidden; position: relative; display: flex; flex-direction: column">
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 30px 0; font-size: 13px; font-weight: 600; color: #1F1B18">
+            <div>9:41</div>
+            <div style="display: flex; gap: 5px; align-items: center">
+              <div style="width: 17px; height: 10px; border: 1.5px solid #1F1B18; border-radius: 3px"></div>
+              <div style="width: 2px; height: 4px; background: #1F1B18; border-radius: 0 1px 1px 0"></div>
+            </div>
+          </div>
+
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 22px 30px 0">
+            <div style="display: flex; align-items: center; gap: 10px">
+              <svg viewBox="0 0 36 24" width="30" height="20" style="flex: none; border-radius: 2px; border: 1px solid rgba(31,27,24,.10)">
+            <rect width="36" height="24" fill="#FBF7EF"></rect>
+            <g transform="rotate(-33.69 18 12)">
+              <circle cx="18" cy="12" r="5.4" fill="#2A4A8B"></circle>
+              <path d="M12.6 12 A5.4 5.4 0 0 0 23.4 12 A2.7 2.7 0 0 1 18 12 A2.7 2.7 0 0 0 12.6 12 Z" fill="#C1443B"></path>
+            </g>
+            <g transform="translate(8 6.2) rotate(-59.9)" fill="#1F1B18"><rect x="-3.50" y="-2.63" width="7" height="1.05" rx="0.3"></rect><rect x="-3.50" y="-0.53" width="7" height="1.05" rx="0.3"></rect><rect x="-3.50" y="1.57" width="7" height="1.05" rx="0.3"></rect></g>
+            <g transform="translate(28 6.2) rotate(59.9)" fill="#1F1B18"><rect x="-3.5" y="-2.63" width="2.75" height="1.05" rx="0.3"></rect><rect x="0.75" y="-2.63" width="2.75" height="1.05" rx="0.3"></rect><rect x="-3.50" y="-0.53" width="7" height="1.05" rx="0.3"></rect><rect x="-3.5" y="1.57" width="2.75" height="1.05" rx="0.3"></rect><rect x="0.75" y="1.57" width="2.75" height="1.05" rx="0.3"></rect></g>
+            <g transform="translate(8 17.8) rotate(59.9)" fill="#1F1B18"><rect x="-3.50" y="-2.63" width="7" height="1.05" rx="0.3"></rect><rect x="-3.5" y="-0.53" width="2.75" height="1.05" rx="0.3"></rect><rect x="0.75" y="-0.53" width="2.75" height="1.05" rx="0.3"></rect><rect x="-3.50" y="1.57" width="7" height="1.05" rx="0.3"></rect></g>
+            <g transform="translate(28 17.8) rotate(-59.9)" fill="#1F1B18"><rect x="-3.5" y="-2.63" width="2.75" height="1.05" rx="0.3"></rect><rect x="0.75" y="-2.63" width="2.75" height="1.05" rx="0.3"></rect><rect x="-3.5" y="-0.53" width="2.75" height="1.05" rx="0.3"></rect><rect x="0.75" y="-0.53" width="2.75" height="1.05" rx="0.3"></rect><rect x="-3.5" y="1.57" width="2.75" height="1.05" rx="0.3"></rect><rect x="0.75" y="1.57" width="2.75" height="1.05" rx="0.3"></rect></g>
+          </svg>
+              <div style="font-size: 15px; font-weight: 700; color: #1F1B18; letter-spacing: 0.02em; white-space: nowrap">한국어</div>
+            </div>
+            <div style="font-size: 13px; color: #8A7F70; font-weight: 500">Tag 47</div>
+          </div>
+
+          <div style="padding: 34px 30px 0">
+            <div style="font-size: 38px; font-weight: 700; color: #1F1B18; letter-spacing: -0.02em; line-height: 1.15">안녕하세요,<br>Franz</div>
+            <div style="margin-top: 10px; font-size: 15px; color: #8A7F70">Mittwoch, 28. Juli · 16 Karten offen</div>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 14px; padding: 30px 24px 0">
+            <div style="display: flex; align-items: center; gap: 18px; background: #FBF7EF; border: 1px solid #E2D8C6; border-radius: 20px; padding: 22px 24px; min-height: 88px; box-sizing: border-box; box-shadow: 0 1px 2px rgba(31,27,24,.04)">
+              <div style="width: 52px; height: 52px; flex: none; border-radius: 16px; background: #C1443B; color: #FBF7EF; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 700">2</div>
+              <div style="display: flex; flex-direction: column; gap: 3px">
+                <div style="font-size: 19px; font-weight: 600; color: #1F1B18">Neue Vokabeln</div>
+                <div style="font-size: 14px; color: #8A7F70">Deine zwei Wörter für heute</div>
+              </div>
+              <div style="margin-left: auto; font-size: 22px; color: #C2B8A8">›</div>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 18px; background: #FBF7EF; border: 1px solid #E2D8C6; border-radius: 20px; padding: 22px 24px; min-height: 88px; box-sizing: border-box; box-shadow: 0 1px 2px rgba(31,27,24,.04)">
+              <div style="width: 52px; height: 52px; flex: none; border-radius: 16px; background: #2A4A8B; color: #FBF7EF; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 700">14</div>
+              <div style="display: flex; flex-direction: column; gap: 3px">
+                <div style="font-size: 19px; font-weight: 600; color: #1F1B18">Wiederholen</div>
+                <div style="font-size: 14px; color: #8A7F70">Fälliger Stapel</div>
+              </div>
+              <div style="margin-left: auto; font-size: 22px; color: #C2B8A8">›</div>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 18px; background: #FBF7EF; border: 1px solid #E2D8C6; border-radius: 20px; padding: 22px 24px; min-height: 88px; box-sizing: border-box; box-shadow: 0 1px 2px rgba(31,27,24,.04)">
+              <div style="width: 52px; height: 52px; flex: none; border-radius: 16px; background: #F0E7D6; color: #1F1B18; display: flex; align-items: center; justify-content: center; font-size: 21px; font-weight: 700">17</div>
+              <div style="display: flex; flex-direction: column; gap: 3px">
+                <div style="font-size: 19px; font-weight: 600; color: #1F1B18">Zahl des Tages</div>
+                <div style="font-size: 14px; color: #8A7F70">열일곱</div>
+              </div>
+              <div style="margin-left: auto; font-size: 22px; color: #C2B8A8">›</div>
+            </div>
+          </div>
+
+          <div style="margin-top: auto; position: relative; height: 190px">
+            <svg viewBox="0 0 390 190" preserveAspectRatio="none" style="position: absolute; inset: 0; width: 100%; height: 100%">
+              <path d="M0 150 L60 96 L104 128 L150 70 L214 132 L268 88 L330 138 L390 104 L390 190 L0 190 Z" fill="#E4DACA"></path>
+              <path d="M0 176 L52 138 L112 168 L176 122 L240 166 L300 134 L358 172 L390 152 L390 190 L0 190 Z" fill="#D6C9B4"></path>
+            </svg>
+            <div style="position: absolute; left: 30px; bottom: 34px; font-size: 13px; color: #635949; font-weight: 500">오늘도 화이팅 · Heute schaffst du das</div>
+          </div>
+        </div>
+
+        <!-- 1a KARTE VORDERSEITE -->
+        <div style="width: 390px; height: 800px; border-radius: 44px; background: #F4EEE3; box-shadow: 0 2px 3px rgba(31,27,24,.08), 0 24px 60px rgba(31,27,24,.16); overflow: hidden; position: relative; display: flex; flex-direction: column">
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 30px 0; font-size: 13px; font-weight: 600; color: #1F1B18">
+            <div>9:41</div>
+            <div style="display: flex; gap: 5px; align-items: center">
+              <div style="width: 17px; height: 10px; border: 1.5px solid #1F1B18; border-radius: 3px"></div>
+              <div style="width: 2px; height: 4px; background: #1F1B18; border-radius: 0 1px 1px 0"></div>
+            </div>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 16px; padding: 22px 26px 0">
+            <div style="font-size: 22px; color: #8A7F70; width: 20px">‹</div>
+            <div style="flex: 1; height: 5px; border-radius: 3px; background: #E2D8C6; overflow: hidden">
+              <div style="width: 45%; height: 100%; background: #C1443B; border-radius: 3px"></div>
+            </div>
+            <div style="font-size: 13px; color: #8A7F70; font-weight: 600; font-variant-numeric: tabular-nums">7 / 16</div>
+          </div>
+
+          <div style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 26px">
+            <div style="width: 100%; height: 100%; background: #FBF7EF; border: 1px solid #E2D8C6; border-radius: 28px; box-shadow: 0 2px 4px rgba(31,27,24,.05); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; position: relative; overflow: hidden">
+              <div style="position: absolute; top: 22px; left: 24px; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: #B3A794; font-weight: 600">Wiederholung</div>
+              <div style="font-size: 96px; font-weight: 500; color: #1F1B18; line-height: 1">사랑</div>
+              <div style="font-size: 17px; color: #A2967F; letter-spacing: 0.04em">sarang</div>
+              <svg viewBox="0 0 390 60" preserveAspectRatio="none" style="position: absolute; bottom: 0; left: 0; width: 100%; height: 60px; opacity: .45">
+                <path d="M0 46 L70 22 L128 44 L196 14 L262 42 L330 20 L390 40 L390 60 L0 60 Z" fill="#EFE5D3"></path>
+              </svg>
+            </div>
+          </div>
+
+          <div style="padding: 0 26px 46px">
+            <div style="height: 62px; border-radius: 18px; background: #1F1B18; color: #FBF7EF; display: flex; align-items: center; justify-content: center; font-size: 17px; font-weight: 600">Antwort zeigen</div>
+            <div style="text-align: center; margin-top: 14px; font-size: 13px; color: #A2967F">oder irgendwo tippen</div>
+          </div>
+        </div>
+
+        <!-- 1a KARTE RÜCKSEITE -->
+        <div style="width: 390px; height: 800px; border-radius: 44px; background: #F4EEE3; box-shadow: 0 2px 3px rgba(31,27,24,.08), 0 24px 60px rgba(31,27,24,.16); overflow: hidden; position: relative; display: flex; flex-direction: column">
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 30px 0; font-size: 13px; font-weight: 600; color: #1F1B18">
+            <div>9:41</div>
+            <div style="display: flex; gap: 5px; align-items: center">
+              <div style="width: 17px; height: 10px; border: 1.5px solid #1F1B18; border-radius: 3px"></div>
+              <div style="width: 2px; height: 4px; background: #1F1B18; border-radius: 0 1px 1px 0"></div>
+            </div>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 16px; padding: 22px 26px 0">
+            <div style="font-size: 22px; color: #8A7F70; width: 20px">‹</div>
+            <div style="flex: 1; height: 5px; border-radius: 3px; background: #E2D8C6; overflow: hidden">
+              <div style="width: 45%; height: 100%; background: #C1443B; border-radius: 3px"></div>
+            </div>
+            <div style="font-size: 13px; color: #8A7F70; font-weight: 600; font-variant-numeric: tabular-nums">7 / 16</div>
+          </div>
+
+          <div style="flex: 1; display: flex; padding: 26px 26px 18px">
+            <div style="width: 100%; background: #FBF7EF; border: 1px solid #E2D8C6; border-radius: 28px; box-shadow: 0 2px 4px rgba(31,27,24,.05); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 30px 26px; box-sizing: border-box">
+              <div style="font-size: 52px; font-weight: 500; color: #1F1B18; line-height: 1">사랑</div>
+              <div style="width: 44px; height: 1px; background: #E2D8C6"></div>
+              <div style="font-size: 34px; font-weight: 600; color: #C1443B; text-align: center; line-height: 1.2">die Liebe</div>
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 7px; margin-top: 6px">
+                <div style="font-size: 19px; color: #4A4238">사랑해요.</div>
+                <div style="font-size: 15px; color: #A2967F">Ich liebe dich.</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="padding: 0 26px 46px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 9px">
+            <div style="height: 78px; border-radius: 16px; background: #FBF7EF; border: 1.5px solid #C1443B; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px">
+              <div style="font-size: 14px; font-weight: 600; color: #C1443B">Nochmal</div>
+              <div style="font-size: 12px; color: #B3A794">1 min</div>
+            </div>
+            <div style="height: 78px; border-radius: 16px; background: #FBF7EF; border: 1px solid #E2D8C6; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px">
+              <div style="font-size: 14px; font-weight: 600; color: #4A4238">Schwer</div>
+              <div style="font-size: 12px; color: #B3A794">6 min</div>
+            </div>
+            <div style="height: 78px; border-radius: 16px; background: #1F1B18; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px">
+              <div style="font-size: 14px; font-weight: 600; color: #FBF7EF">Gut</div>
+              <div style="font-size: 12px; color: #A99C88">3 Tage</div>
+            </div>
+            <div style="height: 78px; border-radius: 16px; background: #FBF7EF; border: 1px solid #E2D8C6; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px">
+              <div style="font-size: 14px; font-weight: 600; color: #4A4238">Leicht</div>
+              <div style="font-size: 12px; color: #B3A794">8 Tage</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div id="1b" style="display: flex; flex-direction: column; gap: 20px">
+      <div style="display: flex; align-items: baseline; gap: 14px">
+        <div style="font-size: 12px; font-weight: 700; letter-spacing: 0.1em; color: #F5F8F3; background: #21473C; padding: 5px 10px; border-radius: 5px">1b</div>
+        <div style="font-size: 21px; font-weight: 600; color: #1F1B18">Celadon</div>
+        <div style="font-size: 14px; color: #857A6C">Keramik-Grün, ruhiger, größere Flächen, Nebelberge</div>
+      </div>
+
+      <div style="display: flex; gap: 28px">
+
+        <!-- 1b HOME -->
+        <div style="width: 390px; height: 800px; border-radius: 44px; background: #F1F0E8; box-shadow: 0 2px 3px rgba(31,27,24,.08), 0 24px 60px rgba(31,27,24,.16); overflow: hidden; position: relative; display: flex; flex-direction: column">
+          <div style="position: absolute; top: 0; left: 0; right: 0; height: 300px; background: linear-gradient(180deg, #DDE7DE 0%, #F1F0E8 100%)"></div>
+          <svg viewBox="0 0 390 150" preserveAspectRatio="none" style="position: absolute; top: 150px; left: 0; width: 100%; height: 150px; opacity: .5">
+            <path d="M0 120 L74 52 L130 96 L198 34 L266 100 L330 62 L390 108 L390 150 L0 150 Z" fill="#B9CCBB"></path>
+          </svg>
+
+          <div style="position: relative; display: flex; justify-content: space-between; align-items: center; padding: 16px 30px 0; font-size: 13px; font-weight: 600; color: #21473C">
+            <div>9:41</div>
+            <div style="display: flex; gap: 5px; align-items: center">
+              <div style="width: 17px; height: 10px; border: 1.5px solid #21473C; border-radius: 3px"></div>
+              <div style="width: 2px; height: 4px; background: #21473C; border-radius: 0 1px 1px 0"></div>
+            </div>
+          </div>
+
+          <div style="position: relative; display: flex; align-items: center; justify-content: space-between; padding: 24px 30px 0">
+            <div style="display: flex; align-items: center; gap: 10px">
+              <svg viewBox="0 0 36 24" width="30" height="20" style="flex: none; border-radius: 2px; border: 1px solid rgba(31,27,24,.10)">
+            <rect width="36" height="24" fill="#FBF7EF"></rect>
+            <g transform="rotate(-33.69 18 12)">
+              <circle cx="18" cy="12" r="5.4" fill="#2A4A8B"></circle>
+              <path d="M12.6 12 A5.4 5.4 0 0 0 23.4 12 A2.7 2.7 0 0 1 18 12 A2.7 2.7 0 0 0 12.6 12 Z" fill="#C1443B"></path>
+            </g>
+            <g transform="translate(8 6.2) rotate(-59.9)" fill="#1F1B18"><rect x="-3.50" y="-2.63" width="7" height="1.05" rx="0.3"></rect><rect x="-3.50" y="-0.53" width="7" height="1.05" rx="0.3"></rect><rect x="-3.50" y="1.57" width="7" height="1.05" rx="0.3"></rect></g>
+            <g transform="translate(28 6.2) rotate(59.9)" fill="#1F1B18"><rect x="-3.5" y="-2.63" width="2.75" height="1.05" rx="0.3"></rect><rect x="0.75" y="-2.63" width="2.75" height="1.05" rx="0.3"></rect><rect x="-3.50" y="-0.53" width="7" height="1.05" rx="0.3"></rect><rect x="-3.5" y="1.57" width="2.75" height="1.05" rx="0.3"></rect><rect x="0.75" y="1.57" width="2.75" height="1.05" rx="0.3"></rect></g>
+            <g transform="translate(8 17.8) rotate(59.9)" fill="#1F1B18"><rect x="-3.50" y="-2.63" width="7" height="1.05" rx="0.3"></rect><rect x="-3.5" y="-0.53" width="2.75" height="1.05" rx="0.3"></rect><rect x="0.75" y="-0.53" width="2.75" height="1.05" rx="0.3"></rect><rect x="-3.50" y="1.57" width="7" height="1.05" rx="0.3"></rect></g>
+            <g transform="translate(28 17.8) rotate(-59.9)" fill="#1F1B18"><rect x="-3.5" y="-2.63" width="2.75" height="1.05" rx="0.3"></rect><rect x="0.75" y="-2.63" width="2.75" height="1.05" rx="0.3"></rect><rect x="-3.5" y="-0.53" width="2.75" height="1.05" rx="0.3"></rect><rect x="0.75" y="-0.53" width="2.75" height="1.05" rx="0.3"></rect><rect x="-3.5" y="1.57" width="2.75" height="1.05" rx="0.3"></rect><rect x="0.75" y="1.57" width="2.75" height="1.05" rx="0.3"></rect></g>
+          </svg>
+              <div style="font-size: 15px; font-weight: 700; color: #21473C; white-space: nowrap">한국어</div>
+            </div>
+            <div style="width: 34px; height: 34px; border-radius: 50%; background: #E3EAE1; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #21473C">47</div>
+          </div>
+
+          <div style="position: relative; padding: 46px 30px 0">
+            <div style="font-size: 15px; color: #6F8474; font-weight: 500; letter-spacing: 0.02em">Mittwoch, 28. Juli</div>
+            <div style="margin-top: 8px; font-size: 40px; font-weight: 700; color: #16332B; letter-spacing: -0.02em; line-height: 1.12">안녕하세요,<br>Franz</div>
+          </div>
+
+          <div style="position: relative; display: flex; flex-direction: column; gap: 12px; padding: 40px 22px 0">
+            <div style="display: flex; align-items: center; background: #FFFFFF; border-radius: 22px; padding: 24px 26px; min-height: 96px; box-sizing: border-box; box-shadow: 0 4px 16px rgba(33,71,60,.07)">
+              <div style="display: flex; flex-direction: column; gap: 4px">
+                <div style="font-size: 20px; font-weight: 600; color: #16332B">Neue Vokabeln</div>
+                <div style="font-size: 14px; color: #7C8C7F">2 Wörter · ca. 3 Min</div>
+              </div>
+              <div style="margin-left: auto; width: 46px; height: 46px; border-radius: 14px; background: #21473C; color: #F5F8F3; display: flex; align-items: center; justify-content: center; font-size: 21px; font-weight: 700">2</div>
+            </div>
+
+            <div style="display: flex; align-items: center; background: #21473C; border-radius: 22px; padding: 24px 26px; min-height: 96px; box-sizing: border-box; box-shadow: 0 6px 20px rgba(33,71,60,.22)">
+              <div style="display: flex; flex-direction: column; gap: 4px">
+                <div style="font-size: 20px; font-weight: 600; color: #F5F8F3">Wiederholen</div>
+                <div style="font-size: 14px; color: #9DB6A6">Stapel ist fällig</div>
+              </div>
+              <div style="margin-left: auto; width: 46px; height: 46px; border-radius: 14px; background: #F5F8F3; color: #21473C; display: flex; align-items: center; justify-content: center; font-size: 21px; font-weight: 700">14</div>
+            </div>
+
+            <div style="display: flex; align-items: center; background: #FFFFFF; border-radius: 22px; padding: 24px 26px; min-height: 96px; box-sizing: border-box; box-shadow: 0 4px 16px rgba(33,71,60,.07)">
+              <div style="display: flex; flex-direction: column; gap: 4px">
+                <div style="font-size: 20px; font-weight: 600; color: #16332B">Zahl des Tages</div>
+                <div style="font-size: 14px; color: #7C8C7F">열일곱 — siebzehn</div>
+              </div>
+              <div style="margin-left: auto; width: 46px; height: 46px; border-radius: 14px; background: #B08D3F; color: #FFFDF7; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 700">17</div>
+            </div>
+          </div>
+
+          <div style="position: relative; margin-top: auto; padding: 0 30px 44px; display: flex; align-items: center; gap: 12px">
+            <div style="flex: 1; height: 6px; border-radius: 3px; background: #DCE4DB; overflow: hidden">
+              <div style="width: 62%; height: 100%; background: #6E9A7F; border-radius: 3px"></div>
+            </div>
+            <div style="font-size: 13px; font-weight: 600; color: #6F8474; font-variant-numeric: tabular-nums">10 / 16 heute</div>
+          </div>
+        </div>
+
+        <!-- 1b KARTE VORDERSEITE -->
+        <div style="width: 390px; height: 800px; border-radius: 44px; background: #21473C; box-shadow: 0 2px 3px rgba(31,27,24,.08), 0 24px 60px rgba(31,27,24,.16); overflow: hidden; position: relative; display: flex; flex-direction: column">
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 30px 0; font-size: 13px; font-weight: 600; color: #EAF1EA">
+            <div>9:41</div>
+            <div style="display: flex; gap: 5px; align-items: center">
+              <div style="width: 17px; height: 10px; border: 1.5px solid #EAF1EA; border-radius: 3px"></div>
+              <div style="width: 2px; height: 4px; background: #EAF1EA; border-radius: 0 1px 1px 0"></div>
+            </div>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 16px; padding: 24px 26px 0">
+            <div style="font-size: 22px; color: #8FAA9A; width: 20px">‹</div>
+            <div style="flex: 1; height: 5px; border-radius: 3px; background: #34594D; overflow: hidden">
+              <div style="width: 45%; height: 100%; background: #A8C7A0; border-radius: 3px"></div>
+            </div>
+            <div style="font-size: 13px; color: #8FAA9A; font-weight: 600; font-variant-numeric: tabular-nums">7 / 16</div>
+          </div>
+
+          <div style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 26px">
+            <div style="width: 100%; height: 100%; background: #F5F8F3; border-radius: 30px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; position: relative; overflow: hidden">
+              <div style="position: absolute; top: 24px; left: 26px; display: flex; align-items: center; gap: 8px">
+                <div style="width: 7px; height: 7px; border-radius: 50%; background: #6E9A7F"></div>
+                <div style="font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: #8CA091; font-weight: 600">Wiederholung</div>
+              </div>
+              <div style="font-size: 100px; font-weight: 500; color: #16332B; line-height: 1">사랑</div>
+              <div style="font-size: 17px; color: #8CA091; letter-spacing: 0.04em">sarang</div>
+            </div>
+          </div>
+
+          <div style="padding: 0 26px 46px">
+            <div style="height: 64px; border-radius: 20px; background: #A8C7A0; color: #16332B; display: flex; align-items: center; justify-content: center; font-size: 17px; font-weight: 700">Antwort zeigen</div>
+          </div>
+        </div>
+
+        <!-- 1b KARTE RÜCKSEITE -->
+        <div style="width: 390px; height: 800px; border-radius: 44px; background: #21473C; box-shadow: 0 2px 3px rgba(31,27,24,.08), 0 24px 60px rgba(31,27,24,.16); overflow: hidden; position: relative; display: flex; flex-direction: column">
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 30px 0; font-size: 13px; font-weight: 600; color: #EAF1EA">
+            <div>9:41</div>
+            <div style="display: flex; gap: 5px; align-items: center">
+              <div style="width: 17px; height: 10px; border: 1.5px solid #EAF1EA; border-radius: 3px"></div>
+              <div style="width: 2px; height: 4px; background: #EAF1EA; border-radius: 0 1px 1px 0"></div>
+            </div>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 16px; padding: 24px 26px 0">
+            <div style="font-size: 22px; color: #8FAA9A; width: 20px">‹</div>
+            <div style="flex: 1; height: 5px; border-radius: 3px; background: #34594D; overflow: hidden">
+              <div style="width: 45%; height: 100%; background: #A8C7A0; border-radius: 3px"></div>
+            </div>
+            <div style="font-size: 13px; color: #8FAA9A; font-weight: 600; font-variant-numeric: tabular-nums">7 / 16</div>
+          </div>
+
+          <div style="flex: 1; display: flex; padding: 26px 26px 18px">
+            <div style="width: 100%; background: #F5F8F3; border-radius: 30px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 30px 26px; box-sizing: border-box">
+              <div style="font-size: 50px; font-weight: 500; color: #16332B; line-height: 1">사랑</div>
+              <div style="font-size: 15px; color: #8CA091">sarang</div>
+              <div style="width: 100%; height: 1px; background: #E1E7DE; margin: 6px 0"></div>
+              <div style="font-size: 34px; font-weight: 700; color: #21473C; text-align: center; line-height: 1.2">die Liebe</div>
+              <div style="margin-top: 10px; background: #EAF0E7; border-radius: 16px; padding: 16px 20px; display: flex; flex-direction: column; align-items: center; gap: 6px">
+                <div style="font-size: 18px; color: #2E4A3F">사랑해요.</div>
+                <div style="font-size: 14px; color: #8CA091">Ich liebe dich.</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="padding: 0 26px 46px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px">
+            <div style="height: 76px; border-radius: 18px; background: #3A5E52; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px">
+              <div style="font-size: 14px; font-weight: 600; color: #F0B8B2">Nochmal</div>
+              <div style="font-size: 12px; color: #8FAA9A">1 min</div>
+            </div>
+            <div style="height: 76px; border-radius: 18px; background: #3A5E52; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px">
+              <div style="font-size: 14px; font-weight: 600; color: #EAF1EA">Schwer</div>
+              <div style="font-size: 12px; color: #8FAA9A">6 min</div>
+            </div>
+            <div style="height: 76px; border-radius: 18px; background: #A8C7A0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px">
+              <div style="font-size: 14px; font-weight: 700; color: #16332B">Gut</div>
+              <div style="font-size: 12px; color: #4C6B58">3 Tage</div>
+            </div>
+            <div style="height: 76px; border-radius: 18px; background: #3A5E52; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px">
+              <div style="font-size: 14px; font-weight: 600; color: #EAF1EA">Leicht</div>
+              <div style="font-size: 12px; color: #8FAA9A">8 Tage</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div id="1c" style="display: flex; flex-direction: column; gap: 20px">
+      <div style="display: flex; align-items: baseline; gap: 14px">
+        <div style="font-size: 12px; font-weight: 700; letter-spacing: 0.1em; color: #FFF8F0; background: #D9642A; padding: 5px 10px; border-radius: 5px">1c</div>
+        <div style="font-size: 21px; font-weight: 600; color: #1F1B18">Morgendämmerung</div>
+        <div style="font-size: 14px; color: #857A6C">Persimmon-Orange &amp; Navy, kräftigster Kontrast, Berge als Held</div>
+      </div>
+
+      <div style="display: flex; gap: 28px">
+
+        <!-- 1c HOME -->
+        <div style="width: 390px; height: 800px; border-radius: 44px; background: #FAF3EA; box-shadow: 0 2px 3px rgba(31,27,24,.08), 0 24px 60px rgba(31,27,24,.16); overflow: hidden; position: relative; display: flex; flex-direction: column">
+          <div style="position: absolute; top: 0; left: 0; right: 0; height: 340px; background: linear-gradient(180deg, #F6E3CE 0%, #FAF3EA 100%)"></div>
+          <div style="position: absolute; top: 72px; right: 40px; width: 84px; height: 84px; border-radius: 50%; background: #F3C79B; opacity: .6"></div>
+
+          <div style="position: relative; display: flex; justify-content: space-between; align-items: center; padding: 16px 30px 0; font-size: 13px; font-weight: 600; color: #1E3A5F">
+            <div>9:41</div>
+            <div style="display: flex; gap: 5px; align-items: center">
+              <div style="width: 17px; height: 10px; border: 1.5px solid #1E3A5F; border-radius: 3px"></div>
+              <div style="width: 2px; height: 4px; background: #1E3A5F; border-radius: 0 1px 1px 0"></div>
+            </div>
+          </div>
+
+          <div style="position: relative; display: flex; align-items: center; gap: 10px; padding: 24px 30px 0">
+            <svg viewBox="0 0 36 24" width="30" height="20" style="flex: none; border-radius: 2px; border: 1px solid rgba(31,27,24,.10)">
+            <rect width="36" height="24" fill="#FBF7EF"></rect>
+            <g transform="rotate(-33.69 18 12)">
+              <circle cx="18" cy="12" r="5.4" fill="#2A4A8B"></circle>
+              <path d="M12.6 12 A5.4 5.4 0 0 0 23.4 12 A2.7 2.7 0 0 1 18 12 A2.7 2.7 0 0 0 12.6 12 Z" fill="#C1443B"></path>
+            </g>
+            <g transform="translate(8 6.2) rotate(-59.9)" fill="#1F1B18"><rect x="-3.50" y="-2.63" width="7" height="1.05" rx="0.3"></rect><rect x="-3.50" y="-0.53" width="7" height="1.05" rx="0.3"></rect><rect x="-3.50" y="1.57" width="7" height="1.05" rx="0.3"></rect></g>
+            <g transform="translate(28 6.2) rotate(59.9)" fill="#1F1B18"><rect x="-3.5" y="-2.63" width="2.75" height="1.05" rx="0.3"></rect><rect x="0.75" y="-2.63" width="2.75" height="1.05" rx="0.3"></rect><rect x="-3.50" y="-0.53" width="7" height="1.05" rx="0.3"></rect><rect x="-3.5" y="1.57" width="2.75" height="1.05" rx="0.3"></rect><rect x="0.75" y="1.57" width="2.75" height="1.05" rx="0.3"></rect></g>
+            <g transform="translate(8 17.8) rotate(59.9)" fill="#1F1B18"><rect x="-3.50" y="-2.63" width="7" height="1.05" rx="0.3"></rect><rect x="-3.5" y="-0.53" width="2.75" height="1.05" rx="0.3"></rect><rect x="0.75" y="-0.53" width="2.75" height="1.05" rx="0.3"></rect><rect x="-3.50" y="1.57" width="7" height="1.05" rx="0.3"></rect></g>
+            <g transform="translate(28 17.8) rotate(-59.9)" fill="#1F1B18"><rect x="-3.5" y="-2.63" width="2.75" height="1.05" rx="0.3"></rect><rect x="0.75" y="-2.63" width="2.75" height="1.05" rx="0.3"></rect><rect x="-3.5" y="-0.53" width="2.75" height="1.05" rx="0.3"></rect><rect x="0.75" y="-0.53" width="2.75" height="1.05" rx="0.3"></rect><rect x="-3.5" y="1.57" width="2.75" height="1.05" rx="0.3"></rect><rect x="0.75" y="1.57" width="2.75" height="1.05" rx="0.3"></rect></g>
+          </svg>
+            <div style="font-size: 15px; font-weight: 700; color: #1E3A5F; white-space: nowrap">한국어</div>
+            <div style="margin-left: auto; font-size: 13px; font-weight: 600; color: #A8734E">47 Tage Serie</div>
+          </div>
+
+          <div style="position: relative; padding: 40px 30px 0">
+            <div style="font-size: 46px; font-weight: 900; color: #1E3A5F; letter-spacing: -0.03em; line-height: 1.05">안녕하세요,<br>Franz</div>
+            <div style="margin-top: 12px; font-size: 15px; color: #97795E">Noch 16 Karten bis zum Tagesziel</div>
+          </div>
+
+          <svg viewBox="0 0 390 130" preserveAspectRatio="none" style="position: absolute; top: 300px; left: 0; width: 100%; height: 130px; opacity: .35">
+            <path d="M0 104 L66 46 L120 88 L192 28 L258 92 L322 54 L390 100 L390 130 L0 130 Z" fill="#E0B48C"></path>
+          </svg>
+
+          <div style="position: relative; display: flex; flex-direction: column; gap: 12px; padding: 44px 22px 0">
+            <div style="display: flex; align-items: center; gap: 18px; background: #D9642A; border-radius: 24px; padding: 24px 26px; min-height: 100px; box-sizing: border-box; box-shadow: 0 8px 22px rgba(217,100,42,.26)">
+              <div style="display: flex; flex-direction: column; gap: 4px">
+                <div style="font-size: 22px; font-weight: 700; color: #FFF6EC">Neue Vokabeln</div>
+                <div style="font-size: 14px; color: #FBDCC6">2 Wörter warten</div>
+              </div>
+              <div style="margin-left: auto; font-size: 44px; font-weight: 900; color: #FFF6EC; line-height: 1">2</div>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 18px; background: #FFFFFF; border-radius: 24px; padding: 24px 26px; min-height: 100px; box-sizing: border-box; box-shadow: 0 4px 16px rgba(30,58,95,.08)">
+              <div style="display: flex; flex-direction: column; gap: 4px">
+                <div style="font-size: 22px; font-weight: 700; color: #1E3A5F">Wiederholen</div>
+                <div style="font-size: 14px; color: #8C99A8">Fälliger Stapel</div>
+              </div>
+              <div style="margin-left: auto; font-size: 44px; font-weight: 900; color: #1E3A5F; line-height: 1">14</div>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 18px; background: #FFFFFF; border-radius: 24px; padding: 24px 26px; min-height: 100px; box-sizing: border-box; box-shadow: 0 4px 16px rgba(30,58,95,.08)">
+              <div style="display: flex; flex-direction: column; gap: 4px">
+                <div style="font-size: 22px; font-weight: 700; color: #1E3A5F">Zahl des Tages</div>
+                <div style="font-size: 14px; color: #8C99A8">열일곱</div>
+              </div>
+              <div style="margin-left: auto; font-size: 40px; font-weight: 900; color: #D9642A; line-height: 1">17</div>
+            </div>
+          </div>
+
+          <div style="position: relative; margin-top: auto; height: 120px">
+            <svg viewBox="0 0 390 120" preserveAspectRatio="none" style="position: absolute; inset: 0; width: 100%; height: 100%">
+              <path d="M0 92 L70 44 L128 82 L196 34 L264 86 L330 50 L390 88 L390 120 L0 120 Z" fill="#1E3A5F"></path>
+            </svg>
+          </div>
+        </div>
+
+        <!-- 1c KARTE VORDERSEITE -->
+        <div style="width: 390px; height: 800px; border-radius: 44px; background: #FAF3EA; box-shadow: 0 2px 3px rgba(31,27,24,.08), 0 24px 60px rgba(31,27,24,.16); overflow: hidden; position: relative; display: flex; flex-direction: column">
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 30px 0; font-size: 13px; font-weight: 600; color: #1E3A5F">
+            <div>9:41</div>
+            <div style="display: flex; gap: 5px; align-items: center">
+              <div style="width: 17px; height: 10px; border: 1.5px solid #1E3A5F; border-radius: 3px"></div>
+              <div style="width: 2px; height: 4px; background: #1E3A5F; border-radius: 0 1px 1px 0"></div>
+            </div>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 16px; padding: 24px 26px 0">
+            <div style="font-size: 22px; color: #A8B2BF; width: 20px">‹</div>
+            <div style="flex: 1; height: 6px; border-radius: 3px; background: #EFE2D2; overflow: hidden">
+              <div style="width: 45%; height: 100%; background: #D9642A; border-radius: 3px"></div>
+            </div>
+            <div style="font-size: 13px; color: #8C99A8; font-weight: 700; font-variant-numeric: tabular-nums">7 / 16</div>
+          </div>
+
+          <div style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 24px">
+            <div style="width: 100%; height: 100%; background: #FFFFFF; border-radius: 32px; box-shadow: 0 8px 28px rgba(30,58,95,.10); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; position: relative; overflow: hidden">
+              <div style="position: absolute; top: 24px; left: 50%; transform: translateX(-50%); font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: #B9A895; font-weight: 700">Wiederholung</div>
+              <div style="font-size: 108px; font-weight: 700; color: #1E3A5F; line-height: 1; letter-spacing: -0.02em">사랑</div>
+              <div style="font-size: 16px; color: #A8B2BF; letter-spacing: 0.06em; text-transform: lowercase">sarang</div>
+              <svg viewBox="0 0 390 70" preserveAspectRatio="none" style="position: absolute; bottom: 0; left: 0; width: 100%; height: 70px">
+                <path d="M0 54 L74 24 L134 52 L206 16 L272 50 L336 22 L390 46 L390 70 L0 70 Z" fill="#F6EFE5"></path>
+              </svg>
+            </div>
+          </div>
+
+          <div style="padding: 0 24px 46px">
+            <div style="height: 66px; border-radius: 22px; background: #1E3A5F; color: #FFF6EC; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700">Antwort zeigen</div>
+          </div>
+        </div>
+
+        <!-- 1c KARTE RÜCKSEITE -->
+        <div style="width: 390px; height: 800px; border-radius: 44px; background: #FAF3EA; box-shadow: 0 2px 3px rgba(31,27,24,.08), 0 24px 60px rgba(31,27,24,.16); overflow: hidden; position: relative; display: flex; flex-direction: column">
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 30px 0; font-size: 13px; font-weight: 600; color: #1E3A5F">
+            <div>9:41</div>
+            <div style="display: flex; gap: 5px; align-items: center">
+              <div style="width: 17px; height: 10px; border: 1.5px solid #1E3A5F; border-radius: 3px"></div>
+              <div style="width: 2px; height: 4px; background: #1E3A5F; border-radius: 0 1px 1px 0"></div>
+            </div>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 16px; padding: 24px 26px 0">
+            <div style="font-size: 22px; color: #A8B2BF; width: 20px">‹</div>
+            <div style="flex: 1; height: 6px; border-radius: 3px; background: #EFE2D2; overflow: hidden">
+              <div style="width: 45%; height: 100%; background: #D9642A; border-radius: 3px"></div>
+            </div>
+            <div style="font-size: 13px; color: #8C99A8; font-weight: 700; font-variant-numeric: tabular-nums">7 / 16</div>
+          </div>
+
+          <div style="flex: 1; display: flex; padding: 24px 24px 16px">
+            <div style="width: 100%; background: #FFFFFF; border-radius: 32px; box-shadow: 0 8px 28px rgba(30,58,95,.10); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 30px 26px; box-sizing: border-box">
+              <div style="font-size: 54px; font-weight: 700; color: #1E3A5F; line-height: 1">사랑</div>
+              <div style="font-size: 15px; color: #A8B2BF; letter-spacing: 0.06em">sarang</div>
+              <div style="width: 40px; height: 3px; border-radius: 2px; background: #D9642A; margin: 12px 0"></div>
+              <div style="font-size: 36px; font-weight: 900; color: #D9642A; text-align: center; line-height: 1.15; letter-spacing: -0.02em">die Liebe</div>
+              <div style="margin-top: 14px; display: flex; flex-direction: column; align-items: center; gap: 6px">
+                <div style="font-size: 19px; color: #33475F">사랑해요.</div>
+                <div style="font-size: 14px; color: #9AA5B3">Ich liebe dich.</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="padding: 0 24px 46px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px">
+            <div style="height: 80px; border-radius: 20px; background: #FDEAE2; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px">
+              <div style="font-size: 14px; font-weight: 700; color: #C0492A">Nochmal</div>
+              <div style="font-size: 12px; color: #C99C88">1 min</div>
+            </div>
+            <div style="height: 80px; border-radius: 20px; background: #F1EAE0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px">
+              <div style="font-size: 14px; font-weight: 700; color: #6E6153">Schwer</div>
+              <div style="font-size: 12px; color: #A89B8B">6 min</div>
+            </div>
+            <div style="height: 80px; border-radius: 20px; background: #1E3A5F; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px">
+              <div style="font-size: 14px; font-weight: 700; color: #FFF6EC">Gut</div>
+              <div style="font-size: 12px; color: #93A5B9">3 Tage</div>
+            </div>
+            <div style="height: 80px; border-radius: 20px; background: #F1EAE0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px">
+              <div style="font-size: 14px; font-weight: 700; color: #6E6153">Leicht</div>
+              <div style="font-size: 12px; color: #A89B8B">8 Tage</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</section>
+
+</x-dc>
+</body>
+</html>

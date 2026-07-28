@@ -6,7 +6,7 @@ import { useMemo } from 'react'
    Drehung und Fallzeit. Läuft einmal ab (beim Anzeigen).
    ============================================================ */
 
-const COLORS = ['#5b4bff', '#ff7a59', '#2e9e6b', '#f2c94c', '#eb5757', '#7a6bff', '#56ccf2']
+const COLORS = ['#c1443b', '#2a4a8b', '#4f6b54', '#b4863c', '#d97a5f', '#3c5f9e', '#cbbba0']
 
 function Confetti({ count = 90 }) {
   const pieces = useMemo(

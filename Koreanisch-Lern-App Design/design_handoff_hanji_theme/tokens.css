@@ -1,0 +1,102 @@
+/* ============================================================
+   Hanji-Theme — Ersatz für den :root-Block in src/index.css
+   Nur Farben/Token, keine Struktur. Namen bleiben identisch,
+   damit App.css unverändert weiterläuft.
+   ============================================================ */
+
+:root {
+  /* --- Grundflächen (warmes Hanji-Papier) --- */
+  --bg: #f4eee3;        /* Seitenhintergrund */
+  --surface: #fbf7ef;   /* Karten / Buttons */
+  --surface-2: #efe7d8; /* leicht abgesetzte Flächen, leere Punkte */
+  --text: #1f1b18;      /* Haupttext (Tusche) */
+  --text-soft: #857a6c; /* gedämpfter Text */
+  --border: #e2d8c6;
+
+  --primary: #2a4a8b;      /* Taegeuk-Blau: Word of the Day, Fokus, Fortschritt */
+  --primary-soft: #e5eaf4;
+  --accent: #c1443b;       /* Taegeuk-Rot: Streak, Review, aktiver Tab */
+  --accent-soft: #f7e6e2;
+
+  --shadow-sm: 0 2px 8px rgba(31, 27, 24, 0.06);
+  --shadow-md: 0 8px 24px rgba(31, 27, 24, 0.10);
+
+  --sans: system-ui, -apple-system, 'Segoe UI', 'Apple SD Gothic Neo',
+    'Malgun Gothic', 'Noto Sans KR', sans-serif;
+
+  /* Helles Design ist gesetzt — der @media-Dark-Block in index.css
+     kann entfernt werden. */
+  color-scheme: light;
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* ------------------------------------------------------------
+   Punktuelle Überschreibungen für App.css
+   (ans Ende von src/App.css hängen — Struktur bleibt unberührt)
+   ------------------------------------------------------------ */
+
+/* Begrüßung: Verlauf Rot -> Blau statt Lila -> Orange */
+.greeting-ko {
+  background: linear-gradient(120deg, #c1443b 0%, #2a4a8b 100%);
+}
+
+/* Vollfarbige Tagesaufgaben: flache Flächen statt Verläufe */
+.action-full-purple { background: #2a4a8b; }
+.action-full-orange { background: #c1443b; }
+.action-full-green  { background: #4f6b54; }
+
+/* Vokabel des Tages */
+.daily-card { background: #2a4a8b; }
+
+/* Bewertungsknöpfe */
+.rate-again { background: #c1443b; }
+.rate-hard  { background: #b4863c; }
+.rate-good  { background: #4f6b54; }
+.rate-easy  { background: #2a4a8b; }
+
+/* Häkchen + Erfolgsfarben */
+.done-check { background: #4f6b54; }
+.card-answer.ok .answer-note,
+.card-answer.ok .answer-ko { color: #4f6b54; }
+.add-ok { color: #4f6b54; }
+.add-error,
+.card-answer.bad .answer-note { color: #c1443b; }
+
+/* Karten-Tag: gesetztes Label statt Flaggen-Emoji (Text in Review.jsx ändern) */
+.card-tag {
+  background: #f0e7d6;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* Koreanische Kartenvorderseite größer (Flip-Karten) */
+.card-front:lang(ko) { font-size: 60px; font-weight: 500; }
+
+/* Streak-Punkte: erledigt = Rot, heute = blauer Ring */
+.dot-on {
+  background: var(--accent);
+  border-color: var(--accent);
+  box-shadow: 0 2px 8px rgba(193, 68, 59, 0.35);
+}
+.streak-day-today .dot { outline-color: var(--primary); }
+.streak-day-today .dot-label { color: var(--primary); }
+
+/* Tab-Bar: weiche Naht, damit die Bergsilhouette hineinläuft */
+.tabbar {
+  border-top: 1px solid #efe6d6;
+  background: #f8f3e9;
+}
+.tab-active { color: var(--accent); }
+
+/* Kalender */
+.cal-done {
+  background: var(--accent);
+  border-color: var(--accent);
+  box-shadow: 0 2px 8px rgba(193, 68, 59, 0.35);
+}
+.cal-today { outline-color: var(--primary); }
+
+/* Fortschrittsbalken bleibt --primary (Blau) — nichts zu tun */

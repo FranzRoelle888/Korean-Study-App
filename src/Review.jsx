@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { previewInterval, formatInterval } from './storage'
 import Confetti from './Confetti'
-import { MoonIcon } from './icons'
+import { MoonIcon, CardRidge } from './icons'
 
 /* ============================================================
    REVIEW STACK
@@ -115,8 +115,9 @@ function Review({ initialQueue, onRate, onExit }) {
 
       <div className="review-body">
         <div className={`flashcard ${flashClass} ${exiting ? 'card-fly-right' : ''}`}>
+          <CardRidge />
           <span className="card-tag">
-            {isTyping ? '🇬🇧 → 🇰🇷  type' : '🇰🇷 → 🇬🇧  flip'}
+            {isTyping ? 'EN → KO · type' : 'KO → EN · flip'}
           </span>
 
           {isTyping ? (

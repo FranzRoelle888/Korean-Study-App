@@ -1,4 +1,13 @@
-import { FlameIcon, SparkIcon, CardsIcon, ChevronIcon, HashIcon, CheckIcon } from './icons'
+import {
+  FlameIcon,
+  SparkIcon,
+  CardsIcon,
+  ChevronIcon,
+  HashIcon,
+  CheckIcon,
+  KoreanFlag,
+  MountainBand,
+} from './icons'
 
 /* ============================================================
    HOME SCREEN (greeting, streak, three action buttons)
@@ -23,14 +32,17 @@ function Home({
     <div className="screen">
       {/* ---------- Greeting + streak ---------- */}
       <header className="header">
-        <div className="greeting">
-          <h1 className="greeting-hello">
-            <span className="greeting-ko" lang="ko">
-              안녕하세요
-            </span>
-            <span className="greeting-name">{name}</span>
-          </h1>
-          <p className="greeting-sub">Ready for today?</p>
+        <div className="greeting-row">
+          <div className="greeting">
+            <h1 className="greeting-hello">
+              <span className="greeting-ko" lang="ko">
+                안녕하세요
+              </span>
+              <span className="greeting-name">{name}</span>
+            </h1>
+            <p className="greeting-sub">Ready for today?</p>
+          </div>
+          <KoreanFlag />
         </div>
 
         <button className="streak-card" onClick={onCalendar}>
@@ -123,6 +135,9 @@ function Home({
 
         <p className="vocab-count-note">{vocabCount} words in your library</p>
       </main>
+
+      {/* Liegt hinter dem Inhalt (siehe .mountain-band in App.css) */}
+      <MountainBand />
     </div>
   )
 }
