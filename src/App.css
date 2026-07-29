@@ -1416,9 +1416,12 @@
    (Verläufe, Bewertungsfarben) plus die neuen Korea-Motive.
    ============================================================ */
 
-/* Begrüßung: Verlauf Rot -> Blau statt Violett -> Orange */
+/* Begrüßung: Verlauf Rot -> Blau statt Violett -> Orange.
+   WICHTIG: background-image, nicht background! Die Kurzschreibweise
+   "background" würde background-clip: text zurücksetzen — die Schrift
+   bliebe durchsichtig und man sähe nur einen Farbblock. */
 .greeting-ko {
-  background: linear-gradient(120deg, #c1443b 0%, #2a4a8b 100%);
+  background-image: linear-gradient(120deg, #c1443b 0%, #2a4a8b 100%);
 }
 
 /* Begrüßung links, Flagge rechts oben */
@@ -1655,7 +1658,8 @@
   box-shadow: 0 0 0 3px rgba(193, 68, 59, 0.12);
 }
 
-/* Große Zahl: Verlauf Rot -> Blau wie die Begrüßung */
+/* Große Zahl: Verlauf Rot -> Blau wie die Begrüßung.
+   Ebenfalls background-image (siehe .greeting-ko oben). */
 .big-number {
-  background: linear-gradient(120deg, var(--accent), var(--primary));
+  background-image: linear-gradient(120deg, var(--accent), var(--primary));
 }
