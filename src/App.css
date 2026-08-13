@@ -2383,3 +2383,88 @@
   color: var(--accent);
   font-weight: 700;
 }
+
+/* ---------- Icon-Kachel auf den Set-Karten ---------- */
+.set-icon {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 11px;
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+
+.set-icon-alt {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+/* Die Kopfzeile trÃ¤gt jetzt Icon + ZÃ¤hler statt des Hangul */
+.set-card-top {
+  align-items: center;
+  margin-bottom: 2px;
+}
+
+.set-card-ko {
+  font-size: 22px;
+}
+
+/* ---------- LÃ¤nder ---------- */
+.country-grid {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.country-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.country-card:last-child {
+  border-bottom: none;
+}
+
+/* Auf dem iPhone eine echte Flagge, auf Windows das LÃ¤nderkÃ¼rzel */
+.country-flag {
+  flex: none;
+  width: 30px;
+  font-size: 22px;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.country-main {
+  flex: 1;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.country-ko {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.country-en {
+  font-size: 13px;
+  color: var(--text-soft);
+}
+
+/* Kennzeichnet Namen aus chinesischen Zeichen */
+.country-tag {
+  flex: none;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--primary);
+  background: var(--primary-soft);
+  padding: 2px 6px;
+  border-radius: 6px;
+}

@@ -1,4 +1,14 @@
-import { numbers, weekdays, pronouns, body, colors, family, timeWords, setList } from './setsData'
+import {
+  numbers,
+  weekdays,
+  pronouns,
+  body,
+  colors,
+  family,
+  timeWords,
+  countries,
+  setList,
+} from './setsData'
 import { ChevronIcon } from './icons'
 
 /* ============================================================
@@ -43,55 +53,76 @@ function Block({ label, note, children }) {
   )
 }
 
+/* Einfache Wort-Übersetzungs-Liste — von mehreren Blättern genutzt */
+function PairList({ items }) {
+  return (
+    <div className="pair-list">
+      {items.map((it) => (
+        <div className="pair" key={it.ko}>
+          <span lang="ko" className="pair-ko">
+            {it.ko}
+            {it.casual && <em className="pair-casual">{it.casual}</em>}
+          </span>
+          <span className="pair-de">{it.en}</span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 /* ---------- 1. Zahlen ---------- */
+
+function NumberRow({ r }) {
+  return (
+    <div className="num-row">
+      <span className="num-n">{r.n}</span>
+      <span lang="ko" className="num-ko">
+        {r.sino}
+      </span>
+      <span lang="ko" className="num-ko">
+        {r.native}
+        {r.attr && <em className="num-attr">{r.attr}</em>}
+      </span>
+    </div>
+  )
+}
 
 function NumbersSheet() {
   return (
     <>
-      <Block label="1 – 10" note="Koreanisch hat zwei Zahlensysteme. Beide brauchst du.">
+      <Block label="1 – 10" note="Korean has two number systems. You need both.">
         <div className="num-table">
           <div className="num-row num-head">
             <span>#</span>
             <span>Sino</span>
-            <span>Nativ</span>
+            <span>Native</span>
           </div>
           {numbers.base.map((r) => (
-            <div className="num-row" key={r.n}>
-              <span className="num-n">{r.n}</span>
-              <span lang="ko" className="num-ko">
-                {r.sino}
-              </span>
-              <span lang="ko" className="num-ko">
-                {r.native}
-                {r.attr && <em className="num-attr">{r.attr}</em>}
-              </span>
-            </div>
+            <NumberRow r={r} key={r.n} />
           ))}
         </div>
         <p className="sheet-foot">
-          Die kleine Form daneben (<em lang="ko">한</em>, <em lang="ko">두</em> …) benutzt man
-          direkt vor einem Zählwort: <span lang="ko">한 개</span>, <span lang="ko">두 명</span>.
+          The short form beside it (<em lang="ko">한</em>, <em lang="ko">두</em> …) is what you use
+          directly in front of a counter word: <span lang="ko">한 개</span>,{' '}
+          <span lang="ko">두 명</span>.
         </p>
       </Block>
 
-      <Block label="Zehner" note="Sino baut sich regelmäßig auf. Die nativen Zehner sind eigene Wörter.">
+      <Block
+        label="Tens"
+        note="Sino builds up regularly. The native tens are words of their own — those you have to know."
+      >
         <div className="num-table">
           {numbers.tens.map((r) => (
-            <div className="num-row" key={r.n}>
-              <span className="num-n">{r.n}</span>
-              <span lang="ko" className="num-ko">
-                {r.sino}
-              </span>
-              <span lang="ko" className="num-ko">
-                {r.native}
-                {r.attr && <em className="num-attr">{r.attr}</em>}
-              </span>
-            </div>
+            <NumberRow r={r} key={r.n} />
           ))}
         </div>
       </Block>
 
-      <Block label="Große Stufen" note="Nur sino. Ab 10.000 zählt Koreanisch in Viererschritten (만), nicht in Dreierschritten.">
+      <Block
+        label="Bigger steps"
+        note="Sino only. Careful: from 10,000 upwards Korean groups in steps of four digits (만), not three."
+      >
         <div className="chip-grid">
           {numbers.big.map((b) => (
             <div className="chip" key={b.n}>
@@ -104,7 +135,7 @@ function NumbersSheet() {
         </div>
       </Block>
 
-      <Block label="Wann welches?">
+      <Block label="Which one when?">
         <div className="usage-grid">
           {numbers.usage.map((u) => (
             <div className={`usage usage-${u.system}`} key={u.system}>
@@ -121,7 +152,7 @@ function NumbersSheet() {
           <span className="mixed-ko" lang="ko">
             {numbers.mixed.ko}
           </span>
-          <span className="mixed-de">{numbers.mixed.de}</span>
+          <span className="mixed-de">{numbers.mixed.en}</span>
           <span className="mixed-note">{numbers.mixed.note}</span>
         </div>
       </Block>
@@ -134,7 +165,7 @@ function NumbersSheet() {
 function WeekdaysSheet() {
   return (
     <>
-      <Block note="Jeder Tag ist ein Element plus 요일. Kennst du die sieben Elemente, kennst du die sieben Tage.">
+      <Block note="Every day is an element plus 요일. Know the seven elements and you know the seven days.">
         <div className="day-list">
           {weekdays.days.map((d) => (
             <div className="day-row" key={d.ko}>
@@ -145,25 +176,16 @@ function WeekdaysSheet() {
                 <span className="day-ko" lang="ko">
                   {d.ko}
                 </span>
-                <span className="day-de">{d.de}</span>
+                <span className="day-de">{d.en}</span>
               </span>
-              <span className="day-meaning">{d.elementDe}</span>
+              <span className="day-meaning">{d.elementEn}</span>
             </div>
           ))}
         </div>
       </Block>
 
-      <Block label="Dazu">
-        <div className="pair-list">
-          {weekdays.extra.map((e) => (
-            <div className="pair" key={e.ko}>
-              <span lang="ko" className="pair-ko">
-                {e.ko}
-              </span>
-              <span className="pair-de">{e.de}</span>
-            </div>
-          ))}
-        </div>
+      <Block label="Also worth knowing">
+        <PairList items={weekdays.extra} />
       </Block>
     </>
   )
@@ -174,16 +196,16 @@ function WeekdaysSheet() {
 function PronounsSheet() {
   return (
     <>
-      <Block note="Höflich und locker stehen nebeneinander — welche Spalte gilt, hängt vom Gegenüber ab.">
+      <Block note="Polite and casual sit side by side — which column applies depends on who you are talking to.">
         <div className="pron-table">
           <div className="pron-row pron-head">
             <span />
-            <span>höflich</span>
-            <span>locker</span>
+            <span>polite</span>
+            <span>casual</span>
           </div>
           {pronouns.rows.map((r) => (
-            <div className={r.flag ? 'pron-row pron-row-flag' : 'pron-row'} key={r.de}>
-              <span className="pron-de">{r.de}</span>
+            <div className={r.flag ? 'pron-row pron-row-flag' : 'pron-row'} key={r.en}>
+              <span className="pron-de">{r.en}</span>
               <span className="pron-ko" lang="ko">
                 {r.polite}
               </span>
@@ -195,7 +217,7 @@ function PronounsSheet() {
         </div>
       </Block>
 
-      <Block label="Was keine Tabelle hergibt">
+      <Block label="What no table can show">
         {pronouns.truths.map((t) => (
           <div className="truth" key={t.title}>
             <h4>{t.title}</h4>
@@ -204,14 +226,14 @@ function PronounsSheet() {
         ))}
       </Block>
 
-      <Block label="이 / 그 / 저" note="Für Dinge. Welches Wort gilt, hängt davon ab, wo die Sache steht.">
+      <Block label="이 / 그 / 저" note="For things. Which word applies depends on where the thing is.">
         <div className="dem-grid">
           {pronouns.demonstratives.map((d) => (
             <div className="dem" key={d.ko}>
               <span className="dem-ko" lang="ko">
                 {d.ko}
               </span>
-              <span className="dem-de">{d.de}</span>
+              <span className="dem-de">{d.en}</span>
               <span className="dem-note">{d.note}</span>
             </div>
           ))}
@@ -223,41 +245,41 @@ function PronounsSheet() {
 
 /* ---------- 4. Körperteile ----------
    Wort, Übersetzung und Position stehen bewusst zusammen:
-   x/y = wo die Beschriftung steht, to = worauf der Pfeil zeigt,
+   y = Höhe der Beschriftung, to = worauf der Pfeil zeigt,
    side = 'l' (Text linksbündig auslaufend) oder 'r'. */
 
 const FACE_LABELS = [
-  { ko: '머리카락', de: 'Haar', y: 52, side: 'l', to: [148, 96] },
-  { ko: '눈썹', de: 'Augenbraue', y: 106, side: 'l', to: [151, 129] },
-  { ko: '눈', de: 'Auge', y: 148, side: 'l', to: [152, 147] },
-  { ko: '귀', de: 'Ohr', y: 190, side: 'l', to: [117, 152] },
-  { ko: '볼', de: 'Wange', y: 232, side: 'l', to: [144, 178] },
-  { ko: '이마', de: 'Stirn', y: 70, side: 'r', to: [188, 116] },
-  { ko: '코', de: 'Nase', y: 140, side: 'r', to: [172, 164] },
-  { ko: '입', de: 'Mund', y: 184, side: 'r', to: [184, 189] },
-  { ko: '이', de: 'Zahn', y: 222, side: 'r', to: [172, 190] },
-  { ko: '턱', de: 'Kinn', y: 260, side: 'r', to: [172, 212] },
+  { ko: '머리카락', en: 'hair', y: 52, side: 'l', to: [148, 96] },
+  { ko: '눈썹', en: 'eyebrow', y: 106, side: 'l', to: [151, 129] },
+  { ko: '눈', en: 'eye', y: 148, side: 'l', to: [152, 147] },
+  { ko: '귀', en: 'ear', y: 190, side: 'l', to: [117, 152] },
+  { ko: '볼', en: 'cheek', y: 232, side: 'l', to: [144, 178] },
+  { ko: '이마', en: 'forehead', y: 70, side: 'r', to: [188, 116] },
+  { ko: '코', en: 'nose', y: 140, side: 'r', to: [172, 164] },
+  { ko: '입', en: 'mouth', y: 184, side: 'r', to: [184, 189] },
+  { ko: '이', en: 'tooth', y: 222, side: 'r', to: [172, 190] },
+  { ko: '턱', en: 'chin', y: 260, side: 'r', to: [172, 212] },
 ]
 
 const BODY_LABELS = [
-  { ko: '머리', de: 'Kopf', y: 40, side: 'l', to: [152, 36] },
-  { ko: '어깨', de: 'Schulter', y: 88, side: 'l', to: [142, 86] },
+  { ko: '머리', en: 'head', y: 40, side: 'l', to: [152, 36] },
+  { ko: '어깨', en: 'shoulder', y: 88, side: 'l', to: [142, 86] },
   /* Oberarm bzw. das Ellbogengelenk selbst — dort, wo der Arm knickt */
-  { ko: '팔', de: 'Arm', y: 130, side: 'l', to: [131, 110] },
-  { ko: '팔꿈치', de: 'Ellbogen', y: 172, side: 'l', to: [120, 132] },
-  { ko: '손', de: 'Hand', y: 214, side: 'l', to: [105, 198] },
-  { ko: '손가락', de: 'Finger', y: 256, side: 'l', to: [103, 210] },
-  { ko: '무릎', de: 'Knie', y: 306, side: 'l', to: [148, 300] },
-  { ko: '발', de: 'Fuß', y: 388, side: 'l', to: [144, 386] },
-  { ko: '목', de: 'Hals', y: 68, side: 'r', to: [176, 70] },
-  { ko: '가슴', de: 'Brust', y: 110, side: 'r', to: [188, 110] },
-  { ko: '배', de: 'Bauch', y: 156, side: 'r', to: [188, 160] },
-  { ko: '허리', de: 'Taille', y: 202, side: 'r', to: [192, 196] },
-  { ko: '다리', de: 'Bein', y: 280, side: 'r', to: [192, 268] },
+  { ko: '팔', en: 'arm', y: 130, side: 'l', to: [131, 110] },
+  { ko: '팔꿈치', en: 'elbow', y: 172, side: 'l', to: [120, 132] },
+  { ko: '손', en: 'hand', y: 214, side: 'l', to: [105, 198] },
+  { ko: '손가락', en: 'finger', y: 256, side: 'l', to: [103, 210] },
+  { ko: '무릎', en: 'knee', y: 306, side: 'l', to: [148, 300] },
+  { ko: '발', en: 'foot', y: 388, side: 'l', to: [144, 386] },
+  { ko: '목', en: 'neck', y: 68, side: 'r', to: [176, 70] },
+  { ko: '가슴', en: 'chest', y: 110, side: 'r', to: [188, 110] },
+  { ko: '배', en: 'belly', y: 156, side: 'r', to: [188, 160] },
+  { ko: '허리', en: 'waist', y: 202, side: 'r', to: [192, 196] },
+  { ko: '다리', en: 'leg', y: 280, side: 'r', to: [192, 268] },
 ]
 
 /* Eine Beschriftung + der Pfeil, der auf die Stelle zeigt. */
-function Label({ ko, de, y, side, to }) {
+function Label({ ko, en, y, side, to }) {
   const left = side === 'l'
   const textX = left ? 92 : 248
   const lineX = left ? 97 : 243
@@ -274,7 +296,7 @@ function Label({ ko, de, y, side, to }) {
         {ko}
       </text>
       <text x={textX} y={y + 13} textAnchor={left ? 'end' : 'start'} className="dia-de">
-        {de}
+        {en}
       </text>
     </g>
   )
@@ -285,8 +307,8 @@ function BodySheet() {
   const line = '#1f1b18'
   return (
     <>
-      <Block label="Gesicht">
-        <svg className="diagram" viewBox="0 0 340 300" role="img" aria-label="Beschriftetes Gesicht">
+      <Block label="Face">
+        <svg className="diagram" viewBox="0 0 340 300" role="img" aria-label="Labelled face">
           {/* Kopfform */}
           <ellipse cx="170" cy="150" rx="52" ry="66" fill={skin} stroke={line} strokeWidth="1.6" />
           {/* Ohren */}
@@ -318,8 +340,8 @@ function BodySheet() {
         </svg>
       </Block>
 
-      <Block label="Körper">
-        <svg className="diagram" viewBox="0 0 340 420" role="img" aria-label="Beschrifteter Körper">
+      <Block label="Body">
+        <svg className="diagram" viewBox="0 0 340 420" role="img" aria-label="Labelled body">
           {/* Kopf + Hals */}
           <circle cx="170" cy="40" r="23" fill={skin} stroke={line} strokeWidth="1.6" />
           <path d="M162 62 L162 76 M178 62 L178 76" stroke={line} strokeWidth="1.6" fill="none" />
@@ -350,17 +372,8 @@ function BodySheet() {
         </svg>
       </Block>
 
-      <Block label="Dazu">
-        <div className="pair-list">
-          {body.extra.map((e) => (
-            <div className="pair" key={e.ko}>
-              <span lang="ko" className="pair-ko">
-                {e.ko}
-              </span>
-              <span className="pair-de">{e.de}</span>
-            </div>
-          ))}
-        </div>
+      <Block label="Also worth knowing">
+        <PairList items={body.extra} />
       </Block>
     </>
   )
@@ -371,7 +384,7 @@ function BodySheet() {
 function ColorsSheet() {
   return (
     <>
-      <Block note="-색 heißt „Farbe“. Die Fläche zeigt den Ton direkt.">
+      <Block note="-색 means “colour”. Each tile shows the shade itself.">
         <div className="color-grid">
           {colors.items.map((c) => (
             <div className="color-card" key={c.ko}>
@@ -379,28 +392,22 @@ function ColorsSheet() {
               <span className="color-ko" lang="ko">
                 {c.ko}
               </span>
-              <span className="color-de">{c.de}</span>
+              <span className="color-de">{c.en}</span>
             </div>
           ))}
         </div>
       </Block>
 
-      <Block label="Als Eigenschaftswort" note="„Rot sein“ ist ein eigenes Wort, keine Ableitung von 빨간색.">
-        <div className="pair-list">
-          {colors.adjectives.map((a) => (
-            <div className="pair" key={a.ko}>
-              <span lang="ko" className="pair-ko">
-                {a.ko}
-              </span>
-              <span className="pair-de">{a.de}</span>
-            </div>
-          ))}
-        </div>
+      <Block
+        label="As a describing word"
+        note="“To be red” is a word of its own, not something derived from 빨간색."
+      >
+        <PairList items={colors.adjectives} />
         <div className="mixed-card">
           <span className="mixed-ko" lang="ko">
             {colors.question.ko}
           </span>
-          <span className="mixed-de">{colors.question.de}</span>
+          <span className="mixed-de">{colors.question.en}</span>
         </div>
       </Block>
     </>
@@ -412,16 +419,19 @@ function ColorsSheet() {
 function FamilySheet() {
   return (
     <>
-      <Block label="Hängt davon ab, wer spricht" note="Nicht das Geschwisterkind entscheidet über das Wort, sondern du.">
+      <Block
+        label="Depends on who is speaking"
+        note="It is not the sibling who decides the word — it is you."
+      >
         <div className="split-table">
           <div className="split-row split-head">
             <span />
-            <span>du sagst</span>
-            <span>sie sagt</span>
+            <span>you say</span>
+            <span>she says</span>
           </div>
           {family.split.map((s) => (
-            <div className="split-row" key={s.de}>
-              <span className="split-de">{s.de}</span>
+            <div className="split-row" key={s.en}>
+              <span className="split-de">{s.en}</span>
               <span className="split-ko split-mine" lang="ko">
                 {s.male}
               </span>
@@ -435,18 +445,8 @@ function FamilySheet() {
         <p className="sheet-foot">{family.bonus}</p>
       </Block>
 
-      <Block label="Für alle gleich" note="Wo eine zweite Form steht, ist sie die vertraute Variante.">
-        <div className="pair-list">
-          {family.common.map((f) => (
-            <div className="pair" key={f.ko}>
-              <span lang="ko" className="pair-ko">
-                {f.ko}
-                {f.casual && <em className="pair-casual">{f.casual}</em>}
-              </span>
-              <span className="pair-de">{f.de}</span>
-            </div>
-          ))}
-        </div>
+      <Block label="Same for everyone" note="Where a second form is shown, it is the familiar one.">
+        <PairList items={family.common} />
       </Block>
     </>
   )
@@ -457,7 +457,7 @@ function FamilySheet() {
 function TimeSheet() {
   return (
     <>
-      <Block label="Tage" note="Ein Zeitstrahl rund um „heute“.">
+      <Block label="Days" note="A timeline around “today”.">
         <div className="timeline">
           {timeWords.days.map((d) => (
             <div className={d.offset === 0 ? 'tl-item tl-now' : 'tl-item'} key={d.ko}>
@@ -465,32 +465,23 @@ function TimeSheet() {
               <span className="tl-ko" lang="ko">
                 {d.ko}
               </span>
-              <span className="tl-de">{d.de}</span>
+              <span className="tl-de">{d.en}</span>
             </div>
           ))}
         </div>
       </Block>
 
-      <Block label="Tageszeiten" note="Von früh nach spät.">
-        <div className="pair-list">
-          {timeWords.dayParts.map((p) => (
-            <div className="pair" key={p.ko}>
-              <span lang="ko" className="pair-ko">
-                {p.ko}
-              </span>
-              <span className="pair-de">{p.de}</span>
-            </div>
-          ))}
-        </div>
+      <Block label="Parts of the day" note="From early to late.">
+        <PairList items={timeWords.dayParts} />
       </Block>
 
-      <Block label="Woche, Monat, Jahr" note="Immer dasselbe Muster: vorher — dieses — nächstes.">
+      <Block label="Week, month, year" note="Always the same pattern: last — this — next.">
         <div className="span-table">
           <div className="span-row span-head">
             <span />
-            <span>letzte</span>
-            <span>diese</span>
-            <span>nächste</span>
+            <span>last</span>
+            <span>this</span>
+            <span>next</span>
           </div>
           {timeWords.spans.map((s) => (
             <div className="span-row" key={s.unit}>
@@ -505,19 +496,34 @@ function TimeSheet() {
         </div>
       </Block>
 
-      <Block label="Dazu">
-        <div className="pair-list">
-          {timeWords.extra.map((e) => (
-            <div className="pair" key={e.ko}>
-              <span lang="ko" className="pair-ko">
-                {e.ko}
-              </span>
-              <span className="pair-de">{e.de}</span>
-            </div>
-          ))}
-        </div>
+      <Block label="Also worth knowing">
+        <PairList items={timeWords.extra} />
       </Block>
     </>
+  )
+}
+
+/* ---------- 8. Länder ---------- */
+
+function CountriesSheet() {
+  return (
+    <Block note={countries.note}>
+      <div className="country-grid">
+        {countries.items.map((c) => (
+          <div className="country-card" key={c.ko}>
+            <span className="country-flag">{c.flag}</span>
+            <span className="country-main">
+              <span className="country-ko" lang="ko">
+                {c.ko}
+              </span>
+              <span className="country-en">{c.en}</span>
+            </span>
+            {/* Markiert die Namen, die aus chinesischen Zeichen gebaut sind */}
+            {c.sino && <span className="country-tag">漢</span>}
+          </div>
+        ))}
+      </div>
+    </Block>
   )
 }
 
@@ -531,6 +537,7 @@ const SHEETS = {
   colors: ColorsSheet,
   family: FamilySheet,
   time: TimeSheet,
+  countries: CountriesSheet,
 }
 
 function SetSheet({ id, onExit }) {

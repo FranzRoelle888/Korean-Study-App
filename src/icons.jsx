@@ -237,6 +237,100 @@ export function CardRidge() {
   )
 }
 
+/* ============================================================
+   Icons für die Themen-Sets. Gleicher Strichstil wie oben,
+   damit sie sich nicht vom Rest der App abheben.
+   ============================================================ */
+
+/* Gemeinsames Grundgerüst — spart bei acht Icons viel Wiederholung. */
+function SetIcon({ children }) {
+  return (
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      {children}
+    </svg>
+  )
+}
+
+/* Zählstriche — für die Zahlen */
+export function TallyIcon() {
+  return (
+    <SetIcon>
+      <path d="M5 5v14M10 5v14M15 5v14M19 5v14" />
+      <path d="M3 8l18 8" />
+    </SetIcon>
+  )
+}
+
+export function CalendarIcon() {
+  return (
+    <SetIcon>
+      <rect x="3" y="5" width="18" height="16" rx="2.5" />
+      <path d="M3 10h18M8 3v4M16 3v4" />
+    </SetIcon>
+  )
+}
+
+/* Sprechblase — für die Pronomen (über Personen reden) */
+export function SpeechIcon() {
+  return (
+    <SetIcon>
+      <path d="M21 12a8 8 0 0 1-8 8H7l-4 3v-6.5A8 8 0 0 1 11 4h2a8 8 0 0 1 8 8z" />
+    </SetIcon>
+  )
+}
+
+/* Strichfigur — für die Körperteile */
+export function BodyIcon() {
+  return (
+    <SetIcon>
+      <circle cx="12" cy="4.5" r="2.5" />
+      <path d="M12 7v8M6 10h12M12 15l-3.5 6M12 15l3.5 6" />
+    </SetIcon>
+  )
+}
+
+export function PaletteIcon() {
+  return (
+    <SetIcon>
+      <path d="M12 3a9 9 0 1 0 0 18 2 2 0 0 0 1.6-3.2 2 2 0 0 1 1.6-3.2H19a2.6 2.6 0 0 0 2.6-2.6C21.6 6.7 17.3 3 12 3z" />
+      <circle cx="7.5" cy="11" r="1.1" fill="currentColor" stroke="none" />
+      <circle cx="11" cy="7.5" r="1.1" fill="currentColor" stroke="none" />
+      <circle cx="15.5" cy="8.5" r="1.1" fill="currentColor" stroke="none" />
+    </SetIcon>
+  )
+}
+
+/* Zwei Köpfe nebeneinander — für die Familie */
+export function FamilyIcon() {
+  return (
+    <SetIcon>
+      <circle cx="8" cy="7" r="3" />
+      <circle cx="17" cy="8.5" r="2.3" />
+      <path d="M2.5 20v-1.5A5.5 5.5 0 0 1 8 13a5.5 5.5 0 0 1 5.5 5.5V20" />
+      <path d="M15.5 20v-1a4 4 0 0 1 6-3.4" />
+    </SetIcon>
+  )
+}
+
+export function ClockIcon() {
+  return (
+    <SetIcon>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 6.5V12l4 2.5" />
+    </SetIcon>
+  )
+}
+
+export function GlobeIcon() {
+  return (
+    <SetIcon>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M3 12h18" />
+      <path d="M12 3c2.6 2.6 4 5.7 4 9s-1.4 6.4-4 9c-2.6-2.6-4-5.7-4-9s1.4-6.4 4-9z" />
+    </SetIcon>
+  )
+}
+
 export function TrashIcon() {
   return (
     <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

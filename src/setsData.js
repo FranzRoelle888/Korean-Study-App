@@ -4,6 +4,9 @@
    Reine Nachschlage-Blätter. Diese Daten landen NICHT in der
    Datenbank und NICHT im Lernstapel — sie werden nur angezeigt.
 
+   Sichtbarer Text ist Englisch (wie der Rest der Oberfläche),
+   die Kommentare bleiben Deutsch.
+
    Bewusst ohne Umschrift in lateinischen Buchstaben, damit man
    das Hangul liest statt der Krücke daneben.
    ============================================================ */
@@ -45,22 +48,30 @@ export const numbers = {
      in Viererschritten (만), nicht in Dreierschritten wie wir. */
   big: [
     { n: '100', ko: '백' },
-    { n: '1.000', ko: '천' },
-    { n: '10.000', ko: '만' },
-    { n: '100 Mio.', ko: '억' },
+    { n: '1,000', ko: '천' },
+    { n: '10,000', ko: '만' },
+    { n: '100 mil.', ko: '억' },
   ],
 
   /* Wann welches System? Das ist der eigentliche Knackpunkt. */
   usage: [
-    { system: 'sino', label: 'Sino-koreanisch', items: ['Datum & Monate', 'Geld', 'Minuten', 'Telefonnummern', 'Adressen & Etagen'] },
-    { system: 'native', label: 'Nativ-koreanisch', items: ['Dinge zählen', 'Personen', 'Stunden', 'Alter', 'nur bis 99'] },
+    {
+      system: 'sino',
+      label: 'Sino-Korean',
+      items: ['Dates & months', 'Money', 'Minutes', 'Phone numbers', 'Addresses & floors'],
+    },
+    {
+      system: 'native',
+      label: 'Native Korean',
+      items: ['Counting things', 'People', 'Hours', 'Age', 'only up to 99'],
+    },
   ],
 
   /* Uhrzeit mischt beide Systeme — das klassische Stolperfeld. */
   mixed: {
     ko: '세 시 삼십 분',
-    de: 'halb vier',
-    note: 'Stunde nativ (세), Minute sino (삼십) — in einem einzigen Satz.',
+    en: 'half past three',
+    note: 'Hour in native Korean (세), minute in sino (삼십) — in one and the same phrase.',
   },
 }
 
@@ -69,61 +80,61 @@ export const numbers = {
    sieben Elemente, kennt man die sieben Tage. */
 export const weekdays = {
   days: [
-    { ko: '월요일', de: 'Montag', element: '월', elementDe: 'Mond' },
-    { ko: '화요일', de: 'Dienstag', element: '화', elementDe: 'Feuer' },
-    { ko: '수요일', de: 'Mittwoch', element: '수', elementDe: 'Wasser' },
-    { ko: '목요일', de: 'Donnerstag', element: '목', elementDe: 'Holz' },
-    { ko: '금요일', de: 'Freitag', element: '금', elementDe: 'Metall' },
-    { ko: '토요일', de: 'Samstag', element: '토', elementDe: 'Erde' },
-    { ko: '일요일', de: 'Sonntag', element: '일', elementDe: 'Sonne' },
+    { ko: '월요일', en: 'Monday', element: '월', elementEn: 'moon' },
+    { ko: '화요일', en: 'Tuesday', element: '화', elementEn: 'fire' },
+    { ko: '수요일', en: 'Wednesday', element: '수', elementEn: 'water' },
+    { ko: '목요일', en: 'Thursday', element: '목', elementEn: 'wood' },
+    { ko: '금요일', en: 'Friday', element: '금', elementEn: 'metal' },
+    { ko: '토요일', en: 'Saturday', element: '토', elementEn: 'earth' },
+    { ko: '일요일', en: 'Sunday', element: '일', elementEn: 'sun' },
   ],
   extra: [
-    { ko: '요일', de: 'Wochentag' },
-    { ko: '주말', de: 'Wochenende' },
-    { ko: '평일', de: 'Werktag' },
-    { ko: '무슨 요일이에요?', de: 'Welcher Tag ist heute?' },
+    { ko: '요일', en: 'day of the week' },
+    { ko: '주말', en: 'weekend' },
+    { ko: '평일', en: 'weekday (Mon–Fri)' },
+    { ko: '무슨 요일이에요?', en: 'What day is it today?' },
   ],
 }
 
 /* ---------- 3. Pronomen ----------
    Bewusst KEINE Eins-zu-eins-Tabelle: das Koreanische funktioniert
-   hier anders als das Deutsche. Höflich und locker stehen
+   hier anders als das Englische. Höflich und locker stehen
    nebeneinander, weil die Wahl vom Gegenüber abhängt. */
 export const pronouns = {
   rows: [
-    { de: 'ich', polite: '저', casual: '나' },
-    { de: 'ich (als Satzsubjekt)', polite: '제가', casual: '내가' },
-    { de: 'mein', polite: '제', casual: '내' },
-    { de: 'wir / unser', polite: '저희', casual: '우리' },
-    { de: 'du', polite: 'Name + 씨', casual: '너', flag: true },
-    { de: 'du (als Satzsubjekt)', polite: '—', casual: '네가' },
-    { de: 'dein', polite: '—', casual: '네' },
-    { de: 'er / sie (die Person)', polite: '그분', casual: '걔' },
-    { de: 'ihr (mehrere)', polite: '여러분', casual: '너희' },
-    { de: 'sie (mehrere)', polite: '그분들', casual: '걔네' },
+    { en: 'I', polite: '저', casual: '나' },
+    { en: 'I (as subject)', polite: '제가', casual: '내가' },
+    { en: 'my', polite: '제', casual: '내' },
+    { en: 'we / our', polite: '저희', casual: '우리' },
+    { en: 'you', polite: 'name + 씨', casual: '너', flag: true },
+    { en: 'you (as subject)', polite: '—', casual: '네가' },
+    { en: 'your', polite: '—', casual: '네' },
+    { en: 'he / she (that person)', polite: '그분', casual: '걔' },
+    { en: 'you (plural)', polite: '여러분', casual: '너희' },
+    { en: 'they', polite: '그분들', casual: '걔네' },
   ],
 
   /* Die drei wichtigsten Wahrheiten, die keine Tabelle hergibt. */
   truths: [
     {
-      title: '„Du“ sagt man nicht einfach so',
-      body: '너 ist nur unter engen Freunden und bei Jüngeren okay. Sonst nimmt man den Namen mit 씨 oder den Titel — 선생님, 사장님. Das oft gelehrte 당신 klingt im Gespräch distanziert bis streitlustig.',
+      title: 'You do not simply say “you”',
+      body: '너 is only fine with close friends and people younger than you. Otherwise use the name plus 씨, or the title — 선생님, 사장님. The 당신 taught in many textbooks sounds distant, even confrontational, in conversation.',
     },
     {
-      title: '„Es“ gibt es nicht',
-      body: 'Für Dinge nimmt man 이거 / 그거 / 저거. Ein Pronomen wie „es“ existiert schlicht nicht.',
+      title: 'There is no “it”',
+      body: 'For things you use 이거 / 그거 / 저거. A pronoun like “it” simply does not exist.',
     },
     {
-      title: 'Am häufigsten lässt man es weg',
-      body: 'Wenn aus dem Zusammenhang klar ist, wer gemeint ist, fällt das Pronomen komplett weg. 밥 먹었어요? heißt „Hast du gegessen?“ — ganz ohne „du“.',
+      title: 'Most often you leave it out',
+      body: 'When the context makes clear who is meant, the pronoun is dropped entirely. 밥 먹었어요? means “Have you eaten?” — with no “you” anywhere in it.',
     },
   ],
 
   /* Das 이/그/저-System — hängt daran, wo etwas steht. */
   demonstratives: [
-    { ko: '이거', de: 'das hier', note: 'bei mir' },
-    { ko: '그거', de: 'das da', note: 'bei dir' },
-    { ko: '저거', de: 'das dort', note: 'weit weg' },
+    { ko: '이거', en: 'this one', note: 'near me' },
+    { ko: '그거', en: 'that one', note: 'near you' },
+    { ko: '저거', en: 'that one', note: 'far from both' },
   ],
 }
 
@@ -134,41 +145,41 @@ export const pronouns = {
    Hier nur, was nicht an der Zeichnung hängt. */
 export const body = {
   extra: [
-    { ko: '등', de: 'Rücken' },
-    { ko: '엉덩이', de: 'Po' },
-    { ko: '발가락', de: 'Zeh' },
-    { ko: '혀', de: 'Zunge' },
-    { ko: '몸', de: 'Körper' },
-    { ko: '아파요', de: 'tut weh' },
+    { ko: '등', en: 'back' },
+    { ko: '엉덩이', en: 'bottom' },
+    { ko: '발가락', en: 'toe' },
+    { ko: '혀', en: 'tongue' },
+    { ko: '몸', en: 'body' },
+    { ko: '아파요', en: 'it hurts' },
   ],
 }
 
 /* ---------- 5. Farben ----------
-   -색 heißt „Farbe". Die Kachel zeigt den Farbwert direkt. */
+   -색 heißt „Farbe“. Die Kachel zeigt den Farbwert direkt. */
 export const colors = {
   items: [
-    { ko: '빨간색', de: 'rot', hex: '#d5352b' },
-    { ko: '주황색', de: 'orange', hex: '#e2802d' },
-    { ko: '노란색', de: 'gelb', hex: '#edc43a' },
-    { ko: '초록색', de: 'grün', hex: '#3f8a52' },
-    { ko: '하늘색', de: 'himmelblau', hex: '#79b6dd' },
-    { ko: '파란색', de: 'blau', hex: '#2a4a8b' },
-    { ko: '보라색', de: 'lila', hex: '#7b4b9c' },
-    { ko: '분홍색', de: 'rosa', hex: '#e08fae' },
-    { ko: '갈색', de: 'braun', hex: '#7d5535' },
-    { ko: '회색', de: 'grau', hex: '#8d8880' },
-    { ko: '검은색', de: 'schwarz', hex: '#1f1b18' },
-    { ko: '하얀색', de: 'weiß', hex: '#fbf8f1' },
+    { ko: '빨간색', en: 'red', hex: '#d5352b' },
+    { ko: '주황색', en: 'orange', hex: '#e2802d' },
+    { ko: '노란색', en: 'yellow', hex: '#edc43a' },
+    { ko: '초록색', en: 'green', hex: '#3f8a52' },
+    { ko: '하늘색', en: 'sky blue', hex: '#79b6dd' },
+    { ko: '파란색', en: 'blue', hex: '#2a4a8b' },
+    { ko: '보라색', en: 'purple', hex: '#7b4b9c' },
+    { ko: '분홍색', en: 'pink', hex: '#e08fae' },
+    { ko: '갈색', en: 'brown', hex: '#7d5535' },
+    { ko: '회색', en: 'grey', hex: '#8d8880' },
+    { ko: '검은색', en: 'black', hex: '#1f1b18' },
+    { ko: '하얀색', en: 'white', hex: '#fbf8f1' },
   ],
   /* Als Eigenschaftswort ("rot sein") sehen die Farben anders aus. */
   adjectives: [
-    { ko: '빨갛다', de: 'rot sein' },
-    { ko: '파랗다', de: 'blau sein' },
-    { ko: '노랗다', de: 'gelb sein' },
-    { ko: '하얗다', de: 'weiß sein' },
-    { ko: '까맣다', de: 'schwarz sein' },
+    { ko: '빨갛다', en: 'to be red' },
+    { ko: '파랗다', en: 'to be blue' },
+    { ko: '노랗다', en: 'to be yellow' },
+    { ko: '하얗다', en: 'to be white' },
+    { ko: '까맣다', en: 'to be black' },
   ],
-  question: { ko: '무슨 색이에요?', de: 'Welche Farbe ist das?' },
+  question: { ko: '무슨 색이에요?', en: 'What colour is it?' },
 }
 
 /* ---------- 6. Familie ----------
@@ -177,77 +188,103 @@ export const colors = {
 export const family = {
   /* Wörter, die für alle gleich sind. */
   common: [
-    { ko: '가족', de: 'Familie' },
-    { ko: '부모님', de: 'Eltern' },
-    { ko: '아버지', de: 'Vater', casual: '아빠' },
-    { ko: '어머니', de: 'Mutter', casual: '엄마' },
-    { ko: '할아버지', de: 'Großvater' },
-    { ko: '할머니', de: 'Großmutter' },
-    { ko: '남동생', de: 'jüngerer Bruder' },
-    { ko: '여동생', de: 'jüngere Schwester' },
-    { ko: '아들', de: 'Sohn' },
-    { ko: '딸', de: 'Tochter' },
-    { ko: '남편', de: 'Ehemann' },
-    { ko: '아내', de: 'Ehefrau' },
+    { ko: '가족', en: 'family' },
+    { ko: '부모님', en: 'parents' },
+    { ko: '아버지', en: 'father', casual: '아빠' },
+    { ko: '어머니', en: 'mother', casual: '엄마' },
+    { ko: '할아버지', en: 'grandfather' },
+    { ko: '할머니', en: 'grandmother' },
+    { ko: '남동생', en: 'younger brother' },
+    { ko: '여동생', en: 'younger sister' },
+    { ko: '아들', en: 'son' },
+    { ko: '딸', en: 'daughter' },
+    { ko: '남편', en: 'husband' },
+    { ko: '아내', en: 'wife' },
   ],
 
   /* Der Teil, der vom Sprecher abhängt. */
   split: [
-    { de: 'älterer Bruder', male: '형', female: '오빠' },
-    { de: 'ältere Schwester', male: '누나', female: '언니' },
+    { en: 'older brother', male: '형', female: '오빠' },
+    { en: 'older sister', male: '누나', female: '언니' },
   ],
 
-  note: 'Du bist männlich — für dich gilt also immer die linke Spalte: 형 und 누나. Deine Freundin sagt für dieselben Personen 오빠 und 언니.',
-  bonus: '오빠 und 언니 benutzt man auch für nahe ältere Freunde, nicht nur für echte Geschwister.',
+  note: 'You are male, so the left column is always yours: 형 and 누나. Your girlfriend says 오빠 and 언니 for the very same people.',
+  bonus: '오빠 and 언니 are also used for close older friends, not just for actual siblings.',
 }
 
 /* ---------- 7. Zeitangaben ---------- */
 export const timeWords = {
-  /* Tage als Zeitstrahl um „heute" herum. */
+  /* Tage als Zeitstrahl um „heute“ herum. */
   days: [
-    { ko: '그저께', de: 'vorgestern', offset: -2 },
-    { ko: '어제', de: 'gestern', offset: -1 },
-    { ko: '오늘', de: 'heute', offset: 0 },
-    { ko: '내일', de: 'morgen', offset: 1 },
-    { ko: '모레', de: 'übermorgen', offset: 2 },
+    { ko: '그저께', en: 'the day before yesterday', offset: -2 },
+    { ko: '어제', en: 'yesterday', offset: -1 },
+    { ko: '오늘', en: 'today', offset: 0 },
+    { ko: '내일', en: 'tomorrow', offset: 1 },
+    { ko: '모레', en: 'the day after tomorrow', offset: 2 },
   ],
 
   /* Tagesabschnitte, von früh nach spät. */
   dayParts: [
-    { ko: '새벽', de: 'frühe Morgenstunden' },
-    { ko: '아침', de: 'Morgen' },
-    { ko: '오전', de: 'Vormittag' },
-    { ko: '점심', de: 'Mittag' },
-    { ko: '오후', de: 'Nachmittag' },
-    { ko: '저녁', de: 'Abend' },
-    { ko: '밤', de: 'Nacht' },
+    { ko: '새벽', en: 'early hours' },
+    { ko: '아침', en: 'morning' },
+    { ko: '오전', en: 'a.m.' },
+    { ko: '점심', en: 'midday' },
+    { ko: '오후', en: 'p.m.' },
+    { ko: '저녁', en: 'evening' },
+    { ko: '밤', en: 'night' },
   ],
 
   /* Immer dasselbe Muster: vorher — dieses — nächstes. */
   spans: [
-    { unit: 'Woche', prev: '지난주', now: '이번 주', next: '다음 주' },
-    { unit: 'Monat', prev: '지난달', now: '이번 달', next: '다음 달' },
-    { unit: 'Jahr', prev: '작년', now: '올해', next: '내년' },
+    { unit: 'Week', prev: '지난주', now: '이번 주', next: '다음 주' },
+    { unit: 'Month', prev: '지난달', now: '이번 달', next: '다음 달' },
+    { unit: 'Year', prev: '작년', now: '올해', next: '내년' },
   ],
 
   extra: [
-    { ko: '지금', de: 'jetzt' },
-    { ko: '나중에', de: 'später' },
-    { ko: '아까', de: 'vorhin' },
-    { ko: '항상', de: 'immer' },
-    { ko: '가끔', de: 'manchmal' },
-    { ko: '절대', de: 'niemals' },
+    { ko: '지금', en: 'now' },
+    { ko: '나중에', en: 'later' },
+    { ko: '아까', en: 'a moment ago' },
+    { ko: '항상', en: 'always' },
+    { ko: '가끔', en: 'sometimes' },
+    { ko: '절대', en: 'never' },
   ],
 }
 
+/* ---------- 8. Länder ----------
+   Nur die Namen (so gewünscht). "sino" markiert Namen, die aus
+   chinesischen Zeichen gebaut sind — der Rest ist lautlich aus
+   dem Original übernommen. */
+export const countries = {
+  items: [
+    { ko: '한국', en: 'South Korea', flag: '🇰🇷', sino: true },
+    { ko: '북한', en: 'North Korea', flag: '🇰🇵', sino: true },
+    { ko: '독일', en: 'Germany', flag: '🇩🇪', sino: true },
+    { ko: '미국', en: 'United States', flag: '🇺🇸', sino: true },
+    { ko: '영국', en: 'United Kingdom', flag: '🇬🇧', sino: true },
+    { ko: '일본', en: 'Japan', flag: '🇯🇵', sino: true },
+    { ko: '중국', en: 'China', flag: '🇨🇳', sino: true },
+    { ko: '호주', en: 'Australia', flag: '🇦🇺', sino: true },
+    { ko: '태국', en: 'Thailand', flag: '🇹🇭', sino: true },
+    { ko: '프랑스', en: 'France', flag: '🇫🇷', sino: false },
+    { ko: '스페인', en: 'Spain', flag: '🇪🇸', sino: false },
+    { ko: '이탈리아', en: 'Italy', flag: '🇮🇹', sino: false },
+    { ko: '캐나다', en: 'Canada', flag: '🇨🇦', sino: false },
+    { ko: '러시아', en: 'Russia', flag: '🇷🇺', sino: false },
+  ],
+  note: 'Two kinds of names. The ones marked 漢 are built from Chinese characters and look nothing like the original — 독일 for Germany, 미국 for the USA. The rest are simply the original name written in Hangul, so you can often guess them by sound.',
+}
+
 /* ---------- Übersicht für das Menü ----------
-   Reihenfolge = Reihenfolge der Karten im Sets-Tab. */
+   Reihenfolge = Reihenfolge der Karten im Sets-Tab.
+   "icon" verweist auf einen Eintrag in SET_ICONS (Sets.jsx). */
 export const setList = [
-  { id: 'numbers', title: 'Numbers', ko: '숫자', hint: 'Two systems, one set of building blocks', count: '30+' },
-  { id: 'weekdays', title: 'Weekdays', ko: '요일', hint: 'Seven elements, seven days', count: '7' },
-  { id: 'pronouns', title: 'Pronouns', ko: '대명사', hint: 'Polite and casual side by side', count: '10' },
-  { id: 'body', title: 'Body', ko: '몸', hint: 'Labelled face and body', count: '29' },
-  { id: 'colors', title: 'Colours', ko: '색깔', hint: 'Twelve colours, plus their verb forms', count: '12' },
-  { id: 'family', title: 'Family', ko: '가족', hint: 'Some words depend on who is speaking', count: '14' },
-  { id: 'time', title: 'Time', ko: '시간', hint: 'Days, parts of the day, weeks and years', count: '21' },
+  { id: 'numbers', title: 'Numbers', ko: '숫자', icon: 'numbers', hint: 'Two systems, one set of building blocks', count: '30+' },
+  { id: 'weekdays', title: 'Weekdays', ko: '요일', icon: 'calendar', hint: 'Seven elements, seven days', count: '7' },
+  { id: 'pronouns', title: 'Pronouns', ko: '대명사', icon: 'speech', hint: 'Polite and casual side by side', count: '10' },
+  { id: 'body', title: 'Body', ko: '몸', icon: 'body', hint: 'Labelled face and body', count: '29' },
+  { id: 'colors', title: 'Colours', ko: '색깔', icon: 'palette', hint: 'Twelve colours, plus their verb forms', count: '12' },
+  { id: 'family', title: 'Family', ko: '가족', icon: 'family', hint: 'Some words depend on who is speaking', count: '14' },
+  { id: 'time', title: 'Time', ko: '시간', icon: 'clock', hint: 'Days, parts of the day, weeks and years', count: '21' },
+  { id: 'countries', title: 'Countries', ko: '나라', icon: 'globe', hint: 'The ones that actually come up', count: '14' },
 ]
