@@ -1665,7 +1665,7 @@
 }
 
 /* ============================================================
-   SETS â€” Themen-BlÃ¤tter zum Nachschlagen
+   SETS — Themen-Blätter zum Nachschlagen
    ============================================================ */
 
 .sets-screen {
@@ -1685,7 +1685,7 @@
   font-size: 15px;
 }
 
-/* ---------- Ãœbersicht ---------- */
+/* ---------- Übersicht ---------- */
 .set-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1722,15 +1722,6 @@
   font-weight: 700;
   color: var(--primary);
   line-height: 1.1;
-}
-
-.set-card-count {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--text-soft);
-  background: var(--surface-2);
-  padding: 2px 7px;
-  border-radius: 999px;
 }
 
 .set-card-title {
@@ -1780,7 +1771,7 @@
   background: var(--surface);
 }
 
-/* Der Chevron zeigt nach rechts â€” fÃ¼r "zurÃ¼ck" drehen wir ihn um. */
+/* Der Chevron zeigt nach rechts — für "zurück" drehen wir ihn um. */
 .sheet-back-icon {
   display: block;
   transform: rotate(180deg);
@@ -2125,7 +2116,7 @@
   font-weight: 600;
 }
 
-/* Zeile mit Fallstrick â€” siehe Hinweis darunter */
+/* Zeile mit Fallstrick — siehe Hinweis darunter */
 .pron-row-flag {
   background: var(--accent-soft);
 }
@@ -2184,7 +2175,7 @@
   color: var(--text-soft);
 }
 
-/* ---------- KÃ¶rperteile: beschriftete Zeichnungen ---------- */
+/* ---------- Körperteile: beschriftete Zeichnungen ---------- */
 .diagram {
   display: block;
   width: 100%;
@@ -2278,7 +2269,7 @@
   font-weight: 600;
 }
 
-/* Die Spalte, die fÃ¼r dich gilt */
+/* Die Spalte, die für dich gilt */
 .split-mine {
   color: var(--accent);
 }
@@ -2384,23 +2375,15 @@
   font-weight: 700;
 }
 
-/* ---------- Icon-Kachel auf den Set-Karten ---------- */
+/* ---------- Icon auf den Set-Karten ----------
+   Nur der Umriss, keine Hintergrundfläche — und durchgehend Rot. */
 .set-icon {
-  width: 32px;
-  height: 32px;
-  display: grid;
-  place-items: center;
-  border-radius: 11px;
-  background: var(--primary-soft);
-  color: var(--primary);
-}
-
-.set-icon-alt {
-  background: var(--accent-soft);
+  flex: none;
+  display: block;
   color: var(--accent);
 }
 
-/* Die Kopfzeile trÃ¤gt jetzt Icon + ZÃ¤hler statt des Hangul */
+/* Hangul links, Icon rechts oben in der Kachel */
 .set-card-top {
   align-items: center;
   margin-bottom: 2px;
@@ -2410,7 +2393,7 @@
   font-size: 22px;
 }
 
-/* ---------- LÃ¤nder ---------- */
+/* ---------- Länder ---------- */
 .country-grid {
   display: flex;
   flex-direction: column;
@@ -2432,7 +2415,7 @@
   border-bottom: none;
 }
 
-/* Auf dem iPhone eine echte Flagge, auf Windows das LÃ¤nderkÃ¼rzel */
+/* Auf dem iPhone eine echte Flagge, auf Windows das Länderkürzel */
 .country-flag {
   flex: none;
   width: 30px;

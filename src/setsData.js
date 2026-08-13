@@ -279,12 +279,12 @@ export const countries = {
    Reihenfolge = Reihenfolge der Karten im Sets-Tab.
    "icon" verweist auf einen Eintrag in SET_ICONS (Sets.jsx). */
 export const setList = [
-  { id: 'numbers', title: 'Numbers', ko: '숫자', icon: 'numbers', hint: 'Two systems, one set of building blocks', count: '30+' },
-  { id: 'weekdays', title: 'Weekdays', ko: '요일', icon: 'calendar', hint: 'Seven elements, seven days', count: '7' },
-  { id: 'pronouns', title: 'Pronouns', ko: '대명사', icon: 'speech', hint: 'Polite and casual side by side', count: '10' },
-  { id: 'body', title: 'Body', ko: '몸', icon: 'body', hint: 'Labelled face and body', count: '29' },
-  { id: 'colors', title: 'Colours', ko: '색깔', icon: 'palette', hint: 'Twelve colours, plus their verb forms', count: '12' },
-  { id: 'family', title: 'Family', ko: '가족', icon: 'family', hint: 'Some words depend on who is speaking', count: '14' },
-  { id: 'time', title: 'Time', ko: '시간', icon: 'clock', hint: 'Days, parts of the day, weeks and years', count: '21' },
-  { id: 'countries', title: 'Countries', ko: '나라', icon: 'globe', hint: 'The ones that actually come up', count: '14' },
+  { id: 'numbers', title: 'Numbers', ko: '숫자', icon: 'numbers', hint: 'Two systems, one set of building blocks' },
+  { id: 'weekdays', title: 'Weekdays', ko: '요일', icon: 'calendar', hint: 'Seven elements, seven days' },
+  { id: 'pronouns', title: 'Pronouns', ko: '대명사', icon: 'speech', hint: 'Polite and casual side by side' },
+  { id: 'body', title: 'Body', ko: '몸', icon: 'body', hint: 'Labelled face and body' },
+  { id: 'colors', title: 'Colours', ko: '색깔', icon: 'palette', hint: 'Twelve colours, plus their verb forms' },
+  { id: 'family', title: 'Family', ko: '가족', icon: 'family', hint: 'Some words depend on who is speaking' },
+  { id: 'time', title: 'Time', ko: '시간', icon: 'clock', hint: 'Days, parts of the day, weeks and years' },
+  { id: 'countries', title: 'Countries', ko: '나라', icon: 'globe', hint: 'The ones that actually come up' },
 ]

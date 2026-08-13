@@ -39,21 +39,17 @@ function Sets({ onOpen }) {
       </header>
 
       <main className="set-grid">
-        {setList.map((s, i) => {
+        {setList.map((s) => {
           const Icon = SET_ICONS[s.icon]
           return (
             <button className="set-card" key={s.id} onClick={() => onOpen(s.id)}>
+              {/* Hangul links, Icon rechts auf derselben Höhe */}
               <div className="set-card-top">
-                {/* Die Kacheln wechseln zwischen Blau und Rot, damit die
-                    Übersicht nicht monoton wirkt. */}
-                <span className={i % 2 === 0 ? 'set-icon' : 'set-icon set-icon-alt'}>
-                  {Icon && <Icon />}
+                <span className="set-card-ko" lang="ko">
+                  {s.ko}
                 </span>
-                <span className="set-card-count">{s.count}</span>
+                <span className="set-icon">{Icon && <Icon />}</span>
               </div>
-              <span className="set-card-ko" lang="ko">
-                {s.ko}
-              </span>
               <span className="set-card-title">{s.title}</span>
               <span className="set-card-hint">{s.hint}</span>
               <span className="set-card-go">
