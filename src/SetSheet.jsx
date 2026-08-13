@@ -249,12 +249,14 @@ function PronounsSheet() {
    side = 'l' (Text linksbündig auslaufend) oder 'r'. */
 
 const FACE_LABELS = [
-  { ko: '머리카락', en: 'hair', y: 52, side: 'l', to: [148, 96] },
-  { ko: '눈썹', en: 'eyebrow', y: 106, side: 'l', to: [151, 129] },
+  /* Zeigt auf den Haaransatz, nicht auf den leeren Scheitel */
+  { ko: '머리카락', en: 'hair', y: 52, side: 'l', to: [150, 111] },
+  { ko: '눈썹', en: 'eyebrow', y: 106, side: 'l', to: [151, 128] },
   { ko: '눈', en: 'eye', y: 148, side: 'l', to: [152, 147] },
-  { ko: '귀', en: 'ear', y: 190, side: 'l', to: [117, 152] },
+  { ko: '귀', en: 'ear', y: 190, side: 'l', to: [112, 154] },
   { ko: '볼', en: 'cheek', y: 232, side: 'l', to: [144, 178] },
-  { ko: '이마', en: 'forehead', y: 70, side: 'r', to: [188, 116] },
+  /* Unterhalb des Haaransatzes, sonst zeigt es auf die Haare */
+  { ko: '이마', en: 'forehead', y: 70, side: 'r', to: [186, 125] },
   { ko: '코', en: 'nose', y: 140, side: 'r', to: [172, 164] },
   { ko: '입', en: 'mouth', y: 184, side: 'r', to: [184, 189] },
   { ko: '이', en: 'tooth', y: 222, side: 'r', to: [172, 190] },
@@ -262,21 +264,44 @@ const FACE_LABELS = [
 ]
 
 const BODY_LABELS = [
-  { ko: '머리', en: 'head', y: 40, side: 'l', to: [152, 36] },
-  { ko: '어깨', en: 'shoulder', y: 88, side: 'l', to: [142, 86] },
+  { ko: '머리', en: 'head', y: 28, side: 'l', to: [156, 24] },
+  { ko: '어깨', en: 'shoulder', y: 96, side: 'l', to: [126, 96] },
   /* Oberarm bzw. das Ellbogengelenk selbst — dort, wo der Arm knickt */
-  { ko: '팔', en: 'arm', y: 130, side: 'l', to: [131, 110] },
-  { ko: '팔꿈치', en: 'elbow', y: 172, side: 'l', to: [120, 132] },
-  { ko: '손', en: 'hand', y: 214, side: 'l', to: [105, 198] },
-  { ko: '손가락', en: 'finger', y: 256, side: 'l', to: [103, 210] },
-  { ko: '무릎', en: 'knee', y: 306, side: 'l', to: [148, 300] },
+  { ko: '팔', en: 'arm', y: 140, side: 'l', to: [128, 140] },
+  { ko: '팔꿈치', en: 'elbow', y: 180, side: 'l', to: [124, 168] },
+  { ko: '손', en: 'hand', y: 218, side: 'l', to: [119, 213] },
+  { ko: '손가락', en: 'finger', y: 258, side: 'l', to: [116, 222] },
+  { ko: '무릎', en: 'knee', y: 312, side: 'l', to: [155, 312] },
   { ko: '발', en: 'foot', y: 388, side: 'l', to: [144, 386] },
-  { ko: '목', en: 'neck', y: 68, side: 'r', to: [176, 70] },
-  { ko: '가슴', en: 'chest', y: 110, side: 'r', to: [188, 110] },
-  { ko: '배', en: 'belly', y: 156, side: 'r', to: [188, 160] },
-  { ko: '허리', en: 'waist', y: 202, side: 'r', to: [192, 196] },
-  { ko: '다리', en: 'leg', y: 280, side: 'r', to: [192, 268] },
+  { ko: '목', en: 'neck', y: 62, side: 'r', to: [181, 62] },
+  { ko: '가슴', en: 'chest', y: 122, side: 'r', to: [188, 125] },
+  { ko: '배', en: 'belly', y: 168, side: 'r', to: [188, 168] },
+  { ko: '허리', en: 'waist', y: 202, side: 'r', to: [189, 198] },
+  { ko: '다리', en: 'leg', y: 290, side: 'r', to: [186, 290] },
 ]
+
+/* Die rechte Hälfte des Körperumrisses. Die linke entsteht daraus
+   gespiegelt (translate(340) scale(-1,1)) — das garantiert, dass die
+   Figur wirklich symmetrisch ist, und halbiert die Tipparbeit.
+   Bewusst NICHT geschlossen (kein Z): sonst liefe eine Strichlinie
+   mitten durch den Körper. Zum Füllen schließt SVG von selbst. */
+const BODY_HALF =
+  /* Hals */
+  'M170 44 L181 44 L181 72 ' +
+  /* Schulter, Arm aussen hinunter bis zur Hand */
+  'C199 75 212 86 216 104 C219 122 221 140 223 158 ' +
+  'C225 176 227 194 228 206 C232 217 227 226 219 223 ' +
+  /* Hand und Arm innen wieder hinauf zur Achsel */
+  'C212 221 210 214 209 206 C207 190 205 172 203 152 ' +
+  'C201 136 199 122 196 112 C195 108 191 108 190 113 ' +
+  /* Rumpf: Brust breiter als Taille, dann Hüfte */
+  'C193 126 196 140 196 158 C195 174 193 186 193 196 ' +
+  'C194 206 196 212 197 220 ' +
+  /* Bein aussen hinunter, Fuss, Bein innen zurueck zum Schritt */
+  'C195 252 193 284 191 312 C190 338 190 360 190 376 ' +
+  'C190 383 195 388 204 388 L181 388 ' +
+  'C177 388 176 383 176 376 C176 340 177 300 177 268 ' +
+  'L175 224 L170 222'
 
 /* Eine Beschriftung + der Pfeil, der auf die Stelle zeigt. */
 function Label({ ko, en, y, side, to }) {
@@ -287,11 +312,11 @@ function Label({ ko, en, y, side, to }) {
     <g>
       <path
         d={`M${lineX} ${y - 4} L${to[0]} ${to[1]}`}
-        stroke="#b6a992"
-        strokeWidth="1.2"
+        stroke="#c4b8a4"
+        strokeWidth="1"
         fill="none"
       />
-      <circle cx={to[0]} cy={to[1]} r="2.6" fill="#c1443b" />
+      <circle cx={to[0]} cy={to[1]} r="2.2" fill="#c1443b" />
       <text x={textX} y={y} textAnchor={left ? 'end' : 'start'} className="dia-ko" lang="ko">
         {ko}
       </text>
@@ -302,37 +327,54 @@ function Label({ ko, en, y, side, to }) {
   )
 }
 
+/* Tusche auf Papier: eine Strichstärke, keine Farbflächen.
+   Der Umriss trägt die Zeichnung, nicht die Füllung. */
+const INK = '#38312b'
+const PAPER = '#fbf7ef'
+
 function BodySheet() {
-  const skin = '#f3e3d3'
-  const line = '#1f1b18'
+  /* Gemeinsame Strich-Einstellungen für alle Linien der Zeichnung */
+  const stroke = {
+    fill: 'none',
+    stroke: INK,
+    strokeWidth: 1.7,
+    strokeLinecap: 'round',
+    strokeLinejoin: 'round',
+  }
   return (
     <>
       <Block label="Face">
         <svg className="diagram" viewBox="0 0 340 300" role="img" aria-label="Labelled face">
-          {/* Kopfform */}
-          <ellipse cx="170" cy="150" rx="52" ry="66" fill={skin} stroke={line} strokeWidth="1.6" />
-          {/* Ohren */}
-          <ellipse cx="118" cy="152" rx="7" ry="12" fill={skin} stroke={line} strokeWidth="1.4" />
-          <ellipse cx="222" cy="152" rx="7" ry="12" fill={skin} stroke={line} strokeWidth="1.4" />
-          {/* Haar */}
-          <path
-            d="M118 140 C120 96 140 84 170 84 C200 84 220 96 222 140 C214 118 206 110 190 106 C176 116 156 116 142 108 C130 114 122 124 118 140 Z"
-            fill="#2f2622"
-          />
-          {/* Augenbrauen */}
-          <path d="M142 132 q10 -6 20 -1" stroke={line} strokeWidth="2" fill="none" strokeLinecap="round" />
-          <path d="M178 131 q10 -5 20 1" stroke={line} strokeWidth="2" fill="none" strokeLinecap="round" />
-          {/* Augen */}
-          <ellipse cx="152" cy="147" rx="7.5" ry="5" fill="#fbf7ef" stroke={line} strokeWidth="1.4" />
-          <ellipse cx="188" cy="147" rx="7.5" ry="5" fill="#fbf7ef" stroke={line} strokeWidth="1.4" />
-          <circle cx="152" cy="147" r="2.6" fill={line} />
-          <circle cx="188" cy="147" r="2.6" fill={line} />
-          {/* Nase */}
-          <path d="M170 152 L166 168 q4 3 8 0" stroke={line} strokeWidth="1.6" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-          {/* Mund */}
-          <path d="M156 187 q14 10 28 0 q-14 5 -28 0 Z" fill="#c98d86" stroke={line} strokeWidth="1.4" strokeLinejoin="round" />
-          {/* Hals */}
-          <path d="M154 210 L154 228 M186 210 L186 228" stroke={line} strokeWidth="1.6" fill="none" />
+          <g {...stroke}>
+            {/* Ohren zuerst, damit der gefüllte Kopf sie sauber abschneidet */}
+            <path d="M118 140 c-9 2 -9 20 0 23" />
+            <path d="M222 140 c9 2 9 20 0 23" />
+
+            <ellipse cx="170" cy="150" rx="52" ry="66" fill={PAPER} />
+
+            {/* Haaransatz statt Haarklumpen. Leicht asymmetrisch mit
+                angedeutetem Scheitel — ein exakt symmetrischer Bogen
+                sieht aus wie der Rand einer Mütze. */}
+            <path d="M123 132 C129 104 160 95 186 103 C201 108 211 118 217 132" />
+            <path d="M186 103 C183 112 180 119 178 126" />
+
+            <path d="M142 130 q10 -6 20 -1.5" />
+            <path d="M178 128.5 q10 -4.5 20 1.5" />
+
+            {/* Augen als schlichte Mandelform */}
+            <path d="M143.5 147 Q152 140 160.5 147 Q152 154 143.5 147 Z" />
+            <path d="M179.5 147 Q188 140 196.5 147 Q188 154 179.5 147 Z" />
+
+            <path d="M169 149 L164 166 Q169 170 174 167" />
+            <path d="M156 188 Q170 197 184 188" />
+
+            {/* Hals — setzt genau am Kieferrand an */}
+            <path d="M152 212 L152 240" />
+            <path d="M188 212 L188 240" />
+          </g>
+
+          <circle cx="152" cy="147" r="2.4" fill={INK} />
+          <circle cx="188" cy="147" r="2.4" fill={INK} />
 
           {FACE_LABELS.map((l) => (
             <Label key={l.ko} {...l} />
@@ -342,29 +384,13 @@ function BodySheet() {
 
       <Block label="Body">
         <svg className="diagram" viewBox="0 0 340 420" role="img" aria-label="Labelled body">
-          {/* Kopf + Hals */}
-          <circle cx="170" cy="40" r="23" fill={skin} stroke={line} strokeWidth="1.6" />
-          <path d="M162 62 L162 76 M178 62 L178 76" stroke={line} strokeWidth="1.6" fill="none" />
-          {/* Rumpf */}
-          <path
-            d="M140 84 q30 -10 60 0 l4 60 q-4 34 -6 62 q-28 8 -56 0 q-2 -28 -6 -62 Z"
-            fill={skin}
-            stroke={line}
-            strokeWidth="1.6"
-            strokeLinejoin="round"
-          />
-          {/* Arme */}
-          <path d="M141 88 L120 132 L106 192" stroke={line} strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          <path d="M199 88 L220 132 L234 192" stroke={line} strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          {/* Hände */}
-          <ellipse cx="104" cy="201" rx="8" ry="11" fill={skin} stroke={line} strokeWidth="1.4" />
-          <ellipse cx="236" cy="201" rx="8" ry="11" fill={skin} stroke={line} strokeWidth="1.4" />
-          {/* Beine */}
-          <path d="M152 206 L148 300 L145 380" stroke={line} strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          <path d="M188 206 L192 300 L195 380" stroke={line} strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          {/* Füße */}
-          <path d="M145 380 q-14 4 -14 10 h26 Z" fill={skin} stroke={line} strokeWidth="1.4" strokeLinejoin="round" />
-          <path d="M195 380 q14 4 14 10 h-26 Z" fill={skin} stroke={line} strokeWidth="1.4" strokeLinejoin="round" />
+          <g {...stroke} fill={PAPER}>
+            {/* Rechte Hälfte, dann dieselbe Kontur gespiegelt */}
+            <path d={BODY_HALF} />
+            <path d={BODY_HALF} transform="translate(340 0) scale(-1 1)" />
+            {/* Kopf zuletzt: deckt den Halsansatz sauber ab */}
+            <circle cx="170" cy="30" r="22" />
+          </g>
 
           {BODY_LABELS.map((l) => (
             <Label key={l.ko} {...l} />
