@@ -31,12 +31,16 @@ import Review from './Review'
 import DailyWord from './DailyWord'
 import NumberChallenge from './NumberChallenge'
 import Calendar from './Calendar'
-import { HomeIcon, BookIcon } from './icons'
+import Sets from './Sets'
+import SetSheet from './SetSheet'
+import { HomeIcon, BookIcon, GridIcon } from './icons'
 
 function App() {
   const [loading, setLoading] = useState(true)
   const [offline, setOffline] = useState(false)
   const [view, setView] = useState('home')
+  /* Welches Themen-Blatt gerade offen ist (null = Übersicht) */
+  const [openSet, setOpenSet] = useState(null)
   const [words, setWords] = useState([])
   const [cards, setCards] = useState([])
   const [numberState, setNumberState] = useState(getNumberChallenge)
@@ -226,10 +230,26 @@ function App() {
           <Review initialQueue={due} onRate={handleRate} onExit={() => setView('home')} />
         )}
         {view === 'calendar' && <Calendar log={dailyLog} onExit={() => setView('home')} />}
+        {view === 'sets' &&
+          (openSet ? (
+            <SetSheet id={openSet} onExit={() => setOpenSet(null)} />
+          ) : (
+            <Sets onOpen={setOpenSet} />
+          ))}
       </div>
 
-      {(view === 'home' || view === 'library') && (
+      {(view === 'home' || view === 'library' || view === 'sets') && (
         <nav className="tabbar">
+          <button
+            className={view === 'sets' ? 'tab tab-active' : 'tab'}
+            onClick={() => {
+              setOpenSet(null)
+              setView('sets')
+            }}
+          >
+            <GridIcon />
+            <span>Sets</span>
+          </button>
           <button
             className={view === 'home' ? 'tab tab-active' : 'tab'}
             onClick={() => setView('home')}
