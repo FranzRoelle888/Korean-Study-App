@@ -348,6 +348,16 @@ export function BowlIcon() {
   )
 }
 
+/* Gestapelte Blaetter — fuer den Plural (mehrere davon) */
+export function LayersIcon() {
+  return (
+    <SetIcon>
+      <rect x="3" y="13" width="18" height="7" rx="2" />
+      <path d="M5.5 10h13M8 7h8" />
+    </SetIcon>
+  )
+}
+
 export function GlobeIcon() {
   return (
     <SetIcon>

@@ -1,4 +1,5 @@
 import { setList } from './setsData'
+import { setListDe } from './setsDataDe'
 import {
   ChevronIcon,
   TallyIcon,
@@ -9,6 +10,7 @@ import {
   FamilyIcon,
   ClockIcon,
   BowlIcon,
+  LayersIcon,
   GlobeIcon,
 } from './icons'
 
@@ -29,10 +31,13 @@ const SET_ICONS = {
   family: FamilyIcon,
   clock: ClockIcon,
   bowl: BowlIcon,
+  layers: LayersIcon,
   globe: GlobeIcon,
 }
 
-function Sets({ onOpen, t }) {
+function Sets({ onOpen, t, profile }) {
+  /* Jede Seite hat ihre eigenen Themen */
+  const list = profile.id === 'de' ? setListDe : setList
   return (
     <div className="screen sets-screen">
       <header className="header">
@@ -41,7 +46,7 @@ function Sets({ onOpen, t }) {
       </header>
 
       <main className="set-grid">
-        {setList.map((s) => {
+        {list.map((s) => {
           const Icon = SET_ICONS[s.icon]
           return (
             <button className="set-card" key={s.id} onClick={() => onOpen(s.id)}>

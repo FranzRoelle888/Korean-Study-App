@@ -2539,3 +2539,187 @@
 .flag-switch:active {
   transform: scale(0.92);
 }
+
+/* ---------- Deutsche Blätter: Artikel, Fälle, Plural ---------- */
+.art-table,
+.case-table {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.art-row {
+  display: grid;
+  grid-template-columns: 1.35fr repeat(4, 1fr);
+  align-items: baseline;
+  gap: 4px;
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.case-row {
+  display: grid;
+  grid-template-columns: 1.1fr repeat(3, 1fr);
+  align-items: baseline;
+  gap: 6px;
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.art-row:last-child,
+.case-row:last-child {
+  border-bottom: none;
+}
+
+.art-head,
+.case-head {
+  background: var(--surface-2);
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  color: var(--text-soft);
+}
+
+.art-case,
+.case-ko {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-soft);
+}
+
+.art-pl {
+  color: var(--accent);
+}
+
+.case-de {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+/* Höflichkeitsform hervorheben */
+.case-row-flag {
+  background: var(--accent-soft);
+}
+
+/* Endungs-Regeln */
+.rule-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rule {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.rule-gender {
+  flex: none;
+  min-width: 40px;
+  text-align: center;
+  padding: 3px 7px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fbf7ef;
+}
+
+.rule-der { background: #2a4a8b; }
+.rule-die { background: #c1443b; }
+.rule-das { background: #4f6b54; }
+
+.rule-main {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.rule-ending {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.rule-example {
+  font-size: 11.5px;
+  color: var(--text-soft);
+}
+
+/* Plural */
+.plural-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.plural-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.plural-rule {
+  flex: none;
+  min-width: 74px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.plural-main {
+  flex: 1;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.plural-arrow {
+  color: var(--text-soft);
+}
+
+.plural-pl {
+  color: var(--primary);
+}
+
+.plural-ko {
+  font-size: 11px;
+  color: var(--text-soft);
+}
+
+/* Zahl vor dem umgedrehten Zahlwort */
+.rev-n {
+  display: inline-block;
+  min-width: 26px;
+  margin-right: 8px;
+  font-weight: 800;
+  color: var(--accent);
+}
+
+.pair-stack .pair-ko {
+  font-size: 15px;
+}
+
+/* Deutsche Zeitspalten sind laenger als die koreanischen */
+.span-row-de {
+  font-size: 12.5px;
+}
+
+/* Kleinere Schrift in den Zeichnungen, weil deutsche Woerter
+   mit Artikel deutlich laenger sind */
+.dia-small {
+  font-size: 10.5px;
+  font-weight: 700;
+}

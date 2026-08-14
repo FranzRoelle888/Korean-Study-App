@@ -33,6 +33,7 @@ import NumberChallenge from './NumberChallenge'
 import Calendar from './Calendar'
 import Sets from './Sets'
 import SetSheet from './SetSheet'
+import SetSheetDe from './SetSheetDe'
 import { HomeIcon, BookIcon, GridIcon } from './icons'
 import { PROFILES, readProfile, writeProfile, otherProfile } from './profiles'
 import { textFor, targetTextFor } from './i18n'
@@ -289,7 +290,11 @@ function App() {
         {view === 'calendar' && <Calendar log={dailyLog} onExit={() => setView('home')} t={t} />}
         {view === 'sets' &&
           (openSet ? (
-            <SetSheet id={openSet} onExit={() => setOpenSet(null)} profile={profile} t={t} />
+            (profile.id === 'de' ? (
+              <SetSheetDe id={openSet} onExit={() => setOpenSet(null)} />
+            ) : (
+              <SetSheet id={openSet} onExit={() => setOpenSet(null)} />
+            ))
           ) : (
             <Sets onOpen={setOpenSet} profile={profile} t={t} />
           ))}

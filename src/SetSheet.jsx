@@ -25,7 +25,7 @@ import { ChevronIcon } from './icons'
 
 /* ---------- Gemeinsame Bausteine ---------- */
 
-function SheetHeader({ set, onExit }) {
+export function SheetHeader({ set, onExit }) {
   return (
     <header className="sheet-header">
       <button className="sheet-back" onClick={onExit} aria-label="Back">
@@ -44,7 +44,7 @@ function SheetHeader({ set, onExit }) {
 }
 
 /* Überschrift innerhalb eines Blattes */
-function Block({ label, note, children }) {
+export function Block({ label, note, children }) {
   return (
     <section className="sheet-block">
       {label && <h3 className="sheet-block-label">{label}</h3>}
@@ -55,7 +55,7 @@ function Block({ label, note, children }) {
 }
 
 /* Einfache Wort-Übersetzungs-Liste — von mehreren Blättern genutzt */
-function PairList({ items }) {
+export function PairList({ items }) {
   return (
     <div className="pair-list">
       {items.map((it) => (
@@ -274,7 +274,7 @@ const BODY_HALF =
   'L175 224 L170 222'
 
 /* Eine Beschriftung + der Pfeil, der auf die Stelle zeigt. */
-function Label({ ko, en, y, side, to }) {
+export function Label({ ko, en, y, side, to, small }) {
   const left = side === 'l'
   const textX = left ? 92 : 248
   const lineX = left ? 97 : 243
@@ -287,7 +287,12 @@ function Label({ ko, en, y, side, to }) {
         fill="none"
       />
       <circle cx={to[0]} cy={to[1]} r="2.2" fill="#c1443b" />
-      <text x={textX} y={y} textAnchor={left ? 'end' : 'start'} className="dia-ko" lang="ko">
+      <text
+        x={textX}
+        y={y}
+        textAnchor={left ? 'end' : 'start'}
+        className={small ? 'dia-ko dia-small' : 'dia-ko'}
+      >
         {ko}
       </text>
       <text x={textX} y={y + 13} textAnchor={left ? 'end' : 'start'} className="dia-de">
@@ -301,6 +306,51 @@ function Label({ ko, en, y, side, to }) {
    Der Umriss trägt die Zeichnung, nicht die Füllung. */
 const INK = '#38312b'
 const PAPER = '#fbf7ef'
+
+/* Die zwei Zeichnungen. Die Beschriftungen kommen von aussen,
+   damit die deutsche Seite dieselben Bilder mit eigenen Wörtern
+   benutzen kann. */
+export function FaceDiagram({ labels, small }) {
+  return (
+    <svg className="diagram" viewBox="0 0 340 300" role="img" aria-label="Face">
+      <g fill="none" stroke={INK} strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round">
+        <path d="M118 140 c-9 2 -9 20 0 23" />
+        <path d="M222 140 c9 2 9 20 0 23" />
+        <ellipse cx="170" cy="150" rx="52" ry="66" fill={PAPER} />
+        <path d="M123 132 C129 104 160 95 186 103 C201 108 211 118 217 132" />
+        <path d="M186 103 C183 112 180 119 178 126" />
+        <path d="M142 130 q10 -6 20 -1.5" />
+        <path d="M178 128.5 q10 -4.5 20 1.5" />
+        <path d="M143.5 147 Q152 140 160.5 147 Q152 154 143.5 147 Z" />
+        <path d="M179.5 147 Q188 140 196.5 147 Q188 154 179.5 147 Z" />
+        <path d="M169 149 L164 166 Q169 170 174 167" />
+        <path d="M156 188 Q170 197 184 188" />
+        <path d="M152 212 L152 240" />
+        <path d="M188 212 L188 240" />
+      </g>
+      <circle cx="152" cy="147" r="2.4" fill={INK} />
+      <circle cx="188" cy="147" r="2.4" fill={INK} />
+      {labels.map((l) => (
+        <Label key={l.ko} {...l} small={small} />
+      ))}
+    </svg>
+  )
+}
+
+export function BodyDiagram({ labels, small }) {
+  return (
+    <svg className="diagram" viewBox="0 0 340 420" role="img" aria-label="Body">
+      <g fill={PAPER} stroke={INK} strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round">
+        <path d={BODY_HALF} />
+        <path d={BODY_HALF} transform="translate(340 0) scale(-1 1)" />
+        <circle cx="170" cy="30" r="22" />
+      </g>
+      {labels.map((l) => (
+        <Label key={l.ko} {...l} small={small} />
+      ))}
+    </svg>
+  )
+}
 
 function BodySheet() {
   /* Gemeinsame Strich-Einstellungen für alle Linien der Zeichnung */
@@ -525,7 +575,7 @@ function TimeSheet() {
 /* ---------- 7. Essen ---------- */
 
 /* Kachelraster mit Emoji — für Zutaten, Gerichte, Getränke, Geschirr */
-function EmojiGrid({ items }) {
+export function EmojiGrid({ items }) {
   return (
     <div className="emoji-grid">
       {items.map((it) => (
