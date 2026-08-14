@@ -287,7 +287,7 @@ function App() {
             tt={tt}
           />
         )}
-        {view === 'calendar' && <Calendar log={dailyLog} onExit={() => setView('home')} t={t} />}
+        {view === 'calendar' && <Calendar log={dailyLog} onExit={() => setView('home')} t={t} tt={tt} />}
         {view === 'sets' &&
           (openSet ? (
             (profile.id === 'de' ? (

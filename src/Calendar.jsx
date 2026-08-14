@@ -6,10 +6,11 @@ import { doneDaysSet } from './storage'
    ============================================================ */
 
 const pad = (n) => String(n).padStart(2, '0')
-// Wochentage Mo–So auf Koreanisch (die Woche startet hier montags)
-const WEEKDAYS = ['월', '화', '수', '목', '금', '토', '일']
 
-function Calendar({ log, onExit, t }) {
+/* Wochentage und Monat stehen in der Sprache, die gelernt wird —
+   auf der deutschen Seite also Mo–So und "August 2026". */
+function Calendar({ log, onExit, t, tt }) {
+  const WEEKDAYS = tt.calWeekdays
   const done = doneDaysSet(log)
   const [offset, setOffset] = useState(0) // 0 = current month, -1 = previous …
 
@@ -17,8 +18,7 @@ function Calendar({ log, onExit, t }) {
   const view = new Date(base.getFullYear(), base.getMonth() + offset, 1)
   const year = view.getFullYear()
   const month = view.getMonth()
-  // Monat/Jahr auf Koreanisch, z.B. "2026년 7월"
-  const monthName = `${year}년 ${month + 1}월`
+  const monthName = tt.monthLabel(year, month)
 
   const todayIso = `${base.getFullYear()}-${pad(base.getMonth() + 1)}-${pad(base.getDate())}`
   const startWeekday = (new Date(year, month, 1).getDay() + 6) % 7 // 0 = Monday
@@ -85,7 +85,7 @@ function Calendar({ log, onExit, t }) {
       </div>
 
       <p className="cal-summary">
-        {doneThisMonth} {doneThisMonth === 1 ? 'day' : 'days'} completed this month
+        {t.daysThisMonth(doneThisMonth)}
       </p>
     </div>
   )

@@ -600,7 +600,12 @@ export function computeStreak(logRows) {
 }
 
 // Wochentag auf Koreanisch (0=So … 6=Sa).
-const KO_WEEKDAY = ['일', '월', '화', '수', '목', '금', '토']
+/* Wochentagskuerzel (Index = getDay(), 0 = Sonntag) in der
+   Sprache, die gerade gelernt wird. */
+const WEEKDAY_LABELS = {
+  ko: ['일', '월', '화', '수', '목', '금', '토'],
+  de: ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'],
+}
 
 // 7 Tage rund um heute: heute steht immer an 3. Stelle (2 Tage davor,
 // 4 Tage danach) und ist mit isToday markiert. Zukünftige Tage sind
@@ -611,7 +616,8 @@ export function last7Days(logRows) {
   const out = []
   for (let offset = -2; offset <= 4; offset++) {
     const ds = addDays(today, offset)
-    const label = KO_WEEKDAY[new Date(ds + 'T00:00:00').getDay()]
+    const labels = WEEKDAY_LABELS[activeProfile] || WEEKDAY_LABELS.ko
+    const label = labels[new Date(ds + 'T00:00:00').getDay()]
     out.push({ day: ds, label, done: done.has(ds), isToday: ds === today })
   }
   return out

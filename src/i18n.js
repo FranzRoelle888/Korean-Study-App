@@ -73,6 +73,7 @@ const en = {
 
   /* --- Kalender --- */
   learningDays: 'Your learning days',
+  daysThisMonth: (n) => `${n} ${n === 1 ? 'day' : 'days'} completed this month`,
   prevMonth: 'Previous month',
   nextMonth: 'Next month',
 
@@ -147,6 +148,7 @@ const ko = {
 
   /* --- Kalender --- */
   learningDays: '학습한 날',
+  daysThisMonth: (n) => `이번 달 ${n}일 완료`,
   prevMonth: '이전 달',
   nextMonth: '다음 달',
 
@@ -174,6 +176,11 @@ export function textFor(uiLang) {
    wird. Sie stehen als kleine Unterzeile auf den Knöpfen und in
    den Eingabefeldern, immer in der Sprache, die geübt wird.
    ------------------------------------------------------------ */
+const MONTHS_DE = [
+  'Januar', 'Februar', 'März', 'April', 'Mai', 'Juni',
+  'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember',
+]
+
 const TARGET = {
   ko: {
     wordOfDay: '오늘의 단어',
@@ -185,6 +192,9 @@ const TARGET = {
     knownExample: 'e.g. water',
     tagType: 'EN → KO · type',
     tagFlip: 'KO → EN · flip',
+    /* Kalender: Wochentage ab Montag, Monatsüberschrift */
+    calWeekdays: ['월', '화', '수', '목', '금', '토', '일'],
+    monthLabel: (y, m) => `${y}년 ${m + 1}월`,
   },
   de: {
     wordOfDay: 'Wort des Tages',
@@ -196,6 +206,8 @@ const TARGET = {
     knownExample: '예: 물',
     tagType: 'KO → DE · 입력',
     tagFlip: 'DE → KO · 뒤집기',
+    calWeekdays: ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'],
+    monthLabel: (y, m) => `${MONTHS_DE[m]} ${y}`,
   },
 }
 
