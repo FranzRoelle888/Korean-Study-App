@@ -168,8 +168,8 @@ function App() {
     setNumberState((s) => ({ ...s, done: true }))
   }
 
-  function handleAdd(en, ko) {
-    const res = validateNewWord(words, en, ko)
+  function handleAdd(en, ko, pos) {
+    const res = validateNewWord(words, en, ko, pos)
     if (res.error) return res
     const newWords = [res.word, ...words]
     const newCards = [res.c1, res.c2, ...cards]
@@ -183,13 +183,13 @@ function App() {
     return { word: res.word }
   }
 
-  function handleEditWord(id, en, ko) {
-    const res = validateEdit(words, id, en, ko)
+  function handleEditWord(id, en, ko, pos) {
+    const res = validateEdit(words, id, en, ko, pos)
     if (res.error) return res
-    const newWords = words.map((w) => (w.id === id ? { ...w, en: res.en, ko: res.ko } : w))
+    const newWords = words.map((w) => (w.id === id ? { ...w, en: res.en, ko: res.ko, pos: res.pos } : w))
     setWords(newWords)
     writeWordsCache(newWords)
-    updateWordCloud(id, res.en, res.ko).catch((err) =>
+    updateWordCloud(id, res.en, res.ko, res.pos).catch((err) =>
       console.warn('Cloud save (edit) failed:', err?.message || err)
     )
     return { ok: true }

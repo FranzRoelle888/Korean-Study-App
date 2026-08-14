@@ -107,10 +107,10 @@ function readCardsCache() {
 /* ---------- Umwandlung DB-Zeile <-> App-Objekt ---------- */
 // (Die DB benutzt Unterstrich-Namen wie word_id, die App camelCase.)
 function wordFromRow(r) {
-  return { id: r.id, en: r.en, ko: r.ko, createdAt: new Date(r.created_at).getTime() }
+  return { id: r.id, en: r.en, ko: r.ko, pos: r.pos || null, createdAt: new Date(r.created_at).getTime() }
 }
 function wordToRow(w) {
-  return { id: w.id, en: w.en, ko: w.ko, created_at: new Date(w.createdAt).toISOString() }
+  return { id: w.id, en: w.en, ko: w.ko, pos: w.pos || null, created_at: new Date(w.createdAt).toISOString() }
 }
 function cardFromRow(r) {
   return {
@@ -243,7 +243,7 @@ export function isDuplicate(words, ko) {
    Gibt { error } zurück oder { word, c1, c2 }. */
 /* Fehler kommen als Kürzel zurück, nicht als fertiger Satz — die
    Oberfläche übersetzt sie in die jeweilige Menüsprache. */
-export function validateNewWord(words, en, ko) {
+export function validateNewWord(words, en, ko, pos) {
   const cleanEn = en.trim()
   const cleanKo = ko.trim()
   if (!cleanEn || !cleanKo) {
@@ -252,7 +252,13 @@ export function validateNewWord(words, en, ko) {
   if (isDuplicate(words, cleanKo)) {
     return { error: 'duplicate', word: cleanKo }
   }
-  const word = { id: crypto.randomUUID(), en: cleanEn, ko: cleanKo, createdAt: Date.now() }
+  const word = {
+    id: crypto.randomUUID(),
+    en: cleanEn,
+    ko: cleanKo,
+    pos: pos || null,
+    createdAt: Date.now(),
+  }
   return { word, c1: newCard(word.id, 'en'), c2: newCard(word.id, 'ko') }
 }
 
@@ -275,7 +281,7 @@ export async function persistCard(card) {
    Prüft die neuen Werte (Duplikat gegen ANDERE Wörter). Die beiden
    Karten hängen am Wort und aktualisieren sich dadurch automatisch;
    ihr Lernstand/Termin bleibt unangetastet. */
-export function validateEdit(words, id, en, ko) {
+export function validateEdit(words, id, en, ko, pos) {
   const cleanEn = en.trim()
   const cleanKo = ko.trim()
   if (!cleanEn || !cleanKo) {
@@ -285,11 +291,11 @@ export function validateEdit(words, id, en, ko) {
   if (dup) {
     return { error: 'duplicate', word: cleanKo }
   }
-  return { en: cleanEn, ko: cleanKo }
+  return { en: cleanEn, ko: cleanKo, pos: pos || null }
 }
 
-export async function updateWordCloud(id, en, ko) {
-  const { error } = await mine(supabase.from('words').update({ en, ko }).eq('id', id))
+export async function updateWordCloud(id, en, ko, pos) {
+  const { error } = await mine(supabase.from('words').update({ en, ko, pos: pos || null }).eq('id', id))
   if (error) throw error
 }
 

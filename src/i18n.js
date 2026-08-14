@@ -88,6 +88,12 @@ const en = {
   /* --- Meldungen aus der Prüfung --- */
   fillBoth: 'Please fill in both fields.',
   duplicate: (w) => `"${w}" is already in your library.`,
+
+  /* --- Wortarten --- */
+  posAll: 'All',
+  pos: { noun: 'Noun', verb: 'Verb', adj: 'Adjective', adv: 'Adverb', phrase: 'Phrase', other: 'Other' },
+  posShort: { noun: 'N', verb: 'V', adj: 'ADJ', adv: 'ADV', phrase: 'PHR', other: '·' },
+  wordClass: 'Word class',
 }
 
 const ko = {
@@ -163,6 +169,12 @@ const ko = {
   /* --- Meldungen aus der Prüfung --- */
   fillBoth: '두 칸을 모두 채워 주세요.',
   duplicate: (w) => `"${w}" 은(는) 이미 단어장에 있어요.`,
+
+  /* --- Wortarten --- */
+  posAll: '전체',
+  pos: { noun: '명사', verb: '동사', adj: '형용사', adv: '부사', phrase: '표현', other: '기타' },
+  posShort: { noun: 'N', verb: 'V', adj: 'ADJ', adv: 'ADV', phrase: 'PHR', other: '·' },
+  wordClass: '품사',
 }
 
 const PACKS = { en, ko }
