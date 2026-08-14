@@ -321,6 +321,16 @@ export function ClockIcon() {
   )
 }
 
+/* Schale mit Stäbchen — für das Essens-Set */
+export function BowlIcon() {
+  return (
+    <SetIcon>
+      <path d="M3 12h18a9 9 0 0 1-9 9 9 9 0 0 1-9-9z" />
+      <path d="M14 3.5 8.5 9M17.5 5 12 10.5" />
+    </SetIcon>
+  )
+}
+
 export function GlobeIcon() {
   return (
     <SetIcon>

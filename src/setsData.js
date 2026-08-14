@@ -75,7 +75,8 @@ export const numbers = {
   },
 }
 
-/* ---------- 2. Wochentage ----------
+/* ---------- 2a. Wochentage ----------
+   Wird zusammen mit den Zeitangaben (2b) auf EINEM Blatt gezeigt.
    Jeder Tag ist ein Element + 요일 ("Wochentag"). Kennt man die
    sieben Elemente, kennt man die sieben Tage. */
 export const weekdays = {
@@ -212,7 +213,8 @@ export const family = {
   bonus: '오빠 and 언니 are also used for close older friends, not just for actual siblings.',
 }
 
-/* ---------- 7. Zeitangaben ---------- */
+/* ---------- 2b. Zeitangaben ----------
+   Steht mit den Wochentagen (2a) auf demselben Blatt. */
 export const timeWords = {
   /* Tage als Zeitstrahl um „heute“ herum. */
   days: [
@@ -251,6 +253,82 @@ export const timeWords = {
   ],
 }
 
+/* ---------- 7. Essen ----------
+   Jede Kachel bekommt ein Emoji, damit man auf einen Blick sieht,
+   worum es geht. */
+export const food = {
+  staples: [
+    { ko: '밥', en: 'rice / meal', emoji: '🍚' },
+    { ko: '김치', en: 'kimchi', emoji: '🥬' },
+    { ko: '고기', en: 'meat', emoji: '🥩' },
+    { ko: '생선', en: 'fish', emoji: '🐟' },
+    { ko: '계란', en: 'egg', emoji: '🥚' },
+    { ko: '빵', en: 'bread', emoji: '🍞' },
+    { ko: '국수', en: 'noodles', emoji: '🍜' },
+    { ko: '채소', en: 'vegetables', emoji: '🥕' },
+    { ko: '과일', en: 'fruit', emoji: '🍎' },
+  ],
+
+  /* Was tatsaechlich auf einer koreanischen Speisekarte steht */
+  dishes: [
+    { ko: '비빔밥', en: 'bibimbap', emoji: '🍲' },
+    { ko: '불고기', en: 'bulgogi', emoji: '🥩' },
+    { ko: '삼겹살', en: 'pork belly', emoji: '🥓' },
+    { ko: '김밥', en: 'gimbap', emoji: '🍙' },
+    { ko: '라면', en: 'ramyeon', emoji: '🍜' },
+    { ko: '떡볶이', en: 'tteokbokki', emoji: '🌶️' },
+    { ko: '치킨', en: 'fried chicken', emoji: '🍗' },
+    { ko: '찌개', en: 'stew', emoji: '🍲' },
+    { ko: '만두', en: 'dumplings', emoji: '🥟' },
+  ],
+
+  drinks: [
+    { ko: '물', en: 'water', emoji: '💧' },
+    { ko: '커피', en: 'coffee', emoji: '☕' },
+    { ko: '차', en: 'tea', emoji: '🍵' },
+    { ko: '우유', en: 'milk', emoji: '🥛' },
+    { ko: '주스', en: 'juice', emoji: '🧃' },
+    { ko: '맥주', en: 'beer', emoji: '🍺' },
+    { ko: '소주', en: 'soju', emoji: '🍶' },
+  ],
+
+  /* Eigenschaftswoerter — die Grundform, wie im Woerterbuch */
+  taste: [
+    { ko: '맛있다', en: 'to be tasty', emoji: '😋' },
+    { ko: '맛없다', en: 'to taste bad', emoji: '😖' },
+    { ko: '맵다', en: 'to be spicy', emoji: '🌶️' },
+    { ko: '달다', en: 'to be sweet', emoji: '🍯' },
+    { ko: '짜다', en: 'to be salty', emoji: '🧂' },
+    { ko: '시다', en: 'to be sour', emoji: '🍋' },
+    { ko: '쓰다', en: 'to be bitter', emoji: '☕' },
+  ],
+
+  /* Das, was man im Restaurant wirklich braucht */
+  phrases: [
+    { ko: '잘 먹겠습니다', en: 'said before you start eating' },
+    { ko: '잘 먹었습니다', en: 'said after the meal' },
+    { ko: '배고파요', en: 'I am hungry' },
+    { ko: '배불러요', en: 'I am full' },
+    { ko: '맛있어요', en: 'it is delicious' },
+    { ko: '이거 주세요', en: 'I will have this one' },
+    { ko: '물 좀 주세요', en: 'some water, please' },
+    { ko: '안 매운 걸로 주세요', en: 'something not spicy, please' },
+    { ko: '계산해 주세요', en: 'the bill, please' },
+  ],
+
+  phraseNote:
+    'The first two are the ones you will hear at every single meal. Literally they mean “I will eat well” and “I ate well” — you say them to whoever cooked or is paying, and leaving them out is noticed.',
+
+  table: [
+    { ko: '젓가락', en: 'chopsticks', emoji: '🥢' },
+    { ko: '숟가락', en: 'spoon', emoji: '🥄' },
+    { ko: '그릇', en: 'bowl', emoji: '🥣' },
+    { ko: '컵', en: 'cup', emoji: '🥤' },
+    { ko: '식당', en: 'restaurant', emoji: '🍽️' },
+    { ko: '메뉴', en: 'menu', emoji: '📋' },
+  ],
+}
+
 /* ---------- 8. Länder ----------
    Nur die Namen (so gewünscht). "sino" markiert Namen, die aus
    chinesischen Zeichen gebaut sind — der Rest ist lautlich aus
@@ -280,11 +358,11 @@ export const countries = {
    "icon" verweist auf einen Eintrag in SET_ICONS (Sets.jsx). */
 export const setList = [
   { id: 'numbers', title: 'Numbers', ko: '숫자', icon: 'numbers', hint: 'Two systems, one set of building blocks' },
-  { id: 'weekdays', title: 'Weekdays', ko: '요일', icon: 'calendar', hint: 'Seven elements, seven days' },
+  { id: 'time', title: 'Time & Days', ko: '시간', icon: 'clock', hint: 'Weekdays, the day around today, weeks and years' },
   { id: 'pronouns', title: 'Pronouns', ko: '대명사', icon: 'speech', hint: 'Polite and casual side by side' },
   { id: 'body', title: 'Body', ko: '몸', icon: 'body', hint: 'Labelled face and body' },
+  { id: 'food', title: 'Food', ko: '음식', icon: 'bowl', hint: 'What to order and what to say at the table' },
   { id: 'colors', title: 'Colours', ko: '색깔', icon: 'palette', hint: 'Twelve colours, plus their verb forms' },
   { id: 'family', title: 'Family', ko: '가족', icon: 'family', hint: 'Some words depend on who is speaking' },
-  { id: 'time', title: 'Time', ko: '시간', icon: 'clock', hint: 'Days, parts of the day, weeks and years' },
   { id: 'countries', title: 'Countries', ko: '나라', icon: 'globe', hint: 'The ones that actually come up' },
 ]

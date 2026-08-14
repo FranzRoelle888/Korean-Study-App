@@ -8,6 +8,7 @@ import {
   PaletteIcon,
   FamilyIcon,
   ClockIcon,
+  BowlIcon,
   GlobeIcon,
 } from './icons'
 
@@ -27,6 +28,7 @@ const SET_ICONS = {
   palette: PaletteIcon,
   family: FamilyIcon,
   clock: ClockIcon,
+  bowl: BowlIcon,
   globe: GlobeIcon,
 }
 

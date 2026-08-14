@@ -6,6 +6,7 @@ import {
   colors,
   family,
   timeWords,
+  food,
   countries,
   setList,
 } from './setsData'
@@ -155,37 +156,6 @@ function NumbersSheet() {
           <span className="mixed-de">{numbers.mixed.en}</span>
           <span className="mixed-note">{numbers.mixed.note}</span>
         </div>
-      </Block>
-    </>
-  )
-}
-
-/* ---------- 2. Wochentage ---------- */
-
-function WeekdaysSheet() {
-  return (
-    <>
-      <Block note="Every day is an element plus 요일. Know the seven elements and you know the seven days.">
-        <div className="day-list">
-          {weekdays.days.map((d) => (
-            <div className="day-row" key={d.ko}>
-              <span className="day-element" lang="ko">
-                {d.element}
-              </span>
-              <span className="day-main">
-                <span className="day-ko" lang="ko">
-                  {d.ko}
-                </span>
-                <span className="day-de">{d.en}</span>
-              </span>
-              <span className="day-meaning">{d.elementEn}</span>
-            </div>
-          ))}
-        </div>
-      </Block>
-
-      <Block label="Also worth knowing">
-        <PairList items={weekdays.extra} />
       </Block>
     </>
   )
@@ -478,11 +448,34 @@ function FamilySheet() {
   )
 }
 
-/* ---------- 7. Zeitangaben ---------- */
+/* ---------- 2. Zeit & Tage ----------
+   Wochentage und Zeitangaben liegen auf einem gemeinsamen Blatt. */
 
 function TimeSheet() {
   return (
     <>
+      <Block
+        label="Weekdays"
+        note="Every day is an element plus 요일. Know the seven elements and you know the seven days."
+      >
+        <div className="day-list">
+          {weekdays.days.map((d) => (
+            <div className="day-row" key={d.ko}>
+              <span className="day-element" lang="ko">
+                {d.element}
+              </span>
+              <span className="day-main">
+                <span className="day-ko" lang="ko">
+                  {d.ko}
+                </span>
+                <span className="day-de">{d.en}</span>
+              </span>
+              <span className="day-meaning">{d.elementEn}</span>
+            </div>
+          ))}
+        </div>
+      </Block>
+
       <Block label="Days" note="A timeline around “today”.">
         <div className="timeline">
           {timeWords.days.map((d) => (
@@ -523,7 +516,75 @@ function TimeSheet() {
       </Block>
 
       <Block label="Also worth knowing">
-        <PairList items={timeWords.extra} />
+        <PairList items={[...weekdays.extra, ...timeWords.extra]} />
+      </Block>
+    </>
+  )
+}
+
+/* ---------- 7. Essen ---------- */
+
+/* Kachelraster mit Emoji — für Zutaten, Gerichte, Getränke, Geschirr */
+function EmojiGrid({ items }) {
+  return (
+    <div className="emoji-grid">
+      {items.map((it) => (
+        <div className="emoji-card" key={it.ko}>
+          <span className="emoji-symbol">{it.emoji}</span>
+          <span className="emoji-ko" lang="ko">
+            {it.ko}
+          </span>
+          <span className="emoji-en">{it.en}</span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function FoodSheet() {
+  return (
+    <>
+      <Block label="Basics">
+        <EmojiGrid items={food.staples} />
+      </Block>
+
+      <Block label="On the menu" note="The dishes you will actually be asked to choose between.">
+        <EmojiGrid items={food.dishes} />
+      </Block>
+
+      <Block label="Drinks">
+        <EmojiGrid items={food.drinks} />
+      </Block>
+
+      <Block label="How it tastes" note="Dictionary forms — in speech these become 맛있어요, 매워요 and so on.">
+        <div className="pair-list">
+          {food.taste.map((t) => (
+            <div className="pair" key={t.ko}>
+              <span lang="ko" className="pair-ko">
+                <span className="pair-emoji">{t.emoji}</span>
+                {t.ko}
+              </span>
+              <span className="pair-de">{t.en}</span>
+            </div>
+          ))}
+        </div>
+      </Block>
+
+      <Block label="At the table" note={food.phraseNote}>
+        <div className="phrase-list">
+          {food.phrases.map((p) => (
+            <div className="phrase" key={p.ko}>
+              <span className="phrase-ko" lang="ko">
+                {p.ko}
+              </span>
+              <span className="phrase-en">{p.en}</span>
+            </div>
+          ))}
+        </div>
+      </Block>
+
+      <Block label="On the table">
+        <EmojiGrid items={food.table} />
       </Block>
     </>
   )
@@ -557,12 +618,12 @@ function CountriesSheet() {
 
 const SHEETS = {
   numbers: NumbersSheet,
-  weekdays: WeekdaysSheet,
+  time: TimeSheet,
   pronouns: PronounsSheet,
   body: BodySheet,
+  food: FoodSheet,
   colors: ColorsSheet,
   family: FamilySheet,
-  time: TimeSheet,
   countries: CountriesSheet,
 }
 
