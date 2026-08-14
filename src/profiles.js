@@ -12,7 +12,7 @@
 
 /* Ihr Name für die Begrüßung. Leer lassen = nur "Hallo".
    Hier eintragen, sonst ändert sich nichts. */
-const HER_NAME = ''
+const HER_NAME = '해인'
 
 export const PROFILES = {
   ko: {

@@ -1686,9 +1686,12 @@
 }
 
 /* ---------- Übersicht ---------- */
+/* minmax(0, 1fr) statt 1fr: sonst darf eine Spalte breiter werden,
+   wenn ein langes Wort wie "der/die/das" nicht umbrechen kann —
+   dann sind die Kacheln nicht mehr gleich gross. */
 .set-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
   padding: 20px 0 8px;
 }
@@ -2722,4 +2725,12 @@
 .dia-small {
   font-size: 10.5px;
   font-weight: 700;
+}
+
+/* Lange Zielwoerter (Pronomen, der/die/das) muessen in die schmale
+   Kachel passen. Kleinere Schrift + Umbruch nur im Notfall, damit
+   nicht mitten im Wort getrennt wird. */
+.set-card-ko {
+  font-size: 19px;
+  overflow-wrap: break-word;
 }
