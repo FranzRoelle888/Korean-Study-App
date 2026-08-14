@@ -12,7 +12,7 @@ import { SuccessMark, MoonIcon } from './icons'
 
 const NEEDED = 3
 
-function DailyWord({ candidates, onIntroduce, onExit }) {
+function DailyWord({ candidates, onIntroduce, onExit, profile, t, tt }) {
   const [queue] = useState(candidates)
   const [index, setIndex] = useState(0)
   const [typed, setTyped] = useState(0)
@@ -37,15 +37,15 @@ function DailyWord({ candidates, onIntroduce, onExit }) {
             </div>
           )}
           <p className="done-title">
-            {nothingAtAll ? 'Done for today' : `${learned} new learned!`}
+            {nothingAtAll ? t.doneForToday : t.newLearned(learned)}
           </p>
           <p className="done-sub">
             {nothingAtAll
-              ? 'Come back tomorrow for new words.'
-              : "They're now in your library and on your stack."}
+              ? t.comeBackTomorrow
+              : t.nowInLibrary}
           </p>
           <button className="done-btn" onClick={onExit}>
-            Back to home
+            {t.back}
           </button>
         </div>
       </div>
@@ -81,17 +81,17 @@ function DailyWord({ candidates, onIntroduce, onExit }) {
 
   return (
     <div className="daily">
-      <DailyHeader onExit={onExit} label={`New word ${index + 1}/${queue.length}`} />
+      <DailyHeader t={t} onExit={onExit} label={`New word ${index + 1}/${queue.length}`} />
 
       <div className="daily-body">
         <div className={`daily-card ${flashClass}`}>
-          <div className="daily-ko" lang="ko">
+          <div className="daily-ko" lang={profile.targetLang}>
             {entry.ko}
           </div>
           <div className="daily-en">{entry.en}</div>
           {entry.ex && (
             <div className="daily-example">
-              <span lang="ko">{entry.ex}</span>
+              <span lang={profile.targetLang}>{entry.ex}</span>
               <span className="daily-example-en">{entry.exEn}</span>
             </div>
           )}
@@ -103,20 +103,20 @@ function DailyWord({ candidates, onIntroduce, onExit }) {
               <span key={i} className={i < typed ? 'tp-dot tp-on' : 'tp-dot'} />
             ))}
             <span className="type-hint">
-              {typed}/{NEEDED} · type in Korean
+              {typed}/{NEEDED} · {tt.typeHint}
             </span>
           </div>
           <input
             autoFocus
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="한국어…"
-            lang="ko"
+            placeholder={tt.typePlaceholder}
+            lang={profile.targetLang}
             autoComplete="off"
             className={flash === 'bad' ? 'shake' : ''}
           />
           <button type="submit" className="check-btn">
-            Confirm
+            {t.confirm}
           </button>
         </form>
       </div>
@@ -124,10 +124,10 @@ function DailyWord({ candidates, onIntroduce, onExit }) {
   )
 }
 
-function DailyHeader({ onExit, label }) {
+function DailyHeader({ onExit, label, t }) {
   return (
     <div className="review-header">
-      <button className="back-btn" onClick={onExit} aria-label="Back">
+      <button className="back-btn" onClick={onExit} aria-label={t.back}>
         <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="m15 6-6 6 6 6" />
         </svg>

@@ -34,8 +34,23 @@ import Calendar from './Calendar'
 import Sets from './Sets'
 import SetSheet from './SetSheet'
 import { HomeIcon, BookIcon, GridIcon } from './icons'
+import { PROFILES, readProfile, writeProfile, otherProfile } from './profiles'
+import { textFor, targetTextFor } from './i18n'
+import { setActiveProfile } from './storage'
 
 function App() {
+  /* Welche Seite der App: 'ko' (Franz) oder 'de' (seine Freundin).
+     Muss VOR dem ersten Laden feststehen, damit storage.js weiss,
+     wessen Daten es holen soll. */
+  const [profileId, setProfileId] = useState(() => {
+    const id = readProfile()
+    setActiveProfile(id)
+    return id
+  })
+  const profile = PROFILES[profileId]
+  const t = textFor(profile.ui)
+  const tt = targetTextFor(profile.targetLang)
+
   const [loading, setLoading] = useState(true)
   const [offline, setOffline] = useState(false)
   const [view, setView] = useState('home')
@@ -46,16 +61,38 @@ function App() {
   const [numberState, setNumberState] = useState(getNumberChallenge)
   const [dailyLog, setDailyLog] = useState([])
 
-  // Beim Start: Vokabeln/Karten + Streak-Log laden.
+  // Beim Start UND bei jedem Umschalten: die Daten der jeweiligen
+  // Seite laden. Vorher alles leeren, damit nie kurz die Vokabeln
+  // des anderen zu sehen sind.
   useEffect(() => {
+    let cancelled = false
+    setLoading(true)
+    setWords([])
+    setCards([])
+    setDailyLog([])
     Promise.all([loadInitial(), loadDailyLog()]).then(([data, log]) => {
+      if (cancelled) return
       setWords(data.words)
       setCards(data.cards)
       setOffline(!data.online)
       setDailyLog(log)
+      setNumberState(getNumberChallenge())
       setLoading(false)
     })
-  }, [])
+    return () => {
+      cancelled = true
+    }
+  }, [profileId])
+
+  /* Auf die andere Seite wechseln (Flagge auf der Startseite). */
+  function switchProfile() {
+    const next = otherProfile(profileId)
+    writeProfile(next)
+    setActiveProfile(next)
+    setOpenSet(null)
+    setView('home')
+    setProfileId(next)
+  }
 
   // Höhe der App an den sichtbaren Bereich koppeln. Auf dem Handy
   // schrumpft dieser, wenn die Tastatur aufklappt -> Eingabefelder
@@ -88,8 +125,10 @@ function App() {
   const due = dueCards(words, cards)
   const daily = dailyStatus(words)
 
-  // Sind heute alle drei Tagesaufgaben erledigt?
-  const allDone = daily.done && numberState.done && due.length === 0
+  // Sind heute alle Tagesaufgaben erledigt? Die Zahlen-Challenge
+  // gibt es nur auf der koreanischen Seite und zählt sonst nicht mit.
+  const numberDone = profile.numberChallenge ? numberState.done : true
+  const allDone = daily.done && numberDone && due.length === 0
 
   // Wenn alle Aufgaben fertig sind, den Tag als erledigt eintragen.
   useEffect(() => {
@@ -174,8 +213,8 @@ function App() {
     return (
       <div className="app">
         <div className="loading">
-          <div className="loading-hangul">한국어</div>
-          <p>Loading your words…</p>
+          <div className="loading-hangul" lang={profile.greetingLang}>{profile.greeting}</div>
+          <p>{t.loading}</p>
         </div>
       </div>
     )
@@ -183,7 +222,7 @@ function App() {
 
   return (
     <div className="app">
-      {offline && <div className="offline-banner">Offline – changes are saved locally.</div>}
+      {offline && <div className="offline-banner">{t.offline}</div>}
 
       <div className="page">
         {view === 'home' && (
@@ -192,13 +231,17 @@ function App() {
             dueCount={due.length}
             dailyDone={daily.done}
             dailyLeft={daily.left}
-            numberDone={numberState.done}
+            numberDone={numberDone}
             streak={streak}
             week={week}
             onReview={() => setView('review')}
             onDaily={() => setView('daily')}
             onNumber={() => setView('number')}
             onCalendar={() => setView('calendar')}
+            onSwitchProfile={switchProfile}
+            profile={profile}
+            t={t}
+            tt={tt}
           />
         )}
         {view === 'daily' && (
@@ -206,6 +249,9 @@ function App() {
             candidates={daily.candidates}
             onIntroduce={handleIntroduce}
             onExit={() => setView('home')}
+            profile={profile}
+            t={t}
+            tt={tt}
           />
         )}
         {view === 'number' && (
@@ -216,6 +262,7 @@ function App() {
             alreadyDone={numberState.done}
             onComplete={handleCompleteNumber}
             onExit={() => setView('home')}
+            t={t}
           />
         )}
         {view === 'library' && (
@@ -224,17 +271,27 @@ function App() {
             onAdd={handleAdd}
             onEdit={handleEditWord}
             onDelete={handleDeleteWord}
+            profile={profile}
+            t={t}
+            tt={tt}
           />
         )}
         {view === 'review' && (
-          <Review initialQueue={due} onRate={handleRate} onExit={() => setView('home')} />
+          <Review
+            initialQueue={due}
+            onRate={handleRate}
+            onExit={() => setView('home')}
+            profile={profile}
+            t={t}
+            tt={tt}
+          />
         )}
-        {view === 'calendar' && <Calendar log={dailyLog} onExit={() => setView('home')} />}
+        {view === 'calendar' && <Calendar log={dailyLog} onExit={() => setView('home')} t={t} />}
         {view === 'sets' &&
           (openSet ? (
-            <SetSheet id={openSet} onExit={() => setOpenSet(null)} />
+            <SetSheet id={openSet} onExit={() => setOpenSet(null)} profile={profile} t={t} />
           ) : (
-            <Sets onOpen={setOpenSet} />
+            <Sets onOpen={setOpenSet} profile={profile} t={t} />
           ))}
       </div>
 
@@ -248,21 +305,21 @@ function App() {
             }}
           >
             <GridIcon />
-            <span>Sets</span>
+            <span>{t.tabSets}</span>
           </button>
           <button
             className={view === 'home' ? 'tab tab-active' : 'tab'}
             onClick={() => setView('home')}
           >
             <HomeIcon />
-            <span>Home</span>
+            <span>{t.tabHome}</span>
           </button>
           <button
             className={view === 'library' ? 'tab tab-active' : 'tab'}
             onClick={() => setView('library')}
           >
             <BookIcon />
-            <span>Library</span>
+            <span>{t.tabLibrary}</span>
           </button>
         </nav>
       )}

@@ -6,14 +6,17 @@ import {
   HashIcon,
   CheckIcon,
   KoreanFlag,
+  GermanFlag,
   MountainBand,
 } from './icons'
 
 /* ============================================================
-   HOME SCREEN (greeting, streak, three action buttons)
-   ============================================================ */
+   STARTSEITE (Begrüßung, Streak, Tagesaufgaben)
 
-const name = 'Franz'
+   Alle Texte kommen von aussen:
+     t   Menütexte (Englisch oder Koreanisch)
+     tt  Texte in der Zielsprache (Koreanisch oder Deutsch)
+   ============================================================ */
 
 function Home({
   vocabCount,
@@ -27,29 +30,39 @@ function Home({
   onDaily,
   onNumber,
   onCalendar,
+  onSwitchProfile,
+  profile,
+  t,
+  tt,
 }) {
+  const Flag = profile.flag === 'de' ? GermanFlag : KoreanFlag
+
   return (
     <div className="screen">
-      {/* ---------- Greeting + streak ---------- */}
+      {/* ---------- Begrüßung + Streak ---------- */}
       <header className="header">
         <div className="greeting-row">
           <div className="greeting">
             <h1 className="greeting-hello">
-              <span className="greeting-ko" lang="ko">
-                안녕하세요
+              <span className="greeting-ko" lang={profile.greetingLang}>
+                {profile.greeting}
               </span>
-              <span className="greeting-name">{name}</span>
+              {profile.name && <span className="greeting-name">{profile.name}</span>}
             </h1>
-            <p className="greeting-sub">Ready for today?</p>
+            <p className="greeting-sub">{t.ready}</p>
           </div>
-          <KoreanFlag />
+
+          {/* Flagge = Umschalter auf die andere Seite der App */}
+          <button className="flag-switch" onClick={onSwitchProfile} title={t.switchLanguage}>
+            <Flag />
+          </button>
         </div>
 
         <button className="streak-card" onClick={onCalendar}>
           <div className="streak-top">
             <FlameIcon />
             <span className="streak-count">{streak}</span>
-            <span className="streak-label">day streak</span>
+            <span className="streak-label">{t.dayStreak}</span>
             <ChevronIcon />
           </div>
           <div className="streak-days">
@@ -65,7 +78,7 @@ function Home({
         </button>
       </header>
 
-      {/* ---------- Three action buttons ---------- */}
+      {/* ---------- Tagesaufgaben ---------- */}
       <main className="actions">
         <button
           className={dailyDone ? 'action action-secondary' : 'action action-full action-full-purple'}
@@ -75,9 +88,9 @@ function Home({
             <SparkIcon />
           </div>
           <div className="action-text">
-            <span className="action-title">Word of the Day</span>
-            <span className="action-sub" lang="ko">
-              오늘의 단어
+            <span className="action-title">{t.wordOfDay}</span>
+            <span className="action-sub" lang={profile.targetLang}>
+              {tt.wordOfDay}
             </span>
           </div>
           {dailyDone ? (
@@ -97,9 +110,9 @@ function Home({
             <CardsIcon />
           </div>
           <div className="action-text">
-            <span className="action-title">Review</span>
-            <span className="action-sub" lang="ko">
-              복습
+            <span className="action-title">{t.review}</span>
+            <span className="action-sub" lang={profile.targetLang}>
+              {tt.review}
             </span>
           </div>
           {dueCount > 0 ? (
@@ -111,29 +124,33 @@ function Home({
           )}
         </button>
 
-        <button
-          className={numberDone ? 'action action-secondary' : 'action action-full action-full-green'}
-          onClick={onNumber}
-        >
-          <div className="action-icon action-icon-number">
-            <HashIcon />
-          </div>
-          <div className="action-text">
-            <span className="action-title">Number of the Day</span>
-            <span className="action-sub" lang="ko">
-              오늘의 숫자
-            </span>
-          </div>
-          {numberDone ? (
-            <span className="done-check">
-              <CheckIcon />
-            </span>
-          ) : (
-            <ChevronIcon />
-          )}
-        </button>
+        {/* Die Zahl des Tages gibt es nur beim Koreanisch-Lernen —
+            auf Deutsch wäre sie zu einfach. */}
+        {profile.numberChallenge && (
+          <button
+            className={numberDone ? 'action action-secondary' : 'action action-full action-full-green'}
+            onClick={onNumber}
+          >
+            <div className="action-icon action-icon-number">
+              <HashIcon />
+            </div>
+            <div className="action-text">
+              <span className="action-title">{t.numberOfDay}</span>
+              <span className="action-sub" lang={profile.targetLang}>
+                {tt.numberOfDay}
+              </span>
+            </div>
+            {numberDone ? (
+              <span className="done-check">
+                <CheckIcon />
+              </span>
+            ) : (
+              <ChevronIcon />
+            )}
+          </button>
+        )}
 
-        <p className="vocab-count-note">{vocabCount} words in your library</p>
+        <p className="vocab-count-note">{t.wordsInLibrary(vocabCount)}</p>
       </main>
 
       {/* Liegt hinter dem Inhalt (siehe .mountain-band in App.css) */}

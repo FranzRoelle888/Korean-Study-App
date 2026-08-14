@@ -15,14 +15,14 @@ import { MoonIcon, CardRidge } from './icons'
    satisfying moment of feedback.
    ============================================================ */
 
-const RATINGS = [
-  { key: 'again', label: 'Again', cls: 'rate-again' },
-  { key: 'hard', label: 'Hard', cls: 'rate-hard' },
-  { key: 'good', label: 'Good', cls: 'rate-good' },
-  { key: 'easy', label: 'Easy', cls: 'rate-easy' },
+const RATING_KEYS = [
+  { key: 'again', cls: 'rate-again' },
+  { key: 'hard', cls: 'rate-hard' },
+  { key: 'good', cls: 'rate-good' },
+  { key: 'easy', cls: 'rate-easy' },
 ]
 
-function Review({ initialQueue, onRate, onExit }) {
+function Review({ initialQueue, onRate, onExit, profile, t, tt }) {
   const [queue, setQueue] = useState(initialQueue)
   const [total] = useState(initialQueue.length)
   const [revealed, setRevealed] = useState(false)
@@ -47,19 +47,19 @@ function Review({ initialQueue, onRate, onExit }) {
               <p className="done-title done-ko pop" lang="ko">
                 좋아요!
               </p>
-              <p className="done-sub">You've cleared all your cards for today.</p>
+              <p className="done-sub">{t.clearedAll}</p>
             </>
           ) : (
             <>
               <div className="success-mark">
                 <MoonIcon />
               </div>
-              <p className="done-title">Nothing to review</p>
-              <p className="done-sub">Your stack is already empty for today.</p>
+              <p className="done-title">{t.nothingToReview}</p>
+              <p className="done-sub">{t.stackEmpty}</p>
             </>
           )}
           <button className="done-btn" onClick={onExit}>
-            Back to home
+            {t.back}
           </button>
         </div>
       </div>
@@ -111,39 +111,39 @@ function Review({ initialQueue, onRate, onExit }) {
 
   return (
     <div className="review">
-      <ReviewHeader done={done} total={total} onExit={onExit} />
+      <ReviewHeader done={done} total={total} onExit={onExit} t={t} />
 
       <div className="review-body">
         <div className={`flashcard ${flashClass} ${exiting ? 'card-fly-right' : ''}`}>
           <CardRidge />
           <span className="card-tag">
-            {isTyping ? 'EN → KO · type' : 'KO → EN · flip'}
+            {isTyping ? tt.tagType : tt.tagFlip}
           </span>
 
           {isTyping ? (
             <>
-              <div className="card-front" lang="en">
+              <div className="card-front" lang={profile.knownLang}>
                 {card.en}
               </div>
               {answerShown && (
                 <div className={correct ? 'card-answer ok' : 'card-answer bad'}>
-                  <span lang="ko" className="answer-ko">
+                  <span lang={profile.targetLang} className="answer-ko">
                     {card.ko}
                   </span>
                   <span className="answer-note">
-                    {correct ? 'Correct ✓' : "Your answer wasn't right"}
+                    {correct ? t.correct : t.wrong}
                   </span>
                 </div>
               )}
             </>
           ) : (
             <>
-              <div className="card-front" lang="ko">
+              <div className="card-front" lang={profile.targetLang}>
                 {card.ko}
               </div>
               {answerShown && (
                 <div className="card-answer neutral">
-                  <span lang="en" className="answer-en">
+                  <span lang={profile.knownLang} className="answer-en">
                     {card.en}
                   </span>
                 </div>
@@ -158,28 +158,28 @@ function Review({ initialQueue, onRate, onExit }) {
               autoFocus
               value={typed}
               onChange={(e) => setTyped(e.target.value)}
-              placeholder="Type Korean…"
-              lang="ko"
+              placeholder={tt.typePlaceholder}
+              lang={profile.targetLang}
               autoComplete="off"
             />
             <button type="submit" className="check-btn">
-              Check
+              {t.check}
             </button>
           </form>
         )}
 
         {!answerShown && !isTyping && (
           <button className="reveal-btn" onClick={() => setRevealed(true)}>
-            Flip
+            {t.showAnswer}
           </button>
         )}
       </div>
 
       {answerShown && (
         <div className="ratings">
-          {RATINGS.map((r) => (
+          {RATING_KEYS.map((r) => (
             <button key={r.key} className={`rate ${r.cls}`} onClick={() => handleRate(r.key)}>
-              <span className="rate-label">{r.label}</span>
+              <span className="rate-label">{t[r.key]}</span>
               <span className="rate-when">{formatInterval(previewInterval(card, r.key))}</span>
             </button>
           ))}
@@ -189,11 +189,11 @@ function Review({ initialQueue, onRate, onExit }) {
   )
 }
 
-function ReviewHeader({ done, total, onExit }) {
+function ReviewHeader({ done, total, onExit, t }) {
   const pct = total > 0 ? (done / total) * 100 : 0
   return (
     <div className="review-header">
-      <button className="back-btn" onClick={onExit} aria-label="Back">
+      <button className="back-btn" onClick={onExit} aria-label={t.back}>
         <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="m15 6-6 6 6 6" />
         </svg>

@@ -188,6 +188,23 @@ export function KoreanFlag({ width = 30 }) {
   )
 }
 
+/* Deutsche Flagge, gleiche Größe wie die Taegukgi. */
+export function GermanFlag({ width = 30 }) {
+  return (
+    <svg
+      viewBox="0 0 36 24"
+      width={width}
+      height={(width / 36) * 24}
+      style={{ flex: 'none', borderRadius: 2, border: '1px solid rgba(31,27,24,.1)' }}
+      aria-hidden="true"
+    >
+      <rect width="36" height="8" fill="#1f1b18" />
+      <rect y="8" width="36" height="8" fill="#c1443b" />
+      <rect y="16" width="36" height="8" fill="#e0b040" />
+    </svg>
+  )
+}
+
 /* Bergkette mit Schnee und Kiefern, liegt hinter dem Inhalt am
    unteren Rand von .screen und läuft weich in die Tab-Leiste aus. */
 export function MountainBand() {

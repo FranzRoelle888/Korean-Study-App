@@ -7,7 +7,7 @@ import { PlusIcon, SearchIcon, EditIcon, TrashIcon } from './icons'
    - searchable list; each row can be edited or deleted
    ============================================================ */
 
-function Library({ vocab, onAdd, onEdit, onDelete }) {
+function Library({ vocab, onAdd, onEdit, onDelete, profile, t, tt }) {
   const [en, setEn] = useState('')
   const [ko, setKo] = useState('')
   const [error, setError] = useState('')
@@ -19,11 +19,11 @@ function Library({ vocab, onAdd, onEdit, onDelete }) {
     e.preventDefault()
     const result = onAdd(en, ko)
     if (result.error) {
-      setError(result.error)
+      setError(result.error === 'duplicate' ? t.duplicate(result.word) : t[result.error])
       setJustAdded('')
       return
     }
-    setJustAdded(`"${result.word.ko}" added ✓`)
+    setJustAdded(t.addedOk(result.word.ko))
     setError('')
     setEn('')
     setKo('')
@@ -41,27 +41,27 @@ function Library({ vocab, onAdd, onEdit, onDelete }) {
 
   return (
     <div className="library">
-      <h1 className="page-title">Library</h1>
-      <p className="page-sub">{vocab.length} words</p>
+      <h1 className="page-title">{t.library}</h1>
+      <p className="page-sub">{t.wordsCount(vocab.length)}</p>
 
       {/* ---------- Add ---------- */}
       <form className="add-card" onSubmit={handleSubmit}>
         <label className="field">
-          <span>English</span>
+          <span>{profile.knownName}</span>
           <input
             value={en}
             onChange={(e) => setEn(e.target.value)}
-            placeholder="e.g. water"
+            placeholder={tt.knownExample}
             autoComplete="off"
           />
         </label>
         <label className="field">
-          <span>Korean</span>
+          <span>{profile.targetName}</span>
           <input
             value={ko}
             onChange={(e) => setKo(e.target.value)}
-            placeholder="e.g. 물"
-            lang="ko"
+            placeholder={tt.example}
+            lang={profile.targetLang}
             autoComplete="off"
           />
         </label>
@@ -70,7 +70,7 @@ function Library({ vocab, onAdd, onEdit, onDelete }) {
         {justAdded && <p className="add-msg add-ok">{justAdded}</p>}
 
         <button type="submit" className="add-btn">
-          <PlusIcon /> Add
+          <PlusIcon /> {t.add}
         </button>
       </form>
 
@@ -80,36 +80,36 @@ function Library({ vocab, onAdd, onEdit, onDelete }) {
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search…"
+          placeholder={t.search}
           autoComplete="off"
         />
       </div>
 
       {/* ---------- Sort ---------- */}
       <div className="sort-row">
-        <span className="sort-label">Sort:</span>
+        <span className="sort-label">{t.sort}</span>
         <button
           className={sort === 'newest' ? 'sort-pill sort-active' : 'sort-pill'}
           onClick={() => setSort('newest')}
         >
-          Newest
+          {t.newest}
         </button>
         <button
           className={sort === 'alpha' ? 'sort-pill sort-active' : 'sort-pill'}
           onClick={() => setSort('alpha')}
         >
-          A–Z
+          {t.alpha}
         </button>
       </div>
 
       {/* ---------- List ---------- */}
       <ul className="vocab-list">
         {shown.map((v) => (
-          <VocabRow key={v.id} vocab={v} onEdit={onEdit} onDelete={onDelete} />
+          <VocabRow key={v.id} vocab={v} onEdit={onEdit} onDelete={onDelete} profile={profile} t={t} />
         ))}
         {shown.length === 0 && (
           <li className="vocab-empty">
-            {vocab.length === 0 ? 'No words yet – add your first one above.' : 'Nothing found.'}
+            {vocab.length === 0 ? t.noWords : t.nothingFound}
           </li>
         )}
       </ul>
@@ -117,7 +117,7 @@ function Library({ vocab, onAdd, onEdit, onDelete }) {
   )
 }
 
-function VocabRow({ vocab, onEdit, onDelete }) {
+function VocabRow({ vocab, onEdit, onDelete, profile, t }) {
   const [mode, setMode] = useState('view') // 'view' | 'edit' | 'confirmDelete'
   const [en, setEn] = useState(vocab.en)
   const [ko, setKo] = useState(vocab.ko)
@@ -134,7 +134,7 @@ function VocabRow({ vocab, onEdit, onDelete }) {
     e.preventDefault()
     const res = onEdit(vocab.id, en, ko)
     if (res.error) {
-      setError(res.error)
+      setError(res.error === 'duplicate' ? t.duplicate(res.word) : t[res.error])
       return
     }
     setMode('view')
@@ -148,24 +148,24 @@ function VocabRow({ vocab, onEdit, onDelete }) {
             className="edit-input"
             value={ko}
             onChange={(e) => setKo(e.target.value)}
-            lang="ko"
-            placeholder="Korean"
+            lang={profile.targetLang}
+            placeholder={profile.targetName}
             autoComplete="off"
           />
           <input
             className="edit-input"
             value={en}
             onChange={(e) => setEn(e.target.value)}
-            placeholder="English"
+            placeholder={profile.knownName}
             autoComplete="off"
           />
           {error && <p className="add-msg add-error">{error}</p>}
           <div className="edit-actions">
             <button type="button" className="edit-cancel" onClick={() => setMode('view')}>
-              Cancel
+              {t.cancel}
             </button>
             <button type="submit" className="edit-save">
-              Save
+              {t.save}
             </button>
           </div>
         </form>
@@ -176,13 +176,13 @@ function VocabRow({ vocab, onEdit, onDelete }) {
   if (mode === 'confirmDelete') {
     return (
       <li className="vocab-row vocab-row-confirm">
-        <span className="confirm-text">Delete "{vocab.ko}"?</span>
+        <span className="confirm-text">{t.deleteWord(vocab.ko)}</span>
         <div className="confirm-actions">
           <button className="edit-cancel" onClick={() => setMode('view')}>
-            No
+            {t.no}
           </button>
           <button className="confirm-delete" onClick={() => onDelete(vocab.id)}>
-            Delete
+            {t.delete}
           </button>
         </div>
       </li>
@@ -192,19 +192,19 @@ function VocabRow({ vocab, onEdit, onDelete }) {
   return (
     <li className="vocab-row">
       <div className="vocab-texts">
-        <span className="vocab-ko" lang="ko">
+        <span className="vocab-ko" lang={profile.targetLang}>
           {vocab.ko}
         </span>
         <span className="vocab-en">{vocab.en}</span>
       </div>
       <div className="row-actions">
-        <button className="row-btn" onClick={startEdit} aria-label="Edit">
+        <button className="row-btn" onClick={startEdit} aria-label={t.edit}>
           <EditIcon />
         </button>
         <button
           className="row-btn row-btn-danger"
           onClick={() => setMode('confirmDelete')}
-          aria-label="Delete"
+          aria-label={t.delete}
         >
           <TrashIcon />
         </button>

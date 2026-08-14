@@ -1,5 +1,6 @@
 import { supabase } from './supabaseClient'
-import { dailyPool } from './dailyPool'
+import { poolFor } from './dailyPool'
+import { PROFILES, DEFAULT_PROFILE } from './profiles'
 
 /* ============================================================
    DATENSCHICHT + WIEDERHOLUNGS-ALGORITHMUS
@@ -25,26 +26,79 @@ const MIN_EASE = 1.3
 const DAILY_NEW = 2 // neue Vokabeln pro Tag (leicht änderbar)
 const REVIEW_CAP = 50 // max. Nachhol-Karten pro Tag
 
-const WORDS_CACHE = 'korean-app:words'
-const CARDS_CACHE = 'korean-app:cards'
+/* ============================================================
+   TRENNUNG DER BEIDEN LERNENDEN
+
+   Die Datenbank enthält die Daten von zwei Leuten. Getrennt werden
+   sie über die Spalte "profile" ('ko' = Franz, 'de' = seine
+   Freundin). Damit das verlässlich ist, laufen ALLE Zugriffe durch
+   die zwei Helfer hier — nirgendwo sonst im Code steht ein Filter.
+
+   Dadurch gibt es keine Zeile, die beiden gehört. Keiner kann also
+   den Fortschritt des anderen überschreiben, auch nicht, wenn
+   beide gleichzeitig lernen.
+   ============================================================ */
+
+let activeProfile = DEFAULT_PROFILE
+
+/* Wird beim Start und bei jedem Umschalten aus App.jsx gesetzt. */
+export function setActiveProfile(id) {
+  activeProfile = PROFILES[id] ? id : DEFAULT_PROFILE
+}
+export function getActiveProfile() {
+  return activeProfile
+}
+
+/* Jede Abfrage bekommt den Filter, jede neue Zeile das Kürzel. */
+function mine(query) {
+  return query.eq('profile', activeProfile)
+}
+function stamp(row) {
+  return { ...row, profile: activeProfile }
+}
+
+/* Auch der Offline-Puffer wird getrennt — sonst würden sich beim
+   Umschalten auf demselben Gerät die Zwischenstände überschreiben. */
+function cacheKey(name) {
+  return `korean-app:${activeProfile}:${name}`
+}
+
+/* Einmalig beim Update: Vor der Trennung hiess der Puffer noch
+   'korean-app:words' ohne Kürzel. Diese Altbestände gehören zur
+   koreanischen Seite und werden einmal umgehängt — sonst stünde
+   Franz nach dem Update ohne Offline-Puffer da. */
+;(function migrateOldCache() {
+  try {
+    for (const name of ['words', 'cards', 'log', 'daily', 'number']) {
+      const old = localStorage.getItem(`korean-app:${name}`)
+      const target = `korean-app:ko:${name}`
+      if (old !== null && localStorage.getItem(target) === null) {
+        localStorage.setItem(target, old)
+      }
+      localStorage.removeItem(`korean-app:${name}`)
+    }
+  } catch {
+    /* kein Speicherzugriff — dann bleibt eben alles beim Alten */
+  }
+})()
 
 /* ---------- Puffer (localStorage) ---------- */
 export function writeWordsCache(words) {
-  localStorage.setItem(WORDS_CACHE, JSON.stringify(words))
+  localStorage.setItem(cacheKey('words'), JSON.stringify(words))
 }
 export function writeCardsCache(cards) {
-  localStorage.setItem(CARDS_CACHE, JSON.stringify(cards))
+  localStorage.setItem(cacheKey('cards'), JSON.stringify(cards))
 }
 function readWordsCache() {
   try {
-    return JSON.parse(localStorage.getItem(WORDS_CACHE)) || []
+    return JSON.parse(localStorage.getItem(cacheKey('words'))) || []
   } catch {
     return []
   }
 }
 function readCardsCache() {
   try {
-    return JSON.parse(localStorage.getItem(CARDS_CACHE)) || []
+    return JSON.parse(localStorage.getItem(cacheKey('cards'))) || []
   } catch {
     return []
   }
@@ -110,8 +164,8 @@ function addDays(iso, n) {
 export async function loadInitial() {
   try {
     const [wRes, cRes] = await Promise.all([
-      supabase.from('words').select('*').order('created_at', { ascending: false }),
-      supabase.from('cards').select('*'),
+      mine(supabase.from('words').select('*')).order('created_at', { ascending: false }),
+      mine(supabase.from('cards').select('*')),
     ])
     if (wRes.error) throw wRes.error
     if (cRes.error) throw cRes.error
@@ -187,14 +241,16 @@ export function isDuplicate(words, ko) {
 /* ---------- Vokabel anlegen (rein, ohne Speichern) ----------
    Prüft Eingaben + Duplikat und erzeugt Wort + zwei Karten.
    Gibt { error } zurück oder { word, c1, c2 }. */
+/* Fehler kommen als Kürzel zurück, nicht als fertiger Satz — die
+   Oberfläche übersetzt sie in die jeweilige Menüsprache. */
 export function validateNewWord(words, en, ko) {
   const cleanEn = en.trim()
   const cleanKo = ko.trim()
   if (!cleanEn || !cleanKo) {
-    return { error: 'Please fill in both fields.' }
+    return { error: 'fillBoth' }
   }
   if (isDuplicate(words, cleanKo)) {
-    return { error: `"${cleanKo}" is already in your library.` }
+    return { error: 'duplicate', word: cleanKo }
   }
   const word = { id: crypto.randomUUID(), en: cleanEn, ko: cleanKo, createdAt: Date.now() }
   return { word, c1: newCard(word.id, 'en'), c2: newCard(word.id, 'ko') }
@@ -202,14 +258,16 @@ export function validateNewWord(words, en, ko) {
 
 /* ---------- In die Cloud schreiben ---------- */
 export async function persistNewWord(word, c1, c2) {
-  const we = await supabase.from('words').insert(wordToRow(word))
+  const we = await supabase.from('words').insert(stamp(wordToRow(word)))
   if (we.error) throw we.error
-  const ce = await supabase.from('cards').insert([cardToRow(c1), cardToRow(c2)])
+  const ce = await supabase.from('cards').insert([stamp(cardToRow(c1)), stamp(cardToRow(c2))])
   if (ce.error) throw ce.error
 }
 
 export async function persistCard(card) {
-  const { error } = await supabase.from('cards').update(cardToRow(card)).eq('id', card.id)
+  const { error } = await mine(
+    supabase.from('cards').update(cardToRow(card)).eq('id', card.id)
+  )
   if (error) throw error
 }
 
@@ -221,17 +279,17 @@ export function validateEdit(words, id, en, ko) {
   const cleanEn = en.trim()
   const cleanKo = ko.trim()
   if (!cleanEn || !cleanKo) {
-    return { error: 'Please fill in both fields.' }
+    return { error: 'fillBoth' }
   }
   const dup = words.some((w) => w.id !== id && w.ko.trim() === cleanKo)
   if (dup) {
-    return { error: `"${cleanKo}" is already in your library.` }
+    return { error: 'duplicate', word: cleanKo }
   }
   return { en: cleanEn, ko: cleanKo }
 }
 
 export async function updateWordCloud(id, en, ko) {
-  const { error } = await supabase.from('words').update({ en, ko }).eq('id', id)
+  const { error } = await mine(supabase.from('words').update({ en, ko }).eq('id', id))
   if (error) throw error
 }
 
@@ -239,7 +297,7 @@ export async function updateWordCloud(id, en, ko) {
    Die zwei zugehörigen Karten werden in der DB automatisch mit
    gelöscht (on delete cascade). */
 export async function deleteWordCloud(id) {
-  const { error } = await supabase.from('words').delete().eq('id', id)
+  const { error } = await mine(supabase.from('words').delete().eq('id', id))
   if (error) throw error
 }
 
@@ -364,11 +422,12 @@ export function dueCards(words, cards) {
    VOKABEL DES TAGES (Nachziehstapel)
    ============================================================ */
 
-const DAILY_KEY = 'korean-app:daily' // { date, introduced } – Tageszähler
+// Tageszaehler — Schluessel getrennt je Lernendem (siehe cacheKey)
+const DAILY_KEY = () => cacheKey(`daily`)
 
 function getDailyProgress() {
   try {
-    const d = JSON.parse(localStorage.getItem(DAILY_KEY))
+    const d = JSON.parse(localStorage.getItem(DAILY_KEY()))
     if (d && d.date === todayStr()) return d
   } catch {
     /* egal */
@@ -378,14 +437,14 @@ function getDailyProgress() {
 function bumpDailyProgress() {
   const p = getDailyProgress()
   const next = { date: todayStr(), introduced: p.introduced + 1 }
-  localStorage.setItem(DAILY_KEY, JSON.stringify(next))
+  localStorage.setItem(DAILY_KEY(), JSON.stringify(next))
 }
 
 // Die nächsten Pool-Einträge, die noch NICHT in der Bibliothek sind.
 function nextFromPool(words, count) {
   const have = new Set(words.map((w) => w.ko.trim()))
   const list = []
-  for (const e of dailyPool) {
+  for (const e of poolFor(activeProfile)) {
     if (list.length >= count) break
     if (!have.has(e.ko.trim())) list.push(e)
   }
@@ -451,26 +510,26 @@ export function nativeKorean(n) {
   return s
 }
 
-const NUMBER_KEY = 'korean-app:number' // { date, number, done }
+const NUMBER_KEY = () => cacheKey(`number`)
 
 // Die Zahl des Tages (einmal pro Tag festgelegt, damit man nicht
 // neu würfeln kann, bis eine leichte kommt).
 export function getNumberChallenge() {
   try {
-    const d = JSON.parse(localStorage.getItem(NUMBER_KEY))
+    const d = JSON.parse(localStorage.getItem(NUMBER_KEY()))
     if (d && d.date === todayStr()) return d
   } catch {
     /* egal */
   }
   const fresh = { date: todayStr(), number: 1 + Math.floor(Math.random() * 99), done: false }
-  localStorage.setItem(NUMBER_KEY, JSON.stringify(fresh))
+  localStorage.setItem(NUMBER_KEY(), JSON.stringify(fresh))
   return fresh
 }
 
 export function completeNumberChallenge() {
   const c = getNumberChallenge()
   const next = { ...c, done: true }
-  localStorage.setItem(NUMBER_KEY, JSON.stringify(next))
+  localStorage.setItem(NUMBER_KEY(), JSON.stringify(next))
   return next
 }
 
@@ -483,14 +542,14 @@ export function completeNumberChallenge() {
    leer + Zahlen-Challenge). Die Streak = wie viele Tage am Stück.
    ============================================================ */
 
-const LOG_CACHE = 'korean-app:log'
+const LOG_CACHE = () => cacheKey(`log`)
 
 function writeLogCache(rows) {
-  localStorage.setItem(LOG_CACHE, JSON.stringify(rows))
+  localStorage.setItem(LOG_CACHE(), JSON.stringify(rows))
 }
 function readLogCache() {
   try {
-    return JSON.parse(localStorage.getItem(LOG_CACHE)) || []
+    return JSON.parse(localStorage.getItem(LOG_CACHE())) || []
   } catch {
     return []
   }
@@ -499,7 +558,7 @@ function readLogCache() {
 // Alle erledigten Tage laden (mit Offline-Puffer).
 export async function loadDailyLog() {
   try {
-    const { data, error } = await supabase.from('daily_log').select('*')
+    const { data, error } = await mine(supabase.from('daily_log').select('*'))
     if (error) throw error
     writeLogCache(data)
     return data
@@ -515,9 +574,12 @@ export async function markDayDone(logRows, day) {
     ? logRows.map((r) => (r.day === day ? { ...r, done: true } : r))
     : [...logRows, { day, done: true }]
   writeLogCache(next)
+  /* Das Kürzel MUSS mit, sonst wäre der Tag für beide Lernenden
+     derselbe Eintrag — und ein erledigter Tag von ihr würde den
+     Tag des anderen mit abhaken. */
   supabase
     .from('daily_log')
-    .upsert({ day, done: true })
+    .upsert(stamp({ day, done: true }))
     .then(({ error }) => {
       if (error) console.warn('Streak-Speichern fehlgeschlagen:', error.message)
     })

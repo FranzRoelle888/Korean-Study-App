@@ -32,12 +32,12 @@ const SET_ICONS = {
   globe: GlobeIcon,
 }
 
-function Sets({ onOpen }) {
+function Sets({ onOpen, t }) {
   return (
     <div className="screen sets-screen">
       <header className="header">
-        <h1 className="sets-title">Sets</h1>
-        <p className="sets-sub">Topic sheets to look things up</p>
+        <h1 className="sets-title">{t.setsTitle}</h1>
+        <p className="sets-sub">{t.setsSub}</p>
       </header>
 
       <main className="set-grid">

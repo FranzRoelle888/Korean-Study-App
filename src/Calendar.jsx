@@ -9,7 +9,7 @@ const pad = (n) => String(n).padStart(2, '0')
 // Wochentage Mo–So auf Koreanisch (die Woche startet hier montags)
 const WEEKDAYS = ['월', '화', '수', '목', '금', '토', '일']
 
-function Calendar({ log, onExit }) {
+function Calendar({ log, onExit, t }) {
   const done = doneDaysSet(log)
   const [offset, setOffset] = useState(0) // 0 = current month, -1 = previous …
 
@@ -36,16 +36,16 @@ function Calendar({ log, onExit }) {
   return (
     <div className="calendar">
       <div className="review-header">
-        <button className="back-btn" onClick={onExit} aria-label="Back">
+        <button className="back-btn" onClick={onExit} aria-label={t.back}>
           <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="m15 6-6 6 6 6" />
           </svg>
         </button>
-        <span className="daily-label">Your learning days</span>
+        <span className="daily-label">{t.learningDays}</span>
       </div>
 
       <div className="cal-nav">
-        <button className="cal-arrow" onClick={() => setOffset((o) => o - 1)} aria-label="Previous month">
+        <button className="cal-arrow" onClick={() => setOffset((o) => o - 1)} aria-label={t.prevMonth}>
           ‹
         </button>
         <span className="cal-month">{monthName}</span>
@@ -53,7 +53,7 @@ function Calendar({ log, onExit }) {
           className="cal-arrow"
           onClick={() => setOffset((o) => Math.min(0, o + 1))}
           disabled={offset >= 0}
-          aria-label="Next month"
+          aria-label={t.nextMonth}
         >
           ›
         </button>
