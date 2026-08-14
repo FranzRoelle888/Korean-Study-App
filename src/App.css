@@ -2734,3 +2734,239 @@
   font-size: 19px;
   overflow-wrap: break-word;
 }
+
+/* ============================================================
+   DEUTSCH-THEME (Bauhaus: Tusche · Rot · Gold)
+
+   Gilt NUR fuer die deutsche Seite. Deshalb haengt alles an
+   [data-profile='de'] am Wurzelelement (wird in App.jsx gesetzt)
+   statt an :root — sonst wuerde das Hanji-Theme der koreanischen
+   Seite mit ueberschrieben.
+
+   Die drei Farben haben Rollen, keine festen Plaetze:
+     Tusche = Struktur   (Text, Wort des Tages, Primaerknoepfe)
+     Rot    = Aufforderung (Wiederholen, Faelligkeit, Fortschritt)
+     Gold   = Ertrag     (erledigte Tage, richtige Antwort, Easy)
+   ============================================================ */
+
+:root[data-profile='de'] {
+  --bg: #f3f2f2;
+  --surface: #ffffff;
+  --surface-2: #e9e6e0;
+  --text: #201e1d;
+  --text-soft: #6e6a64;
+  --border: #dad6cf;
+
+  --primary: #201e1d;
+  --primary-soft: #edeae4;
+  --accent: #ec3013;
+  --accent-soft: #fbdcd6;
+
+  --gold: #d9a521;
+  --gold-mid: #b4861a;
+  --gold-ink: #8a6410;
+  --accent-ink: #c6250c;
+
+  --shadow-sm: 0 2px 8px rgba(32, 30, 29, 0.06);
+  --shadow-md: 0 8px 24px rgba(32, 30, 29, 0.1);
+
+  /* Archivo zuerst — die koreanischen Fallbacks bleiben aber drin,
+     weil das MENUE auf dieser Seite Koreanisch ist. Archivo hat
+     kein Hangul; ohne die Fallbacks wuerde ihre Oberflaeche in
+     einer Ersatzschrift dargestellt. */
+  --sans: Archivo, system-ui, -apple-system, 'Segoe UI', 'Apple SD Gothic Neo',
+    'Malgun Gothic', 'Noto Sans KR', sans-serif;
+}
+
+/* ---------- Begruessung: flaches Rot statt Verlauf ---------- */
+:root[data-profile='de'] .greeting-ko {
+  background: none;
+  -webkit-text-fill-color: currentColor;
+  color: var(--accent);
+  font-weight: 800;
+  letter-spacing: -0.6px;
+}
+
+/* ---------- Tagesaufgaben ---------- */
+:root[data-profile='de'] .action-full-purple {
+  background: var(--primary);
+}
+
+:root[data-profile='de'] .action-full-orange {
+  background: var(--accent);
+}
+
+:root[data-profile='de'] .daily-card {
+  background: var(--primary);
+}
+
+/* ---------- Bewertungsskala: Rot -> Rot-Tint -> Tusche -> Gold ---------- */
+:root[data-profile='de'] .rate-again {
+  background: var(--accent);
+  color: #fff;
+}
+
+:root[data-profile='de'] .rate-hard {
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+}
+
+:root[data-profile='de'] .rate-good {
+  background: var(--primary);
+  color: #fff;
+}
+
+:root[data-profile='de'] .rate-easy {
+  background: var(--gold);
+  color: var(--text);
+}
+
+/* ---------- Erfolg = Gold, Fehler = Rot ---------- */
+:root[data-profile='de'] .done-check {
+  background: var(--gold);
+  color: var(--text);
+}
+
+:root[data-profile='de'] .card-answer.ok .answer-note,
+:root[data-profile='de'] .add-ok {
+  color: var(--gold-ink);
+}
+
+:root[data-profile='de'] .card-answer.ok .answer-ko {
+  color: var(--text);
+}
+
+:root[data-profile='de'] .card-answer.bad .answer-note,
+:root[data-profile='de'] .add-error {
+  color: var(--accent-ink);
+}
+
+/* Aufleuchten der Karte: Gold statt Gruen, Rot bleibt Rot */
+:root[data-profile='de'] .flash-ok {
+  animation: flashGold 0.65s ease;
+}
+
+@keyframes flashGold {
+  0% {
+    box-shadow: var(--shadow-md);
+  }
+
+  25% {
+    box-shadow: 0 0 0 4px rgba(217, 165, 33, 0.6), 0 0 34px 6px rgba(217, 165, 33, 0.45);
+  }
+
+  100% {
+    box-shadow: var(--shadow-md);
+  }
+}
+
+:root[data-profile='de'] .num-field.ok input {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(217, 165, 33, 0.2);
+}
+
+/* ---------- Karten ---------- */
+:root[data-profile='de'] .card-tag {
+  background: #edeae4;
+}
+
+/* Deutsche Woerter sind lang: 44px statt 60px, ausgewogener Umbruch */
+:root[data-profile='de'] .card-front:lang(de) {
+  font-size: 44px;
+  font-weight: 600;
+  text-wrap: balance;
+}
+
+/* ---------- Streak: erledigt Gold, heute offen roter Ring ---------- */
+:root[data-profile='de'] .dot-on {
+  background: var(--gold);
+  border-color: var(--gold);
+  box-shadow: none;
+}
+
+:root[data-profile='de'] .streak-day-today .dot {
+  outline-color: var(--accent);
+}
+
+:root[data-profile='de'] .streak-day-today .dot-label {
+  color: var(--accent-ink);
+}
+
+:root[data-profile='de'] .streak-top {
+  color: var(--gold-mid);
+}
+
+/* ---------- Untere Leiste ---------- */
+:root[data-profile='de'] .tabbar {
+  border-top: 1px solid #dedbd5;
+  background: #edebe7;
+}
+
+:root[data-profile='de'] .tab-active {
+  color: var(--accent);
+}
+
+/* ---------- Kalender ---------- */
+:root[data-profile='de'] .cal-done {
+  background: var(--gold);
+  border-color: var(--gold);
+  box-shadow: none;
+}
+
+:root[data-profile='de'] .cal-today {
+  outline-color: var(--accent);
+}
+
+/* ---------- Fortschrittsbalken ist Rot ---------- */
+:root[data-profile='de'] .progress-bar {
+  background: var(--accent);
+}
+
+/* ---------- Grosse Zahl / Verlaufstexte: flaches Rot ---------- */
+:root[data-profile='de'] .big-number {
+  background: none;
+  -webkit-text-fill-color: currentColor;
+  color: var(--accent);
+}
+
+/* ---------- Set-Kacheln ---------- */
+:root[data-profile='de'] .set-card-ko {
+  color: var(--primary);
+}
+
+:root[data-profile='de'] .set-icon {
+  color: var(--accent);
+}
+
+:root[data-profile='de'] .day-element {
+  background: var(--primary);
+  color: #fff;
+}
+
+:root[data-profile='de'] .rule-der {
+  background: var(--primary);
+}
+
+:root[data-profile='de'] .rule-die {
+  background: var(--accent);
+}
+
+:root[data-profile='de'] .rule-das {
+  background: var(--gold-mid);
+}
+
+/* ---------- Stadtsilhouette statt Bergkette ---------- */
+:root[data-profile='de'] .mountain-fade {
+  background: linear-gradient(
+    180deg,
+    rgba(237, 235, 231, 0) 0%,
+    rgba(237, 235, 231, 0.75) 55%,
+    #edebe7 100%
+  );
+}
+
+/* ---------- Fokus: nie der Browser-Standard ---------- */
+:root[data-profile='de'] :where(button, a, input, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}

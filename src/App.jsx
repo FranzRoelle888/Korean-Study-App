@@ -34,7 +34,7 @@ import Calendar from './Calendar'
 import Sets from './Sets'
 import SetSheet from './SetSheet'
 import SetSheetDe from './SetSheetDe'
-import { HomeIcon, BookIcon, GridIcon } from './icons'
+import { HomeIcon, BookIcon, GridIcon, DomIcon } from './icons'
 import { PROFILES, readProfile, writeProfile, otherProfile } from './profiles'
 import { textFor, targetTextFor } from './i18n'
 import { setActiveProfile } from './storage'
@@ -86,6 +86,13 @@ function App() {
   }, [profileId])
 
   /* Auf die andere Seite wechseln (Flagge auf der Startseite). */
+  /* Das Theme haengt am Wurzelelement: [data-profile='de'] schaltet
+     in App.css das Deutsch-Theme ein, ohne die koreanische Seite
+     anzufassen. */
+  useEffect(() => {
+    document.documentElement.dataset.profile = profileId
+  }, [profileId])
+
   function switchProfile() {
     const next = otherProfile(profileId)
     writeProfile(next)
@@ -316,7 +323,7 @@ function App() {
             className={view === 'home' ? 'tab tab-active' : 'tab'}
             onClick={() => setView('home')}
           >
-            <HomeIcon />
+            {profile.id === 'de' ? <DomIcon /> : <HomeIcon />}
             <span>{t.tabHome}</span>
           </button>
           <button

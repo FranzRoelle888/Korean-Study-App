@@ -8,6 +8,7 @@ import {
   KoreanFlag,
   GermanFlag,
   MountainBand,
+  SkylineBand,
 } from './icons'
 
 /* ============================================================
@@ -36,6 +37,8 @@ function Home({
   tt,
 }) {
   const Flag = profile.flag === 'de' ? GermanFlag : KoreanFlag
+  /* Bergkette bzw. Stadtsilhouette hinter dem Inhalt */
+  const Band = profile.id === 'de' ? SkylineBand : MountainBand
 
   return (
     <div className="screen">
@@ -69,7 +72,7 @@ function Home({
             {week.map((d) => (
               <div key={d.day} className={d.isToday ? 'streak-day streak-day-today' : 'streak-day'}>
                 <div className={d.done ? 'dot dot-on' : 'dot'} />
-                <span className="dot-label" lang="ko">
+                <span className="dot-label" lang={profile.targetLang}>
                   {d.label}
                 </span>
               </div>
@@ -154,7 +157,7 @@ function Home({
       </main>
 
       {/* Liegt hinter dem Inhalt (siehe .mountain-band in App.css) */}
-      <MountainBand />
+      <Band />
     </div>
   )
 }

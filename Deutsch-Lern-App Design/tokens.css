@@ -1,0 +1,115 @@
+/* ============================================================
+   Deutsch-Theme — Ersatz für den :root-Block in src/index.css
+   Nur Farben/Token, keine Struktur. Namen bleiben identisch,
+   damit App.css unverändert weiterläuft.
+   ============================================================ */
+
+:root {
+  /* --- Grundflächen (neutrales Papier) --- */
+  --bg: #f3f2f2;        /* Seitenhintergrund */
+  --surface: #ffffff;   /* Karten / Buttons */
+  --surface-2: #e9e6e0; /* abgesetzte Flächen, leere Punkte */
+  --text: #201e1d;      /* Tusche */
+  --text-soft: #6e6a64;
+  --border: #dad6cf;
+
+  /* --- Rollen, nicht Dekoration ---
+     Tusche = Struktur: Text, Wort-des-Tages-Karte, alle Primärbuttons
+     Rot    = Aufforderung: Review, Fälligkeit, Fortschritt, aktiver Tab, Again, heute offen
+     Gold   = Ertrag: erledigte Streak-Tage, richtige Antwort, Easy, Bibliotheksstand, Artikel */
+  --primary: #201e1d;      /* Tusche als Primärfläche (früher Blau) */
+  --primary-soft: #edeae4;
+  --accent: #ec3013;       /* Rot */
+  --accent-soft: #fbdcd6;
+  --gold: #d9a521;         /* Gold — Flächen */
+  --gold-mid: #b4861a;     /* Gold — große Schrift (Artikel ab 24px) */
+  --gold-ink: #8a6410;     /* Gold — kleine Schrift auf Weiß (>= 4.5:1) */
+  --accent-ink: #c6250c;   /* Rot — kleine Schrift auf Weiß */
+
+  --shadow-sm: 0 2px 8px rgba(32, 30, 29, 0.06);
+  --shadow-md: 0 8px 24px rgba(32, 30, 29, 0.10);
+
+  --sans: Archivo, system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  color-scheme: light;   /* der @media-Dark-Block in index.css entfällt */
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* ------------------------------------------------------------
+   Punktuelle Überschreibungen für App.css
+   (ans Ende von src/App.css hängen — Struktur bleibt unberührt)
+   ------------------------------------------------------------ */
+
+/* Begrüßung: flaches Rot statt Verlauf (kein background-clip mehr) */
+.greeting-de {
+  background: none;
+  -webkit-text-fill-color: currentColor;
+  color: var(--accent);
+  font-weight: 800;
+  letter-spacing: -0.6px;
+}
+
+/* Tagesaufgaben: flache Flächen statt Verläufe */
+.action-full-purple { background: var(--primary); }  /* Word of the Day */
+.action-full-orange { background: var(--accent); }   /* Review */
+
+/* Vokabel des Tages */
+.daily-card { background: var(--primary); }
+
+/* Bewertungsskala: Rot -> Rot-Tint -> Tusche -> Gold */
+.rate-again { background: var(--accent); color: #fff; }
+.rate-hard  { background: var(--accent-soft); color: var(--accent-ink); }
+.rate-good  { background: var(--primary); color: #fff; }
+.rate-easy  { background: var(--gold); color: var(--text); }
+
+/* Erfolg = Gold, Fehler = Rot */
+.done-check { background: var(--gold); }
+.done-check svg { stroke: var(--text); }
+.card-answer.ok { box-shadow: 0 0 0 4px rgba(217, 165, 33, 0.45), var(--shadow-md); }
+.card-answer.ok .answer-note { color: var(--gold-ink); }
+.card-answer.ok .answer-de { color: var(--text); }
+.card-answer.bad { box-shadow: 0 0 0 4px rgba(236, 48, 19, 0.35), var(--shadow-md); }
+.card-answer.bad .answer-note { color: var(--accent-ink); }
+.add-ok { color: var(--gold-ink); }
+.add-error { color: var(--accent-ink); }
+
+/* Artikel vor dem Substantiv trägt das Genus mit */
+.article { color: var(--gold-mid); }            /* auf weißer Karte */
+.daily-card .article { color: var(--gold); }    /* auf Tusche */
+
+/* Karten-Tag: gesetztes Label statt Flaggen-Emoji (Text in Review.jsx ändern) */
+.card-tag {
+  background: #edeae4;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* Deutsche Flip-Vorderseite: Wörter sind lang -> 44px, nicht 60px */
+.card-front:lang(de) { font-size: 44px; font-weight: 600; text-wrap: balance; }
+
+/* Streak: erledigte Tage Gold, heute roter Ring (= noch offen) */
+.dot-on { background: var(--gold); border-color: var(--gold); box-shadow: none; }
+.streak-day-today .dot { outline-color: var(--accent); }
+.streak-day-today .dot-label { color: var(--accent-ink); }
+.streak-flame { fill: var(--gold); }
+.library-count strong { color: var(--gold-ink); font-weight: 700; }
+
+/* Tab-Bar: weiche Naht, damit die Silhouette hineinläuft */
+.tabbar { border-top: 1px solid #dedbd5; background: #edebe7; }
+.tab-active { color: var(--accent); }
+
+/* Kalender */
+.cal-done { background: var(--gold); border-color: var(--gold); box-shadow: none; }
+.cal-today { outline-color: var(--accent); }
+
+/* Fortschrittsbalken ist Rot */
+.progress-fill { background: var(--accent); }
+
+/* Fokus: nie der Browser-Default */
+:where(button, a, input, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
