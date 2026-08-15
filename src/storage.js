@@ -478,6 +478,7 @@ export function makeIntroducedWord(poolEntry) {
     id: crypto.randomUUID(),
     en: poolEntry.en,
     ko: poolEntry.ko,
+    pos: poolEntry.pos || null,
     createdAt: Date.now(),
   }
   // newCard setzt due = heute, reps = 0 -> neue Karte, sofort fällig
