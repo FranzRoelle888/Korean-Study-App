@@ -14,7 +14,7 @@ import { useState } from 'react'
 
 const norm = (s) => s.replace(/\s+/g, '').trim()
 
-function NumberChallenge({ number, sino, native, alreadyDone, onComplete, onExit }) {
+function NumberChallenge({ number, sino, native, alreadyDone, onComplete, onExit, t }) {
   const [sinoIn, setSinoIn] = useState('')
   const [nativeIn, setNativeIn] = useState('')
   const [feedback, setFeedback] = useState(null)
@@ -37,7 +37,7 @@ function NumberChallenge({ number, sino, native, alreadyDone, onComplete, onExit
       <div className="number">
         <div className="number-done">
           <div className="done-emoji">🔢</div>
-          <p className="done-title">Done for today!</p>
+          <p className="done-title">{t.doneForToday}</p>
           <div className="number-recap">
             <span className="recap-num">{number}</span>
             <span className="recap-line">
@@ -60,10 +60,10 @@ function NumberChallenge({ number, sino, native, alreadyDone, onComplete, onExit
 
   return (
     <div className="number">
-      <NumberHeader onExit={onExit} />
+      <NumberHeader onExit={onExit} t={t} />
 
       <div className="number-body">
-        <p className="number-prompt">Type the number in Korean</p>
+        <p className="number-prompt">{t.typeTheNumber}</p>
         <div className="big-number">{number}</div>
 
         <form className="number-form" onSubmit={submit}>
@@ -103,13 +103,13 @@ function NumberChallenge({ number, sino, native, alreadyDone, onComplete, onExit
           {feedback && (
             <p className="add-msg add-error">
               {feedback.sino || feedback.native
-                ? 'Almost! Fix the field marked red and try again.'
-                : 'Not quite – try again.'}
+                ? t.almostFixRed
+                : t.notQuite}
             </p>
           )}
 
           <button type="submit" className="check-btn">
-            Check
+            {t.check}
           </button>
         </form>
       </div>
@@ -117,7 +117,7 @@ function NumberChallenge({ number, sino, native, alreadyDone, onComplete, onExit
   )
 }
 
-function NumberHeader({ onExit }) {
+function NumberHeader({ onExit, t }) {
   return (
     <div className="review-header">
       <button className="back-btn" onClick={onExit} aria-label={t.back}>
@@ -125,7 +125,7 @@ function NumberHeader({ onExit }) {
           <path d="m15 6-6 6 6 6" />
         </svg>
       </button>
-      <span className="daily-label">Number of the Day</span>
+      <span className="daily-label">{t.numberOfDay}</span>
     </div>
   )
 }

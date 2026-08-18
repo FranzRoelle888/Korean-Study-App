@@ -94,6 +94,17 @@ const en = {
   pos: { noun: 'Noun', verb: 'Verb', adj: 'Adjective', adv: 'Adverb', phrase: 'Phrase', other: 'Other' },
   posShort: { noun: 'N', verb: 'V', adj: 'ADJ', adv: 'ADV', phrase: 'PHR', other: '·' },
   wordClass: 'Word class',
+
+  /* --- Zahl des Tages --- */
+  typeTheNumber: 'Type the number in Korean',
+  almostFixRed: 'Almost! Fix the field marked red and try again.',
+  notQuite: 'Not quite – try again.',
+
+  /* --- Artikel des Tages --- */
+  articleOfDay: 'Article of the Day',
+  whichArticle: 'Which article does it take?',
+  articleWrong: (a) => `Not quite — it is "${a}".`,
+  articleNeedNouns: 'Add a few nouns to your library first.',
 }
 
 const ko = {
@@ -175,6 +186,17 @@ const ko = {
   pos: { noun: '명사', verb: '동사', adj: '형용사', adv: '부사', phrase: '표현', other: '기타' },
   posShort: { noun: 'N', verb: 'V', adj: 'ADJ', adv: 'ADV', phrase: 'PHR', other: '·' },
   wordClass: '품사',
+
+  /* --- Zahl des Tages --- */
+  typeTheNumber: '숫자를 한국어로 입력하세요',
+  almostFixRed: '거의 다 됐어요! 빨간 칸을 고쳐 보세요.',
+  notQuite: '아니에요 – 다시 해 보세요.',
+
+  /* --- Artikel des Tages --- */
+  articleOfDay: '오늘의 관사',
+  whichArticle: '어떤 관사를 쓸까요?',
+  articleWrong: (a) => `아니에요 — 정답은 "${a}"예요.`,
+  articleNeedNouns: '먼저 명사를 몇 개 추가해 주세요.',
 }
 
 const PACKS = { en, ko }
@@ -198,6 +220,7 @@ const TARGET = {
     wordOfDay: '오늘의 단어',
     review: '복습',
     numberOfDay: '오늘의 숫자',
+    articleOfDay: null,
     typePlaceholder: '한국어…',
     typeHint: 'type in Korean',
     example: 'e.g. 물',
@@ -212,6 +235,7 @@ const TARGET = {
     wordOfDay: 'Wort des Tages',
     review: 'Wiederholen',
     numberOfDay: null,
+    articleOfDay: 'der · die · das',
     typePlaceholder: 'Deutsch…',
     typeHint: '독일어로 입력',
     example: '예: Wasser',

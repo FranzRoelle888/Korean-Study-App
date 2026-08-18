@@ -160,9 +160,71 @@ function addDays(iso, n) {
   return toISO(d)
 }
 
+/* ============================================================
+   NACHTRAEGLICH SPEICHERN
+
+   Bisher galt: lokal sofort schreiben, Cloud im Hintergrund, und
+   bei Fehlschlag nur eine Konsolenwarnung. Das war ein stiller
+   Datenverlust — beim naechsten Start hat loadInitial() den
+   lokalen Puffer mit dem Cloud-Stand ueberschrieben und die
+   ungespeicherte Aenderung war weg.
+
+   Jetzt landet jeder fehlgeschlagene Schreibvorgang in einer
+   Warteschlange und wird beim naechsten Laden erneut versucht.
+   ============================================================ */
+
+const PENDING_KEY = () => cacheKey(`pending`)
+
+function readPending() {
+  try {
+    return JSON.parse(localStorage.getItem(PENDING_KEY())) || []
+  } catch {
+    return []
+  }
+}
+function writePending(list) {
+  localStorage.setItem(PENDING_KEY(), JSON.stringify(list))
+}
+
+export function queueFailed(op) {
+  const list = readPending()
+  list.push(op)
+  writePending(list)
+}
+
+export function pendingCount() {
+  return readPending().length
+}
+
+/* Der Reihe nach erneut versuchen. Was durchgeht, faellt raus;
+   beim ersten Fehler stoppen wir, damit die Reihenfolge stimmt. */
+export async function flushPending() {
+  let list = readPending()
+  if (list.length === 0) return 0
+  let sent = 0
+  while (list.length > 0) {
+    const op = list[0]
+    try {
+      if (op.t === 'new') await persistNewWord(op.word, op.c1, op.c2)
+      else if (op.t === 'card') await persistCard(op.card)
+      else if (op.t === 'edit') await updateWordCloud(op.id, op.en, op.ko, op.pos)
+      else if (op.t === 'del') await deleteWordCloud(op.id)
+    } catch {
+      break
+    }
+    list = list.slice(1)
+    writePending(list)
+    sent++
+  }
+  return sent
+}
+
 /* ---------- Start: alles laden ---------- */
 export async function loadInitial() {
   try {
+    /* Reihenfolge ist wichtig: erst das Ausstehende hochschieben,
+       sonst ueberschreibt der Cloud-Stand es gleich wieder. */
+    await flushPending()
     const [wRes, cRes] = await Promise.all([
       mine(supabase.from('words').select('*')).order('created_at', { ascending: false }),
       mine(supabase.from('cards').select('*')),
@@ -537,6 +599,59 @@ export function completeNumberChallenge() {
   const c = getNumberChallenge()
   const next = { ...c, done: true }
   localStorage.setItem(NUMBER_KEY(), JSON.stringify(next))
+  return next
+}
+
+/* ============================================================
+   ARTIKEL DES TAGES (nur deutsche Seite)
+
+   Deutsche Zahlen sind fuer 해인 zu leicht — der/die/das dagegen
+   ist der groesste Brocken, weil es im Koreanischen keine Artikel
+   gibt. Die Aufgabe zieht Substantive aus IHRER Bibliothek: dort
+   steht der Artikel ohnehin schon mit im Wort.
+   ============================================================ */
+
+const ARTICLE_KEY = () => cacheKey(`article`)
+const ARTICLE_ROUNDS = 5
+
+/* "die Wohnung" -> { article: 'die', noun: 'Wohnung' }
+   Gibt null zurueck, wenn kein sauberer Artikel davorsteht. */
+export function splitArticle(word) {
+  const m = /^(der|die|das)\s+(.+)$/.exec(word.trim())
+  return m ? { article: m[1], noun: m[2] } : null
+}
+
+/* Welche Substantive kommen heute dran? Fest je Tag, damit man
+   nicht neu wuerfeln kann, bis leichte kommen. */
+function pickNouns(words) {
+  const nouns = words
+    .map((w) => ({ ...splitArticle(w.ko), id: w.id, en: w.en }))
+    .filter((n) => n.article)
+  /* Gleicher Seed wie beim Mischen des Stapels: Datum + Id */
+  return nouns
+    .map((n) => ({ n, k: seeded('article', todayStr(), n.id) }))
+    .sort((a, b) => a.k - b.k)
+    .slice(0, ARTICLE_ROUNDS)
+    .map((x) => x.n)
+}
+
+export function getArticleChallenge(words) {
+  const rounds = pickNouns(words)
+  let done = false
+  try {
+    const d = JSON.parse(localStorage.getItem(ARTICLE_KEY()))
+    if (d && d.date === todayStr()) done = !!d.done
+  } catch {
+    /* egal */
+  }
+  /* Zu wenige Substantive in der Bibliothek -> Aufgabe entfaellt,
+     sonst haenge die Streak an etwas Unmoeglichem. */
+  return { rounds, done, enough: rounds.length >= 3 }
+}
+
+export function completeArticleChallenge() {
+  const next = { date: todayStr(), done: true }
+  localStorage.setItem(ARTICLE_KEY(), JSON.stringify(next))
   return next
 }
 

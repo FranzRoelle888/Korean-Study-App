@@ -60,6 +60,15 @@ export function GridIcon() {
   )
 }
 
+/* Drei Balken unterschiedlicher Laenge — steht fuer der/die/das */
+export function QuoteIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+      <path d="M4 7h16M4 12h11M4 17h6" />
+    </svg>
+  )
+}
+
 export function BookIcon() {
   return (
     <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

@@ -3014,3 +3014,73 @@
   border-color: var(--primary);
   color: #fff;
 }
+
+/* ---------- Artikel des Tages ---------- */
+.article-word {
+  font-size: 40px;
+  font-weight: 700;
+  text-align: center;
+  line-height: 1.15;
+  text-wrap: balance;
+  margin: 4px 0 2px;
+}
+
+.article-meaning {
+  margin: 0 0 26px;
+  text-align: center;
+  font-size: 14px;
+  color: var(--text-soft);
+}
+
+.article-picks {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.article-pick {
+  padding: 18px 4px;
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-size: 20px;
+  font-weight: 700;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.12s ease;
+}
+
+.article-pick:active {
+  transform: scale(0.96);
+}
+
+.article-pick-ok {
+  background: var(--gold, #4f6b54);
+  border-color: transparent;
+  color: var(--text);
+}
+
+.article-pick-bad {
+  background: var(--accent);
+  border-color: transparent;
+  color: #fff;
+}
+
+/* ---------- Ruhigeres Verhalten beim Aufklappen der Tastatur ----------
+   Die Hoehe von #root folgt dem sichtbaren Bereich. Ohne Uebergang
+   springt der ganze Bildschirm; mit Uebergang gleitet er. */
+#root {
+  transition: height 0.2s ease;
+}
+
+/* 'nearest' scrollt bis genau an den Rand — der Abstand sorgt dafuer,
+   dass das Feld nicht an der Tastaturkante klebt. */
+input,
+textarea {
+  scroll-margin-block: 24px 96px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #root {
+    transition: none;
+  }
+}

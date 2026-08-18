@@ -14,6 +14,10 @@ import {
   makeIntroducedWord,
   countIntroductionToday,
   getNumberChallenge,
+  getArticleChallenge,
+  queueFailed,
+  pendingCount,
+  completeArticleChallenge,
   completeNumberChallenge,
   sinoKorean,
   nativeKorean,
@@ -30,6 +34,7 @@ import Library from './Library'
 import Review from './Review'
 import DailyWord from './DailyWord'
 import NumberChallenge from './NumberChallenge'
+import ArticleChallenge from './ArticleChallenge'
 import Calendar from './Calendar'
 import Sets from './Sets'
 import SetSheet from './SetSheet'
@@ -75,13 +80,34 @@ function App() {
       if (cancelled) return
       setWords(data.words)
       setCards(data.cards)
-      setOffline(!data.online)
+      setOffline(!data.online || pendingCount() > 0)
       setDailyLog(log)
       setNumberState(getNumberChallenge())
       setLoading(false)
     })
     return () => {
       cancelled = true
+    }
+  }, [profileId])
+
+  /* Die App laedt sonst NUR beim Start. Auf dem Handy bleibt sie
+     als Verknuepfung tagelang offen — ohne das hier saehe man den
+     Stand von vorgestern und zwei Geraete driften auseinander. */
+  useEffect(() => {
+    function refresh() {
+      if (document.visibilityState !== 'visible') return
+      Promise.all([loadInitial(), loadDailyLog()]).then(([data, log]) => {
+        setWords(data.words)
+        setCards(data.cards)
+        setOffline(!data.online || pendingCount() > 0)
+        setDailyLog(log)
+      })
+    }
+    document.addEventListener('visibilitychange', refresh)
+    window.addEventListener('online', refresh)
+    return () => {
+      document.removeEventListener('visibilitychange', refresh)
+      window.removeEventListener('online', refresh)
     }
   }, [profileId])
 
@@ -118,13 +144,22 @@ function App() {
     }
   }, [])
 
-  // Angetipptes Eingabefeld in den sichtbaren Bereich holen (nach dem
-  // Aufklappen der Tastatur).
+  // Angetipptes Eingabefeld sichtbar halten, wenn die Tastatur aufgeht.
+  //
+  // Vorher sprang es zweimal: erst schrumpfte die App schlagartig
+  // (--app-h), dann zog scrollIntoView({block:'center'}) das Feld in
+  // die Mitte — auch wenn es laengst sichtbar war.
+  //
+  // Jetzt: 'nearest' scrollt nur, wenn es wirklich noetig ist, und die
+  // Hoehenaenderung ist per CSS weich. Wer weniger Bewegung eingestellt
+  // hat, bekommt gar keine Animation.
   useEffect(() => {
     const onFocus = (e) => {
-      if (e.target.tagName === 'INPUT') {
-        setTimeout(() => e.target.scrollIntoView({ block: 'center', behavior: 'smooth' }), 280)
-      }
+      if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') return
+      const sanft = !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      setTimeout(() => {
+        e.target.scrollIntoView({ block: 'nearest', behavior: sanft ? 'smooth' : 'auto' })
+      }, 150)
     }
     document.addEventListener('focusin', onFocus)
     return () => document.removeEventListener('focusin', onFocus)
@@ -136,7 +171,13 @@ function App() {
   // Sind heute alle Tagesaufgaben erledigt? Die Zahlen-Challenge
   // gibt es nur auf der koreanischen Seite und zählt sonst nicht mit.
   const numberDone = profile.numberChallenge ? numberState.done : true
-  const allDone = daily.done && numberDone && due.length === 0
+
+  /* Artikel des Tages — nur auf der deutschen Seite, und nur wenn
+     ueberhaupt genug Substantive da sind. */
+  const article = profile.articleChallenge ? getArticleChallenge(words) : null
+  const articleDone = article ? article.done || !article.enough : true
+
+  const allDone = daily.done && numberDone && articleDone && due.length === 0
 
   // Wenn alle Aufgaben fertig sind, den Tag als erledigt eintragen.
   useEffect(() => {
@@ -158,9 +199,11 @@ function App() {
     writeWordsCache(newWords)
     writeCardsCache(newCards)
     countIntroductionToday()
-    persistNewWord(word, c1, c2).catch((err) =>
+    persistNewWord(word, c1, c2).catch((err) => {
+      queueFailed({ t: 'new', word, c1, c2 })
+      setOffline(true)
       console.warn('Cloud save (word of the day) failed:', err?.message || err)
-    )
+    })
   }
 
   function handleCompleteNumber() {
@@ -177,9 +220,11 @@ function App() {
     setCards(newCards)
     writeWordsCache(newWords)
     writeCardsCache(newCards)
-    persistNewWord(res.word, res.c1, res.c2).catch((err) =>
+    persistNewWord(res.word, res.c1, res.c2).catch((err) => {
+      queueFailed({ t: 'new', word: res.word, c1: res.c1, c2: res.c2 })
+      setOffline(true)
       console.warn('Cloud save (new word) failed:', err?.message || err)
-    )
+    })
     return { word: res.word }
   }
 
@@ -189,10 +234,18 @@ function App() {
     const newWords = words.map((w) => (w.id === id ? { ...w, en: res.en, ko: res.ko, pos: res.pos } : w))
     setWords(newWords)
     writeWordsCache(newWords)
-    updateWordCloud(id, res.en, res.ko, res.pos).catch((err) =>
+    updateWordCloud(id, res.en, res.ko, res.pos).catch((err) => {
+      queueFailed({ t: 'edit', id, en: res.en, ko: res.ko, pos: res.pos })
+      setOffline(true)
       console.warn('Cloud save (edit) failed:', err?.message || err)
-    )
+    })
     return { ok: true }
+  }
+
+  function handleCompleteArticle() {
+    completeArticleChallenge()
+    /* Erzwingt ein Neuzeichnen, damit die Startseite das Haekchen zeigt */
+    setWords((w) => [...w])
   }
 
   function handleDeleteWord(id) {
@@ -202,7 +255,11 @@ function App() {
     setCards(newCards)
     writeWordsCache(newWords)
     writeCardsCache(newCards)
-    deleteWordCloud(id).catch((err) => console.warn('Cloud delete failed:', err?.message || err))
+    deleteWordCloud(id).catch((err) => {
+      queueFailed({ t: 'del', id })
+      setOffline(true)
+      console.warn('Cloud delete failed:', err?.message || err)
+    })
   }
 
   function handleRate(cardId, rating) {
@@ -212,9 +269,11 @@ function App() {
     const next = cards.map((c) => (c.id === cardId ? updatedCard : c))
     setCards(next)
     writeCardsCache(next)
-    persistCard(updatedCard).catch((err) =>
+    persistCard(updatedCard).catch((err) => {
+      queueFailed({ t: 'card', card: updatedCard })
+      setOffline(true)
       console.warn('Cloud save (rating) failed:', err?.message || err)
-    )
+    })
   }
 
   if (loading) {
@@ -245,6 +304,9 @@ function App() {
             onReview={() => setView('review')}
             onDaily={() => setView('daily')}
             onNumber={() => setView('number')}
+            onArticle={() => setView('article')}
+            articleDone={articleDone}
+            articleReady={!!article && article.enough}
             onCalendar={() => setView('calendar')}
             onSwitchProfile={switchProfile}
             profile={profile}
@@ -269,6 +331,15 @@ function App() {
             native={nativeKorean(numberState.number)}
             alreadyDone={numberState.done}
             onComplete={handleCompleteNumber}
+            onExit={() => setView('home')}
+            t={t}
+          />
+        )}
+        {view === 'article' && article && (
+          <ArticleChallenge
+            rounds={article.rounds}
+            alreadyDone={article.done}
+            onComplete={handleCompleteArticle}
             onExit={() => setView('home')}
             t={t}
           />

@@ -34,6 +34,7 @@ export const PROFILES = {
     /* Die Zahlen-Challenge gibt es nur auf der koreanischen Seite —
        auf Deutsch wäre sie zu einfach. */
     numberChallenge: true,
+    articleChallenge: false,
   },
 
   de: {
@@ -48,6 +49,8 @@ export const PROFILES = {
     ui: 'ko',
     flag: 'de',
     numberChallenge: false,
+    /* Statt der Zahl: der/die/das — der eigentliche Brocken */
+    articleChallenge: true,
   },
 }
 

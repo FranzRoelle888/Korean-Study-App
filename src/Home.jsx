@@ -5,6 +5,7 @@ import {
   ChevronIcon,
   HashIcon,
   CheckIcon,
+  QuoteIcon,
   KoreanFlag,
   GermanFlag,
   MountainBand,
@@ -30,6 +31,9 @@ function Home({
   onReview,
   onDaily,
   onNumber,
+  onArticle,
+  articleDone,
+  articleReady,
   onCalendar,
   onSwitchProfile,
   profile,
@@ -144,6 +148,31 @@ function Home({
               </span>
             </div>
             {numberDone ? (
+              <span className="done-check">
+                <CheckIcon />
+              </span>
+            ) : (
+              <ChevronIcon />
+            )}
+          </button>
+        )}
+
+        {/* Artikel des Tages — das Gegenstueck auf der deutschen Seite */}
+        {profile.articleChallenge && articleReady && (
+          <button
+            className={articleDone ? 'action action-secondary' : 'action action-full action-full-green'}
+            onClick={onArticle}
+          >
+            <div className="action-icon action-icon-number">
+              <QuoteIcon />
+            </div>
+            <div className="action-text">
+              <span className="action-title">{t.articleOfDay}</span>
+              <span className="action-sub" lang={profile.targetLang}>
+                {tt.articleOfDay}
+              </span>
+            </div>
+            {articleDone ? (
               <span className="done-check">
                 <CheckIcon />
               </span>
