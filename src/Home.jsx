@@ -160,7 +160,7 @@ function Home({
         {/* Artikel des Tages — das Gegenstueck auf der deutschen Seite */}
         {profile.articleChallenge && articleReady && (
           <button
-            className={articleDone ? 'action action-secondary' : 'action action-full action-full-green'}
+            className={articleDone ? 'action action-secondary' : 'action action-full action-full-gold'}
             onClick={onArticle}
           >
             <div className="action-icon action-icon-number">

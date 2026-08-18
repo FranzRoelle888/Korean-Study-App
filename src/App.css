@@ -3084,3 +3084,21 @@ textarea {
     transition: none;
   }
 }
+
+/* ---------- Artikel des Tages: Gold statt Gruen ----------
+   Gold ist im Deutsch-Theme die Farbe des Ertrags. Auf goldener
+   Flaeche steht Tusche, nicht Weiss -- weisse Schrift auf Gold
+   waere zu kontrastarm. */
+:root[data-profile='de'] .action-full-gold {
+  background: var(--gold);
+  color: var(--text);
+}
+
+:root[data-profile='de'] .action-full-gold .action-icon {
+  background: rgba(32, 30, 29, 0.12);
+  color: var(--text);
+}
+
+:root[data-profile='de'] .action-full-gold .action-sub {
+  opacity: 0.72;
+}
