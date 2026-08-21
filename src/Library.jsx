@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { PlusIcon, SearchIcon, EditIcon, TrashIcon } from './icons'
+import { PlusIcon, SearchIcon, EditIcon, TrashIcon, InfoIcon } from './icons'
 import ClearableInput from './ClearableInput'
 
 /* ============================================================
@@ -18,6 +18,44 @@ const POS_KEYS = ['noun', 'verb', 'adj', 'adv', 'phrase', 'other']
 function PosTag({ pos, t }) {
   if (!pos) return null
   return <span className={pos === 'noun' ? 'pos-tag pos-noun' : 'pos-tag'}>{t.posShort[pos] || '·'}</span>
+}
+
+/* Zusatzinfos zu einem Wort: Pluralform bzw. Konjugation.
+   Wird unter der Zeile aufgeklappt, wenn man das i antippt. */
+function WordExtras({ vocab, t }) {
+  const hatPlural = vocab.plural || vocab.pluralNote
+  const hatKonj = vocab.conj && Object.keys(vocab.conj).length > 0
+  if (!hatPlural && !hatKonj) {
+    return <div className="extras"><p className="extras-empty">{t.noExtras}</p></div>
+  }
+  return (
+    <div className="extras">
+      {hatPlural && (
+        <div className="extras-block">
+          <span className="extras-label">{t.pluralLabel}</span>
+          {vocab.plural && <span className="extras-plural" lang="de">{vocab.plural}</span>}
+          {vocab.pluralNote && <span className="extras-note">{vocab.pluralNote}</span>}
+        </div>
+      )}
+      {hatKonj && (
+        <div className="extras-block">
+          <span className="extras-label">{t.conjLabel}</span>
+          <div className="conj-grid">
+            {['ich', 'du', 'er/sie/es', 'wir', 'ihr', 'sie'].map((p) => {
+              const k = p === 'er/sie/es' ? 'er' : p
+              return (
+                <div className="conj-row" key={p}>
+                  <span className="conj-person">{p}</span>
+                  <span className="conj-form" lang="de">{vocab.conj[k] || '—'}</span>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+      {vocab.extrasAuto && <p className="extras-auto">{t.autoFilled}</p>}
+    </div>
+  )
 }
 
 function Library({ vocab, onAdd, onEdit, onDelete, profile, t, tt }) {
@@ -179,6 +217,7 @@ function VocabRow({ vocab, onEdit, onDelete, profile, t }) {
   const [ko, setKo] = useState(vocab.ko)
   /* Muss mitgefuehrt werden, sonst wuerde Speichern die Wortart loeschen */
   const [pos, setPos] = useState(vocab.pos || '')
+  const [zeigeInfo, setZeigeInfo] = useState(false)
   const [error, setError] = useState('')
 
   function startEdit() {
@@ -263,16 +302,29 @@ function VocabRow({ vocab, onEdit, onDelete, profile, t }) {
     )
   }
 
+  /* Nur da, wo es ueberhaupt Zusatzinfos geben kann */
+  const kannInfo = vocab.pos === 'noun' || vocab.pos === 'verb'
+
   return (
-    <li className="vocab-row">
+    <li className={zeigeInfo ? 'vocab-row vocab-row-open' : 'vocab-row'}>
       <div className="vocab-texts">
         <span className="vocab-ko" lang={profile.targetLang}>
           {vocab.ko}
           <PosTag pos={vocab.pos} t={t} />
         </span>
         <span className="vocab-en">{vocab.en}</span>
+        {zeigeInfo && <WordExtras vocab={vocab} t={t} />}
       </div>
       <div className="row-actions">
+        {kannInfo && (
+          <button
+            className={zeigeInfo ? 'row-btn row-btn-on' : 'row-btn'}
+            onClick={() => setZeigeInfo((v) => !v)}
+            aria-label={t.info}
+          >
+            <InfoIcon />
+          </button>
+        )}
         <button className="row-btn" onClick={startEdit} aria-label={t.edit}>
           <EditIcon />
         </button>

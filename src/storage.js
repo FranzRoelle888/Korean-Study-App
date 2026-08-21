@@ -107,10 +107,31 @@ function readCardsCache() {
 /* ---------- Umwandlung DB-Zeile <-> App-Objekt ---------- */
 // (Die DB benutzt Unterstrich-Namen wie word_id, die App camelCase.)
 function wordFromRow(r) {
-  return { id: r.id, en: r.en, ko: r.ko, pos: r.pos || null, createdAt: new Date(r.created_at).getTime() }
+  return {
+    id: r.id,
+    en: r.en,
+    ko: r.ko,
+    pos: r.pos || null,
+    /* Zusatzinfos: Plural bei Substantiven, Konjugation bei Verben */
+    plural: r.plural || null,
+    pluralNote: r.plural_note || null,
+    conj: r.conj || null,
+    extrasAuto: !!r.extras_auto,
+    createdAt: new Date(r.created_at).getTime(),
+  }
 }
 function wordToRow(w) {
-  return { id: w.id, en: w.en, ko: w.ko, pos: w.pos || null, created_at: new Date(w.createdAt).toISOString() }
+  return {
+    id: w.id,
+    en: w.en,
+    ko: w.ko,
+    pos: w.pos || null,
+    plural: w.plural || null,
+    plural_note: w.pluralNote || null,
+    conj: w.conj || null,
+    extras_auto: !!w.extrasAuto,
+    created_at: new Date(w.createdAt).toISOString(),
+  }
 }
 function cardFromRow(r) {
   return {
@@ -541,6 +562,10 @@ export function makeIntroducedWord(poolEntry) {
     en: poolEntry.en,
     ko: poolEntry.ko,
     pos: poolEntry.pos || null,
+    plural: poolEntry.plural || null,
+    pluralNote: poolEntry.pluralNote || null,
+    conj: poolEntry.conj || null,
+    extrasAuto: false,
     createdAt: Date.now(),
   }
   // newCard setzt due = heute, reps = 0 -> neue Karte, sofort fällig

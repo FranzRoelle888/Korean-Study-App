@@ -105,6 +105,13 @@ const en = {
   whichArticle: 'Which article does it take?',
   articleWrong: (a) => `Not quite — it is "${a}".`,
   articleNeedNouns: 'Add a few nouns to your library first.',
+
+  /* --- Zusatzinfos --- */
+  info: 'Details',
+  pluralLabel: 'Plural',
+  conjLabel: 'Present tense',
+  noExtras: 'No extra details for this word yet.',
+  autoFilled: 'automatically added — please double-check',
 }
 
 const ko = {
@@ -197,6 +204,13 @@ const ko = {
   whichArticle: '어떤 관사를 쓸까요?',
   articleWrong: (a) => `아니에요 — 정답은 "${a}"예요.`,
   articleNeedNouns: '먼저 명사를 몇 개 추가해 주세요.',
+
+  /* --- Zusatzinfos --- */
+  info: '자세히',
+  pluralLabel: '복수형',
+  conjLabel: '현재형',
+  noExtras: '아직 추가 정보가 없어요.',
+  autoFilled: '자동으로 추가됨 — 확인해 주세요',
 }
 
 const PACKS = { en, ko }
