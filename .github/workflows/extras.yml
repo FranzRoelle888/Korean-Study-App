@@ -1,0 +1,57 @@
+# ============================================================
+# Trägt Plural und Konjugation nach
+#
+# Läuft jede Nacht. Täglich statt wöchentlich, weil ein Lauf
+# praktisch nichts kostet und neu eingetragene Wörter sonst bis
+# zu einer Woche ohne Angaben in der Bibliothek stünden.
+#
+# Sind keine Lücken da, ist der Lauf nach zwei Sekunden fertig,
+# ohne das Modell überhaupt zu fragen.
+#
+# EINMALIG EINRICHTEN:
+#   Repo -> Settings -> Secrets and variables -> Actions
+#   -> New repository secret
+#   Name:  ANTHROPIC_API_KEY
+#   Wert:  der Schlüssel von console.anthropic.com
+#
+# Ohne dieses Secret bricht der Lauf mit einem Hinweis ab und
+# ändert nichts.
+# ============================================================
+name: Zusatzinfos nachtragen
+
+on:
+  schedule:
+    # 03:20 UTC — nachts, wenn niemand die App benutzt
+    - cron: '20 3 * * *'
+  # Erlaubt den Start von Hand über den Actions-Reiter
+  workflow_dispatch:
+    inputs:
+      dry:
+        description: 'Nur anzeigen, nichts schreiben'
+        type: boolean
+        default: false
+
+# Nur Lesezugriff aufs Repo — der Lauf schreibt in die Datenbank,
+# nicht in den Code.
+permissions:
+  contents: read
+
+jobs:
+  fill:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Lücken füllen
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          if [ "${{ inputs.dry }}" = "true" ]; then
+            node scripts/fill-extras.mjs --dry
+          else
+            node scripts/fill-extras.mjs
+          fi

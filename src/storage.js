@@ -674,6 +674,67 @@ export function getArticleChallenge(words) {
   return { rounds, done, enough: rounds.length >= 3 }
 }
 
+/* ---------- Plural des Tages ----------
+   Zweite Aufgabe, die sich mit den Artikeln abwechselt. Nimmt nur
+   Substantive, bei denen eine Pluralform hinterlegt ist. */
+function pickPlurals(words) {
+  const nouns = words
+    .filter((w) => w.pos === 'noun' && w.plural && splitArticle(w.ko))
+    .map((w) => ({
+      id: w.id,
+      singular: w.ko,
+      plural: w.plural,
+      en: w.en,
+      /* "die Häuser" -> "Häuser", damit man nicht am Artikel ablesen kann */
+      pluralNoun: (splitArticle(w.plural) || {}).noun || w.plural,
+    }))
+  return nouns
+    .map((n) => ({ n, k: seeded('plural', todayStr(), n.id) }))
+    .sort((a, b) => a.k - b.k)
+    .slice(0, ARTICLE_ROUNDS)
+    .map((x) => x.n)
+}
+
+export function getPluralChallenge(words) {
+  const rounds = pickPlurals(words)
+  let done = false
+  try {
+    const d = JSON.parse(localStorage.getItem(cacheKey('plural')))
+    if (d && d.date === todayStr()) done = !!d.done
+  } catch {
+    /* egal */
+  }
+  return { rounds, done, enough: rounds.length >= 3 }
+}
+
+export function completePluralChallenge() {
+  const next = { date: todayStr(), done: true }
+  localStorage.setItem(cacheKey('plural'), JSON.stringify(next))
+  return next
+}
+
+/* ---------- Welche der beiden Aufgaben ist heute dran? ----------
+   Gewechselt wird nach jedem ERFOLGREICHEN Abschluss. Wer einen
+   Tag auslaesst, bekommt also dieselbe Aufgabe noch einmal — so
+   ist es nicht moeglich, eine Art dauerhaft zu ueberspringen. */
+const KIND_KEY = () => cacheKey('challengeKind')
+
+export function todaysChallengeKind() {
+  try {
+    const d = JSON.parse(localStorage.getItem(KIND_KEY()))
+    if (d && (d.kind === 'article' || d.kind === 'plural')) return d.kind
+  } catch {
+    /* egal */
+  }
+  return 'article'
+}
+
+export function flipChallengeKind() {
+  const next = todaysChallengeKind() === 'article' ? 'plural' : 'article'
+  localStorage.setItem(KIND_KEY(), JSON.stringify({ kind: next }))
+  return next
+}
+
 export function completeArticleChallenge() {
   const next = { date: todayStr(), done: true }
   localStorage.setItem(ARTICLE_KEY(), JSON.stringify(next))

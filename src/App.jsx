@@ -18,6 +18,10 @@ import {
   queueFailed,
   pendingCount,
   completeArticleChallenge,
+  getPluralChallenge,
+  completePluralChallenge,
+  todaysChallengeKind,
+  flipChallengeKind,
   completeNumberChallenge,
   sinoKorean,
   nativeKorean,
@@ -35,6 +39,7 @@ import Review from './Review'
 import DailyWord from './DailyWord'
 import NumberChallenge from './NumberChallenge'
 import ArticleChallenge from './ArticleChallenge'
+import PluralChallenge from './PluralChallenge'
 import Calendar from './Calendar'
 import Sets from './Sets'
 import SetSheet from './SetSheet'
@@ -191,7 +196,15 @@ function App() {
 
   /* Artikel des Tages — nur auf der deutschen Seite, und nur wenn
      ueberhaupt genug Substantive da sind. */
-  const article = profile.articleChallenge ? getArticleChallenge(words) : null
+  /* Die beiden Aufgaben wechseln sich ab. Fehlt der Plural-Aufgabe
+     die Datengrundlage (zu wenige Substantive mit Pluralform), wird
+     auf die Artikel zurueckgefallen statt eine leere Aufgabe zu
+     zeigen. */
+  const kind = profile.articleChallenge ? todaysChallengeKind() : null
+  const articleData = profile.articleChallenge ? getArticleChallenge(words) : null
+  const pluralData = profile.articleChallenge ? getPluralChallenge(words) : null
+  const nutzePlural = kind === 'plural' && pluralData && pluralData.enough
+  const article = nutzePlural ? pluralData : articleData
   const articleDone = article ? article.done || !article.enough : true
 
   const allDone = daily.done && numberDone && articleDone && due.length === 0
@@ -259,8 +272,16 @@ function App() {
     return { ok: true }
   }
 
+  function handleCompletePlural() {
+    completePluralChallenge()
+    flipChallengeKind()
+    setWords((w) => [...w])
+  }
+
   function handleCompleteArticle() {
     completeArticleChallenge()
+    /* Morgen ist die andere Aufgabe dran */
+    flipChallengeKind()
     /* Erzwingt ein Neuzeichnen, damit die Startseite das Haekchen zeigt */
     setWords((w) => [...w])
   }
@@ -324,6 +345,7 @@ function App() {
             onArticle={() => setView('article')}
             articleDone={articleDone}
             articleReady={!!article && article.enough}
+            articleKind={nutzePlural ? 'plural' : 'article'}
             onCalendar={() => setView('calendar')}
             onSwitchProfile={switchProfile}
             profile={profile}
@@ -352,13 +374,23 @@ function App() {
             t={t}
           />
         )}
-        {view === 'article' && article && (
+        {view === 'article' && article && !nutzePlural && (
           <ArticleChallenge
             rounds={article.rounds}
             alreadyDone={article.done}
             onComplete={handleCompleteArticle}
             onExit={() => setView('home')}
             t={t}
+          />
+        )}
+        {view === 'article' && article && nutzePlural && (
+          <PluralChallenge
+            rounds={article.rounds}
+            alreadyDone={article.done}
+            onComplete={handleCompletePlural}
+            onExit={() => setView('home')}
+            t={t}
+            tt={tt}
           />
         )}
         {view === 'library' && (

@@ -105,6 +105,9 @@ const en = {
   whichArticle: 'Which article does it take?',
   articleWrong: (a) => `Not quite — it is "${a}".`,
   articleNeedNouns: 'Add a few nouns to your library first.',
+  pluralOfDay: 'Plural of the Day',
+  whichPlural: 'What is the plural?',
+  pluralWrong: 'Not quite — here is the plural.',
 
   /* --- Zusatzinfos --- */
   info: 'Details',
@@ -204,6 +207,9 @@ const ko = {
   whichArticle: '어떤 관사를 쓸까요?',
   articleWrong: (a) => `아니에요 — 정답은 "${a}"예요.`,
   articleNeedNouns: '먼저 명사를 몇 개 추가해 주세요.',
+  pluralOfDay: '오늘의 복수형',
+  whichPlural: '복수형은 무엇일까요?',
+  pluralWrong: '아니에요 — 복수형은 이거예요.',
 
   /* --- Zusatzinfos --- */
   info: '자세히',
@@ -235,6 +241,7 @@ const TARGET = {
     review: '복습',
     numberOfDay: '오늘의 숫자',
     articleOfDay: null,
+    pluralOfDay: null,
     typePlaceholder: '한국어…',
     typeHint: 'type in Korean',
     example: 'e.g. 물',
@@ -250,6 +257,7 @@ const TARGET = {
     review: 'Wiederholen',
     numberOfDay: null,
     articleOfDay: 'der · die · das',
+    pluralOfDay: 'Plural',
     typePlaceholder: 'Deutsch…',
     typeHint: '독일어로 입력',
     example: '예: Wasser',

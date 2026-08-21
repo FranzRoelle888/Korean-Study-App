@@ -3246,3 +3246,41 @@ textarea {
   line-height: 1.4;
   color: var(--accent-ink, var(--accent));
 }
+
+/* ---------- Plural des Tages: Auswertung ---------- */
+.plural-result {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 18px 14px;
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.plural-ok {
+  border-color: transparent;
+  background: var(--gold, #4f6b54);
+}
+
+.plural-bad {
+  border-color: transparent;
+  background: var(--accent-soft);
+}
+
+.plural-answer {
+  font-size: 26px;
+  font-weight: 700;
+  text-wrap: balance;
+  text-align: center;
+}
+
+.plural-note {
+  font-size: 12.5px;
+  color: var(--text-soft);
+}
+
+.plural-bad .plural-note {
+  color: var(--accent-ink, var(--accent));
+}

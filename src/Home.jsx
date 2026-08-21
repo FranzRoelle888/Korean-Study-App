@@ -34,6 +34,7 @@ function Home({
   onArticle,
   articleDone,
   articleReady,
+  articleKind,
   onCalendar,
   onSwitchProfile,
   profile,
@@ -167,9 +168,11 @@ function Home({
               <QuoteIcon />
             </div>
             <div className="action-text">
-              <span className="action-title">{t.articleOfDay}</span>
+              <span className="action-title">
+                {articleKind === 'plural' ? t.pluralOfDay : t.articleOfDay}
+              </span>
               <span className="action-sub" lang={profile.targetLang}>
-                {tt.articleOfDay}
+                {articleKind === 'plural' ? tt.pluralOfDay : tt.articleOfDay}
               </span>
             </div>
             {articleDone ? (
