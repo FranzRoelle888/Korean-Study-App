@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { SuccessMark, MoonIcon } from './icons'
+import ClearableInput from './ClearableInput'
 
 /* ============================================================
    WORD OF THE DAY
@@ -106,10 +107,11 @@ function DailyWord({ candidates, onIntroduce, onExit, profile, t, tt }) {
               {typed}/{NEEDED} · {tt.typeHint}
             </span>
           </div>
-          <input
+          <ClearableInput
             autoFocus
             value={input}
             onChange={(e) => setInput(e.target.value)}
+            onClear={() => setInput('')}
             placeholder={tt.typePlaceholder}
             lang={profile.targetLang}
             autoComplete="off"

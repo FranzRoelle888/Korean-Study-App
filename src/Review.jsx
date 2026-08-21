@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { previewInterval, formatInterval } from './storage'
 import Confetti from './Confetti'
 import { MoonIcon, CardRidge, CardSkyline } from './icons'
+import ClearableInput from './ClearableInput'
 
 /* ============================================================
    REVIEW STACK
@@ -154,10 +155,11 @@ function Review({ initialQueue, onRate, onExit, profile, t, tt }) {
 
         {!answerShown && isTyping && (
           <form className="type-area" onSubmit={checkTyping}>
-            <input
+            <ClearableInput
               autoFocus
               value={typed}
               onChange={(e) => setTyped(e.target.value)}
+              onClear={() => setTyped('')}
               placeholder={tt.typePlaceholder}
               lang={profile.targetLang}
               autoComplete="off"

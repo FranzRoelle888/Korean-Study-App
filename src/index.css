@@ -38,29 +38,49 @@
   box-sizing: border-box;
 }
 
+/* ============================================================
+   Die Seite selbst scrollt NIE.
+
+   Das ist der Kern gegen das Verrutschen beim Aufklappen der
+   Tastatur: Solange die Seite scrollbar ist, schiebt iOS sie von
+   sich aus hoch, um das Eingabefeld freizulegen — und das kaempft
+   dann mit unserer eigenen Hoehenanpassung. Ist die Seite fest
+   verankert, hat iOS nichts zu scrollen. Gescrollt wird nur noch
+   INNERHALB der App (.page).
+   ============================================================ */
 html,
 body {
   margin: 0;
   padding: 0;
+  height: 100%;
+  width: 100%;
+  position: fixed;
+  overflow: hidden;
+  overscroll-behavior: none;
 }
 
 body {
   background: var(--bg);
   color: var(--text);
-  min-height: 100svh;
-  /* Verhindert versehentliches Verschieben/Überscrollen am Handy */
-  overscroll-behavior-y: none;
 }
 
 /* Der Wurzel-Container: schmal wie ein Handy, mittig zentriert,
    damit die App auch am Laptop wie eine App aussieht. */
+/* Die App liegt fest auf dem SICHTBAREN Bereich.
+
+   --app-h   Hoehe des sichtbaren Bereichs (schrumpft mit der Tastatur)
+   --app-top wie weit iOS den sichtbaren Bereich verschoben hat
+
+   Beides wird in App.jsx gesetzt. Ohne --app-top wandert die App
+   aus dem Bild, sobald iOS den Ausschnitt verschiebt. */
 #root {
-  max-width: 460px;
+  position: fixed;
+  top: var(--app-top, 0px);
+  left: 0;
+  right: 0;
   margin: 0 auto;
-  /* Höhe = tatsächlich sichtbarer Bereich. Klappt die Tastatur auf,
-     schrumpft dieser Wert (siehe App.jsx), damit die Eingabefelder
-     nicht verdeckt werden. Fallback: volle Bildschirmhöhe. */
-  height: var(--app-h, 100svh);
+  max-width: 460px;
+  height: var(--app-h, 100%);
   display: flex;
   flex-direction: column;
 }

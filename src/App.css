@@ -3065,25 +3065,10 @@
   color: #fff;
 }
 
-/* ---------- Ruhigeres Verhalten beim Aufklappen der Tastatur ----------
-   Die Hoehe von #root folgt dem sichtbaren Bereich. Ohne Uebergang
-   springt der ganze Bildschirm; mit Uebergang gleitet er. */
-#root {
-  transition: height 0.2s ease;
-}
-
-/* 'nearest' scrollt bis genau an den Rand — der Abstand sorgt dafuer,
-   dass das Feld nicht an der Tastaturkante klebt. */
-input,
-textarea {
-  scroll-margin-block: 24px 96px;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  #root {
-    transition: none;
-  }
-}
+/* Der frueher hier stehende Hoehen-Uebergang ist bewusst entfernt:
+   visualViewport meldet die Hoehe waehrend der Tastatur-Animation
+   fortlaufend, ein zusaetzlicher CSS-Uebergang hinkt dem dann
+   hinterher und liess die App nachwackeln. */
 
 /* ---------- Artikel des Tages: Gold statt Gruen ----------
    Gold ist im Deutsch-Theme die Farbe des Ertrags. Auf goldener
@@ -3101,4 +3086,81 @@ textarea {
 
 :root[data-profile='de'] .action-full-gold .action-sub {
   opacity: 0.72;
+}
+
+/* ============================================================
+   TASTATUR OFFEN
+
+   data-kb setzt App.jsx am Wurzelelement. Die untere Leiste
+   verschwindet dann: sie wuerde sonst direkt ueber der Tastatur
+   kleben, nimmt Platz weg und sieht aus wie ein Fehler.
+   ============================================================ */
+:root[data-kb='open'] .tabbar {
+  display: none;
+}
+
+/* Innerhalb der App wird gescrollt, nicht auf der Seite. */
+.page {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  /* Damit 'nearest' das Feld nicht bis an die Unterkante schiebt */
+  scroll-padding-block: 16px 24px;
+}
+
+input,
+textarea {
+  scroll-margin-block: 16px 24px;
+}
+
+/* ---------- Eingabefeld mit Loesch-Knopf ---------- */
+.input-wrap {
+  position: relative;
+  display: block;
+  width: 100%;
+}
+
+/* Platz fuer das x, damit der Text nicht darunter laeuft */
+.input-wrap input {
+  padding-right: 40px;
+}
+
+.input-clear {
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  transform: translateY(-50%);
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--text-soft);
+  background: var(--surface-2);
+}
+
+.input-clear:active {
+  transform: translateY(-50%) scale(0.9);
+}
+
+/* In der Suchleiste sitzt das Feld ohne eigenen Rahmen — dort
+   klebt das x sonst am Rand der Leiste. */
+.search .input-wrap input {
+  padding-right: 34px;
+}
+
+.search .input-clear {
+  right: -4px;
+  background: none;
+}
+
+/* Der Wrapper ersetzt das Feld als Flex-Kind — das Feld selbst
+   muss deshalb ausdruecklich die volle Breite bekommen. */
+.input-wrap input {
+  width: 100%;
+}
+
+/* Bei den Zahlenfeldern steht der Text mittig. Damit er das trotz
+   Platz fuer das x bleibt, wird links genauso viel freigehalten. */
+.num-field .input-wrap input {
+  padding-left: 40px;
 }

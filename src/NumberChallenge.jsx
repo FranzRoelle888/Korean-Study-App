@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import ClearableInput from './ClearableInput'
 
 /* ============================================================
    NUMBER OF THE DAY
@@ -71,11 +72,15 @@ function NumberChallenge({ number, sino, native, alreadyDone, onComplete, onExit
             <span className="num-label">
               Sino-Korean <em>(일, 이, 삼 …)</em>
             </span>
-            <input
+            <ClearableInput
               autoFocus
               value={sinoIn}
               onChange={(e) => {
                 setSinoIn(e.target.value)
+                setFeedback(null)
+              }}
+              onClear={() => {
+                setSinoIn('')
                 setFeedback(null)
               }}
               placeholder="e.g. 이십일"
@@ -88,10 +93,14 @@ function NumberChallenge({ number, sino, native, alreadyDone, onComplete, onExit
             <span className="num-label">
               Native Korean <em>(하나, 둘, 셋 …)</em>
             </span>
-            <input
+            <ClearableInput
               value={nativeIn}
               onChange={(e) => {
                 setNativeIn(e.target.value)
+                setFeedback(null)
+              }}
+              onClear={() => {
+                setNativeIn('')
                 setFeedback(null)
               }}
               placeholder="e.g. 스물하나"

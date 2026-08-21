@@ -128,41 +128,58 @@ function App() {
     setProfileId(next)
   }
 
-  // Höhe der App an den sichtbaren Bereich koppeln. Auf dem Handy
-  // schrumpft dieser, wenn die Tastatur aufklappt -> Eingabefelder
-  // bleiben sichtbar statt verdeckt zu werden.
+  // Die App an den sichtbaren Bereich koppeln.
+  //
+  // Wichtig sind DREI Dinge, die vorher fehlten:
+  //  1. offsetTop mitnehmen — sonst wandert die App aus dem Bild,
+  //     wenn iOS den sichtbaren Ausschnitt verschiebt.
+  //  2. Im Bildschirmtakt aktualisieren (requestAnimationFrame).
+  //     iOS feuert waehrend der Tastatur-Animation Dutzende
+  //     Ereignisse; ungebremst flackert das Layout.
+  //  3. Merken, ob die Tastatur offen ist — daran haengt im CSS,
+  //     dass die untere Leiste verschwindet, statt ueber der
+  //     Tastatur zu kleben.
   useEffect(() => {
     const vv = window.visualViewport
-    if (!vv) return
-    const setH = () => document.documentElement.style.setProperty('--app-h', `${vv.height}px`)
-    setH()
-    vv.addEventListener('resize', setH)
-    vv.addEventListener('scroll', setH)
-    return () => {
-      vv.removeEventListener('resize', setH)
-      vv.removeEventListener('scroll', setH)
+    const root = document.documentElement
+    if (!vv) {
+      root.style.setProperty('--app-h', '100%')
+      return
     }
-  }, [])
+    let frame = 0
+    let warOffen = false
 
-  // Angetipptes Eingabefeld sichtbar halten, wenn die Tastatur aufgeht.
-  //
-  // Vorher sprang es zweimal: erst schrumpfte die App schlagartig
-  // (--app-h), dann zog scrollIntoView({block:'center'}) das Feld in
-  // die Mitte — auch wenn es laengst sichtbar war.
-  //
-  // Jetzt: 'nearest' scrollt nur, wenn es wirklich noetig ist, und die
-  // Hoehenaenderung ist per CSS weich. Wer weniger Bewegung eingestellt
-  // hat, bekommt gar keine Animation.
-  useEffect(() => {
-    const onFocus = (e) => {
-      if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') return
-      const sanft = !window.matchMedia('(prefers-reduced-motion: reduce)').matches
-      setTimeout(() => {
-        e.target.scrollIntoView({ block: 'nearest', behavior: sanft ? 'smooth' : 'auto' })
-      }, 150)
+    const anwenden = () => {
+      frame = 0
+      root.style.setProperty('--app-h', Math.round(vv.height) + 'px')
+      root.style.setProperty('--app-top', Math.round(vv.offsetTop) + 'px')
+
+      const offen = window.innerHeight - vv.height > 120
+      root.dataset.kb = offen ? 'open' : 'closed'
+
+      // Nur EINMAL beim Aufklappen nachfassen, falls das Feld trotz
+      // geschrumpfter Flaeche noch unter der Tastatur liegt.
+      if (offen && !warOffen) {
+        const el = document.activeElement
+        if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA')) {
+          setTimeout(() => el.scrollIntoView({ block: 'nearest' }), 60)
+        }
+      }
+      warOffen = offen
     }
-    document.addEventListener('focusin', onFocus)
-    return () => document.removeEventListener('focusin', onFocus)
+
+    const planen = () => {
+      if (!frame) frame = requestAnimationFrame(anwenden)
+    }
+
+    anwenden()
+    vv.addEventListener('resize', planen)
+    vv.addEventListener('scroll', planen)
+    return () => {
+      if (frame) cancelAnimationFrame(frame)
+      vv.removeEventListener('resize', planen)
+      vv.removeEventListener('scroll', planen)
+    }
   }, [])
 
   const due = dueCards(words, cards)

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { PlusIcon, SearchIcon, EditIcon, TrashIcon } from './icons'
+import ClearableInput from './ClearableInput'
 
 /* ============================================================
    LIBRARY
@@ -67,18 +68,20 @@ function Library({ vocab, onAdd, onEdit, onDelete, profile, t, tt }) {
       <form className="add-card" onSubmit={handleSubmit}>
         <label className="field">
           <span>{profile.knownName}</span>
-          <input
+          <ClearableInput
             value={en}
             onChange={(e) => setEn(e.target.value)}
+            onClear={() => setEn('')}
             placeholder={tt.knownExample}
             autoComplete="off"
           />
         </label>
         <label className="field">
           <span>{profile.targetName}</span>
-          <input
+          <ClearableInput
             value={ko}
             onChange={(e) => setKo(e.target.value)}
+            onClear={() => setKo('')}
             placeholder={tt.example}
             lang={profile.targetLang}
             autoComplete="off"
@@ -109,9 +112,10 @@ function Library({ vocab, onAdd, onEdit, onDelete, profile, t, tt }) {
       {/* ---------- Search ---------- */}
       <div className="search">
         <SearchIcon />
-        <input
+        <ClearableInput
           value={query}
           onChange={(e) => setQuery(e.target.value)}
+          onClear={() => setQuery('')}
           placeholder={t.search}
           autoComplete="off"
         />
@@ -199,18 +203,20 @@ function VocabRow({ vocab, onEdit, onDelete, profile, t }) {
     return (
       <li className="vocab-row-edit">
         <form onSubmit={save}>
-          <input
+          <ClearableInput
             className="edit-input"
             value={ko}
             onChange={(e) => setKo(e.target.value)}
+            onClear={() => setKo('')}
             lang={profile.targetLang}
             placeholder={profile.targetName}
             autoComplete="off"
           />
-          <input
+          <ClearableInput
             className="edit-input"
             value={en}
             onChange={(e) => setEn(e.target.value)}
+            onClear={() => setEn('')}
             placeholder={profile.knownName}
             autoComplete="off"
           />
