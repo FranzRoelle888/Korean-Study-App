@@ -121,17 +121,25 @@ function wordFromRow(r) {
   }
 }
 function wordToRow(w) {
-  return {
+  const row = {
     id: w.id,
     en: w.en,
     ko: w.ko,
     pos: w.pos || null,
-    plural: w.plural || null,
-    plural_note: w.pluralNote || null,
-    conj: w.conj || null,
-    extras_auto: !!w.extrasAuto,
     created_at: new Date(w.createdAt).toISOString(),
   }
+  /* Zusatzspalten NUR mitschicken, wenn wirklich etwas drinsteht.
+     Grund: Sie werden erst durch supabase-migration-extras.sql
+     angelegt. Wuerden wir sie immer mitschicken, lehnt die
+     Datenbank jedes Anlegen ab, solange die Migration nicht lief —
+     genau das ist einmal passiert. So laeuft die App mit beiden
+     Staenden, und wer die Migration noch nicht ausgefuehrt hat,
+     merkt schlicht nichts davon. */
+  if (w.plural) row.plural = w.plural
+  if (w.pluralNote) row.plural_note = w.pluralNote
+  if (w.conj) row.conj = w.conj
+  if (w.extrasAuto) row.extras_auto = true
+  return row
 }
 function cardFromRow(r) {
   return {
