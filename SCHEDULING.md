@@ -130,7 +130,7 @@ verraten. `spaceOutPairs()` hält deshalb **mindestens 3 andere Karten** dazwisc
 |---|---|---|
 | **Wiederholungen** | `reps > 0` | gemischt · auf **50/Tag** gedeckelt (`REVIEW_CAP`), überfälligste zuerst |
 | **Nochmal-Karten** | `reps === 0`, aber `lastReviewed` gesetzt | gemischt · nicht gedeckelt (gehören zum heutigen Pensum) |
-| **Neue Karten** | `reps === 0` **und** kein `lastReviewed` | **hinten angehängt**, normale Reihenfolge |
+| **Neue Karten** | `reps === 0` **und** kein `lastReviewed` | **hinten angehängt**. Heute hinzugefügte immer; älterer Rückstand füllt nur die freien Plätze bis zum 50er-Deckel |
 
 ```js
 return [
@@ -147,8 +147,12 @@ noch im Kurzzeitgedächtnis. Am Ende des Stapels liegt genug Abstand dazwischen.
 
 Nach längerer Pause können mehrere hundert Karten fällig sein. Damit das nicht
 erschlägt, zeigt der Stapel höchstens **50 Wiederholungen pro Tag** — die
-**überfälligsten zuerst**, damit der Rückstand von hinten abgebaut wird. Neue und
-Nochmal-Karten zählen nicht gegen dieses Limit.
+**überfälligsten zuerst**, damit der Rückstand von hinten abgebaut wird.
+Nochmal-Karten zählen nicht gegen dieses Limit — sie gehören zum heutigen Pensum.
+Neue Karten dagegen schon: heute hinzugefügte erscheinen immer sofort, ein
+älterer Rückstand an nie gelernten Karten füllt nur die verbleibenden Plätze.
+(Ohne diese Regel machte ein großer Import den Stapel unerschöpflich und der
+Tag ließ sich nie abschließen.)
 
 ---
 

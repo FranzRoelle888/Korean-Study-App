@@ -505,12 +505,25 @@ function spaceOutPairs(list) {
    (in normaler Reihenfolge). So kommt eine Vokabel, die man gerade
    erst dreimal eingetippt hat, nicht Sekunden später schon wieder –
    und der Rest des Tages bleibt trotzdem gut durchmischt. */
+/* Beginn des aktuellen LERNtages in Millisekunden (04:00 Uhr). */
+function learningDayStartMs() {
+  const d = new Date()
+  if (d.getHours() < 4) d.setDate(d.getDate() - 1)
+  d.setHours(4, 0, 0, 0)
+  return d.getTime()
+}
+
 export function dueCards(words, cards) {
   const t = todayStr()
   const byId = Object.fromEntries(words.map((w) => [w.id, w]))
   const all = cards
     .filter((c) => c.due <= t && byId[c.wordId])
-    .map((c) => ({ ...c, en: byId[c.wordId].en, ko: byId[c.wordId].ko }))
+    .map((c) => ({
+      ...c,
+      en: byId[c.wordId].en,
+      ko: byId[c.wordId].ko,
+      createdAt: byId[c.wordId].createdAt || 0,
+    }))
 
   // Noch nie wiederholt = wirklich neu. (Nur reps === 0 reicht nicht:
   // "Nochmal" setzt reps ebenfalls auf 0, und die importierten
@@ -524,9 +537,25 @@ export function dueCards(words, cards) {
     .sort((a, b) => (a.due < b.due ? -1 : a.due > b.due ? 1 : 0))
     .slice(0, REVIEW_CAP)
 
+  /* Der Deckel gilt fuer den GESAMTEN Stapel, nicht nur fuer die
+     Wiederholungen. Vorher liefen neue Karten ungedeckelt hinten
+     rein — wer 100 Woerter am Stueck in die Bibliothek eintrug,
+     bekam einen Stapel von 200 Karten und konnte den Tag nie
+     abschliessen (Streak fuer immer bei 0).
+
+     Ausnahme: HEUTE hinzugefuegte Woerter (Vokabel des Tages,
+     manuelle Eintraege) erscheinen immer sofort — das war eine
+     bewusste Entscheidung von Anfang an. Der Rest des Rueckstands
+     fuellt nur die verbleibenden Plaetze und kommt sonst morgen. */
+  const dayStart = learningDayStartMs()
+  const freshToday = fresh.filter((c) => c.createdAt >= dayStart)
+  const backlog = fresh.filter((c) => c.createdAt < dayStart)
+  const slots = Math.max(0, REVIEW_CAP - review.length - again.length - freshToday.length)
+  const freshCapped = [...freshToday, ...backlog.slice(0, slots)]
+
   return [
     ...spaceOutPairs(shuffleForToday([...again, ...review])),
-    ...spaceOutPairs(fresh),
+    ...spaceOutPairs(freshCapped),
   ]
 }
 
