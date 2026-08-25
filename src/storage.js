@@ -882,17 +882,44 @@ const WEEKDAY_LABELS = {
 // 7 Tage rund um heute: heute steht immer an 3. Stelle (2 Tage davor,
 // 4 Tage danach) und ist mit isToday markiert. Zukünftige Tage sind
 // noch nicht erledigt (done = false).
-export function last7Days(logRows) {
+export function last7Days(logRows, partnerRows) {
   const done = new Set(logRows.filter((r) => r.done).map((r) => r.day))
+  const partner = new Set((partnerRows || []).filter((r) => r.done).map((r) => r.day))
   const today = todayStr()
   const out = []
   for (let offset = -2; offset <= 4; offset++) {
     const ds = addDays(today, offset)
     const labels = WEEKDAY_LABELS[activeProfile] || WEEKDAY_LABELS.ko
     const label = labels[new Date(ds + 'T00:00:00').getDay()]
-    out.push({ day: ds, label, done: done.has(ds), isToday: ds === today })
+    out.push({
+      day: ds,
+      label,
+      done: done.has(ds),
+      partnerDone: partner.has(ds),
+      isToday: ds === today,
+    })
   }
   return out
+}
+
+/* ---------- Partner-Log ----------
+   BEWUSSTE Ausnahme von der mine()-Regel: hier wird das Log der
+   ANDEREN Seite gelesen — nur gelesen, nie geschrieben. Grundlage
+   fuer die geteilten Streak-Punkte und die Zeile im Kalender
+   ("해인 ist heute schon fertig"). */
+export async function loadPartnerLog() {
+  const other = activeProfile === 'ko' ? 'de' : 'ko'
+  try {
+    const { data, error } = await supabase
+      .from('daily_log')
+      .select('*')
+      .eq('profile', other)
+    if (error) throw error
+    return data
+  } catch {
+    /* Ohne Netz fehlt eben die Partneranzeige — kein Beinbruch */
+    return []
+  }
 }
 
 // Set der erledigten Tage (für den Kalender).

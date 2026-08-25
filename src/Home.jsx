@@ -76,7 +76,13 @@ function Home({
           <div className="streak-days">
             {week.map((d) => (
               <div key={d.day} className={d.isToday ? 'streak-day streak-day-today' : 'streak-day'}>
-                <div className={d.done ? 'dot dot-on' : 'dot'} />
+                {/* Links = ich, rechts = Partner. So sieht jeder auf
+                    einen Blick, ob der andere heute schon dran war. */}
+                <div
+                  className={
+                    'dot' + (d.done ? ' dot-self' : '') + (d.partnerDone ? ' dot-partner' : '')
+                  }
+                />
                 <span className="dot-label" lang={profile.targetLang}>
                   {d.label}
                 </span>

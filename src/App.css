@@ -3285,3 +3285,43 @@ textarea {
 .plural-bad .plural-note {
   color: var(--accent-ink, var(--accent));
 }
+
+/* ---------- Streak-Punkte: links ich, rechts Partner ---------- */
+.dot {
+  position: relative;
+  overflow: hidden;
+}
+
+.dot-self::before,
+.dot-partner::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+}
+
+.dot-self::before {
+  left: 0;
+  right: 50%;
+  background: var(--accent);
+}
+
+.dot-partner::after {
+  left: 50%;
+  right: 0;
+  background: var(--primary);
+  opacity: 0.85;
+}
+
+/* Deutsche Seite: eigener Ertrag ist Gold, Partner in Tusche */
+:root[data-profile='de'] .dot-self::before {
+  background: var(--gold);
+}
+
+/* ---------- Kalender: Partner-Zeile ---------- */
+.partner-note {
+  margin: 10px 0 0;
+  text-align: center;
+  font-size: 13.5px;
+  font-weight: 600;
+}

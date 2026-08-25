@@ -9,7 +9,7 @@ const pad = (n) => String(n).padStart(2, '0')
 
 /* Wochentage und Monat stehen in der Sprache, die gelernt wird —
    auf der deutschen Seite also Mo–So und "August 2026". */
-function Calendar({ log, onExit, t, tt }) {
+function Calendar({ log, onExit, t, tt, partnerNote }) {
   const WEEKDAYS = tt.calWeekdays
   const done = doneDaysSet(log)
   const [offset, setOffset] = useState(0) // 0 = current month, -1 = previous …
@@ -87,6 +87,8 @@ function Calendar({ log, onExit, t, tt }) {
       <p className="cal-summary">
         {t.daysThisMonth(doneThisMonth)}
       </p>
+      {/* "해인 ist heute schon fertig" — nur wenn es stimmt */}
+      {partnerNote && <p className="partner-note">{partnerNote}</p>}
     </div>
   )
 }

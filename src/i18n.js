@@ -115,6 +115,9 @@ const en = {
   conjLabel: 'Present tense',
   noExtras: 'No extra details for this word yet.',
   autoFilled: 'automatically added — please double-check',
+
+  /* --- Partner --- */
+  partnerDoneToday: (name) => `🔥 ${name} already finished today!`,
 }
 
 const ko = {
@@ -217,6 +220,9 @@ const ko = {
   conjLabel: '현재형',
   noExtras: '아직 추가 정보가 없어요.',
   autoFilled: '자동으로 추가됨 — 확인해 주세요',
+
+  /* --- Partner --- */
+  partnerDoneToday: (name) => `🔥 ${name}는 오늘 벌써 다 했어요!`,
 }
 
 const PACKS = { en, ko }

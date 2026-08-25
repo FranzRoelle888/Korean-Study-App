@@ -29,6 +29,7 @@ import {
   markDayDone,
   computeStreak,
   last7Days,
+  loadPartnerLog,
   todayStr,
   writeWordsCache,
   writeCardsCache,
@@ -71,6 +72,7 @@ function App() {
   const [cards, setCards] = useState([])
   const [numberState, setNumberState] = useState(getNumberChallenge)
   const [dailyLog, setDailyLog] = useState([])
+  const [partnerLog, setPartnerLog] = useState([])
 
   // Beim Start UND bei jedem Umschalten: die Daten der jeweiligen
   // Seite laden. Vorher alles leeren, damit nie kurz die Vokabeln
@@ -81,12 +83,13 @@ function App() {
     setWords([])
     setCards([])
     setDailyLog([])
-    Promise.all([loadInitial(), loadDailyLog()]).then(([data, log]) => {
+    Promise.all([loadInitial(), loadDailyLog(), loadPartnerLog()]).then(([data, log, plog]) => {
       if (cancelled) return
       setWords(data.words)
       setCards(data.cards)
       setOffline(!data.online || pendingCount() > 0)
       setDailyLog(log)
+      setPartnerLog(plog)
       setNumberState(getNumberChallenge())
       setLoading(false)
     })
@@ -101,11 +104,12 @@ function App() {
   useEffect(() => {
     function refresh() {
       if (document.visibilityState !== 'visible') return
-      Promise.all([loadInitial(), loadDailyLog()]).then(([data, log]) => {
+      Promise.all([loadInitial(), loadDailyLog(), loadPartnerLog()]).then(([data, log, plog]) => {
         setWords(data.words)
         setCards(data.cards)
         setOffline(!data.online || pendingCount() > 0)
         setDailyLog(log)
+        setPartnerLog(plog)
         /* Nach 4 Uhr waere die Zahl sonst noch die von gestern,
            wenn die App ueber Nacht offen blieb */
         setNumberState(getNumberChallenge())
@@ -221,7 +225,10 @@ function App() {
   }, [allDone, loading]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const streak = computeStreak(dailyLog)
-  const week = last7Days(dailyLog)
+  const week = last7Days(dailyLog, partnerLog)
+  /* Fuer die Zeile unterm Kalender: hat die andere Seite heute schon? */
+  const partnerName = PROFILES[otherProfile(profileId)].name
+  const partnerDoneToday = partnerLog.some((r) => r.day === todayStr() && r.done)
 
   function handleIntroduce(poolEntry) {
     const { word, c1, c2 } = makeIntroducedWord(poolEntry)
@@ -428,7 +435,13 @@ function App() {
             tt={tt}
           />
         )}
-        {view === 'calendar' && <Calendar log={dailyLog} onExit={() => setView('home')} t={t} tt={tt} />}
+        {view === 'calendar' && <Calendar
+            log={dailyLog}
+            onExit={() => setView('home')}
+            t={t}
+            tt={tt}
+            partnerNote={partnerDoneToday ? t.partnerDoneToday(partnerName) : null}
+          />}
         {view === 'sets' &&
           (openSet ? (
             (profile.id === 'de' ? (
