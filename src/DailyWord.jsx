@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { SuccessMark, MoonIcon } from './icons'
 import ClearableInput from './ClearableInput'
+import { SpeakButton } from './tts'
 
 /* ============================================================
    WORD OF THE DAY
@@ -88,6 +89,7 @@ function DailyWord({ candidates, onIntroduce, onExit, profile, t, tt }) {
         <div className={`daily-card ${flashClass}`}>
           <div className="daily-ko" lang={profile.targetLang}>
             {entry.ko}
+            <SpeakButton text={entry.ko} lang={profile.targetLang} className="speak-on-dark" />
           </div>
           <div className="daily-en">{entry.en}</div>
           {entry.ex && (

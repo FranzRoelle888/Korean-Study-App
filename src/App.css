@@ -3367,3 +3367,35 @@ textarea {
   border-color: var(--accent);
   color: #fff;
 }
+
+/* ---------- Vorlese-Knopf ---------- */
+.speak-btn {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  margin: 0 auto;
+  border-radius: 50%;
+  background: var(--surface-2);
+  color: var(--text-soft);
+}
+
+.speak-btn:active {
+  transform: scale(0.92);
+}
+
+/* Klein neben der aufgedeckten Antwort */
+.speak-inline {
+  display: inline-grid;
+  width: 30px;
+  height: 30px;
+  margin: 0 0 0 10px;
+  vertical-align: middle;
+}
+
+/* Auf der dunklen Vokabel-des-Tages-Karte */
+.speak-on-dark {
+  margin-top: 10px;
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+}

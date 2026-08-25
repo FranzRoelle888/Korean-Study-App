@@ -3,6 +3,7 @@ import { previewInterval, formatInterval } from './storage'
 import Confetti from './Confetti'
 import { MoonIcon, CardRidge, CardSkyline } from './icons'
 import ClearableInput from './ClearableInput'
+import { SpeakButton } from './tts'
 
 /* ============================================================
    REVIEW STACK
@@ -159,6 +160,7 @@ function Review({ initialQueue, onRate, onUndo, onExit, profile, t, tt }) {
                 <div className={correct ? 'card-answer ok' : 'card-answer bad'}>
                   <span lang={profile.targetLang} className="answer-ko">
                     {card.ko}
+                    <SpeakButton text={card.ko} lang={profile.targetLang} className="speak-inline" />
                   </span>
                   <span className="answer-note">
                     {correct ? t.correct : t.wrong}
@@ -171,6 +173,7 @@ function Review({ initialQueue, onRate, onUndo, onExit, profile, t, tt }) {
               <div className="card-front" lang={profile.targetLang}>
                 {card.ko}
               </div>
+              <SpeakButton text={card.ko} lang={profile.targetLang} />
               {answerShown && (
                 <div className="card-answer neutral">
                   <span lang={profile.knownLang} className="answer-en">
