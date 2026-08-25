@@ -165,6 +165,12 @@ function Review({ initialQueue, onRate, onUndo, onExit, profile, t, tt }) {
                   <span className="answer-note">
                     {correct ? t.correct : t.wrong}
                   </span>
+                  {card.ex && (
+                    <span className="card-example">
+                      <span lang={profile.targetLang}>{card.ex}</span>
+                      {card.exTr && <span className="card-example-tr">{card.exTr}</span>}
+                    </span>
+                  )}
                 </div>
               )}
             </>
@@ -179,6 +185,12 @@ function Review({ initialQueue, onRate, onUndo, onExit, profile, t, tt }) {
                   <span lang={profile.knownLang} className="answer-en">
                     {card.en}
                   </span>
+                  {card.ex && (
+                    <span className="card-example">
+                      <span lang={profile.targetLang}>{card.ex}</span>
+                      {card.exTr && <span className="card-example-tr">{card.exTr}</span>}
+                    </span>
+                  )}
                 </div>
               )}
             </>

@@ -3399,3 +3399,20 @@ textarea {
   background: rgba(255, 255, 255, 0.18);
   color: #fff;
 }
+
+/* ---------- Beispielsatz auf der Karte ---------- */
+.card-example {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--border);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.card-example-tr {
+  font-size: 12px;
+  color: var(--text-soft);
+}

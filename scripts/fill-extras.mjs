@@ -223,8 +223,102 @@ async function abarbeiten(art) {
   return { gesetzt, uebersprungen }
 }
 
+/* ============================================================
+   BEISPIELSAETZE — fuer BEIDE Seiten
+
+   Franz: koreanischer Satz (hoefliche -요-Form) + englische
+   Uebersetzung. 해인: deutscher A1-Satz + koreanische Uebersetzung.
+   ============================================================ */
+
+const PROMPT_BEISPIEL = (profil, ws) => {
+  const kopfzeile =
+    profil === 'ko'
+      ? 'Schreibe zu jedem koreanischen Wort EINEN kurzen, natuerlichen Beispielsatz auf KOREANISCH in der hoeflichen -요-Form (Anfaengerniveau), dazu die englische Uebersetzung.'
+      : 'Schreibe zu jedem deutschen Wort EINEN kurzen, natuerlichen Beispielsatz auf DEUTSCH (Niveau A1, Praesens), dazu die koreanische Uebersetzung.'
+  return [
+    'Du bist Sprachlehrer. ' + kopfzeile,
+    '',
+    'Regeln, die du strikt einhalten musst:',
+    '- Der Satz enthaelt das Wort (gebeugte Form ist erlaubt).',
+    '- Hoechstens 10 Woerter pro Satz. Alltagssprache, nichts Konstruiertes.',
+    '- Bist du dir unsicher, setze ex auf null. Rate nicht.',
+    '',
+    'Antworte AUSSCHLIESSLICH mit einem JSON-Array, ohne Fliesstext:',
+    '[{"id":"...","ex":"...","tr":"..."}]',
+    '',
+    'Woerter (id | Wort | Bedeutung):',
+    ws.map((w) => w.id + ' | ' + w.ko + ' | ' + w.en).join('\n'),
+  ].join('\n')
+}
+
+function pruefeBeispiel(eintrag, bekannt) {
+  if (!eintrag || !bekannt.has(eintrag.id)) return null
+  const { ex, tr } = eintrag
+  if (typeof ex !== 'string' || typeof tr !== 'string') return null
+  const satz = ex.trim()
+  const ueb = tr.trim()
+  if (satz.length < 5 || satz.length > 140) return null
+  if (ueb.length < 3 || ueb.length > 160) return null
+  if (satz.includes('\n') || ueb.includes('\n')) return null
+  return { ex: satz, ex_tr: ueb }
+}
+
+async function beispielLauf(profil) {
+  const offen = await holen(
+    'words?profile=eq.' + profil + '&ex=is.null&select=id,ko,en&limit=' + MAX_PRO_LAUF
+  )
+  console.log('Beispielsaetze fehlen (' + profil + '): ' + offen.length)
+  if (offen.length === 0) return { gesetzt: 0, uebersprungen: 0 }
+
+  let gesetzt = 0
+  let uebersprungen = 0
+  for (let i = 0; i < offen.length; i += BATCH) {
+    const teil = offen.slice(i, i + BATCH)
+    const bekannt = new Set(teil.map((w) => w.id))
+    let antwort
+    try {
+      antwort = await fragen(PROMPT_BEISPIEL(profil, teil))
+    } catch (e) {
+      console.error('Modellanfrage fehlgeschlagen: ' + e.message)
+      uebersprungen += teil.length
+      continue
+    }
+    if (!Array.isArray(antwort)) {
+      uebersprungen += teil.length
+      continue
+    }
+    for (const eintrag of antwort) {
+      const wort = teil.find((w) => w.id === (eintrag && eintrag.id))
+      const felder = pruefeBeispiel(eintrag, bekannt)
+      if (!felder) {
+        uebersprungen++
+        continue
+      }
+      if (TROCKEN) {
+        console.log('  [trocken] ' + wort.ko + ' -> ' + felder.ex)
+        gesetzt++
+        continue
+      }
+      try {
+        await schreiben(eintrag.id, { ...felder, extras_auto: true })
+        gesetzt++
+        console.log('  Satz: ' + wort.ko)
+      } catch (e) {
+        console.error('  Schreiben fehlgeschlagen (' + (wort && wort.ko) + '): ' + e.message)
+        uebersprungen++
+      }
+    }
+  }
+  return { gesetzt, uebersprungen }
+}
+
 const n = await abarbeiten('noun')
 const v = await abarbeiten('verb')
+const bd = await beispielLauf('de')
+const bk = await beispielLauf('ko')
+console.log(
+  'Beispielsaetze: de ' + bd.gesetzt + ' / ko ' + bk.gesetzt + ' gesetzt, offen: ' + (bd.uebersprungen + bk.uebersprungen)
+)
 console.log(
   '\nFertig. Substantive: ' +
     n.gesetzt +

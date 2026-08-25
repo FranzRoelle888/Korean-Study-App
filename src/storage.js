@@ -116,6 +116,8 @@ function wordFromRow(r) {
     plural: r.plural || null,
     pluralNote: r.plural_note || null,
     conj: r.conj || null,
+    ex: r.ex || null,
+    exTr: r.ex_tr || null,
     extrasAuto: !!r.extras_auto,
     createdAt: new Date(r.created_at).getTime(),
   }
@@ -138,6 +140,8 @@ function wordToRow(w) {
   if (w.plural) row.plural = w.plural
   if (w.pluralNote) row.plural_note = w.pluralNote
   if (w.conj) row.conj = w.conj
+  if (w.ex) row.ex = w.ex
+  if (w.exTr) row.ex_tr = w.exTr
   if (w.extrasAuto) row.extras_auto = true
   return row
 }
@@ -522,6 +526,8 @@ export function dueCards(words, cards) {
       ...c,
       en: byId[c.wordId].en,
       ko: byId[c.wordId].ko,
+      ex: byId[c.wordId].ex || null,
+      exTr: byId[c.wordId].exTr || null,
       createdAt: byId[c.wordId].createdAt || 0,
     }))
 
@@ -617,6 +623,8 @@ export function makeIntroducedWord(poolEntry) {
     plural: poolEntry.plural || null,
     pluralNote: poolEntry.pluralNote || null,
     conj: poolEntry.conj || null,
+    ex: poolEntry.ex || null,
+    exTr: poolEntry.exEn || null,
     extrasAuto: false,
     createdAt: Date.now(),
   }

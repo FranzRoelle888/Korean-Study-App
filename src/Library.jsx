@@ -25,7 +25,8 @@ function PosTag({ pos, t }) {
 function WordExtras({ vocab, t }) {
   const hatPlural = vocab.plural || vocab.pluralNote
   const hatKonj = vocab.conj && Object.keys(vocab.conj).length > 0
-  if (!hatPlural && !hatKonj) {
+  const hatSatz = !!vocab.ex
+  if (!hatPlural && !hatKonj && !hatSatz) {
     return <div className="extras"><p className="extras-empty">{t.noExtras}</p></div>
   }
   return (
@@ -51,6 +52,13 @@ function WordExtras({ vocab, t }) {
               )
             })}
           </div>
+        </div>
+      )}
+      {hatSatz && (
+        <div className="extras-block">
+          <span className="extras-label">{t.exampleLabel}</span>
+          <span className="extras-plural">{vocab.ex}</span>
+          {vocab.exTr && <span className="extras-note">{vocab.exTr}</span>}
         </div>
       )}
       {vocab.extrasAuto && <p className="extras-auto">{t.autoFilled}</p>}
@@ -322,7 +330,8 @@ function VocabRow({ vocab, onEdit, onDelete, tricky, profile, t }) {
   }
 
   /* Nur da, wo es ueberhaupt Zusatzinfos geben kann */
-  const kannInfo = vocab.pos === 'noun' || vocab.pos === 'verb'
+  const kannInfo =
+    vocab.pos === 'noun' || vocab.pos === 'verb' || !!vocab.ex || !!vocab.plural || !!vocab.conj
 
   return (
     <li className={zeigeInfo ? 'vocab-row vocab-row-open' : 'vocab-row'}>
