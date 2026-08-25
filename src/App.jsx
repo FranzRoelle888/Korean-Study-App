@@ -106,6 +106,9 @@ function App() {
         setCards(data.cards)
         setOffline(!data.online || pendingCount() > 0)
         setDailyLog(log)
+        /* Nach 4 Uhr waere die Zahl sonst noch die von gestern,
+           wenn die App ueber Nacht offen blieb */
+        setNumberState(getNumberChallenge())
       })
     }
     document.addEventListener('visibilitychange', refresh)
@@ -261,11 +264,22 @@ function App() {
   function handleEditWord(id, en, ko, pos) {
     const res = validateEdit(words, id, en, ko, pos)
     if (res.error) return res
-    const newWords = words.map((w) => (w.id === id ? { ...w, en: res.en, ko: res.ko, pos: res.pos } : w))
+    const alt = words.find((w) => w.id === id)
+    /* Anderes Wort = andere Grammatik. Sonst zeigt die Info-Tafel
+       den Plural des ALTEN Wortes. */
+    const clearExtras =
+      !!alt && alt.ko.trim() !== res.ko.trim() && !!(alt.plural || alt.conj || alt.pluralNote)
+    const newWords = words.map((w) =>
+      w.id === id
+        ? clearExtras
+          ? { ...w, en: res.en, ko: res.ko, pos: res.pos, plural: null, pluralNote: null, conj: null, extrasAuto: false }
+          : { ...w, en: res.en, ko: res.ko, pos: res.pos }
+        : w
+    )
     setWords(newWords)
     writeWordsCache(newWords)
-    updateWordCloud(id, res.en, res.ko, res.pos).catch((err) => {
-      queueFailed({ t: 'edit', id, en: res.en, ko: res.ko, pos: res.pos })
+    updateWordCloud(id, res.en, res.ko, res.pos, clearExtras).catch((err) => {
+      queueFailed({ t: 'edit', id, en: res.en, ko: res.ko, pos: res.pos, clearExtras })
       setOffline(true)
       console.warn('Cloud save (edit) failed:', err?.message || err)
     })

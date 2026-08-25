@@ -29,6 +29,13 @@ function ClearableInput({ value, onChange, onClear, className, wrapClassName, ..
         className={className}
         value={value}
         onChange={onChange}
+        /* iOS macht sonst aus "das Haus" ein "Das Haus" — und der
+           strenge Vergleich wertet das als falsch. Wer Grossschreibung
+           lernen soll, soll sie selbst tippen. Aufrufer koennen das
+           per Prop uebersteuern (rest kommt danach). */
+        autoCapitalize="none"
+        autoCorrect="off"
+        spellCheck={false}
         {...rest}
       />
       {value && (

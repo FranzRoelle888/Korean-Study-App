@@ -236,10 +236,15 @@ export async function flushPending() {
     try {
       if (op.t === 'new') await persistNewWord(op.word, op.c1, op.c2)
       else if (op.t === 'card') await persistCard(op.card)
-      else if (op.t === 'edit') await updateWordCloud(op.id, op.en, op.ko, op.pos)
+      else if (op.t === 'edit') await updateWordCloud(op.id, op.en, op.ko, op.pos, op.clearExtras)
       else if (op.t === 'del') await deleteWordCloud(op.id)
-    } catch {
-      break
+    } catch (e) {
+      /* Sonderfall: Der Eintrag ist schon in der Cloud (der erste
+         Versuch kam an, nur die Antwort ging verloren). Ein 409/
+         23505 wuerde die Warteschlange sonst fuer immer blockieren
+         und der Offline-Balken bliebe stehen. */
+      const doppelt = e && (e.code === '23505' || String(e.message || '').includes('duplicate'))
+      if (!doppelt) break
     }
     list = list.slice(1)
     writePending(list)
@@ -385,8 +390,18 @@ export function validateEdit(words, id, en, ko, pos) {
   return { en: cleanEn, ko: cleanKo, pos: pos || null }
 }
 
-export async function updateWordCloud(id, en, ko, pos) {
-  const { error } = await mine(supabase.from('words').update({ en, ko, pos: pos || null }).eq('id', id))
+export async function updateWordCloud(id, en, ko, pos, clearExtras) {
+  const patch = { en, ko, pos: pos || null }
+  /* Wird das ZIELsprachen-Wort selbst geaendert, stimmen Plural und
+     Konjugation des alten Wortes nicht mehr — loeschen. Der
+     Nachtlauf fuellt die Luecke am naechsten Tag korrekt neu. */
+  if (clearExtras) {
+    patch.plural = null
+    patch.plural_note = null
+    patch.conj = null
+    patch.extras_auto = false
+  }
+  const { error } = await mine(supabase.from('words').update(patch).eq('id', id))
   if (error) throw error
 }
 
@@ -688,6 +703,9 @@ export function getArticleChallenge(words) {
 function pickPlurals(words) {
   const nouns = words
     .filter((w) => w.pos === 'noun' && w.plural && splitArticle(w.ko))
+    /* "die Leute" -> Plural "die Leute": nach dem Plural eines
+       Pluralworts zu fragen ist sinnlos */
+    .filter((w) => w.plural.trim().toLowerCase() !== w.ko.trim().toLowerCase())
     .map((w) => ({
       id: w.id,
       singular: w.ko,
@@ -730,7 +748,16 @@ const KIND_KEY = () => cacheKey('challengeKind')
 export function todaysChallengeKind() {
   try {
     const d = JSON.parse(localStorage.getItem(KIND_KEY()))
-    if (d && (d.kind === 'article' || d.kind === 'plural')) return d.kind
+    if (d && (d.kind === 'article' || d.kind === 'plural')) {
+      /* "from" = ab wann der gespeicherte Wechsel gilt. Vorher gilt
+         noch die ANDERE Aufgabe. Ohne diese Verzoegerung sprang die
+         Kachel direkt nach dem Abschluss auf die zweite Aufgabe um —
+         und der Tag liess sich nur mit BEIDEN Quizzen schliessen. */
+      if (d.from && todayStr() < d.from) {
+        return d.kind === 'article' ? 'plural' : 'article'
+      }
+      return d.kind
+    }
   } catch {
     /* egal */
   }
@@ -739,7 +766,7 @@ export function todaysChallengeKind() {
 
 export function flipChallengeKind() {
   const next = todaysChallengeKind() === 'article' ? 'plural' : 'article'
-  localStorage.setItem(KIND_KEY(), JSON.stringify({ kind: next }))
+  localStorage.setItem(KIND_KEY(), JSON.stringify({ kind: next, from: addDays(todayStr(), 1) }))
   return next
 }
 

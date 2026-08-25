@@ -313,7 +313,6 @@ function VocabRow({ vocab, onEdit, onDelete, profile, t }) {
           <PosTag pos={vocab.pos} t={t} />
         </span>
         <span className="vocab-en">{vocab.en}</span>
-        {zeigeInfo && <WordExtras vocab={vocab} t={t} />}
       </div>
       <div className="row-actions">
         {kannInfo && (
@@ -336,6 +335,9 @@ function VocabRow({ vocab, onEdit, onDelete, profile, t }) {
           <TrashIcon />
         </button>
       </div>
+      {/* Volle Breite unter der Zeile — in der Textspalte endete die
+          Tafel dort, wo die Knopfspalte beginnt */}
+      {zeigeInfo && <WordExtras vocab={vocab} t={t} />}
     </li>
   )
 }

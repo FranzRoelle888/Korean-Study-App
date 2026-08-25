@@ -3167,7 +3167,7 @@ textarea {
 
 /* ---------- Zusatzinfos in der Bibliothek ---------- */
 .vocab-row-open {
-  align-items: flex-start;
+  flex-wrap: wrap;
 }
 
 .row-btn-on {
@@ -3177,7 +3177,8 @@ textarea {
 }
 
 .extras {
-  margin-top: 10px;
+  width: 100%;
+  margin-top: 2px;
   padding: 10px 12px;
   border-radius: 12px;
   background: var(--surface-2);
