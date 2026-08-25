@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { PlusIcon, SearchIcon, EditIcon, TrashIcon, InfoIcon } from './icons'
 import ClearableInput from './ClearableInput'
+import { SpeakButton } from './tts'
 
 /* ============================================================
    LIBRARY
@@ -119,8 +120,9 @@ function Library({ vocab, cards, onAdd, onEdit, onDelete, trickyIds, profile, t,
   const [posFilter, setPosFilter] = useState('') // '' = alle
   const [trickyOnly, setTrickyOnly] = useState(false)
 
-  /* Filter nur zeigen, wenn ueberhaupt Wortarten hinterlegt sind */
+  /* Wortart-Filter nur zeigen, wenn Wortarten hinterlegt sind */
   const hasPos = vocab.some((v) => v.pos)
+  const hasTricky = !!trickyIds && trickyIds.size > 0
 
   function handleSubmit(e) {
     e.preventDefault()
@@ -228,14 +230,16 @@ function Library({ vocab, cards, onAdd, onEdit, onDelete, trickyIds, profile, t,
         </button>
       </div>
 
-      {hasPos && (
+      {(hasPos || hasTricky) && (
         <div className="pos-row">
-          <button
-            className={posFilter === '' ? 'pos-pick pos-pick-on' : 'pos-pick'}
-            onClick={() => setPosFilter('')}
-          >
-            {t.posAll}
-          </button>
+          {hasPos && (
+            <button
+              className={posFilter === '' ? 'pos-pick pos-pick-on' : 'pos-pick'}
+              onClick={() => setPosFilter('')}
+            >
+              {t.posAll}
+            </button>
+          )}
           {POS_KEYS.filter((k) => vocab.some((v) => v.pos === k)).map((k) => (
             <button
               key={k}
@@ -392,6 +396,7 @@ function VocabRow({ vocab, onEdit, onDelete, tricky, profile, t }) {
         <span className="vocab-en">{vocab.en}</span>
       </div>
       <div className="row-actions">
+        <SpeakButton text={vocab.ko} lang={profile.targetLang} className="speak-row" />
         {kannInfo && (
           <button
             className={zeigeInfo ? 'row-btn row-btn-on' : 'row-btn'}

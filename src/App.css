@@ -3429,3 +3429,12 @@ textarea {
   font-size: 13px;
   font-weight: 600;
 }
+
+/* ---------- Lautsprecher in der Bibliothekszeile ---------- */
+.speak-row {
+  width: 34px;
+  height: 34px;
+  margin: 0;
+  background: none;
+  color: var(--text-soft);
+}
