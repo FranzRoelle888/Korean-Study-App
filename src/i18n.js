@@ -123,6 +123,7 @@ const en = {
   partnerDoneToday: (name) => `🔥 ${name} already finished today!`,
   undo: 'Undo',
   exampleLabel: 'Example',
+  exportCsv: 'Export backup (CSV)',
   tricky: 'Tricky',
 }
 
@@ -234,6 +235,7 @@ const ko = {
   partnerDoneToday: (name) => `🔥 ${name}는 오늘 벌써 다 했어요!`,
   undo: '되돌리기',
   exampleLabel: '예문',
+  exportCsv: '백업 내보내기 (CSV)',
   tricky: '헷갈림',
 }
 

@@ -477,6 +477,7 @@ function App() {
         {view === 'library' && (
           <Library
             vocab={words}
+            cards={cards}
             trickyIds={trickyIds}
             onAdd={handleAdd}
             onEdit={handleEditWord}

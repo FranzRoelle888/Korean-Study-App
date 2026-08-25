@@ -66,7 +66,49 @@ function WordExtras({ vocab, t }) {
   )
 }
 
-function Library({ vocab, onAdd, onEdit, onDelete, trickyIds, profile, t, tt }) {
+/* ============================================================
+   BACKUP ALS CSV
+
+   Der gesamte Lernstand haengt an einer Datenbank ohne eigene
+   Sicherung. Der Export ist die billigste Versicherung: eine
+   Zeile pro Karte, mit Wort, Zusatzinfos und Lernstand.
+   BOM vorweg, damit Excel Umlaute und Hangul richtig liest.
+   ============================================================ */
+function exportCsv(vocab, cards, profileId) {
+  const q = (v) => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"'
+  const kopf = [
+    'wort', 'bedeutung', 'wortart', 'plural', 'konjugation', 'beispiel',
+    'kartentyp', 'faellig', 'ease', 'intervall_tage', 'wiederholungen', 'ausrutscher',
+  ]
+  const byWord = {}
+  cards.forEach((c) => {
+    ;(byWord[c.wordId] = byWord[c.wordId] || []).push(c)
+  })
+  const zeilen = [kopf.join(',')]
+  vocab.forEach((w) => {
+    const eigene = byWord[w.id] || [{}]
+    eigene.forEach((c) => {
+      zeilen.push(
+        [
+          q(w.ko), q(w.en), q(w.pos), q(w.plural),
+          q(w.conj ? JSON.stringify(w.conj) : ''), q(w.ex),
+          q(c.front), q(c.due), q(c.ease), q(c.intervalDays), q(c.reps), q(c.lapses),
+        ].join(',')
+      )
+    })
+  })
+  const blob = new Blob(['\uFEFF' + zeilen.join('\n')], { type: 'text/csv;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = 'vokabel-backup-' + profileId + '-' + new Date().toISOString().slice(0, 10) + '.csv'
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+  setTimeout(() => URL.revokeObjectURL(url), 4000)
+}
+
+function Library({ vocab, cards, onAdd, onEdit, onDelete, trickyIds, profile, t, tt }) {
   const [en, setEn] = useState('')
   const [ko, setKo] = useState('')
   const [error, setError] = useState('')
@@ -234,6 +276,12 @@ function Library({ vocab, onAdd, onEdit, onDelete, trickyIds, profile, t, tt }) 
           </li>
         )}
       </ul>
+
+      {vocab.length > 0 && (
+        <button className="export-btn" onClick={() => exportCsv(vocab, cards || [], profile.id)}>
+          {t.exportCsv}
+        </button>
+      )}
     </div>
   )
 }

@@ -3416,3 +3416,16 @@ textarea {
   font-size: 12px;
   color: var(--text-soft);
 }
+
+/* ---------- Backup-Export ---------- */
+.export-btn {
+  display: block;
+  margin: 18px auto 8px;
+  padding: 10px 18px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-soft);
+  font-size: 13px;
+  font-weight: 600;
+}
