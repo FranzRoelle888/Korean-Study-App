@@ -58,7 +58,7 @@ function WordExtras({ vocab, t }) {
   )
 }
 
-function Library({ vocab, onAdd, onEdit, onDelete, profile, t, tt }) {
+function Library({ vocab, onAdd, onEdit, onDelete, trickyIds, profile, t, tt }) {
   const [en, setEn] = useState('')
   const [ko, setKo] = useState('')
   const [error, setError] = useState('')
@@ -67,6 +67,7 @@ function Library({ vocab, onAdd, onEdit, onDelete, profile, t, tt }) {
   const [sort, setSort] = useState('newest') // 'newest' | 'alpha'
   const [pos, setPos] = useState('') // Wortart des neuen Wortes
   const [posFilter, setPosFilter] = useState('') // '' = alle
+  const [trickyOnly, setTrickyOnly] = useState(false)
 
   /* Filter nur zeigen, wenn ueberhaupt Wortarten hinterlegt sind */
   const hasPos = vocab.some((v) => v.pos)
@@ -87,7 +88,8 @@ function Library({ vocab, onAdd, onEdit, onDelete, profile, t, tt }) {
   }
 
   const q = query.trim().toLowerCase()
-  const byPos = posFilter ? vocab.filter((v) => v.pos === posFilter) : vocab
+  const byTricky = trickyOnly && trickyIds ? vocab.filter((v) => trickyIds.has(v.id)) : vocab
+  const byPos = posFilter ? byTricky.filter((v) => v.pos === posFilter) : byTricky
   const filtered = q
     ? byPos.filter((v) => v.en.toLowerCase().includes(q) || v.ko.includes(query.trim()))
     : byPos
@@ -193,13 +195,30 @@ function Library({ vocab, onAdd, onEdit, onDelete, profile, t, tt }) {
               {t.pos[k]}
             </button>
           ))}
+          {/* Nur zeigen, wenn es ueberhaupt Wackelkandidaten gibt */}
+          {trickyIds && trickyIds.size > 0 && (
+            <button
+              className={trickyOnly ? 'pos-pick pos-pick-tricky-on' : 'pos-pick'}
+              onClick={() => setTrickyOnly((v) => !v)}
+            >
+              ⚠ {t.tricky}
+            </button>
+          )}
         </div>
       )}
 
       {/* ---------- List ---------- */}
       <ul className="vocab-list">
         {shown.map((v) => (
-          <VocabRow key={v.id} vocab={v} onEdit={onEdit} onDelete={onDelete} profile={profile} t={t} />
+          <VocabRow
+            key={v.id}
+            vocab={v}
+            onEdit={onEdit}
+            onDelete={onDelete}
+            tricky={!!trickyIds && trickyIds.has(v.id)}
+            profile={profile}
+            t={t}
+          />
         ))}
         {shown.length === 0 && (
           <li className="vocab-empty">
@@ -211,7 +230,7 @@ function Library({ vocab, onAdd, onEdit, onDelete, profile, t, tt }) {
   )
 }
 
-function VocabRow({ vocab, onEdit, onDelete, profile, t }) {
+function VocabRow({ vocab, onEdit, onDelete, tricky, profile, t }) {
   const [mode, setMode] = useState('view') // 'view' | 'edit' | 'confirmDelete'
   const [en, setEn] = useState(vocab.en)
   const [ko, setKo] = useState(vocab.ko)
@@ -311,6 +330,7 @@ function VocabRow({ vocab, onEdit, onDelete, profile, t }) {
         <span className="vocab-ko" lang={profile.targetLang}>
           {vocab.ko}
           <PosTag pos={vocab.pos} t={t} />
+          {tricky && <span className="pos-tag tricky-tag">⚠</span>}
         </span>
         <span className="vocab-en">{vocab.en}</span>
       </div>

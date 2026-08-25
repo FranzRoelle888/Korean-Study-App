@@ -121,6 +121,8 @@ const en = {
 
   /* --- Partner --- */
   partnerDoneToday: (name) => `🔥 ${name} already finished today!`,
+  undo: 'Undo',
+  tricky: 'Tricky',
 }
 
 const ko = {
@@ -229,6 +231,8 @@ const ko = {
 
   /* --- Partner --- */
   partnerDoneToday: (name) => `🔥 ${name}는 오늘 벌써 다 했어요!`,
+  undo: '되돌리기',
+  tricky: '헷갈림',
 }
 
 const PACKS = { en, ko }

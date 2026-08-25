@@ -23,7 +23,7 @@ const RATING_KEYS = [
   { key: 'easy', cls: 'rate-easy' },
 ]
 
-function Review({ initialQueue, onRate, onExit, profile, t, tt }) {
+function Review({ initialQueue, onRate, onUndo, onExit, profile, t, tt }) {
   const [queue, setQueue] = useState(initialQueue)
   const [total] = useState(initialQueue.length)
   const [revealed, setRevealed] = useState(false)
@@ -31,6 +31,11 @@ function Review({ initialQueue, onRate, onExit, profile, t, tt }) {
   const [checked, setChecked] = useState(false)
   const [flash, setFlash] = useState(null) // 'ok' | 'bad' | null
   const [exiting, setExiting] = useState(false) // Karte fliegt gerade nach rechts weg
+  /* Ein Schritt Rueckgaengig: Stapel-Schnappschuss + Karte VOR der
+     Bewertung. Ein Verklicker auf "Einfach" statt "Nochmal" wuerde
+     eine nicht gekonnte Karte sonst unumkehrbar um Wochen
+     verschieben. */
+  const [last, setLast] = useState(null)
 
   const done = total - queue.length
   const card = queue[0]
@@ -62,6 +67,11 @@ function Review({ initialQueue, onRate, onExit, profile, t, tt }) {
           <button className="done-btn" onClick={onExit}>
             {t.back}
           </button>
+          {last && (
+            <button className="undo-chip" onClick={undo}>
+              ↩ {t.undo}
+            </button>
+          )}
         </div>
       </div>
     )
@@ -83,8 +93,21 @@ function Review({ initialQueue, onRate, onExit, profile, t, tt }) {
     setExiting(false)
   }
 
+  function undo() {
+    if (!last) return
+    onUndo(last.card)
+    setQueue(last.queue)
+    setRevealed(false)
+    setTyped('')
+    setChecked(false)
+    setFlash(null)
+    setExiting(false)
+    setLast(null)
+  }
+
   function handleRate(rating) {
     if (exiting) return
+    setLast({ queue, card })
     // Bei richtiger Antwort (bzw. gewusster Flip-Karte) fliegt die Karte
     // erst nach rechts weg, dann kommt die nächste. "Again" (nicht gewusst)
     // wechselt direkt ohne Flug.
@@ -113,6 +136,12 @@ function Review({ initialQueue, onRate, onExit, profile, t, tt }) {
   return (
     <div className="review">
       <ReviewHeader done={done} total={total} onExit={onExit} t={t} />
+
+      {last && !answerShown && (
+        <button className="undo-chip" onClick={undo}>
+          ↩ {t.undo}
+        </button>
+      )}
 
       <div className="review-body">
         <div className={`flashcard ${flashClass} ${exiting ? 'card-fly-right' : ''}`}>

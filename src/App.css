@@ -3338,3 +3338,32 @@ textarea {
   font-size: 15px;
   font-weight: 700;
 }
+
+/* ---------- Bewertung rueckgaengig ---------- */
+.undo-chip {
+  align-self: center;
+  margin-top: 8px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-soft);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.undo-chip:active {
+  transform: scale(0.95);
+}
+
+/* ---------- Wackelkandidaten ---------- */
+.tricky-tag {
+  background: var(--accent-soft);
+  color: var(--accent-ink, var(--accent));
+}
+
+.pos-pick-tricky-on {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}

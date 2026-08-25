@@ -200,6 +200,10 @@ function App() {
   const due = dueCards(words, cards)
   const daily = dailyStatus(words)
 
+  /* Woerter, die immer wieder vergessen werden (>= 3 Ausrutscher
+     auf mindestens einer Karte). Anki nennt sie "leeches". */
+  const trickyIds = new Set(cards.filter((c) => c.lapses >= 3).map((c) => c.wordId))
+
   // Sind heute alle Tagesaufgaben erledigt? Die Zahlen-Challenge
   // gibt es nur auf der koreanischen Seite und zählt sonst nicht mit.
   const numberDone = profile.numberChallenge ? numberState.done : true
@@ -343,6 +347,30 @@ function App() {
     })
   }
 
+  /* Bewertung zuruecknehmen: Karte auf den Stand VOR der Bewertung
+     setzen, lokal und in der Cloud. */
+  function handleUndoRate(prev) {
+    const restored = {
+      id: prev.id,
+      wordId: prev.wordId,
+      front: prev.front,
+      ease: prev.ease,
+      intervalDays: prev.intervalDays,
+      reps: prev.reps,
+      lapses: prev.lapses,
+      due: prev.due,
+      lastReviewed: prev.lastReviewed,
+    }
+    const next = cards.map((c) => (c.id === restored.id ? restored : c))
+    setCards(next)
+    writeCardsCache(next)
+    persistCard(restored).catch((err) => {
+      queueFailed({ t: 'card', card: restored })
+      setOffline(true)
+      console.warn('Cloud save (undo) failed:', err?.message || err)
+    })
+  }
+
   function handleRate(cardId, rating) {
     const target = cards.find((c) => c.id === cardId)
     if (!target) return
@@ -449,6 +477,7 @@ function App() {
         {view === 'library' && (
           <Library
             vocab={words}
+            trickyIds={trickyIds}
             onAdd={handleAdd}
             onEdit={handleEditWord}
             onDelete={handleDeleteWord}
@@ -461,6 +490,7 @@ function App() {
           <Review
             initialQueue={due}
             onRate={handleRate}
+            onUndo={handleUndoRate}
             onExit={() => setView('home')}
             profile={profile}
             t={t}
