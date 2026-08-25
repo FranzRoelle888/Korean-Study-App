@@ -20,6 +20,8 @@ import {
   completeArticleChallenge,
   getPluralChallenge,
   completePluralChallenge,
+  getConjChallenge,
+  completeConjChallenge,
   todaysChallengeKind,
   flipChallengeKind,
   completeNumberChallenge,
@@ -41,6 +43,7 @@ import DailyWord from './DailyWord'
 import NumberChallenge from './NumberChallenge'
 import ArticleChallenge from './ArticleChallenge'
 import PluralChallenge from './PluralChallenge'
+import ConjChallenge from './ConjChallenge'
 import Calendar from './Calendar'
 import Sets from './Sets'
 import SetSheet from './SetSheet'
@@ -207,11 +210,24 @@ function App() {
      die Datengrundlage (zu wenige Substantive mit Pluralform), wird
      auf die Artikel zurueckgefallen statt eine leere Aufgabe zu
      zeigen. */
-  const kind = profile.articleChallenge ? todaysChallengeKind() : null
-  const articleData = profile.articleChallenge ? getArticleChallenge(words) : null
-  const pluralData = profile.articleChallenge ? getPluralChallenge(words) : null
-  const nutzePlural = kind === 'plural' && pluralData && pluralData.enough
-  const article = nutzePlural ? pluralData : articleData
+  /* Rotation Artikel -> Plural -> Konjugation. Fehlt einer Aufgabe
+     die Datengrundlage, rueckt die naechste verfuegbare nach. */
+  let useKind = null
+  let article = null
+  if (profile.articleChallenge) {
+    const datasets = {
+      article: getArticleChallenge(words),
+      plural: getPluralChallenge(words),
+      conj: getConjChallenge(words),
+    }
+    const reihenfolge = ['article', 'plural', 'conj']
+    useKind = todaysChallengeKind()
+    for (let i = 0; i < reihenfolge.length; i++) {
+      if (datasets[useKind] && datasets[useKind].enough) break
+      useKind = reihenfolge[(reihenfolge.indexOf(useKind) + 1) % reihenfolge.length]
+    }
+    article = datasets[useKind]
+  }
   const articleDone = article ? article.done || !article.enough : true
 
   const allDone = daily.done && numberDone && articleDone && due.length === 0
@@ -293,6 +309,12 @@ function App() {
     return { ok: true }
   }
 
+  function handleCompleteConj() {
+    completeConjChallenge()
+    flipChallengeKind()
+    setWords((w) => [...w])
+  }
+
   function handleCompletePlural() {
     completePluralChallenge()
     flipChallengeKind()
@@ -366,7 +388,7 @@ function App() {
             onArticle={() => setView('article')}
             articleDone={articleDone}
             articleReady={!!article && article.enough}
-            articleKind={nutzePlural ? 'plural' : 'article'}
+            articleKind={useKind}
             onCalendar={() => setView('calendar')}
             onSwitchProfile={switchProfile}
             profile={profile}
@@ -395,7 +417,7 @@ function App() {
             t={t}
           />
         )}
-        {view === 'article' && article && !nutzePlural && (
+        {view === 'article' && article && useKind === 'article' && (
           <ArticleChallenge
             rounds={article.rounds}
             alreadyDone={article.done}
@@ -404,11 +426,21 @@ function App() {
             t={t}
           />
         )}
-        {view === 'article' && article && nutzePlural && (
+        {view === 'article' && article && useKind === 'plural' && (
           <PluralChallenge
             rounds={article.rounds}
             alreadyDone={article.done}
             onComplete={handleCompletePlural}
+            onExit={() => setView('home')}
+            t={t}
+            tt={tt}
+          />
+        )}
+        {view === 'article' && article && useKind === 'conj' && (
+          <ConjChallenge
+            rounds={article.rounds}
+            alreadyDone={article.done}
+            onComplete={handleCompleteConj}
             onExit={() => setView('home')}
             t={t}
             tt={tt}

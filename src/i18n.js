@@ -108,6 +108,9 @@ const en = {
   pluralOfDay: 'Plural of the Day',
   whichPlural: 'What is the plural?',
   pluralWrong: 'Not quite — here is the plural.',
+  conjOfDay: 'Verb of the Day',
+  whichConj: 'What is the present-tense form?',
+  conjWrong: 'Not quite — here is the form.',
 
   /* --- Zusatzinfos --- */
   info: 'Details',
@@ -213,6 +216,9 @@ const ko = {
   pluralOfDay: '오늘의 복수형',
   whichPlural: '복수형은 무엇일까요?',
   pluralWrong: '아니에요 — 복수형은 이거예요.',
+  conjOfDay: '오늘의 동사',
+  whichConj: '현재형은 무엇일까요?',
+  conjWrong: '아니에요 — 이 형태예요.',
 
   /* --- Zusatzinfos --- */
   info: '자세히',
@@ -248,6 +254,7 @@ const TARGET = {
     numberOfDay: '오늘의 숫자',
     articleOfDay: null,
     pluralOfDay: null,
+    conjOfDay: null,
     typePlaceholder: '한국어…',
     typeHint: 'type in Korean',
     example: 'e.g. 물',
@@ -264,6 +271,7 @@ const TARGET = {
     numberOfDay: null,
     articleOfDay: 'der · die · das',
     pluralOfDay: 'Plural',
+    conjOfDay: 'ich · du · er…',
     typePlaceholder: 'Deutsch…',
     typeHint: '독일어로 입력',
     example: '예: Wasser',

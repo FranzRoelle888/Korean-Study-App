@@ -175,10 +175,18 @@ function Home({
             </div>
             <div className="action-text">
               <span className="action-title">
-                {articleKind === 'plural' ? t.pluralOfDay : t.articleOfDay}
+                {articleKind === 'plural'
+                  ? t.pluralOfDay
+                  : articleKind === 'conj'
+                    ? t.conjOfDay
+                    : t.articleOfDay}
               </span>
               <span className="action-sub" lang={profile.targetLang}>
-                {articleKind === 'plural' ? tt.pluralOfDay : tt.articleOfDay}
+                {articleKind === 'plural'
+                  ? tt.pluralOfDay
+                  : articleKind === 'conj'
+                    ? tt.conjOfDay
+                    : tt.articleOfDay}
               </span>
             </div>
             {articleDone ? (

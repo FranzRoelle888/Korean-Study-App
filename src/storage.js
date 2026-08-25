@@ -768,22 +768,70 @@ export function completePluralChallenge() {
   return next
 }
 
+/* ---------- Konjugation des Tages ----------
+   Dritte Aufgabe der Rotation. Ein Verb, eine Person, die Form
+   wird eingetippt. Die Formen kommen aus der conj-Spalte, die der
+   Nachtlauf fuellt. */
+const CONJ_PERSONS = [
+  { key: 'ich', label: 'ich' },
+  { key: 'du', label: 'du' },
+  { key: 'er', label: 'er / sie / es' },
+  { key: 'wir', label: 'wir' },
+  { key: 'ihr', label: 'ihr' },
+  { key: 'sie', label: 'sie (Plural)' },
+]
+
+export function getConjChallenge(words) {
+  const verbs = words.filter((w) => w.pos === 'verb' && w.conj)
+  const rounds = verbs
+    .map((w) => ({ w, k: seeded('conj', todayStr(), w.id) }))
+    .sort((a, b) => a.k - b.k)
+    .slice(0, ARTICLE_ROUNDS)
+    .map(({ w }) => {
+      /* Auch die Person ist je Tag+Wort fest ausgewuerfelt */
+      const p = CONJ_PERSONS[pick(seeded('conjP', todayStr(), w.id), 0, CONJ_PERSONS.length - 1)]
+      return { id: w.id, verb: w.ko, en: w.en, person: p.label, answer: w.conj[p.key] || '' }
+    })
+    .filter((r) => r.answer)
+  let done = false
+  try {
+    const d = JSON.parse(localStorage.getItem(cacheKey('conj')))
+    if (d && d.date === todayStr()) done = !!d.done
+  } catch {
+    /* egal */
+  }
+  return { rounds, done, enough: rounds.length >= 3 }
+}
+
+export function completeConjChallenge() {
+  const next = { date: todayStr(), done: true }
+  localStorage.setItem(cacheKey('conj'), JSON.stringify(next))
+  return next
+}
+
 /* ---------- Welche der beiden Aufgaben ist heute dran? ----------
    Gewechselt wird nach jedem ERFOLGREICHEN Abschluss. Wer einen
    Tag auslaesst, bekommt also dieselbe Aufgabe noch einmal — so
    ist es nicht moeglich, eine Art dauerhaft zu ueberspringen. */
 const KIND_KEY = () => cacheKey('challengeKind')
 
+/* Rotation der Tagesaufgaben. Nach jedem erfolgreichen Abschluss
+   kommt am NAECHSTEN Tag die naechste. */
+const CHALLENGE_ORDER = ['article', 'plural', 'conj']
+const prevKind = (k) =>
+  CHALLENGE_ORDER[(CHALLENGE_ORDER.indexOf(k) + CHALLENGE_ORDER.length - 1) % CHALLENGE_ORDER.length]
+const nextKind = (k) => CHALLENGE_ORDER[(CHALLENGE_ORDER.indexOf(k) + 1) % CHALLENGE_ORDER.length]
+
 export function todaysChallengeKind() {
   try {
     const d = JSON.parse(localStorage.getItem(KIND_KEY()))
-    if (d && (d.kind === 'article' || d.kind === 'plural')) {
+    if (d && CHALLENGE_ORDER.includes(d.kind)) {
       /* "from" = ab wann der gespeicherte Wechsel gilt. Vorher gilt
          noch die ANDERE Aufgabe. Ohne diese Verzoegerung sprang die
          Kachel direkt nach dem Abschluss auf die zweite Aufgabe um —
          und der Tag liess sich nur mit BEIDEN Quizzen schliessen. */
       if (d.from && todayStr() < d.from) {
-        return d.kind === 'article' ? 'plural' : 'article'
+        return prevKind(d.kind)
       }
       return d.kind
     }
@@ -794,7 +842,7 @@ export function todaysChallengeKind() {
 }
 
 export function flipChallengeKind() {
-  const next = todaysChallengeKind() === 'article' ? 'plural' : 'article'
+  const next = nextKind(todaysChallengeKind())
   localStorage.setItem(KIND_KEY(), JSON.stringify({ kind: next, from: addDays(todayStr(), 1) }))
   return next
 }
