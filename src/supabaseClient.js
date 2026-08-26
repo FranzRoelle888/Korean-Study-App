@@ -12,7 +12,7 @@ import { createClient } from '@supabase/supabase-js'
    Der GEHEIME "secret"-Schlüssel steht bewusst NICHT hier.
    ============================================================ */
 
-const SUPABASE_URL = 'https://gkrubhwwzgekmbiltslt.supabase.co'
-const SUPABASE_KEY = 'sb_publishable_V2Gk_hicg121JPtU3e6Quw_224_v0_Q'
+export const SUPABASE_URL = 'https://gkrubhwwzgekmbiltslt.supabase.co'
+export const SUPABASE_KEY = 'sb_publishable_V2Gk_hicg121JPtU3e6Quw_224_v0_Q'
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)

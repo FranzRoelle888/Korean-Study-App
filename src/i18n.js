@@ -29,6 +29,7 @@ const en = {
   tabSets: 'Sets',
   tabHome: 'Home',
   tabLibrary: 'Library',
+  tabTrainer: 'Trainer',
 
   /* --- Wiederholen --- */
   again: 'Again',
@@ -125,6 +126,21 @@ const en = {
   exampleLabel: 'Example',
   exportCsv: 'Export backup (CSV)',
   tricky: 'Tricky',
+
+  /* --- Trainer --- */
+  trainerTitle: 'Trainer',
+  trainerSub: 'Real conversations, exactly at your level',
+  trainerScenarios: 'Scenarios',
+  trainerFreeLabel: 'Just talk',
+  trainerFree: 'Open conversation',
+  trainerFreeSub: 'No goal, no ending — just practice',
+  typeMessage: 'Message…',
+  send: 'Send',
+  endTalk: 'Finish conversation ✓',
+  improve: '✍ Improve & resend',
+  improving: 'Improving your last message…',
+  trainerOffline: 'The trainer is unreachable right now. Please try again in a moment.',
+  trainerRateLimit: 'That is plenty for this hour 😊 Try again a little later.',
 }
 
 const ko = {
@@ -141,6 +157,7 @@ const ko = {
   tabSets: '모음',
   tabHome: '홈',
   tabLibrary: '단어장',
+  tabTrainer: '트레이너',
 
   /* --- Wiederholen --- */
   again: '다시',
@@ -237,6 +254,21 @@ const ko = {
   exampleLabel: '예문',
   exportCsv: '백업 내보내기 (CSV)',
   tricky: '헷갈림',
+
+  /* --- Trainer --- */
+  trainerTitle: '트레이너',
+  trainerSub: '내 수준에 딱 맞는 진짜 대화',
+  trainerScenarios: '상황 연습',
+  trainerFreeLabel: '자유롭게',
+  trainerFree: '자유 대화',
+  trainerFreeSub: '목표 없이, 끝없이 — 그냥 연습',
+  typeMessage: '메시지…',
+  send: '보내기',
+  endTalk: '대화 마치기 ✓',
+  improve: '✍ 고쳐서 다시 보내기',
+  improving: '마지막 메시지를 고치는 중…',
+  trainerOffline: '지금은 트레이너에 연결할 수 없어요. 잠시 후 다시 시도해 주세요.',
+  trainerRateLimit: '이번 시간엔 충분히 연습했어요 😊 조금 있다가 다시 해요.',
 }
 
 const PACKS = { en, ko }

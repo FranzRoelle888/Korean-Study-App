@@ -69,6 +69,16 @@ export function QuoteIcon() {
   )
 }
 
+/* Zwei Sprechblasen — der Trainer-Tab */
+export function ChatIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M15.5 4h-10A2.5 2.5 0 0 0 3 6.5v6A2.5 2.5 0 0 0 5.5 15H7v3l3.6-3h4.9a2.5 2.5 0 0 0 2.5-2.5v-6A2.5 2.5 0 0 0 15.5 4z" />
+      <path d="M18 9h.5A2.5 2.5 0 0 1 21 11.5v5a2.5 2.5 0 0 1-2.5 2.5H18v2l-2.8-2" />
+    </svg>
+  )
+}
+
 export function BookIcon() {
   return (
     <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

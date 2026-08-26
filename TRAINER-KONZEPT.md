@@ -125,25 +125,38 @@ Der Chat sieht aus wie ein Messenger (WhatsApp/KakaoTalk-Anmutung),
 aber in der jeweiligen App-Optik — Hanji-Töne auf der einen, Bauhaus
 auf der anderen Seite. Eigene Nachrichten rechts in der Akzentfarbe,
 Trainer links auf Karten-Weiß, Tipp-Indikator (drei Punkte) während
-der Trainer „schreibt", gestreamte Antworten.
+der Trainer „schreibt".
+
+**Bewusste Abweichung — kein Streaming:** Die Antworten kommen als
+strukturierter JSON-Umschlag (Nachricht + Korrektur + canEnd), und
+einen Umschlag kann man nicht sinnvoll streamen. Da die Nachrichten
+ohnehin 1–3 Sätze kurz sind, übernimmt der Tipp-Indikator das
+„Live"-Gefühl — wie beim echten Chatten, wenn der andere tippt.
 
 **Kurze Nachrichten sind Pflicht:** Der Trainer antwortet in 1–3
 Sätzen wie ein echter Chat-Partner. Lange Lehrer-Absätze zerstören
 sowohl die Messenger-Anmutung als auch das Sprachniveau.
 
-**Avatar:** Der Trainer trägt bei 해인 ein Cartoon-Gesicht von Franz,
-bei Franz eines von 해인 (Bilder liefert Franz später). Das passt
-inhaltlich perfekt zu Modus 1: Man übt buchstäblich die Gespräche,
-die man mit dem Partner führen will. Wichtige Grenze: In den
-Grammatik-Modi spricht der Trainer als Trainer, nicht in der Rolle
-des Partners — das Gesicht bleibt, die Rolle wechselt. (Offen: soll
-er im Szenario-Modus aktiv die Partnerrolle spielen dürfen?)
+**Avatar & Rolle (entschieden):** Der Trainer trägt bei 해인 ein
+Cartoon-Gesicht von Franz, bei Franz eines von 해인 (Bilder liefert
+Franz; bis dahin Platzhalter-Initialen). In den Szenario-Gesprächen
+darf er die jeweilige Rolle spielen — auch die des Partners bei
+Partner-Szenarien. Überwiegend ist er aber ein **warmer Trainer in
+der Lehrerrolle**. Die Trennung läuft technisch sauber: Die
+Chat-Nachricht spricht in der Szenario-Rolle, Korrekturen und
+Erklärungen kommen immer in der Trainer-Stimme (eigene Felder im
+Antwort-Umschlag).
 
 ### 5b. Korrekturen im Gespräch
 Zweistufig, damit der Fluss erhalten bleibt:
 - **Sofort, aber leise:** Unter der eigenen Nachricht erscheint bei
   Fehlern eine kleine Anmerkung (korrigierte Form, dezent wie ein
   „Bearbeitet"-Hinweis). Antippen klappt die kurze Erklärung auf.
+- **Verbessern & neu senden:** Bei der **letzten** eigenen Nachricht
+  (und nur dort) gibt es einen „Verbessern"-Knopf: der eigene Text
+  wandert zurück ins Eingabefeld, man korrigiert selbst und schickt
+  neu — die alte Version und die Trainer-Antwort darauf werden im
+  Verlauf ersetzt. Selbstkorrektur ist der stärkste Lerneffekt.
 - **Am Ende gesammelt:** Beim Abschluss einer Einheit das eigentliche
   Feedback — was gut war, die 2–3 wichtigsten Fehler, was ins
   Lernjournal wandert.
@@ -251,14 +264,15 @@ Modell bei ausreichender Qualität. Einschätzung:
 - Chat-Optik: Messenger-Look in den bestehenden Themes.
 - Avatare: Cartoon-Partnergesichter, Bilder liefert Franz.
 
-**Noch offen:**
-1. Darf der Trainer im Szenario-Modus aktiv die **Partnerrolle**
-   spielen („simuliertes Gespräch mit 해인/Franz"), oder bleibt er
-   immer sichtbar Trainer mit Partnergesicht?
-2. **Rhythmus-Start:** Input-/Aktiv-Tag für beide sofort, oder erst
-   bei Franz testen?
-3. Sollen die **leisen Sofort-Anmerkungen** unter eigenen Nachrichten
-   so umgesetzt werden, oder Korrekturen ausschließlich am Ende?
+**Entschieden (Runde 3, final):**
+1. Rollen-Mischung: meist warmer Trainer in Lehrerrolle, in
+   Szenarien darf er die Rolle (auch Partner) spielen.
+2. Rollout: **erst bei Franz** (koreanische Seite). 해인 bekommt den
+   Trainer, sobald er sich bewährt hat.
+3. Leise Sofort-Anmerkungen unter der Nachricht + „Verbessern &
+   neu senden" bei der letzten eigenen Nachricht.
+
+Das Konzept ist damit vollständig. Umsetzung läuft.
 
 ---
 

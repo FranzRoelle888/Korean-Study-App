@@ -45,10 +45,11 @@ import ArticleChallenge from './ArticleChallenge'
 import PluralChallenge from './PluralChallenge'
 import ConjChallenge from './ConjChallenge'
 import Calendar from './Calendar'
+import Trainer from './Trainer'
 import Sets from './Sets'
 import SetSheet from './SetSheet'
 import SetSheetDe from './SetSheetDe'
-import { HomeIcon, BookIcon, GridIcon, DomIcon } from './icons'
+import { HomeIcon, BookIcon, GridIcon, DomIcon, ChatIcon } from './icons'
 import { PROFILES, readProfile, writeProfile, otherProfile } from './profiles'
 import { textFor, targetTextFor } from './i18n'
 import { setActiveProfile } from './storage'
@@ -505,6 +506,7 @@ function App() {
             tt={tt}
             partnerNote={partnerDoneToday ? t.partnerDoneToday(partnerName) : null}
           />}
+        {view === 'trainer' && profile.trainer && <Trainer profile={profile} t={t} />}
         {view === 'sets' &&
           (openSet ? (
             (profile.id === 'de' ? (
@@ -517,7 +519,7 @@ function App() {
           ))}
       </div>
 
-      {(view === 'home' || view === 'library' || view === 'sets') && (
+      {(view === 'home' || view === 'library' || view === 'sets' || view === 'trainer') && (
         <nav className="tabbar">
           <button
             className={view === 'sets' ? 'tab tab-active' : 'tab'}
@@ -536,6 +538,15 @@ function App() {
             {profile.id === 'de' ? <DomIcon /> : <HomeIcon />}
             <span>{t.tabHome}</span>
           </button>
+          {profile.trainer && (
+            <button
+              className={view === 'trainer' ? 'tab tab-active' : 'tab'}
+              onClick={() => setView('trainer')}
+            >
+              <ChatIcon />
+              <span>{t.tabTrainer}</span>
+            </button>
+          )}
           <button
             className={view === 'library' ? 'tab tab-active' : 'tab'}
             onClick={() => setView('library')}

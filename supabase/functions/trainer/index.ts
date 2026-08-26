@@ -1,0 +1,302 @@
+/* ============================================================
+   DER TRAINER — Supabase Edge Function
+
+   Warum hier und nicht in der App: Die App liegt öffentlich auf
+   GitHub Pages; ein API-Schlüssel im Frontend wäre für jeden
+   lesbar. Diese Funktion läuft bei Supabase, hält den Anthropic-
+   Schlüssel als Secret und ist der einzige Weg zum Modell.
+
+   Zwei Aktionen:
+     chat     eine Trainer-Antwort auf den bisherigen Verlauf
+     summary  Einheit beenden -> Zusammenfassung ins Lernjournal
+
+   Schutz:
+     - Ratenlimit: max. 40 Modell-Aufrufe pro Stunde je Profil
+       (gezählt über die Tabelle trainer_usage)
+     - dazu das harte Ausgabenlimit im Anthropic-Konto (5 €/Monat)
+
+   Einrichtung (einmalig, im Supabase-Dashboard):
+     Edge Functions -> Deploy new function -> Name: trainer
+     -> diesen Code einfügen -> "Verify JWT" AUSschalten
+     Secrets -> ANTHROPIC_API_KEY hinterlegen
+   ============================================================ */
+
+const ANTHROPIC_KEY = Deno.env.get('ANTHROPIC_API_KEY') ?? ''
+const SB_URL = Deno.env.get('SUPABASE_URL') ?? ''
+const SB_SERVICE = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+
+const MODEL = 'claude-sonnet-5'
+const MAX_CALLS_PER_HOUR = 40
+
+const CORS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+}
+
+/* ---------- Supabase (Service-Schlüssel, nur serverseitig) ---------- */
+const dbHead = {
+  apikey: SB_SERVICE,
+  Authorization: `Bearer ${SB_SERVICE}`,
+  'Content-Type': 'application/json',
+}
+
+async function dbGet(path: string) {
+  const r = await fetch(`${SB_URL}/rest/v1/${path}`, { headers: dbHead })
+  if (!r.ok) throw new Error(`DB ${r.status}: ${await r.text()}`)
+  return r.json()
+}
+
+async function dbInsert(table: string, row: unknown) {
+  const r = await fetch(`${SB_URL}/rest/v1/${table}`, {
+    method: 'POST',
+    headers: { ...dbHead, Prefer: 'return=minimal' },
+    body: JSON.stringify(row),
+  })
+  if (!r.ok) throw new Error(`DB insert ${r.status}: ${await r.text()}`)
+}
+
+/* ---------- Der Lernstand-Steckbrief (Konzept §3) ----------
+   Strukturiert statt Rohliste: sicher / wackelig / frisch, dazu
+   Skills und die letzten Einheiten aus dem Lernjournal. */
+async function buildProfile(profile: string) {
+  const [words, cards, skills, sessions] = await Promise.all([
+    dbGet(`words?profile=eq.${profile}&select=id,ko,en`),
+    dbGet(`cards?profile=eq.${profile}&select=word_id,reps,lapses`),
+    dbGet(`skills?profile=eq.${profile}&select=topic,note&order=created_at.desc&limit=60`),
+    dbGet(`sessions?profile=eq.${profile}&select=summary,errors,created_at&order=created_at.desc&limit=5`),
+  ])
+
+  /* Je Wort den besten Lernstand über beide Karten bestimmen */
+  const stat: Record<string, { reps: number; lapses: number }> = {}
+  for (const c of cards) {
+    const s = stat[c.word_id] ?? { reps: 0, lapses: 0 }
+    s.reps = Math.max(s.reps, c.reps)
+    s.lapses = Math.max(s.lapses, c.lapses)
+    stat[c.word_id] = s
+  }
+
+  const secure: string[] = []
+  const shaky: string[] = []
+  const fresh: string[] = []
+  for (const w of words) {
+    const s = stat[w.id] ?? { reps: 0, lapses: 0 }
+    const entry = `${w.ko} (${w.en})`
+    if (s.lapses >= 3) shaky.push(entry)
+    else if (s.reps >= 4) secure.push(entry)
+    else fresh.push(entry)
+  }
+
+  /* Dauerfehler: Fehlerlisten der letzten Einheiten zusammenführen */
+  const errorSet = new Set<string>()
+  for (const s of sessions) {
+    for (const e of s.errors ?? []) errorSet.add(String(e))
+  }
+
+  return {
+    secure,
+    shaky,
+    fresh,
+    skills: skills.map((s: { topic: string }) => s.topic),
+    journal: sessions.map(
+      (s: { created_at: string; summary: string }) =>
+        `${s.created_at.slice(0, 10)}: ${s.summary}`
+    ),
+    errors: [...errorSet].slice(0, 12),
+  }
+}
+
+/* ---------- System-Prompts ---------- */
+function chatSystem(profile: string, mode: string, scenario: string, p: Awaited<ReturnType<typeof buildProfile>>) {
+  const learnsKorean = profile === 'ko'
+  const target = learnsKorean ? 'Korean' : 'German'
+  const explain = learnsKorean ? 'English' : 'Korean'
+  const learner = learnsKorean ? 'Franz' : 'Haein (해인)'
+  const partner = learnsKorean ? 'Haein (해인), his Korean girlfriend' : 'Franz, her German boyfriend'
+
+  return [
+    `You are the personal ${target} trainer inside a private vocabulary app used by a couple. The learner is ${learner}, level A1-A2. You are warm and encouraging, and you know language didactics.`,
+    '',
+    '## What the learner knows — STAY INSIDE THIS',
+    `Secure vocabulary (use freely): ${p.secure.join(', ') || '(none yet)'}`,
+    `Shaky vocabulary (weave in deliberately so it gets practice): ${p.shaky.join(', ') || '(none)'}`,
+    `Fresh vocabulary (use sparingly, they are still learning these): ${p.fresh.join(', ') || '(none)'}`,
+    `Grammar the learner knows: ${p.skills.join('; ') || '(nothing recorded yet — assume bare basics: polite present tense, simple statements and questions)'}`,
+    p.journal.length ? `Recent sessions:\n${p.journal.join('\n')}` : '',
+    p.errors.length ? `Recurring mistakes to gently work on: ${p.errors.join('; ')}` : '',
+    '',
+    '## Hard rules',
+    `- Write your conversational messages in ${target} ONLY, at the learner's level. Use ONLY known grammar and overwhelmingly known vocabulary.`,
+    `- At most 1-2 new words per session, and mark each new word like *this* on first use.`,
+    '- Messages are SHORT: 1-3 sentences, like a real chat partner. Never lecture in the chat message.',
+    `- Corrections and explanations go in the correction field, in ${explain}, brief and kind.`,
+    '',
+    '## Mode',
+    mode === 'scenario'
+      ? `Roleplay this everyday scenario naturally: "${scenario}". Play your role (shopkeeper, driver, or — for partner scenarios — ${partner}). Corrections still speak in your trainer voice via the correction field. After 3-4 successful exchanges from the learner, set canEnd to true and keep it true.`
+      : 'Open-ended free conversation for practice. Follow the learner\'s topics, keep them talking with easy questions. canEnd is always false in this mode.',
+    '',
+    '## Output contract — reply with ONLY this JSON, nothing else',
+    '{"message": "<your chat message in ' + target + '>",',
+    ' "correction": null OR {"fixed": "<corrected version of the learner\'s LAST message>", "note": "<one short ' + explain + ' explanation>"},',
+    ' "canEnd": true|false}',
+    'Set correction ONLY when the learner\'s last message contains a real error. Minor style is not an error. If the learner wrote in another language or asked a question about the language, answer briefly via correction.note and keep message in role.',
+  ]
+    .filter(Boolean)
+    .join('\n')
+}
+
+function summarySystem(profile: string) {
+  const learnsKorean = profile === 'ko'
+  return [
+    `You are the ${learnsKorean ? 'Korean' : 'German'} trainer. The session just ended. Given the transcript, produce a compact learning-journal entry.`,
+    '',
+    'Reply with ONLY this JSON:',
+    '{"summary": "<2-3 sentences: what was practiced, how it went — written for YOUR OWN memory before the next session>",',
+    ' "errors": ["<recurring error pattern>", ...max 4, empty array if none],',
+    ` "feedback": "<warm feedback FOR THE LEARNER in ${learnsKorean ? 'English' : 'Korean'}: what went well, the 1-3 most important mistakes with the correct forms, one encouragement. 4-6 sentences.>"}`,
+  ].join('\n')
+}
+
+/* ---------- Anthropic ---------- */
+async function callModel(system: string, messages: { role: string; content: string }[]) {
+  const r = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'x-api-key': ANTHROPIC_KEY,
+      'anthropic-version': '2023-06-01',
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: MODEL,
+      max_tokens: 800,
+      system: [{ type: 'text', text: system, cache_control: { type: 'ephemeral' } }],
+      messages,
+    }),
+  })
+  if (!r.ok) throw new Error(`Anthropic ${r.status}: ${await r.text()}`)
+  const data = await r.json()
+  const text = (data.content ?? []).map((c: { text?: string }) => c.text ?? '').join('')
+  return {
+    text,
+    inputTokens: data.usage?.input_tokens ?? 0,
+    outputTokens: data.usage?.output_tokens ?? 0,
+  }
+}
+
+/* Der Umschlag kommt als JSON — zur Not in einem Codeblock.
+   Scheitert das Parsen, wird der ganze Text als Nachricht
+   behandelt statt einen Fehler zu werfen. */
+function parseEnvelope(text: string) {
+  const raw = text.replace(/^```(?:json)?/m, '').replace(/```\s*$/m, '').trim()
+  try {
+    const j = JSON.parse(raw)
+    return {
+      message: typeof j.message === 'string' ? j.message : raw,
+      correction:
+        j.correction && typeof j.correction.fixed === 'string'
+          ? { fixed: j.correction.fixed, note: String(j.correction.note ?? '') }
+          : null,
+      canEnd: !!j.canEnd,
+    }
+  } catch {
+    return { message: raw, correction: null, canEnd: false }
+  }
+}
+
+/* ---------- Ratenlimit ---------- */
+async function overLimit(profile: string) {
+  const oneHourAgo = new Date(Date.now() - 3600_000).toISOString()
+  const rows = await dbGet(
+    `trainer_usage?profile=eq.${profile}&created_at=gt.${oneHourAgo}&select=id`
+  )
+  return rows.length >= MAX_CALLS_PER_HOUR
+}
+
+/* ---------- Handler ---------- */
+Deno.serve(async (req) => {
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS })
+  const json = (body: unknown, status = 200) =>
+    new Response(JSON.stringify(body), {
+      status,
+      headers: { ...CORS, 'Content-Type': 'application/json' },
+    })
+
+  try {
+    if (!ANTHROPIC_KEY) return json({ error: 'no-key' }, 500)
+
+    const body = await req.json()
+    const { action, profile, mode, scenario, messages } = body
+
+    if (profile !== 'ko' && profile !== 'de') return json({ error: 'bad-profile' }, 400)
+    if (!Array.isArray(messages) || messages.length > 60) return json({ error: 'bad-messages' }, 400)
+
+    if (await overLimit(profile)) return json({ error: 'rate-limit' }, 429)
+
+    /* Verlauf in das API-Format bringen; Texte hart begrenzen,
+       damit niemand die Funktion als Gratis-Proxy missbraucht */
+    const history = messages
+      .filter((m: { role: string; text: string }) => (m.role === 'user' || m.role === 'assistant') && typeof m.text === 'string')
+      .map((m: { role: string; text: string }) => ({
+        role: m.role,
+        content: m.text.slice(0, 600),
+      }))
+
+    if (action === 'chat') {
+      const p = await buildProfile(profile)
+      const system = chatSystem(profile, mode === 'scenario' ? 'scenario' : 'free', String(scenario ?? ''), p)
+      const out = await callModel(system, history)
+      await dbInsert('trainer_usage', {
+        profile,
+        action: 'chat',
+        input_tokens: out.inputTokens,
+        output_tokens: out.outputTokens,
+      })
+      return json(parseEnvelope(out.text))
+    }
+
+    if (action === 'summary') {
+      const transcript = history
+        .map((m) => `${m.role === 'user' ? 'LEARNER' : 'TRAINER'}: ${m.content}`)
+        .join('\n')
+      const out = await callModel(summarySystem(profile), [
+        { role: 'user', content: `Transcript:\n${transcript}` },
+      ])
+      await dbInsert('trainer_usage', {
+        profile,
+        action: 'summary',
+        input_tokens: out.inputTokens,
+        output_tokens: out.outputTokens,
+      })
+      const parsed = parseEnvelope(out.text) as unknown as {
+        message: string
+      }
+      /* summary hat ein eigenes Format — separat parsen */
+      let summary = 'Session completed.'
+      let errors: string[] = []
+      let feedback = parsed.message
+      try {
+        const raw = out.text.replace(/^```(?:json)?/m, '').replace(/```\s*$/m, '').trim()
+        const j = JSON.parse(raw)
+        if (typeof j.summary === 'string') summary = j.summary
+        if (Array.isArray(j.errors)) errors = j.errors.map(String).slice(0, 4)
+        if (typeof j.feedback === 'string') feedback = j.feedback
+      } catch {
+        /* Fallback: Volltext als Feedback */
+      }
+      await dbInsert('sessions', {
+        profile,
+        mode: String(mode ?? 'free'),
+        scenario: scenario ? String(scenario) : null,
+        summary,
+        errors,
+      })
+      return json({ feedback })
+    }
+
+    return json({ error: 'bad-action' }, 400)
+  } catch (e) {
+    console.error(e)
+    return json({ error: 'internal', detail: String(e) }, 500)
+  }
+})

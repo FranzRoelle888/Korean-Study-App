@@ -35,6 +35,9 @@ export const PROFILES = {
        auf Deutsch wäre sie zu einfach. */
     numberChallenge: true,
     articleChallenge: false,
+    /* Der Trainer startet als Test bei Franz; 해인 folgt, sobald er
+       sich bewaehrt hat (Konzept, Runde 3). */
+    trainer: true,
   },
 
   de: {
@@ -51,6 +54,7 @@ export const PROFILES = {
     numberChallenge: false,
     /* Statt der Zahl: der/die/das — der eigentliche Brocken */
     articleChallenge: true,
+    trainer: false,
   },
 }
 
