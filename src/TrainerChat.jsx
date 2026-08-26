@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { trainerChat, trainerSummary } from './trainerApi'
 import { SpeakButton } from './tts'
-import ClearableInput from './ClearableInput'
 
 /* ============================================================
    TRAINER-CHAT — Messenger-Ansicht
@@ -39,6 +38,41 @@ function readStored(profileId, mode, scenario) {
   return []
 }
 
+/* Fürs Menü: läuft gerade ein Gespräch? Dann direkt hinein statt
+   ein neues Szenario auszulosen — wie in einem echten Messenger. */
+export function readActiveChat(profileId) {
+  try {
+    const d = JSON.parse(localStorage.getItem(storeKey(profileId)))
+    if (d && Array.isArray(d.messages) && d.messages.length > 0 && d.title) {
+      return { mode: d.mode, scenario: d.scenario, title: d.title }
+    }
+  } catch {
+    /* egal */
+  }
+  return null
+}
+
+/* ---------- Avatar ----------
+   Die Cartoon-Bilder (200×200 PNG) kommen später einfach als
+     src/assets/trainer-avatar-ko.png   (Trainer auf Franz' Seite)
+     src/assets/trainer-avatar-de.png   (Trainer auf 해인s Seite)
+   ins Repo. import.meta.glob findet sie beim Bauen — fehlt die
+   Datei noch, bleibt der Buchstaben-Platzhalter. */
+const AVATAR_FILES = import.meta.glob('./assets/trainer-avatar-*.png', {
+  eager: true,
+  query: '?url',
+  import: 'default',
+})
+
+function Avatar({ profileId }) {
+  const src = AVATAR_FILES[`./assets/trainer-avatar-${profileId}.png`]
+  return (
+    <span className="msg-avatar" aria-hidden="true">
+      {src ? <img src={src} alt="" /> : profileId === 'ko' ? '해' : 'F'}
+    </span>
+  )
+}
+
 function TrainerChat({ profile, mode, scenario, scenarioTitle, onDone, onExit, t }) {
   const [messages, setMessages] = useState(() => readStored(profile.id, mode, scenario))
   const [input, setInput] = useState('')
@@ -52,13 +86,14 @@ function TrainerChat({ profile, mode, scenario, scenarioTitle, onDone, onExit, t
   /* Verbessern-Modus: Index der Nachricht, die ersetzt wird */
   const [editing, setEditing] = useState(null)
   const endRef = useRef(null)
+  const boxRef = useRef(null)
 
   /* Verlauf sichern und ans Ende scrollen */
   useEffect(() => {
     try {
       localStorage.setItem(
         storeKey(profile.id),
-        JSON.stringify({ mode, scenario, messages })
+        JSON.stringify({ mode, scenario, title: scenarioTitle, messages })
       )
     } catch {
       /* egal */
@@ -66,11 +101,27 @@ function TrainerChat({ profile, mode, scenario, scenarioTitle, onDone, onExit, t
     if (endRef.current) endRef.current.scrollIntoView({ block: 'end' })
   }, [messages, sending])
 
-  /* Beim allerersten Öffnen eröffnet der Trainer das Gespräch */
+  /* Beim allerersten Öffnen eröffnet der Trainer das Gespräch.
+     Der Riegel (ref) verhindert, dass der Effekt doppelt feuert —
+     Reacts StrictMode tut genau das und würde sonst zwei
+     Begrüßungen (= zwei bezahlte API-Aufrufe) auslösen. */
+  const eroeffnet = useRef(false)
   useEffect(() => {
-    if (messages.length === 0 && !sending) senden(null)
+    if (eroeffnet.current) return
+    eroeffnet.current = true
+    if (messages.length === 0) senden(null)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  /* Das Eingabefeld wächst mit dem Text mit (bis ~4 Zeilen) */
+  function wachsen() {
+    const el = boxRef.current
+    if (!el) return
+    el.style.height = 'auto'
+    el.style.height = Math.min(el.scrollHeight, 112) + 'px'
+  }
+
+  useEffect(wachsen, [input])
 
   async function senden(userText, replaceFrom = null) {
     setError(null)
@@ -136,6 +187,7 @@ function TrainerChat({ profile, mode, scenario, scenarioTitle, onDone, onExit, t
     setInput(messages[idx].text)
     setEditing(idx)
     setOpenNote(null)
+    if (boxRef.current) boxRef.current.focus()
   }
 
   async function beenden() {
@@ -196,9 +248,7 @@ function TrainerChat({ profile, mode, scenario, scenarioTitle, onDone, onExit, t
         {messages.map((m, i) =>
           m.role === 'assistant' ? (
             <div className="msg-row msg-left" key={i}>
-              <span className="msg-avatar" aria-hidden="true">
-                {profile.id === 'ko' ? '해' : 'F'}
-              </span>
+              <Avatar profileId={profile.id} />
               <div className="msg-bubble msg-trainer" lang={profile.targetLang}>
                 {m.text}
                 <SpeakButton text={m.text} lang={profile.targetLang} className="speak-msg" />
@@ -236,9 +286,7 @@ function TrainerChat({ profile, mode, scenario, scenarioTitle, onDone, onExit, t
         {/* Tipp-Indikator: der Trainer "schreibt" */}
         {sending && (
           <div className="msg-row msg-left">
-            <span className="msg-avatar" aria-hidden="true">
-              {profile.id === 'ko' ? '해' : 'F'}
-            </span>
+            <Avatar profileId={profile.id} />
             <div className="msg-bubble msg-trainer msg-typing">
               <span className="tdot" />
               <span className="tdot" />
@@ -261,19 +309,44 @@ function TrainerChat({ profile, mode, scenario, scenarioTitle, onDone, onExit, t
       <form className="chat-input" onSubmit={abschicken}>
         {editing !== null && <span className="chat-editing">{t.improving}</span>}
         <div className="chat-input-row">
-          <ClearableInput
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onClear={() => {
-              setInput('')
-              setEditing(null)
-            }}
-            placeholder={t.typeMessage}
-            lang={profile.targetLang}
-            autoComplete="off"
-          />
+          <div className="chat-pill">
+            <textarea
+              ref={boxRef}
+              rows={1}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder={t.typeMessage}
+              lang={profile.targetLang}
+              autoComplete="off"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
+              enterKeyHint="send"
+              onKeyDown={(e) => {
+                /* Enter schickt ab (Shift+Enter = Zeilenumbruch) */
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault()
+                  abschicken(e)
+                }
+              }}
+            />
+            {input && (
+              <button
+                type="button"
+                className="chat-clear"
+                onClick={() => {
+                  setInput('')
+                  setEditing(null)
+                  if (boxRef.current) boxRef.current.focus()
+                }}
+                aria-label="Clear"
+              >
+                ×
+              </button>
+            )}
+          </div>
           <button type="submit" className="chat-send" disabled={sending || !input.trim()} aria-label={t.send}>
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true">
               <path d="M3.4 20.6 21.8 12 3.4 3.4l2.5 7.2 9.4 1.4-9.4 1.4z" />
             </svg>
           </button>

@@ -3451,52 +3451,73 @@ textarea {
   padding: 16px 0 20px;
 }
 
-.scenario-grid {
+/* Vier Modus-Kacheln, 2x2 — bemessen fuer iPhone-Breite (390px) */
+.mode-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-  margin-bottom: 22px;
+  gap: 14px;
+  padding-top: 4px;
 }
 
-.scenario-card {
+.mode-card {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 3px;
-  padding: 14px;
+  gap: 4px;
+  min-height: 132px;
+  padding: 16px 14px;
   text-align: left;
-  border-radius: 18px;
+  border-radius: 20px;
   border: 1px solid var(--border);
   background: var(--surface);
   box-shadow: var(--shadow-sm);
 }
 
-.scenario-card:active {
+.mode-card:active {
   transform: scale(0.98);
 }
 
-.scenario-emoji {
-  font-size: 24px;
+.mode-emoji {
+  font-size: 30px;
   line-height: 1.1;
-  margin-bottom: 2px;
+  margin-bottom: 4px;
 }
 
-.scenario-title {
-  font-size: 14.5px;
-  font-weight: 700;
+.mode-title {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
 }
 
-.scenario-ko {
+.mode-sub {
   font-size: 12px;
+  line-height: 1.35;
   color: var(--text-soft);
 }
 
-.trainer-free-label {
-  margin-top: 4px;
+/* Gesperrte Kacheln: sichtbar, aber ausgegraut mit Hinweis */
+.mode-locked {
+  opacity: 0.6;
 }
 
-.trainer-free {
-  width: 100%;
+.mode-locked:active {
+  transform: none;
+}
+
+.mode-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-soft);
 }
 
 /* ---------- Chat-Rahmen ---------- */
@@ -3539,26 +3560,36 @@ textarea {
   justify-content: flex-end;
 }
 
-/* Platzhalter-Avatar, bis die Cartoon-Bilder kommen */
+/* Avatar: Buchstabe als Platzhalter, spaeter das Cartoon-Bild
+   (200x200 PNG) — object-fit schneidet es rund zu */
 .msg-avatar {
   flex: none;
-  width: 30px;
-  height: 30px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
+  overflow: hidden;
   display: grid;
   place-items: center;
   background: var(--primary-soft);
   color: var(--primary);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 800;
 }
 
+.msg-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
 .msg-bubble {
-  max-width: 78%;
-  padding: 10px 14px;
-  font-size: 15.5px;
+  max-width: 80%;
+  padding: 11px 14px;
+  font-size: 16px;
   line-height: 1.45;
   word-break: break-word;
+  white-space: pre-wrap;
 }
 
 .msg-trainer {
@@ -3692,23 +3723,71 @@ textarea {
 
 .chat-input-row {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   gap: 8px;
 }
 
-.chat-input-row .input-wrap {
+/* Die "Pille": rundes Feld wie in echten Messengern. Das Textfeld
+   darin waechst mit dem Text bis ~4 Zeilen (siehe TrainerChat). */
+.chat-pill {
   flex: 1;
+  display: flex;
+  align-items: flex-end;
+  min-height: 46px;
+  padding: 6px 6px 6px 16px;
+  border-radius: 23px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.chat-pill:focus-within {
+  border-color: var(--primary);
+}
+
+.chat-pill textarea {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: none;
+  resize: none;
+  /* 16px ist wichtig: darunter zoomt iOS beim Antippen hinein */
+  font-size: 16px;
+  font-family: inherit;
+  line-height: 1.4;
+  padding: 5px 0;
+  max-height: 112px;
+  color: var(--text);
+}
+
+.chat-pill textarea::placeholder {
+  color: var(--text-soft);
+}
+
+.chat-clear {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  margin-bottom: 1px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: none;
+  color: var(--text-soft);
+  font-size: 20px;
+  line-height: 1;
 }
 
 .chat-send {
   flex: none;
-  width: 44px;
-  height: 44px;
+  width: 46px;
+  height: 46px;
   display: grid;
   place-items: center;
   border-radius: 50%;
   background: var(--accent);
   color: #fff;
+  box-shadow: var(--shadow-sm);
 }
 
 .chat-send:disabled {
