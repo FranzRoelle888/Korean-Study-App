@@ -245,7 +245,16 @@ Deno.serve(async (req) => {
     if (action === 'chat') {
       const p = await buildProfile(profile)
       const system = chatSystem(profile, mode === 'scenario' ? 'scenario' : 'free', String(scenario ?? ''), p)
-      const out = await callModel(system, history)
+      /* Die Anthropic-API verlangt einen Verlauf, der mit einer
+         NUTZER-Nachricht beginnt. Beim Gesprächsstart ist er leer
+         (der Trainer eröffnet ja), danach beginnt er mit der
+         Trainer-Eröffnung — in beiden Fällen schieben wir eine
+         unsichtbare Auftakt-Zeile davor. */
+      const forModel =
+        history.length === 0 || history[0].role !== 'user'
+          ? [{ role: 'user', content: '(Please open or continue our conversation.)' }, ...history]
+          : history
+      const out = await callModel(system, forModel)
       await dbInsert('trainer_usage', {
         profile,
         action: 'chat',
