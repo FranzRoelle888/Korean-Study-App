@@ -983,6 +983,34 @@ export function doneDaysSet(logRows) {
   return new Set(logRows.filter((r) => r.done).map((r) => r.day))
 }
 
+/* ---------- Grammatik-Skills (füttern den Trainer) ----------
+   Jede Zeile ein Punkt, den der Lernende schon beherrscht. Die
+   Edge Function liest diese Tabelle vor jedem Gespräch — was hier
+   steht, darf der Trainer aktiv benutzen. Kein Offline-Puffer:
+   gepflegt wird selten und bewusst, da ist eine ehrliche
+   Fehlermeldung besser als stille Warteschlangen. */
+export async function loadSkills() {
+  const { data, error } = await mine(
+    supabase.from('skills').select('*')
+  ).order('created_at', { ascending: false })
+  if (error) throw error
+  return data
+}
+
+export async function addSkill(topic, note) {
+  const { data, error } = await supabase
+    .from('skills')
+    .insert(stamp({ topic, note: note || null }))
+    .select()
+  if (error) throw error
+  return data[0]
+}
+
+export async function deleteSkill(id) {
+  const { error } = await mine(supabase.from('skills').delete().eq('id', id))
+  if (error) throw error
+}
+
 /* ---------- Intervall-Vorschau für die Buttons ---------- */
 export function previewInterval(card, rating) {
   return applyRating(card, rating).intervalDays

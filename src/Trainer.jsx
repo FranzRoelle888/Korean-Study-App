@@ -1,5 +1,7 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import TrainerChat, { readActiveChat } from './TrainerChat'
+import Skills from './Skills'
+import { ChevronIcon } from './icons'
 
 /* ============================================================
    TRAINER — Startbildschirm
@@ -11,6 +13,9 @@ import TrainerChat, { readActiveChat } from './TrainerChat'
      3. Grammatik         — noch gesperrt (spätere Stufe)
      4. Freies Gespräch   — endlos; wer eine BESTIMMTE Situation
         üben will, sagt es dem Trainer hier einfach im Chat.
+
+   Darunter: "Mein Grammatik-Stand" — die Liste, aus der der
+   Trainer vor jedem Gespräch lernt, was er benutzen darf.
    ============================================================ */
 
 /* Szenario-Pool für die koreanische Seite (Franz). Wird bei jedem
@@ -30,11 +35,21 @@ const SCENARIOS_KO = [
   { id: 'weekend', emoji: '🎉', title: 'Weekend plans', ko: '주말 계획' },
 ]
 
-function Trainer({ profile, t }) {
+function Trainer({ profile, t, onChatActive }) {
   /* null = Menü, sonst { mode, scenario, title }.
      Läuft noch ein Gespräch (Tab-Wechsel mittendrin), landet man
      direkt wieder darin statt im Menü. */
   const [aktiv, setAktiv] = useState(() => readActiveChat(profile.id))
+  const [zeigeSkills, setZeigeSkills] = useState(false)
+
+  /* Der App melden, ob gerade ein Chat läuft — dann versteckt sie
+     die Tab-Leiste, damit nichts über der Tastatur aufflackert. */
+  useEffect(() => {
+    if (onChatActive) onChatActive(!!aktiv)
+    return () => {
+      if (onChatActive) onChatActive(false)
+    }
+  }, [aktiv])
 
   function zufallsSzenario() {
     const s = SCENARIOS_KO[Math.floor(Math.random() * SCENARIOS_KO.length)]
@@ -53,6 +68,10 @@ function Trainer({ profile, t }) {
         t={t}
       />
     )
+  }
+
+  if (zeigeSkills) {
+    return <Skills profile={profile} t={t} onBack={() => setZeigeSkills(false)} />
   }
 
   return (
@@ -93,6 +112,15 @@ function Trainer({ profile, t }) {
             <span className="mode-sub">{t.modeGrammarSub}</span>
           </div>
         </div>
+
+        <button className="skills-entry" onClick={() => setZeigeSkills(true)}>
+          <span className="skills-entry-emoji">📚</span>
+          <div className="action-text">
+            <span className="action-title">{t.skillsTitle}</span>
+            <span className="action-sub">{t.skillsEntrySub}</span>
+          </div>
+          <ChevronIcon />
+        </button>
       </main>
     </div>
   )

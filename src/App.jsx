@@ -75,6 +75,9 @@ function App() {
   const [words, setWords] = useState([])
   const [cards, setCards] = useState([])
   const [numberState, setNumberState] = useState(getNumberChallenge)
+  /* Läuft gerade ein Trainer-Chat? Dann verschwindet die
+     Tab-Leiste — sonst flackert sie über der Tastatur auf. */
+  const [chatOffen, setChatOffen] = useState(false)
   const [dailyLog, setDailyLog] = useState([])
   const [partnerLog, setPartnerLog] = useState([])
 
@@ -506,7 +509,9 @@ function App() {
             tt={tt}
             partnerNote={partnerDoneToday ? t.partnerDoneToday(partnerName) : null}
           />}
-        {view === 'trainer' && profile.trainer && <Trainer profile={profile} t={t} />}
+        {view === 'trainer' && profile.trainer && (
+          <Trainer profile={profile} t={t} onChatActive={setChatOffen} />
+        )}
         {view === 'sets' &&
           (openSet ? (
             (profile.id === 'de' ? (
@@ -519,7 +524,7 @@ function App() {
           ))}
       </div>
 
-      {(view === 'home' || view === 'library' || view === 'sets' || view === 'trainer') && (
+      {!chatOffen && (view === 'home' || view === 'library' || view === 'sets' || view === 'trainer') && (
         <nav className="tabbar">
           <button
             className={view === 'sets' ? 'tab tab-active' : 'tab'}

@@ -3526,7 +3526,10 @@ textarea {
   display: flex;
   flex-direction: column;
   min-height: 0;
-  padding: max(12px, env(safe-area-inset-top)) 14px 10px;
+  /* Unten die Safe-Area mitnehmen: im Chat gibt es keine
+     Tab-Leiste mehr, das Eingabefeld darf nicht unter dem
+     Home-Balken des iPhones kleben */
+  padding: max(12px, env(safe-area-inset-top)) 14px max(10px, env(safe-area-inset-bottom));
 }
 
 .chat-header {
@@ -3811,4 +3814,124 @@ textarea {
   font-size: 15px;
   line-height: 1.6;
   white-space: pre-wrap;
+}
+
+/* ============================================================
+   MEIN GRAMMATIK-STAND (füttert den Trainer)
+   ============================================================ */
+
+/* Einstiegszeile unter den vier Modus-Kacheln */
+.skills-entry {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  margin-top: 16px;
+  padding: 14px;
+  text-align: left;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.skills-entry:active {
+  transform: scale(0.98);
+}
+
+.skills-entry-emoji {
+  font-size: 26px;
+  line-height: 1;
+}
+
+.skills-entry .action-text {
+  flex: 1;
+}
+
+.skills-main {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 10px 2px 20px;
+}
+
+.skills-hint {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-soft);
+}
+
+.skills-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.skills-add {
+  align-self: flex-end;
+}
+
+.skills-empty {
+  margin: 24px 0;
+  text-align: center;
+  font-size: 14px;
+  color: var(--text-soft);
+}
+
+.skills-list {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.skill-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 8px 12px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.skill-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.skill-topic {
+  font-size: 15px;
+  font-weight: 700;
+  word-break: break-word;
+}
+
+.skill-note {
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--text-soft);
+  word-break: break-word;
+}
+
+.skill-del {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: none;
+  color: var(--text-soft);
+  font-size: 22px;
+  line-height: 1;
 }
