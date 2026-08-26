@@ -74,24 +74,90 @@ Kein Volltext-Archiv (wächst unbegrenzt, kostet Kontext). Stattdessen:
 
 ---
 
-## 5. Trainer-Modi
+## 5. Die vier Trainer-Modi
 
-Kein einziger Freiform-Chat, sondern ein kleines Menü (wie die
-Aufgaben-Kacheln, gleiche Optik):
+Auswahl über ein kleines Menü (Kachel-Optik wie die Tagesaufgaben).
 
-1. **Freies Gespräch** — Alltagsdialog („Wie war dein Tag?"), Trainer
-   hält Niveau, korrigiert nebenbei.
-2. **Lückentext** — Trainer liefert die Übung als **strukturiertes JSON**,
-   die App rendert echte Eingabefelder im Stil der vorhandenen
-   Challenges. Kein Lückentext als Fließtext im Chat (unbedienbar).
-3. **Grammatik üben** — gezielter Drill zu einem Skill (bestehend oder
-   frisch hochgeladen), aufgebaut wie ein Mini-Arbeitsblatt.
-4. **Trainer entscheidet** — wählt anhand von Journal + Dauerfehlerliste,
-   was heute am meisten bringt.
+### Modus 1: Szenario-Gespräch (endlich, zählt als Tageseinheit)
+Konkrete Alltagssituation als Startkachel — nicht nur „Wie war dein
+Tag?", sondern **Szenario-Karten**: Beim Bäcker bestellen, Taxi in
+Seoul, Restaurant, Small Talk mit den Schwiegereltern. Teils fest
+hinterlegt, teils vom Trainer anhand des Wortschatzes vorgeschlagen
+(er weiß, welche Themenfelder abgedeckt sind — Essen ist z. B. bei
+beiden stark).
 
-Unbekannte Wörter im Dialog: antippbar → „In die Bibliothek?" → landet
-mit Wortart im Karteikasten (der Nachtlauf ergänzt den Rest). Das
-Gespräch füttert so den Karteikasten.
+**Abschluss-Mechanik:** Der Trainer liefert jede Antwort in einem
+strukturierten Umschlag `{ message, canEnd, … }`. Sobald er 3–4
+gelungene Wechsel gesehen hat, setzt er `canEnd: true` — in der App
+erscheint ein Knopf „Gespräch abschließen ✓". Manuelles Beenden, aber
+erst wenn der Trainer die Länge für ausreichend hält. Danach das
+Abschluss-Feedback (siehe 5b).
+
+### Modus 2: Lückentext (endlich, zählt)
+Entscheidung nach Franz' Frage „Gespräch oder Grammatik?": **beides
+zugleich, mit klarer Rollenteilung.** Die Lücken zielen auf
+**Grammatik** (Partikeln 은/는·이/가·을/를, Endungen; Artikel und
+Fälle auf der deutschen Seite) — denn Vokabeln deckt der Karteikasten
+schon ab, Partikeln und Endungen kann nur Produktion üben. Der
+**Rahmen** ist aber ein kurzer Alltagstext oder Mini-Dialog aus dem
+bekannten Wortschatz, kein steriler Einzelsatz. Kontext + Grammatik
+in einem.
+
+Auslieferung als strukturiertes JSON, die App rendert echte
+Eingabefelder im Stil der bestehenden Challenges. Nie als Fließtext
+im Chat.
+
+### Modus 3: Grammatik lernen (endlich, zählt)
+Erste Frage des Trainers: „Was möchtest du heute üben?" — mit
+Vorschlägen aus der Skills-Liste und der Dauerfehlerliste („Du
+wolltest -았/었어요 wiederholen", „을/를 hakt noch"). Dann Aufgaben
+nach **einheitlichem Schema**: kurze Erklärung, 5 Aufgaben zum
+Selberlösen, Bewertung mit Feedback je Aufgabe am Ende.
+
+### Modus 4: Endloses Freigespräch (offen, zählt NICHT)
+Freies Üben ohne Abschluss — reden, solange man will. Zählt bewusst
+nicht als Tageseinheit (es hat keinen definierten Abschluss), wird
+aber genauso ins Lernjournal zusammengefasst, wenn man es verlässt.
+Das Ratenlimit der Edge Function deckelt die Kosten.
+
+### 5a. Chat-Erlebnis
+Der Chat sieht aus wie ein Messenger (WhatsApp/KakaoTalk-Anmutung),
+aber in der jeweiligen App-Optik — Hanji-Töne auf der einen, Bauhaus
+auf der anderen Seite. Eigene Nachrichten rechts in der Akzentfarbe,
+Trainer links auf Karten-Weiß, Tipp-Indikator (drei Punkte) während
+der Trainer „schreibt", gestreamte Antworten.
+
+**Kurze Nachrichten sind Pflicht:** Der Trainer antwortet in 1–3
+Sätzen wie ein echter Chat-Partner. Lange Lehrer-Absätze zerstören
+sowohl die Messenger-Anmutung als auch das Sprachniveau.
+
+**Avatar:** Der Trainer trägt bei 해인 ein Cartoon-Gesicht von Franz,
+bei Franz eines von 해인 (Bilder liefert Franz später). Das passt
+inhaltlich perfekt zu Modus 1: Man übt buchstäblich die Gespräche,
+die man mit dem Partner führen will. Wichtige Grenze: In den
+Grammatik-Modi spricht der Trainer als Trainer, nicht in der Rolle
+des Partners — das Gesicht bleibt, die Rolle wechselt. (Offen: soll
+er im Szenario-Modus aktiv die Partnerrolle spielen dürfen?)
+
+### 5b. Korrekturen im Gespräch
+Zweistufig, damit der Fluss erhalten bleibt:
+- **Sofort, aber leise:** Unter der eigenen Nachricht erscheint bei
+  Fehlern eine kleine Anmerkung (korrigierte Form, dezent wie ein
+  „Bearbeitet"-Hinweis). Antippen klappt die kurze Erklärung auf.
+- **Am Ende gesammelt:** Beim Abschluss einer Einheit das eigentliche
+  Feedback — was gut war, die 2–3 wichtigsten Fehler, was ins
+  Lernjournal wandert.
+
+Unbekannte Wörter im Trainer-Text: antippbar → „In die Bibliothek?"
+→ landet mit Wortart im Karteikasten, der Nachtlauf ergänzt den Rest.
+Das Gespräch füttert so den Karteikasten.
+
+### 5c. Platz in der App
+Der Trainer bekommt einen **vierten Tab** in der unteren Leiste
+(Sprechblasen-Icon) — jederzeit erreichbar, mit dem Modus-Menü als
+Startbildschirm. Am Aktiv-Tag verweist zusätzlich die Aufgaben-Kachel
+auf der Startseite direkt hinein und zeigt nach Abschluss ihr
+Häkchen.
 
 ---
 
@@ -173,14 +239,26 @@ Modell bei ausreichender Qualität. Einschätzung:
 
 ---
 
-## 10. Offene Fragen an Franz
+## 10. Entschieden / noch offen
 
-1. **Einheiten-Länge:** fester Umfang (z. B. ~8 Trainer-Züge, dann
-   Abschluss + Zusammenfassung) oder offenes Ende mit „Beenden"-Knopf?
-2. **Korrektur-Stil:** Fehler sofort in jeder Antwort korrigieren, oder
-   erst am Ende der Einheit gesammelt (flüssigeres Gespräch)?
-3. **Rhythmus-Start:** Wechselrhythmus für beide Seiten sofort, oder
-   erst bei dir testen und 해인 später umstellen?
+**Entschieden (Runde 2):**
+- Einheiten-Ende: manuell, aber der Abschluss-Knopf erscheint erst,
+  wenn der Trainer genug gelungene Wechsel gesehen hat (canEnd).
+- Feedback: je Aufgabe in den Übungs-Modi; im Gespräch leise
+  Sofort-Anmerkung + gesammeltes Abschluss-Feedback.
+- Vier Modi wie in Abschnitt 5; Modus 4 zählt nicht als Tageseinheit.
+- Platz: vierter Tab + Aktiv-Tag-Kachel.
+- Chat-Optik: Messenger-Look in den bestehenden Themes.
+- Avatare: Cartoon-Partnergesichter, Bilder liefert Franz.
+
+**Noch offen:**
+1. Darf der Trainer im Szenario-Modus aktiv die **Partnerrolle**
+   spielen („simuliertes Gespräch mit 해인/Franz"), oder bleibt er
+   immer sichtbar Trainer mit Partnergesicht?
+2. **Rhythmus-Start:** Input-/Aktiv-Tag für beide sofort, oder erst
+   bei Franz testen?
+3. Sollen die **leisen Sofort-Anmerkungen** unter eigenen Nachrichten
+   so umgesetzt werden, oder Korrekturen ausschließlich am Ende?
 
 ---
 
