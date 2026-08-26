@@ -1011,6 +1011,16 @@ export async function deleteSkill(id) {
   if (error) throw error
 }
 
+/* Mehrere bestätigte Vorschläge auf einmal (KI-Analyse) */
+export async function addSkills(list) {
+  const { data, error } = await supabase
+    .from('skills')
+    .insert(list.map((it) => stamp({ topic: it.topic, note: it.note || null })))
+    .select()
+  if (error) throw error
+  return data
+}
+
 /* ---------- Intervall-Vorschau für die Buttons ---------- */
 export function previewInterval(card, rating) {
   return applyRating(card, rating).intervalDays

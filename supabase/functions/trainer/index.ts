@@ -6,9 +6,10 @@
    lesbar. Diese Funktion läuft bei Supabase, hält den Anthropic-
    Schlüssel als Secret und ist der einzige Weg zum Modell.
 
-   Zwei Aktionen:
+   Drei Aktionen:
      chat     eine Trainer-Antwort auf den bisherigen Verlauf
      summary  Einheit beenden -> Zusammenfassung ins Lernjournal
+     extract  Grammatik-Erklärung (Text/Foto) -> Skill-Vorschläge
 
    Schutz:
      - Ratenlimit: max. 40 Modell-Aufrufe pro Stunde je Profil
@@ -97,7 +98,11 @@ async function buildProfile(profile: string) {
     secure,
     shaky,
     fresh,
-    skills: skills.map((s: { topic: string }) => s.topic),
+    /* Notiz mitgeben, wenn vorhanden — oft steckt dort die
+       Einschränkung ("nur gesprochen", "nur mit Vokal") */
+    skills: skills.map((s: { topic: string; note?: string }) =>
+      s.note ? `${s.topic} (${s.note})` : s.topic
+    ),
     journal: sessions.map(
       (s: { created_at: string; summary: string }) =>
         `${s.created_at.slice(0, 10)}: ${s.summary}`
@@ -158,8 +163,55 @@ function summarySystem(profile: string) {
   ].join('\n')
 }
 
+/* ---------- Skills aus einer Erklärung herausziehen ----------
+   Der Lernende erzählt frei (oder fotografiert ein Übungsblatt),
+   das Modell macht daraus kurze, atomare Einträge und fasst
+   zusammen, was es verstanden hat. Gespeichert wird erst, wenn
+   der Lernende die Vorschläge in der App bestätigt. */
+function extractSystem(profile: string) {
+  const learnsKorean = profile === 'ko'
+  const target = learnsKorean ? 'Korean' : 'German'
+  const explain = learnsKorean ? 'English' : 'Korean'
+  return [
+    `You maintain the grammar-skills list of an A1-A2 ${target} learner inside a private vocabulary app. The learner just explained — as free text and/or a photo of a textbook or worksheet page — which grammar they have learned.`,
+    '',
+    'Extract the grammar as SHORT, ATOMIC entries:',
+    `- topic: the pattern itself plus a 2-5 word gloss, e.g. ${learnsKorean ? '"-았/었어요 (past tense)"' : '"Perfekt mit haben (spoken past)"'}`,
+    `- note: at most one short ${explain} sentence with a detail worth remembering (usage restriction, tiny example). Empty string if there is nothing to add.`,
+    '- Only include grammar the learner clearly LEARNED. Ignore plain vocabulary — the app tracks words separately. Never invent points that are not in the input.',
+    '- Split combined explanations into separate atomic entries. At most 12.',
+    '',
+    'Reply with ONLY this JSON:',
+    `{"reply": "<1-2 warm sentences in ${explain}: say what you understood and ask the learner to confirm>",`,
+    ' "items": [{"topic": "...", "note": "..."}, ...]}',
+    'If the input contains no recognizable grammar, return an empty items array and use reply to kindly ask for a clearer description.',
+  ].join('\n')
+}
+
+function parseExtract(text: string) {
+  const raw = text.replace(/^```(?:json)?/m, '').replace(/```\s*$/m, '').trim()
+  try {
+    const j = JSON.parse(raw)
+    const items = Array.isArray(j.items)
+      ? j.items
+          .filter((it: { topic?: unknown }) => typeof it.topic === 'string' && (it.topic as string).trim())
+          .slice(0, 12)
+          .map((it: { topic: string; note?: unknown }) => ({
+            topic: it.topic.trim().slice(0, 120),
+            note: typeof it.note === 'string' ? it.note.trim().slice(0, 200) : '',
+          }))
+      : []
+    return { reply: typeof j.reply === 'string' ? j.reply : '', items }
+  } catch {
+    /* Unlesbar: Text als Antwort zeigen, nichts vorschlagen */
+    return { reply: raw.slice(0, 300), items: [] }
+  }
+}
+
 /* ---------- Anthropic ---------- */
-async function callModel(system: string, messages: { role: string; content: string }[]) {
+/* content ist meist ein String, beim Foto-Upload ein Array aus
+   Bild- und Textblöcken — die API akzeptiert beides. */
+async function callModel(system: string, messages: { role: string; content: unknown }[], maxTokens = 800) {
   const r = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
@@ -169,7 +221,7 @@ async function callModel(system: string, messages: { role: string; content: stri
     },
     body: JSON.stringify({
       model: MODEL,
-      max_tokens: 800,
+      max_tokens: maxTokens,
       system: [{ type: 'text', text: system, cache_control: { type: 'ephemeral' } }],
       messages,
     }),
@@ -229,9 +281,43 @@ Deno.serve(async (req) => {
     const { action, profile, mode, scenario, messages } = body
 
     if (profile !== 'ko' && profile !== 'de') return json({ error: 'bad-profile' }, 400)
-    if (!Array.isArray(messages) || messages.length > 60) return json({ error: 'bad-messages' }, 400)
+    /* extract hat keinen Verlauf — die Prüfung gilt nur für
+       chat und summary */
+    if (action !== 'extract' && (!Array.isArray(messages) || messages.length > 60))
+      return json({ error: 'bad-messages' }, 400)
 
     if (await overLimit(profile)) return json({ error: 'rate-limit' }, 429)
+
+    /* ---------- Grammatik aus einer Erklärung ziehen ---------- */
+    if (action === 'extract') {
+      const text = typeof body.text === 'string' ? body.text.slice(0, 2000) : ''
+      const image = body.image
+      const blocks: unknown[] = []
+      /* Bild nur in bekannten Formaten und begrenzter Größe —
+         die App verkleinert vor dem Hochladen auf JPEG */
+      if (
+        image &&
+        typeof image.data === 'string' &&
+        image.data.length < 7_000_000 &&
+        ['image/jpeg', 'image/png', 'image/webp'].includes(image.media_type)
+      ) {
+        blocks.push({
+          type: 'image',
+          source: { type: 'base64', media_type: image.media_type, data: image.data },
+        })
+      }
+      if (text) blocks.push({ type: 'text', text })
+      if (blocks.length === 0) return json({ error: 'empty' }, 400)
+
+      const out = await callModel(extractSystem(profile), [{ role: 'user', content: blocks }], 1500)
+      await dbInsert('trainer_usage', {
+        profile,
+        action: 'extract',
+        input_tokens: out.inputTokens,
+        output_tokens: out.outputTokens,
+      })
+      return json(parseExtract(out.text))
+    }
 
     /* Verlauf in das API-Format bringen; Texte hart begrenzen,
        damit niemand die Funktion als Gratis-Proxy missbraucht */

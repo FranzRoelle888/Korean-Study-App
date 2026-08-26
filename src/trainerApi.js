@@ -33,3 +33,10 @@ export function trainerChat({ profile, mode, scenario, messages }) {
 export function trainerSummary({ profile, mode, scenario, messages }) {
   return call({ action: 'summary', profile, mode, scenario, messages })
 }
+
+/* Grammatik-Erklärung (Text und/oder Foto) -> Vorschlagsliste.
+   image: { media_type: 'image/jpeg', data: '<base64>' } oder null.
+   Gespeichert wird erst nach Bestätigung in der App. */
+export function trainerExtract({ profile, text, image }) {
+  return call({ action: 'extract', profile, text, image: image || undefined })
+}
