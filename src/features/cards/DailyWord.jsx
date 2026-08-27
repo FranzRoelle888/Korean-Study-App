@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { SuccessMark, MoonIcon } from '../../shared/icons'
 import ClearableInput from '../../shared/ClearableInput'
-import { SpeakButton } from '../../shared/tts'
+import { SpeakButton, prewarmSpeech } from '../../shared/tts'
 
 /* ============================================================
    WORD OF THE DAY
@@ -23,6 +23,11 @@ function DailyWord({ candidates, onIntroduce, onExit, profile, t, tt }) {
   const [learned, setLearned] = useState(0)
 
   const entry = queue[index]
+
+  /* Die Stimme fürs heutige Wort schon mal im Hintergrund holen */
+  useEffect(() => {
+    if (entry) prewarmSpeech(entry.ko, profile.targetLang)
+  }, [entry && entry.ko])
 
   if (!entry) {
     const nothingAtAll = queue.length === 0

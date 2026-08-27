@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { trainerChat, trainerSummary } from './trainerApi'
-import { SpeakButton } from '../../shared/tts'
+import { SpeakButton, prewarmSpeech } from '../../shared/tts'
 
 /* ============================================================
    TRAINER-CHAT — Messenger-Ansicht
@@ -99,6 +99,11 @@ function TrainerChat({ profile, mode, scenario, scenarioTitle, onDone, onExit, t
       /* egal */
     }
     if (endRef.current) endRef.current.scrollIntoView({ block: 'end' })
+
+    /* Die neueste Trainer-Nachricht im Hintergrund vorwärmen —
+       der Lautsprecher in der Blase spielt dann ohne Wartezeit */
+    const letzte = [...messages].reverse().find((m) => m.role === 'assistant')
+    if (letzte) prewarmSpeech(letzte.text, profile.targetLang)
   }, [messages, sending])
 
   /* Beim allerersten Öffnen eröffnet der Trainer das Gespräch.

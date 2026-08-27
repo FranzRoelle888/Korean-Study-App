@@ -1,9 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { previewInterval, formatInterval } from '../../core/storage'
 import Confetti from '../../shared/Confetti'
 import { MoonIcon, CardRidge, CardSkyline } from '../../shared/icons'
 import ClearableInput from '../../shared/ClearableInput'
-import { SpeakButton } from '../../shared/tts'
+import { SpeakButton, prewarmSpeech } from '../../shared/tts'
 
 /* ============================================================
    REVIEW STACK
@@ -40,6 +40,15 @@ function Review({ initialQueue, onRate, onUndo, onExit, profile, t, tt }) {
 
   const done = total - queue.length
   const card = queue[0]
+
+  /* Wort und Beispielsatz der aktuellen Karte im Hintergrund
+     vorwärmen — während man noch überlegt, wird die Stimme
+     erzeugt; beim Tipp aufs Lautsprecher-Symbol spielt sie sofort */
+  useEffect(() => {
+    if (!card) return
+    prewarmSpeech(card.ko, profile.targetLang)
+    if (card.ex) prewarmSpeech(card.ex, profile.targetLang)
+  }, [card && card.id])
 
   // Finished screen
   if (!card) {
@@ -167,7 +176,10 @@ function Review({ initialQueue, onRate, onUndo, onExit, profile, t, tt }) {
                   </span>
                   {card.ex && (
                     <span className="card-example">
-                      <span lang={profile.targetLang}>{card.ex}</span>
+                      <span lang={profile.targetLang}>
+                        {card.ex}
+                        <SpeakButton text={card.ex} lang={profile.targetLang} className="speak-inline" />
+                      </span>
                       {card.exTr && <span className="card-example-tr">{card.exTr}</span>}
                     </span>
                   )}
@@ -187,7 +199,10 @@ function Review({ initialQueue, onRate, onUndo, onExit, profile, t, tt }) {
                   </span>
                   {card.ex && (
                     <span className="card-example">
-                      <span lang={profile.targetLang}>{card.ex}</span>
+                      <span lang={profile.targetLang}>
+                        {card.ex}
+                        <SpeakButton text={card.ex} lang={profile.targetLang} className="speak-inline" />
+                      </span>
                       {card.exTr && <span className="card-example-tr">{card.exTr}</span>}
                     </span>
                   )}

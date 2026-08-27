@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { PlusIcon, SearchIcon, EditIcon, TrashIcon, InfoIcon } from '../../shared/icons'
 import ClearableInput from '../../shared/ClearableInput'
-import { SpeakButton } from '../../shared/tts'
+import { SpeakButton, prewarmSpeech } from '../../shared/tts'
 
 /* ============================================================
    LIBRARY
@@ -23,10 +23,18 @@ function PosTag({ pos, t }) {
 
 /* Zusatzinfos zu einem Wort: Pluralform bzw. Konjugation.
    Wird unter der Zeile aufgeklappt, wenn man das i antippt. */
-function WordExtras({ vocab, t }) {
+function WordExtras({ vocab, t, lang }) {
   const hatPlural = vocab.plural || vocab.pluralNote
   const hatKonj = vocab.conj && Object.keys(vocab.conj).length > 0
   const hatSatz = !!vocab.ex
+
+  /* Sobald das Info-Feld aufklappt, den Beispielsatz im
+     Hintergrund vorwärmen — beim Tipp aufs Lautsprecher-Symbol
+     ist die Stimme dann schon da. */
+  useEffect(() => {
+    if (vocab.ex) prewarmSpeech(vocab.ex, lang)
+  }, [vocab.id])
+
   if (!hatPlural && !hatKonj && !hatSatz) {
     return <div className="extras"><p className="extras-empty">{t.noExtras}</p></div>
   }
@@ -58,7 +66,10 @@ function WordExtras({ vocab, t }) {
       {hatSatz && (
         <div className="extras-block">
           <span className="extras-label">{t.exampleLabel}</span>
-          <span className="extras-plural">{vocab.ex}</span>
+          <span className="extras-plural" lang={lang}>
+            {vocab.ex}
+            <SpeakButton text={vocab.ex} lang={lang} className="speak-inline" />
+          </span>
           {vocab.exTr && <span className="extras-note">{vocab.exTr}</span>}
         </div>
       )}
@@ -419,7 +430,7 @@ function VocabRow({ vocab, onEdit, onDelete, tricky, profile, t }) {
       </div>
       {/* Volle Breite unter der Zeile — in der Textspalte endete die
           Tafel dort, wo die Knopfspalte beginnt */}
-      {zeigeInfo && <WordExtras vocab={vocab} t={t} />}
+      {zeigeInfo && <WordExtras vocab={vocab} t={t} lang={profile.targetLang} />}
     </li>
   )
 }
