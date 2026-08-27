@@ -165,6 +165,9 @@ function Skills({ profile, t, onBack, onGramCheck }) {
   }
 
   async function loeschen(id) {
+    /* Ein Tipp aufs x soll nichts unwiederbringlich loeschen —
+       gerade fuer 해인, die die App noch nicht so gut kennt */
+    if (!window.confirm(t.skillsDeleteConfirm)) return
     setError(null)
     /* Erst optimistisch aus der Liste, bei Fehler zurückholen */
     const vorher = skills

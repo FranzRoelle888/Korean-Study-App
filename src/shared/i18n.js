@@ -169,6 +169,7 @@ const en = {
   kalBannerSub: 'Once, 5–10 minutes — stop re-learning known words',
   kalGramFertig: 'Grammar check saved — the trainer now knows exactly which patterns to use and which to teach.',
   skillsGramCheck: 'Grammar check — finish or redo',
+  skillsDeleteConfirm: 'Delete this entry? The trainer will no longer know about it.',
   candoFragen: (target) => [
     `I can greet people and introduce myself in ${target}.`,
     `I can use numbers, prices and times in ${target}.`,
@@ -347,6 +348,7 @@ const ko = {
   kalBannerSub: '한 번, 5–10분 — 아는 단어를 다시 배우지 않아요',
   kalGramFertig: '문법 체크 저장 완료 — 이제 트레이너가 어떤 문법을 쓰고 어떤 걸 가르칠지 정확히 알아요.',
   skillsGramCheck: '문법 체크 — 이어서 하거나 다시 하기',
+  skillsDeleteConfirm: '이 항목을 삭제할까요? 트레이너가 더 이상 알 수 없게 돼요.',
   candoFragen: () => [
     '독일어로 인사하고 자기소개를 할 수 있어요.',
     '독일어로 숫자, 가격, 시간을 말할 수 있어요.',
