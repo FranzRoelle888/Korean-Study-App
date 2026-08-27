@@ -3608,6 +3608,127 @@ textarea {
 .kal-zaehler { margin: 0; font-size: 12.5px; color: var(--text-soft); }
 
 /* ============================================================
+   LÜCKENTEXT — Übung aus der Aufgaben-Bank
+   ============================================================ */
+.lt-zaehler {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+.lt-mitte {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  text-align: center;
+  padding: 0 18px calc(24px + env(safe-area-inset-bottom));
+}
+
+.lt-grammatik {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--primary);
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: var(--primary-soft);
+}
+
+.lt-satz-block {
+  width: 100%;
+  max-width: 340px;
+  padding: 22px 18px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.lt-satz {
+  margin: 0;
+  font-size: 21px;
+  line-height: 1.7;
+  word-break: keep-all;
+}
+
+.lt-luecke {
+  display: inline-block;
+  min-width: 56px;
+  padding: 0 6px;
+  border-bottom: 2.5px solid var(--primary);
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.lt-gloss {
+  background: none;
+  padding: 0 1px;
+  font: inherit;
+  color: inherit;
+  text-decoration: underline dotted var(--gold, var(--accent)) 2px;
+  text-underline-offset: 3px;
+}
+
+.lt-gloss-bubble {
+  margin: 10px 0 0;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: var(--surface-2);
+  font-size: 13.5px;
+  color: var(--text-soft);
+}
+
+.lt-basis {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-soft);
+}
+
+.lt-form {
+  width: 100%;
+  max-width: 340px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.lt-aufloesung {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.lt-deine {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-soft);
+  text-decoration: line-through;
+}
+
+.lt-note {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.lt-ok { color: var(--primary); }
+.lt-falsch { color: var(--accent-ink, var(--accent)); }
+
+.lt-uebersetzung {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--text-soft);
+}
+
+/* ============================================================
    LOGIN — nur die zwei dürfen rein
    ============================================================ */
 .login-screen {

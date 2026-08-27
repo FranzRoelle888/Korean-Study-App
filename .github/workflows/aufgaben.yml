@@ -1,0 +1,38 @@
+# ============================================================
+# Aufgaben-Bank füllen: Lückentext-Aufgaben passend zum
+# Lernstand beider Profile. Läuft jede Nacht um 03:00 UTC und
+# von Hand über Actions -> "Aufgaben-Bank füllen" -> Run workflow.
+# Schreibt direkt in die Datenbank (exercise_bank).
+# ============================================================
+name: Aufgaben-Bank füllen
+
+on:
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+    inputs:
+      dry:
+        description: 'Trockenlauf (nichts schreiben)'
+        type: boolean
+        default: false
+
+jobs:
+  fuellen:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Aufgaben erzeugen
+        env:
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          if [ "${{ inputs.dry }}" = "true" ]; then
+            node scripts/baue-aufgaben.mjs --dry
+          else
+            node scripts/baue-aufgaben.mjs
+          fi

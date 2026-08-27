@@ -150,6 +150,15 @@ const en = {
   skillsDiscard: 'Discard',
   skillsManual: 'Add by hand',
   skillsPhotoError: 'Could not read that photo — please try another one.',
+  /* --- Lückentext --- */
+  ltEmpty: 'Your exercises are being prepared overnight — check back tomorrow!',
+  ltPlaceholder: 'Fill the gap…',
+  ltDeine: 'Your answer',
+  ltLoesungWar: (l) => `Not quite — it is “${l}”.`,
+  ltWeiter: 'Next',
+  ltErgebnis: 'See result',
+  ltFertig: (n, m) => (n === m ? `Perfect — ${n} of ${m}!` : `${n} of ${m} — nice work!`),
+
   kalTitle: 'Check-in',
   kalIntroTitle: 'Tell the app what you already know',
   kalIntroText: 'A one-time check-in (5–10 minutes): a quick self-check, then word swiping, then a few grammar examples. Nothing you already know gets “taught” to you again — and the trainer gets a much better feel for your level. When in doubt, answer conservatively: “not sure” is the smart choice.',
@@ -334,6 +343,15 @@ const ko = {
   skillsDiscard: '취소',
   skillsManual: '직접 추가',
   skillsPhotoError: '사진을 읽을 수 없어요 — 다른 사진으로 해 보세요.',
+  /* --- Lückentext --- */
+  ltEmpty: '연습 문제는 밤사이에 준비돼요 — 내일 다시 와 주세요!',
+  ltPlaceholder: '빈칸을 채워요…',
+  ltDeine: '내 답',
+  ltLoesungWar: (l) => `아쉬워요 — 정답은 “${l}”이에요.`,
+  ltWeiter: '다음',
+  ltErgebnis: '결과 보기',
+  ltFertig: (n, m) => (n === m ? `완벽해요 — ${m}개 중 ${n}개!` : `${m}개 중 ${n}개 — 잘했어요!`),
+
   kalTitle: '레벨 체크',
   kalIntroTitle: '이미 아는 것을 앱에 알려 주세요',
   kalIntroText: '딱 한 번이면 돼요 (5–10분): 간단한 자기 체크 → 단어 스와이프 → 문법 예문 몇 개. 이미 아는 건 다시 배우지 않게 되고, 트레이너가 내 수준을 훨씬 잘 알게 돼요. 애매하면 “글쎄요”를 고르는 게 좋아요.',

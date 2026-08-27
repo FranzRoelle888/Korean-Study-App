@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import TrainerChat, { readActiveChat } from './TrainerChat'
 import Skills from './Skills'
 import Kalibrierung from '../kalibrierung/Kalibrierung'
+import Lueckentext from '../ueben/Lueckentext'
 import { ChevronIcon } from '../../shared/icons'
 
 /* ============================================================
@@ -44,6 +45,8 @@ function Trainer({ profile, t, onChatActive }) {
   const [zeigeSkills, setZeigeSkills] = useState(false)
   /* Grammatik-Check nachholen/wiederholen (aus der Skills-Seite) */
   const [zeigeGramCheck, setZeigeGramCheck] = useState(false)
+  /* Lückentext-Übung (aus der Aufgaben-Bank) */
+  const [zeigeLueckentext, setZeigeLueckentext] = useState(false)
 
   /* Der App melden, ob gerade ein Chat läuft — dann versteckt sie
      die Tab-Leiste, damit nichts über der Tastatur aufflackert. */
@@ -71,6 +74,10 @@ function Trainer({ profile, t, onChatActive }) {
         t={t}
       />
     )
+  }
+
+  if (zeigeLueckentext) {
+    return <Lueckentext profile={profile} t={t} onExit={() => setZeigeLueckentext(false)} />
   }
 
   if (zeigeGramCheck) {
@@ -122,12 +129,11 @@ function Trainer({ profile, t, onChatActive }) {
             <span className="mode-sub">{t.modeFreeSub}</span>
           </button>
 
-          <div className="mode-card mode-locked" aria-disabled="true">
-            <span className="mode-badge">{t.comingSoon}</span>
+          <button className="mode-card" onClick={() => setZeigeLueckentext(true)}>
             <span className="mode-emoji">✏️</span>
             <span className="mode-title">{t.modeGap}</span>
             <span className="mode-sub">{t.modeGapSub}</span>
-          </div>
+          </button>
 
           <div className="mode-card mode-locked" aria-disabled="true">
             <span className="mode-badge">{t.comingSoon}</span>
