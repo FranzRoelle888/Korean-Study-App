@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
-import { loadSkills, addSkill, addSkills, deleteSkill } from './storage'
+import { loadSkills, addSkill, addSkills, deleteSkill } from '../../core/storage'
 import { trainerExtract } from './trainerApi'
-import ClearableInput from './ClearableInput'
+import ClearableInput from '../../shared/ClearableInput'
 
 /* ============================================================
    MEIN GRAMMATIK-STAND

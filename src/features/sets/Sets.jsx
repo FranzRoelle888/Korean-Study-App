@@ -12,7 +12,7 @@ import {
   BowlIcon,
   LayersIcon,
   GlobeIcon,
-} from './icons'
+} from '../../shared/icons'
 
 /* ============================================================
    SETS — Übersicht der Themen-Blätter

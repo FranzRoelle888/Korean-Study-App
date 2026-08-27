@@ -1,9 +1,9 @@
 import { useState } from 'react'
-import { previewInterval, formatInterval } from './storage'
-import Confetti from './Confetti'
-import { MoonIcon, CardRidge, CardSkyline } from './icons'
-import ClearableInput from './ClearableInput'
-import { SpeakButton } from './tts'
+import { previewInterval, formatInterval } from '../../core/storage'
+import Confetti from '../../shared/Confetti'
+import { MoonIcon, CardRidge, CardSkyline } from '../../shared/icons'
+import ClearableInput from '../../shared/ClearableInput'
+import { SpeakButton } from '../../shared/tts'
 
 /* ============================================================
    REVIEW STACK

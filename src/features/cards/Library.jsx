@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { PlusIcon, SearchIcon, EditIcon, TrashIcon, InfoIcon } from './icons'
-import ClearableInput from './ClearableInput'
-import { SpeakButton } from './tts'
+import { PlusIcon, SearchIcon, EditIcon, TrashIcon, InfoIcon } from '../../shared/icons'
+import ClearableInput from '../../shared/ClearableInput'
+import { SpeakButton } from '../../shared/tts'
 
 /* ============================================================
    LIBRARY

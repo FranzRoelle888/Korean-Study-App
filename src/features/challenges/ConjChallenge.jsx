@@ -1,21 +1,19 @@
 import { useState } from 'react'
-import ClearableInput from './ClearableInput'
+import ClearableInput from '../../shared/ClearableInput'
 
 /* ============================================================
-   PLURAL DES TAGES (nur auf der deutschen Seite)
+   KONJUGATION DES TAGES (nur auf der deutschen Seite)
 
-   Zweite Aufgabe, die sich mit den Artikeln abwechselt. Gezeigt
-   wird die Einzahl, eingetippt wird die Mehrzahl.
-
-   Der Artikel wird mitgeprüft, aber großzügig: "die Häuser" und
-   "Häuser" gelten beide. Der Plural-Artikel ist immer "die", ihn
-   abzufragen bringt nichts — es geht um die Wortform.
+   Dritte Aufgabe der Rotation. Gezeigt werden Person und
+   Grundform ("du" + "fahren"), eingetippt wird die Form
+   ("fährst"). Trennbare Verben verlangen beide Teile
+   ("stehe auf").
 
    Falsch ist nicht verloren: die richtige Form wird gezeigt, das
-   Wort kommt ans Ende und muss einmal richtig eingetippt werden.
+   Verb kommt ans Ende der Runde zurück.
    ============================================================ */
 
-function PluralChallenge({ rounds, alreadyDone, onComplete, onExit, t, tt }) {
+function ConjChallenge({ rounds, alreadyDone, onComplete, onExit, t, tt }) {
   const [queue, setQueue] = useState(rounds)
   const [eingabe, setEingabe] = useState('')
   const [geprueft, setGeprueft] = useState(false)
@@ -25,12 +23,12 @@ function PluralChallenge({ rounds, alreadyDone, onComplete, onExit, t, tt }) {
     return (
       <div className="number">
         <div className="number-done">
-          <div className="done-emoji">📚</div>
+          <div className="done-emoji">✍️</div>
           <p className="done-title">{t.doneForToday}</p>
           <div className="number-recap">
             {rounds.map((r) => (
               <span className="recap-line" key={r.id}>
-                {r.singular} → <b>{r.plural}</b>
+                {r.person}: <b>{r.answer}</b> ({r.verb})
               </span>
             ))}
           </div>
@@ -43,10 +41,8 @@ function PluralChallenge({ rounds, alreadyDone, onComplete, onExit, t, tt }) {
   }
 
   const aktuell = queue[0]
-  const sauber = eingabe.trim().replace(/\s+/g, ' ')
-  const richtig =
-    sauber.toLowerCase() === aktuell.plural.toLowerCase() ||
-    sauber.toLowerCase() === aktuell.pluralNoun.toLowerCase()
+  const sauber = eingabe.trim().replace(/\s+/g, ' ').toLowerCase()
+  const richtig = sauber === aktuell.answer.trim().toLowerCase()
 
   function pruefen(e) {
     e.preventDefault()
@@ -82,18 +78,21 @@ function PluralChallenge({ rounds, alreadyDone, onComplete, onExit, t, tt }) {
       </div>
 
       <div className="number-body">
-        <p className="number-prompt">{t.whichPlural}</p>
+        <p className="number-prompt">{t.whichConj}</p>
+        <span className="conj-chip" lang="de">
+          {aktuell.person}
+        </span>
         <div className="article-word" lang="de">
-          {aktuell.singular}
+          {aktuell.verb}
         </div>
         <p className="article-meaning">{aktuell.en}</p>
 
         {geprueft ? (
           <div className={richtig ? 'plural-result plural-ok' : 'plural-result plural-bad'}>
             <span className="plural-answer" lang="de">
-              {aktuell.plural}
+              {aktuell.answer}
             </span>
-            <span className="plural-note">{richtig ? t.correct : t.pluralWrong}</span>
+            <span className="plural-note">{richtig ? t.correct : t.conjWrong}</span>
           </div>
         ) : (
           <form className="type-area" onSubmit={pruefen}>
@@ -105,7 +104,6 @@ function PluralChallenge({ rounds, alreadyDone, onComplete, onExit, t, tt }) {
               placeholder={tt.typePlaceholder}
               lang="de"
               autoComplete="off"
-              autoCapitalize="off"
             />
             <button type="submit" className="check-btn">
               {t.check}
@@ -117,4 +115,4 @@ function PluralChallenge({ rounds, alreadyDone, onComplete, onExit, t, tt }) {
   )
 }
 
-export default PluralChallenge
+export default ConjChallenge

@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { SuccessMark, MoonIcon } from './icons'
-import ClearableInput from './ClearableInput'
-import { SpeakButton } from './tts'
+import { SuccessMark, MoonIcon } from '../../shared/icons'
+import ClearableInput from '../../shared/ClearableInput'
+import { SpeakButton } from '../../shared/tts'
 
 /* ============================================================
    WORD OF THE DAY

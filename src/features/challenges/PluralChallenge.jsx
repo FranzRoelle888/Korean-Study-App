@@ -1,19 +1,21 @@
 import { useState } from 'react'
-import ClearableInput from './ClearableInput'
+import ClearableInput from '../../shared/ClearableInput'
 
 /* ============================================================
-   KONJUGATION DES TAGES (nur auf der deutschen Seite)
+   PLURAL DES TAGES (nur auf der deutschen Seite)
 
-   Dritte Aufgabe der Rotation. Gezeigt werden Person und
-   Grundform ("du" + "fahren"), eingetippt wird die Form
-   ("fährst"). Trennbare Verben verlangen beide Teile
-   ("stehe auf").
+   Zweite Aufgabe, die sich mit den Artikeln abwechselt. Gezeigt
+   wird die Einzahl, eingetippt wird die Mehrzahl.
+
+   Der Artikel wird mitgeprüft, aber großzügig: "die Häuser" und
+   "Häuser" gelten beide. Der Plural-Artikel ist immer "die", ihn
+   abzufragen bringt nichts — es geht um die Wortform.
 
    Falsch ist nicht verloren: die richtige Form wird gezeigt, das
-   Verb kommt ans Ende der Runde zurück.
+   Wort kommt ans Ende und muss einmal richtig eingetippt werden.
    ============================================================ */
 
-function ConjChallenge({ rounds, alreadyDone, onComplete, onExit, t, tt }) {
+function PluralChallenge({ rounds, alreadyDone, onComplete, onExit, t, tt }) {
   const [queue, setQueue] = useState(rounds)
   const [eingabe, setEingabe] = useState('')
   const [geprueft, setGeprueft] = useState(false)
@@ -23,12 +25,12 @@ function ConjChallenge({ rounds, alreadyDone, onComplete, onExit, t, tt }) {
     return (
       <div className="number">
         <div className="number-done">
-          <div className="done-emoji">✍️</div>
+          <div className="done-emoji">📚</div>
           <p className="done-title">{t.doneForToday}</p>
           <div className="number-recap">
             {rounds.map((r) => (
               <span className="recap-line" key={r.id}>
-                {r.person}: <b>{r.answer}</b> ({r.verb})
+                {r.singular} → <b>{r.plural}</b>
               </span>
             ))}
           </div>
@@ -41,8 +43,10 @@ function ConjChallenge({ rounds, alreadyDone, onComplete, onExit, t, tt }) {
   }
 
   const aktuell = queue[0]
-  const sauber = eingabe.trim().replace(/\s+/g, ' ').toLowerCase()
-  const richtig = sauber === aktuell.answer.trim().toLowerCase()
+  const sauber = eingabe.trim().replace(/\s+/g, ' ')
+  const richtig =
+    sauber.toLowerCase() === aktuell.plural.toLowerCase() ||
+    sauber.toLowerCase() === aktuell.pluralNoun.toLowerCase()
 
   function pruefen(e) {
     e.preventDefault()
@@ -78,21 +82,18 @@ function ConjChallenge({ rounds, alreadyDone, onComplete, onExit, t, tt }) {
       </div>
 
       <div className="number-body">
-        <p className="number-prompt">{t.whichConj}</p>
-        <span className="conj-chip" lang="de">
-          {aktuell.person}
-        </span>
+        <p className="number-prompt">{t.whichPlural}</p>
         <div className="article-word" lang="de">
-          {aktuell.verb}
+          {aktuell.singular}
         </div>
         <p className="article-meaning">{aktuell.en}</p>
 
         {geprueft ? (
           <div className={richtig ? 'plural-result plural-ok' : 'plural-result plural-bad'}>
             <span className="plural-answer" lang="de">
-              {aktuell.answer}
+              {aktuell.plural}
             </span>
-            <span className="plural-note">{richtig ? t.correct : t.conjWrong}</span>
+            <span className="plural-note">{richtig ? t.correct : t.pluralWrong}</span>
           </div>
         ) : (
           <form className="type-area" onSubmit={pruefen}>
@@ -104,6 +105,7 @@ function ConjChallenge({ rounds, alreadyDone, onComplete, onExit, t, tt }) {
               placeholder={tt.typePlaceholder}
               lang="de"
               autoComplete="off"
+              autoCapitalize="off"
             />
             <button type="submit" className="check-btn">
               {t.check}
@@ -115,4 +117,4 @@ function ConjChallenge({ rounds, alreadyDone, onComplete, onExit, t, tt }) {
   )
 }
 
-export default ConjChallenge
+export default PluralChallenge

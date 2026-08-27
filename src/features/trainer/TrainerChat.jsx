@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { trainerChat, trainerSummary } from './trainerApi'
-import { SpeakButton } from './tts'
+import { SpeakButton } from '../../shared/tts'
 
 /* ============================================================
    TRAINER-CHAT — Messenger-Ansicht
@@ -58,14 +58,14 @@ export function readActiveChat(profileId) {
      src/assets/trainer-avatar-de.png   (Trainer auf 해인s Seite)
    ins Repo. import.meta.glob findet sie beim Bauen — fehlt die
    Datei noch, bleibt der Buchstaben-Platzhalter. */
-const AVATAR_FILES = import.meta.glob('./assets/trainer-avatar-*.png', {
+const AVATAR_FILES = import.meta.glob('../../shared/assets/trainer-avatar-*.png', {
   eager: true,
   query: '?url',
   import: 'default',
 })
 
 function Avatar({ profileId }) {
-  const src = AVATAR_FILES[`./assets/trainer-avatar-${profileId}.png`]
+  const src = AVATAR_FILES[`../../shared/assets/trainer-avatar-${profileId}.png`]
   return (
     <span className="msg-avatar" aria-hidden="true">
       {src ? <img src={src} alt="" /> : profileId === 'ko' ? '해' : 'F'}

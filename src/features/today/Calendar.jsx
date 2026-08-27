@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { doneDaysSet } from './storage'
+import { doneDaysSet } from '../../core/storage'
 
 /* ============================================================
    CALENDAR – shows which days you completed all daily tasks.

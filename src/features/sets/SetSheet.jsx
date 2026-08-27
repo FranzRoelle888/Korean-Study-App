@@ -10,7 +10,7 @@ import {
   countries,
   setList,
 } from './setsData'
-import { ChevronIcon } from './icons'
+import { ChevronIcon } from '../../shared/icons'
 
 /* ============================================================
    THEMEN-BLÄTTER

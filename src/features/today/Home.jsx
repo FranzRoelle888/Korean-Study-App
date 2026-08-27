@@ -10,7 +10,7 @@ import {
   GermanFlag,
   MountainBand,
   SkylineBand,
-} from './icons'
+} from '../../shared/icons'
 
 /* ============================================================
    STARTSEITE (Begrüßung, Streak, Tagesaufgaben)

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import TrainerChat, { readActiveChat } from './TrainerChat'
 import Skills from './Skills'
-import { ChevronIcon } from './icons'
+import { ChevronIcon } from '../../shared/icons'
 
 /* ============================================================
    TRAINER — Startbildschirm

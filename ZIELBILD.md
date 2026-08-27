@@ -190,17 +190,19 @@ Schreiben: Mikro-Tagebuch (2–3 Sätze), Claude korrigiert fokussiert,
 Partner ergänzt „so würde ich das wirklich sagen" — auf Anfrage, nicht
 ungefragt (Korrektur-Müdigkeit vermeiden).
 
-### 5.6 Die Paar-Schicht
-- **Paar-Streak:** „beide haben heute geübt", geteilte Frei-Tage.
+### 5.6 Die Paar-Schicht (bewusst schlank — Entscheidung Franz, 27.08.2026)
+Wegen Zeitverschiebung und um keinen Druck aufzubauen, gibt es vorerst
+GENAU ZWEI Überschneidungen zwischen den Profilen:
+- **Geteilter Streak-Kalender:** die bestehende Partner-Sichtbarkeit
+  (Punkte, „schon fertig heute"), perspektivisch als Paar-Streak
+  („beide haben heute geübt", geteilte Frei-Tage).
 - **Partner-Aufnahmen:** Warteschlange der nächsten 200–300 Vokabeln des
   anderen, halten-zum-Aufnehmen, automatisch weiter — zwei Sofa-Abende.
   Clips in Supabase Storage, abgespielt auf Kartenrückseite und im Tageswort.
-- **„Frag deinen Partner"-Missionen:** kleine reale Aufgaben in der
-  Zielsprache.
-- **Wochenrückblick:** eine Karte am Sonntag für beide (gelernte Wörter,
-  geschaffte Einheiten, 1 Can-do) — Forschung: wöchentliche Berichte an
-  einen Verbündeten sind der stärkste bekannte Commitment-Effekt.
-- Rahmung immer Einladung, nie Vergleich: „해인 hat heute schon geübt 💪".
+
+Zurückgestellt (Ideen-Speicher, erst wenn der Rest steht): Missionen,
+Wochenrückblick, Partner-Korrektur-Pass im Tagebuch, gespiegelte
+Konzept-Decks. Rahmung bleibt überall Einladung, nie Vergleich.
 
 ### 5.7 Einstellungen
 Profil, Login, Tageslimit, Erinnerung (an Alltags-Auslöser gekoppelt,
@@ -316,7 +318,8 @@ nächste absichert. (Zeitangaben bewusst weggelassen — Takt bestimmt Franz.)
 - **Stufe C — Heute & Motivation:** Tagesration-Komponist, Streak-Vergebung
   + Rückstau-Gnade, Paar-Streak, einstellbares Wortlimit, Speed-Runden,
   Karten-Staffelung.
-- **Stufe D — Paar-Schicht:** Partner-Aufnahmen, Missionen, Wochenrückblick.
+- **Stufe D — Paar-Schicht (schlank):** Partner-Aufnahmen; Paar-Streak-Ausbau.
+  (Missionen/Wochenrückblick bewusst zurückgestellt.)
 - **Stufe E — Lesen & Schreiben:** Reader mit Tipp→Karte, tägliche
   Mini-Geschichte, Mikro-Tagebuch mit Doppel-Korrektur.
 - **Stufe F — Horizont:** Can-do-Checklisten als Fortschritts-Spine,
@@ -336,5 +339,6 @@ nächste absichert. (Zeitangaben bewusst weggelassen — Takt bestimmt Franz.)
 | 27.08.2026 | Tagesration ~10 Minuten | Voller Alltag; Forschung: klein & täglich schlägt groß & selten |
 | 27.08.2026 | Aufgaben aus nächtlichen Banken, live nur Gespräch | Token-Sparsamkeit; Validierbarkeit; Partner-Stichproben möglich |
 | 27.08.2026 | Kein Zweit-Account bei Anthropic; ggf. Workspace + Limit | Abo- und API-Töpfe sind ohnehin getrennt |
+| 27.08.2026 | Paar-Schicht schlank: nur geteilter Kalender/Streak + Partner-Aufnahmen | Zeitverschiebung; kein Druck auf 해인; Rest in den Ideen-Speicher |
 | früher | Modell claude-sonnet-*, 5 €-Hard-Limit, 40 Aufrufe/h | Kosten-Disziplin; Log für datenbasierte Modellwahl |
 | früher | Trainer-Gedächtnis = Zusammenfassungen, nicht Transkripte | schlank; Verlaufs-Feature zeigt Summaries (Transkript-Ablage offen) |

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import ClearableInput from './ClearableInput'
+import ClearableInput from '../../shared/ClearableInput'
 
 /* ============================================================
    NUMBER OF THE DAY

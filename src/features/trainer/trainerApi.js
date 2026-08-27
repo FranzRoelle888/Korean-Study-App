@@ -5,7 +5,7 @@
    Verlauf + Modus. Der öffentliche Supabase-Schlüssel dient als
    Zugangsausweis fürs Function-Gateway.
    ============================================================ */
-import { SUPABASE_URL, SUPABASE_KEY } from './supabaseClient'
+import { SUPABASE_URL, SUPABASE_KEY } from '../../core/supabaseClient'
 
 const FN_URL = `${SUPABASE_URL}/functions/v1/trainer`
 
