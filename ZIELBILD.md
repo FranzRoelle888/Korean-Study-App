@@ -340,5 +340,6 @@ nächste absichert. (Zeitangaben bewusst weggelassen — Takt bestimmt Franz.)
 | 27.08.2026 | Aufgaben aus nächtlichen Banken, live nur Gespräch | Token-Sparsamkeit; Validierbarkeit; Partner-Stichproben möglich |
 | 27.08.2026 | Kein Zweit-Account bei Anthropic; ggf. Workspace + Limit | Abo- und API-Töpfe sind ohnehin getrennt |
 | 27.08.2026 | Paar-Schicht schlank: nur geteilter Kalender/Streak + Partner-Aufnahmen | Zeitverschiebung; kein Druck auf 해인; Rest in den Ideen-Speicher |
+| 27.08.2026 | KEINE Partner-Prüfpflichten: niemand muss für den anderen Inhalte gegenchecken | Vertrauen in die KI; einzelne Vokabelfehler korrigiert das echte Leben. KI-Inhalte bleiben markiert (extras_auto), Korrektur bleibt MÖGLICH, wird aber nie zur Aufgabe |
 | früher | Modell claude-sonnet-*, 5 €-Hard-Limit, 40 Aufrufe/h | Kosten-Disziplin; Log für datenbasierte Modellwahl |
 | früher | Trainer-Gedächtnis = Zusammenfassungen, nicht Transkripte | schlank; Verlaufs-Feature zeigt Summaries (Transkript-Ablage offen) |

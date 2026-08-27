@@ -75,11 +75,15 @@ sondern der wichtigste Pflege-Kanal. Bauweise:
 - **Vokabel-Inventare:** TOPIK-I-Liste (~1.700, Koreanisch) und
   Goethe A1+A2 (~1.300, Deutsch) als kuratierte Dateien im Repo:
   Eintrag = Wort, Übersetzung, Häufigkeitsrang, Themen-Tag.
-  Erzeugung per Batch-Skript aus den öffentlichen Listen; Stichproben-
-  Prüfung: 해인 prüft die koreanische, Franz die deutsche.
+  Erzeugung per Batch-Skript aus den öffentlichen Listen.
 - **Grammatik-Inventare:** TOPIK-I-Grammatikpunkte (~85) und GER-A1/A2-Kanon
-  (~60) als Dateien: Punkt = ID, Kurzname, 2 Beispielsätze, kanonische
-  Reihenfolge, Voraussetzungen. Gleiche Prüfung.
+  (~60) als Dateien: Punkt = ID, Kurzname, Beispielsätze, kanonische
+  Reihenfolge.
+- **Qualitätssicherung ohne Partner-Pflichten** (Entscheidung Franz,
+  27.08.2026): KI-erzeugte Übersetzungen werden per Skript-Checks
+  validiert und als `extras_auto` markiert, aber NIEMAND muss für den
+  anderen gegenprüfen. Vertrauen in die KI; Einzelfehler korrigiert
+  das echte Leben.
 - **DB:** neue Tabelle `inventory_status` (profile, item_id, kind
   wort|grammatik, status sicher|wackelig|unbekannt, source
   kalibrierung|uebung|dossier, updated_at). Die Inventare selbst bleiben

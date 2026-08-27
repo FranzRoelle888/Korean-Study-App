@@ -61,11 +61,16 @@ async function dbInsert(table: string, row: unknown) {
    Strukturiert statt Rohliste: sicher / wackelig / frisch, dazu
    Skills und die letzten Einheiten aus dem Lernjournal. */
 async function buildProfile(profile: string) {
-  const [words, cards, skills, sessions] = await Promise.all([
-    dbGet(`words?profile=eq.${profile}&select=id,ko,en`),
+  const [words, cards, skills, sessions, kalibriert] = await Promise.all([
+    dbGet(`words?profile=eq.${profile}&select=id,ko,en,created_at`),
     dbGet(`cards?profile=eq.${profile}&select=word_id,reps,lapses`),
     dbGet(`skills?profile=eq.${profile}&select=topic,note&order=created_at.desc&limit=60`),
     dbGet(`sessions?profile=eq.${profile}&select=summary,errors,created_at&order=created_at.desc&limit=5`),
+    /* Kalibrierungs-Ergebnisse (Migration 009). Schema-Toleranz:
+       fehlt die Tabelle noch, läuft alles ohne sie weiter. */
+    dbGet(
+      `inventory_status?profile=eq.${profile}&status=eq.sicher&select=kind,label&limit=900`
+    ).catch(() => []),
   ])
 
   /* Je Wort den besten Lernstand über beide Karten bestimmen */
@@ -94,15 +99,37 @@ async function buildProfile(profile: string) {
     for (const e of s.errors ?? []) errorSet.add(String(e))
   }
 
+  /* Die ~20 zuletzt gelernten Wörter: Ein Wort braucht 8–10
+     Begegnungen im Kontext — der Trainer webt sie gezielt ein */
+  const frischGelernt = [...words]
+    .sort((a, b) => String(b.created_at ?? '').localeCompare(String(a.created_at ?? '')))
+    .slice(0, 20)
+    .map((w) => `${w.ko} (${w.en})`)
+
+  /* Kalibrierung: als "sicher" gewischte Inventar-Wörter erweitern
+     den nutzbaren Wortschatz; sichere Grammatikpunkte ergänzen die
+     Skills-Liste. label ist bereits lesbar ("가다 (to go)"). */
+  const kalibrierteWoerter = kalibriert
+    .filter((k: { kind: string }) => k.kind === 'wort')
+    .map((k: { label: string }) => k.label)
+  const kalibrierteGrammatik = kalibriert
+    .filter((k: { kind: string }) => k.kind === 'grammatik')
+    .map((k: { label: string }) => k.label)
+
   return {
-    secure,
+    /* sicher = gereifte Karten + kalibriert-bekannte Wörter (gedeckelt) */
+    secure: [...secure, ...kalibrierteWoerter].slice(0, 800),
     shaky,
     fresh,
+    frischGelernt,
     /* Notiz mitgeben, wenn vorhanden — oft steckt dort die
        Einschränkung ("nur gesprochen", "nur mit Vokal") */
-    skills: skills.map((s: { topic: string; note?: string }) =>
-      s.note ? `${s.topic} (${s.note})` : s.topic
-    ),
+    skills: [
+      ...skills.map((s: { topic: string; note?: string }) =>
+        s.note ? `${s.topic} (${s.note})` : s.topic
+      ),
+      ...kalibrierteGrammatik,
+    ],
     journal: sessions.map(
       (s: { created_at: string; summary: string }) =>
         `${s.created_at.slice(0, 10)}: ${s.summary}`
@@ -126,6 +153,7 @@ function chatSystem(profile: string, mode: string, scenario: string, p: Awaited<
     `Secure vocabulary (use freely): ${p.secure.join(', ') || '(none yet)'}`,
     `Shaky vocabulary (weave in deliberately so it gets practice): ${p.shaky.join(', ') || '(none)'}`,
     `Fresh vocabulary (use sparingly, they are still learning these): ${p.fresh.join(', ') || '(none)'}`,
+    `RECENTLY LEARNED (important: a word needs 8-10 encounters to stick — naturally weave 2-4 of these into this conversation): ${p.frischGelernt.join(', ') || '(none)'}`,
     `Grammar the learner knows: ${p.skills.join('; ') || '(nothing recorded yet — assume bare basics: polite present tense, simple statements and questions)'}`,
     p.journal.length ? `Recent sessions:\n${p.journal.join('\n')}` : '',
     p.errors.length ? `Recurring mistakes to gently work on: ${p.errors.join('; ')}` : '',
@@ -146,6 +174,11 @@ function chatSystem(profile: string, mode: string, scenario: string, p: Awaited<
     ' "correction": null OR {"fixed": "<corrected version of the learner\'s LAST message>", "note": "<one short ' + explain + ' explanation>"},',
     ' "canEnd": true|false}',
     'Set correction ONLY when the learner\'s last message contains a real error. Minor style is not an error. If the learner wrote in another language or asked a question about the language, answer briefly via correction.note and keep message in role.',
+    '',
+    '## Correction policy (tiered — research-based)',
+    '- Error in grammar the learner KNOWS (it is on the list above): prefer a PROMPT — begin your chat message with a very short, friendly nudge toward self-correction in ' + target + ' (e.g. repeat the phrase questioningly, or offer the two options), then continue the conversation. Self-repair beats being corrected. Use this at most every other turn; otherwise fall back to the quiet correction field.',
+    '- Error in grammar ABOVE the learner\'s level (not on the list): do NOT correct it. Silently use the correct form in your own reply if natural, or ignore it entirely. It is not learnable yet.',
+    '- Never more than ONE correction focus per learner message. Communication comes first.',
   ]
     .filter(Boolean)
     .join('\n')
@@ -158,8 +191,8 @@ function summarySystem(profile: string) {
     '',
     'Reply with ONLY this JSON:',
     '{"summary": "<2-3 sentences: what was practiced, how it went — written for YOUR OWN memory before the next session>",',
-    ' "errors": ["<recurring error pattern>", ...max 4, empty array if none],',
-    ` "feedback": "<warm feedback FOR THE LEARNER in ${learnsKorean ? 'English' : 'Korean'}: what went well, the 1-3 most important mistakes with the correct forms, one encouragement. 4-6 sentences.>"}`,
+    ' "errors": ["<recurring error pattern>", ...max 3, empty array if none],',
+    ` "feedback": "<warm feedback FOR THE LEARNER in ${learnsKorean ? 'English' : 'Korean'}: what went well, then AT MOST 3 error patterns — each with the correct form, a one-line why, and one tiny try-it-again example. FOCUSED beats complete: pick the patterns that matter, let the rest go. End with one encouragement. 5-8 sentences.>"}`,
   ].join('\n')
 }
 
@@ -259,8 +292,10 @@ function parseEnvelope(text: string) {
 /* ---------- Ratenlimit ---------- */
 async function overLimit(profile: string) {
   const oneHourAgo = new Date(Date.now() - 3600_000).toISOString()
+  /* Nur die eigenen Aktionen zählen — die speech-Funktion führt
+     ihr eigenes Limit in speech_usage */
   const rows = await dbGet(
-    `trainer_usage?profile=eq.${profile}&created_at=gt.${oneHourAgo}&select=id`
+    `trainer_usage?profile=eq.${profile}&action=in.(chat,summary,extract)&created_at=gt.${oneHourAgo}&select=id`
   )
   return rows.length >= MAX_CALLS_PER_HOUR
 }

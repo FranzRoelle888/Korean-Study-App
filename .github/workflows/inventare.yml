@@ -1,0 +1,48 @@
+# ============================================================
+# Inventare füllen: koreanische Bedeutungen für die Goethe-Liste,
+# englische Lücken der TOPIK-Liste. Von Hand starten:
+# GitHub -> Actions -> "Inventare füllen" -> Run workflow.
+# Das Ergebnis committet der Lauf selbst ins Repo.
+# ============================================================
+name: Inventare füllen
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry:
+        description: 'Trockenlauf (nichts schreiben)'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  fuellen:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Lücken füllen
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          if [ "${{ inputs.dry }}" = "true" ]; then
+            node scripts/fuelle-inventare.mjs --dry
+          else
+            node scripts/fuelle-inventare.mjs
+          fi
+
+      - name: Ergebnis committen
+        if: ${{ inputs.dry != true }}
+        run: |
+          git config user.name "inventar-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add src/core/inventare/*.json
+          git diff --cached --quiet && echo "nichts zu committen" && exit 0
+          git commit -m "Nacht-Batch: Inventar-Uebersetzungen gefuellt (extras_auto)"
+          git push
