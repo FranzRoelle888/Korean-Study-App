@@ -92,6 +92,11 @@ function Home({
               </div>
             ))}
           </div>
+          {/* Wochen-Zeile (Entscheidung Franz: Ergänzung zum Streak,
+              kein Ersatz) — zählt die eigenen Punkte dieser Woche */}
+          <span className="week-note">
+            {t.weekLearned(week.filter((d) => d.done).length)}
+          </span>
         </button>
       </header>
 

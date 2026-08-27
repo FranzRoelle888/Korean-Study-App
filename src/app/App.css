@@ -3439,6 +3439,15 @@ textarea {
   color: var(--text-soft);
 }
 
+/* Wochen-Zeile unter den Streak-Punkten */
+.week-note {
+  display: block;
+  margin-top: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-soft);
+}
+
 /* ============================================================
    FORTSCHRITTS-LEISTEN — Level-Stand auf der Startseite
    ============================================================ */
