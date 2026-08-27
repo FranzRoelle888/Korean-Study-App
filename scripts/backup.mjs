@@ -47,12 +47,20 @@ const TABELLEN = [
    Kern-Tabellen schlagen wir trotzdem streng Alarm: */
 const STRENG = ['words', 'cards', 'daily_log', 'skills', 'inventory_status']
 
+/* Stabile Sortierung je Tabelle — feste Reihenfolge heißt: die
+   nächtlichen Git-Diffs zeigen nur echte Änderungen. Nicht jede
+   Tabelle hat created_at (daily_log und cards z. B. nicht). */
+const ORDNUNG = {
+  daily_log: 'profile.asc,day.asc',
+}
+
 async function holeAlles(tabelle) {
   const zeilen = []
   const SEITE = 1000
+  const ordnung = ORDNUNG[tabelle] ?? 'id.asc'
   for (let von = 0; ; von += SEITE) {
     const r = await fetch(
-      `${SUPABASE_URL}/rest/v1/${tabelle}?select=*&order=created_at.asc.nullslast&limit=${SEITE}&offset=${von}`,
+      `${SUPABASE_URL}/rest/v1/${tabelle}?select=*&order=${ordnung}&limit=${SEITE}&offset=${von}`,
       { headers: { apikey: KEY, Authorization: `Bearer ${KEY}` } }
     )
     if (!r.ok) throw new Error(`${tabelle}: HTTP ${r.status} ${(await r.text()).slice(0, 120)}`)
