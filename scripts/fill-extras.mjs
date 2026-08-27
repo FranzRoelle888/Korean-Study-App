@@ -20,7 +20,15 @@
    ============================================================ */
 
 const SUPABASE_URL = 'https://gkrubhwwzgekmbiltslt.supabase.co'
-const SUPABASE_KEY = 'sb_publishable_V2Gk_hicg121JPtU3e6Quw_224_v0_Q'
+/* Seit der Login-Absicherung (Migration 007) kommt der öffentliche
+   Schlüssel nicht mehr an die Daten. Dieser Nacht-Job läuft deshalb
+   mit dem Service-Schlüssel, der NUR als GitHub-Actions-Secret
+   existiert (SUPABASE_SERVICE_KEY) — niemals im Code. */
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY
+if (!SUPABASE_KEY) {
+  console.error('SUPABASE_SERVICE_KEY fehlt (GitHub-Actions-Secret).')
+  process.exit(1)
+}
 const MODEL = 'claude-sonnet-5'
 
 /* Wie viele Wörter pro Modellanfrage — klein genug, dass die

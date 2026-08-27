@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { doneDaysSet } from '../../core/storage'
+import { logout } from '../../core/auth'
 
 /* ============================================================
    CALENDAR – shows which days you completed all daily tasks.
@@ -89,6 +90,13 @@ function Calendar({ log, onExit, t, tt, partnerNote }) {
       </p>
       {/* "해인 ist heute schon fertig" — nur wenn es stimmt */}
       {partnerNote && <p className="partner-note">{partnerNote}</p>}
+
+      {/* Abmelden — bewusst unauffällig hier unten, bis es eine
+          richtige Einstellungen-Seite gibt. Danach fragt die App
+          beim nächsten Öffnen wieder nach dem Login. */}
+      <button className="cal-logout" onClick={() => logout()}>
+        Sign out · 로그아웃
+      </button>
     </div>
   )
 }

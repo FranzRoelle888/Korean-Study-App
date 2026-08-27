@@ -53,6 +53,8 @@ import { HomeIcon, BookIcon, GridIcon, DomIcon, ChatIcon } from '../shared/icons
 import { PROFILES, readProfile, writeProfile, otherProfile } from '../core/profiles'
 import { textFor, targetTextFor } from '../shared/i18n'
 import { setActiveProfile } from '../core/storage'
+import { readSession, onAuthChange } from '../core/auth'
+import Login from './Login'
 
 function App() {
   /* Welche Seite der App: 'ko' (Franz) oder 'de' (seine Freundin).
@@ -81,10 +83,22 @@ function App() {
   const [dailyLog, setDailyLog] = useState([])
   const [partnerLog, setPartnerLog] = useState([])
 
+  /* Anmeldung: null = wird noch geprüft, false = nicht angemeldet,
+     sonst die Supabase-Sitzung. Die Sitzung liegt im localStorage
+     und überlebt App-Neustarts — angemeldet wird man nur einmal. */
+  const [session, setSession] = useState(null)
+  useEffect(() => {
+    readSession().then((s) => setSession(s ?? false))
+    return onAuthChange((s) => setSession(s ?? false))
+  }, [])
+  const angemeldet = !!session
+
   // Beim Start UND bei jedem Umschalten: die Daten der jeweiligen
   // Seite laden. Vorher alles leeren, damit nie kurz die Vokabeln
-  // des anderen zu sehen sind.
+  // des anderen zu sehen sind. Erst NACH dem Login — vorher würde
+  // die Datenbank uns ohnehin abweisen.
   useEffect(() => {
+    if (!angemeldet) return
     let cancelled = false
     setLoading(true)
     setWords([])
@@ -103,12 +117,13 @@ function App() {
     return () => {
       cancelled = true
     }
-  }, [profileId])
+  }, [profileId, angemeldet])
 
   /* Die App laedt sonst NUR beim Start. Auf dem Handy bleibt sie
      als Verknuepfung tagelang offen — ohne das hier saehe man den
      Stand von vorgestern und zwei Geraete driften auseinander. */
   useEffect(() => {
+    if (!angemeldet) return
     function refresh() {
       if (document.visibilityState !== 'visible') return
       Promise.all([loadInitial(), loadDailyLog(), loadPartnerLog()]).then(([data, log, plog]) => {
@@ -128,7 +143,7 @@ function App() {
       document.removeEventListener('visibilitychange', refresh)
       window.removeEventListener('online', refresh)
     }
-  }, [profileId])
+  }, [profileId, angemeldet])
 
   /* Auf die andere Seite wechseln (Flagge auf der Startseite). */
   /* Das Theme haengt am Wurzelelement: [data-profile='de'] schaltet
@@ -387,6 +402,20 @@ function App() {
       setOffline(true)
       console.warn('Cloud save (rating) failed:', err?.message || err)
     })
+  }
+
+  /* Anmelde-Weiche: solange die gespeicherte Sitzung noch geprüft
+     wird (null), nichts anzeigen — das dauert nur einen Wimpernschlag
+     und verhindert ein Aufblitzen des Login-Bildschirms. */
+  if (session === null) {
+    return <div className="app" />
+  }
+  if (!angemeldet) {
+    return (
+      <div className="app">
+        <Login />
+      </div>
+    )
   }
 
   if (loading) {

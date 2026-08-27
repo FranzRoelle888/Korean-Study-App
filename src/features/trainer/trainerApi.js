@@ -6,16 +6,21 @@
    Zugangsausweis fürs Function-Gateway.
    ============================================================ */
 import { SUPABASE_URL, SUPABASE_KEY } from '../../core/supabaseClient'
+import { accessToken } from '../../core/auth'
 
 const FN_URL = `${SUPABASE_URL}/functions/v1/trainer`
 
 async function call(body) {
+  /* Seit dem Login weist sich die App mit dem Nutzer-Token aus —
+     die Edge Function lehnt (bei eingeschalteter JWT-Prüfung)
+     alles andere ab. */
+  const token = await accessToken()
   const r = await fetch(FN_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       apikey: SUPABASE_KEY,
-      Authorization: `Bearer ${SUPABASE_KEY}`,
+      Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify(body),
   })

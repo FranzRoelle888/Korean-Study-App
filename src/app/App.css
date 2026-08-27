@@ -3440,6 +3440,109 @@ textarea {
 }
 
 /* ============================================================
+   LOGIN — nur die zwei dürfen rein
+   ============================================================ */
+.login-screen {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 20px calc(24px + env(safe-area-inset-bottom));
+}
+
+.login-card {
+  width: 100%;
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 28px 22px;
+  border-radius: 22px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  text-align: center;
+}
+
+.login-flags {
+  font-size: 30px;
+  letter-spacing: 4px;
+}
+
+.login-title {
+  margin: 0;
+  font-size: 26px;
+}
+
+.login-sub {
+  margin: -6px 0 6px;
+  font-size: 13px;
+  color: var(--text-soft);
+}
+
+.login-label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+}
+
+.login-label input {
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  /* 16px verhindert den iOS-Zoom beim Antippen */
+  font-size: 16px;
+  font-family: inherit;
+  color: var(--text);
+}
+
+.login-label input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.login-error {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--accent-ink, var(--accent));
+}
+
+.login-btn {
+  margin-top: 4px;
+  padding: 13px;
+  border-radius: 999px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  box-shadow: var(--shadow-sm);
+}
+
+.login-btn:disabled {
+  opacity: 0.45;
+}
+
+/* Abmelden — klein am Ende des Kalenders */
+.cal-logout {
+  align-self: center;
+  margin-top: 18px;
+  padding: 8px 14px;
+  background: none;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-soft);
+}
+
+/* ============================================================
    TRAINER — Menü und Messenger-Chat
    ============================================================ */
 

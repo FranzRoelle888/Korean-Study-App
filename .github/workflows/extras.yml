@@ -49,6 +49,7 @@ jobs:
       - name: Lücken füllen
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: |
           if [ "${{ inputs.dry }}" = "true" ]; then
             node scripts/fill-extras.mjs --dry
