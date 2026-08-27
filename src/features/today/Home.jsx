@@ -11,6 +11,7 @@ import {
   MountainBand,
   SkylineBand,
 } from '../../shared/icons'
+import Fortschritt from './Fortschritt'
 
 /* ============================================================
    STARTSEITE (Begrüßung, Streak, Tagesaufgaben)
@@ -210,6 +211,9 @@ function Home({
             )}
           </button>
         )}
+
+        {/* Level-Stand: wie viel vom offiziellen Stoff schon sitzt */}
+        <Fortschritt profile={profile} t={t} />
 
         <p className="vocab-count-note">{t.wordsInLibrary(vocabCount)}</p>
       </main>

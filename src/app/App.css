@@ -3440,6 +3440,75 @@ textarea {
 }
 
 /* ============================================================
+   FORTSCHRITTS-LEISTEN — Level-Stand auf der Startseite
+   ============================================================ */
+.fortschritt {
+  margin-top: 6px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.fortschritt-titel {
+  margin: 0 0 2px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+}
+
+.fortschritt-zeile {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas: 'label zahl' 'balken balken';
+  row-gap: 4px;
+  align-items: baseline;
+}
+
+.fortschritt-label {
+  grid-area: label;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.fortschritt-zahl {
+  grid-area: zahl;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-soft);
+}
+
+.fortschritt-balken {
+  grid-area: balken;
+  display: flex;
+  height: 8px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--surface-2);
+}
+
+.fortschritt-fest {
+  background: var(--primary);
+}
+
+.fortschritt-blass {
+  background: var(--primary);
+  opacity: 0.35;
+}
+
+.fortschritt-legende {
+  margin: 2px 0 0;
+  font-size: 10.5px;
+  color: var(--text-soft);
+}
+
+/* ============================================================
    KALIBRIERUNG — einmaliger Kenntnisstand-Check
    ============================================================ */
 .kal-banner {
