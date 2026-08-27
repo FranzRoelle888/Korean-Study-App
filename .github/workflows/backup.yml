@@ -1,0 +1,61 @@
+# ============================================================
+# Tägliche Datensicherung -> privates Repo Korean-App-Backup
+#
+# Läuft jede Nacht um 02:30 UTC (und von Hand über Actions ->
+# "Datensicherung" -> Run workflow). Jede Sicherung ist ein
+# Commit im privaten Backup-Repo — die Git-Historie ist die
+# Zeitmaschine. Schlägt die Sicherung fehl oder schrumpft eine
+# Kern-Tabelle verdächtig, wird der Lauf rot und GitHub schickt
+# automatisch eine Mail.
+#
+# Braucht zwei Secrets im App-Repo:
+#   SUPABASE_SERVICE_KEY  (existiert schon)
+#   BACKUP_TOKEN          (Fine-grained PAT, nur Korean-App-Backup,
+#                          Contents: Read and write)
+# ============================================================
+name: Datensicherung
+
+on:
+  schedule:
+    - cron: '30 2 * * *'
+  workflow_dispatch:
+
+jobs:
+  sichern:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/checkout@v4
+        with:
+          repository: FranzRoelle888/Korean-App-Backup
+          token: ${{ secrets.BACKUP_TOKEN }}
+          path: backup-repo
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Tabellen exportieren
+        env:
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          BACKUP_DIR: backup-repo/daten
+        run: node scripts/backup.mjs
+
+      - name: Sicherung committen
+        run: |
+          cd backup-repo
+          git config user.name "backup-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet && echo "keine Aenderungen" && exit 0
+          git commit -m "Sicherung $(date -u +%Y-%m-%d_%H:%M)"
+          git push
+
+      - name: Bei Warnung rot anschlagen (Mail an Franz)
+        run: |
+          if [ -f backup-repo/daten/WARNUNG.txt ]; then
+            echo "::error::Sicherung mit Warnung — Inhalt:"
+            cat backup-repo/daten/WARNUNG.txt
+            exit 1
+          fi
