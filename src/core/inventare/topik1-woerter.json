@@ -29,11 +29,12 @@
  {
   "id": "t-4",
   "ko": "되다",
-  "en": null,
+  "en": "become",
   "pos": "verb",
   "hanja": null,
   "hinweis": "배우가; 어른이 ~",
-  "rang": 5
+  "rang": 5,
+  "extras_auto": true
  },
  {
   "id": "t-5",
@@ -110,11 +111,12 @@
  {
   "id": "t-13",
   "ko": "때",
-  "en": null,
+  "en": "time; when",
   "pos": "noun",
   "hanja": null,
   "hinweis": "시간; 어릴 때",
-  "rang": 19
+  "rang": 19,
+  "extras_auto": true
  },
  {
   "id": "t-14",
@@ -236,11 +238,12 @@
  {
   "id": "t-27",
   "ko": "또",
-  "en": null,
+  "en": "again",
   "pos": "adv",
   "hanja": null,
   "hinweis": "또 생기다",
-  "rang": 40
+  "rang": 40,
+  "extras_auto": true
  },
  {
   "id": "t-28",
@@ -389,11 +392,12 @@
  {
   "id": "t-44",
   "ko": "두",
-  "en": null,
+  "en": "two",
   "pos": "determiner",
   "hanja": null,
   "hinweis": "숫자",
-  "rang": 63
+  "rang": 63,
+  "extras_auto": true
  },
  {
   "id": "t-45",
@@ -560,20 +564,22 @@
  {
   "id": "t-63",
   "ko": "뒤",
-  "en": null,
+  "en": "back; behind",
   "pos": "noun",
   "hanja": null,
   "hinweis": "에 있다",
-  "rang": 87
+  "rang": 87,
+  "extras_auto": true
  },
  {
   "id": "t-64",
   "ko": "듣다",
-  "en": null,
+  "en": "listen; hear",
   "pos": "verb",
   "hanja": null,
   "hinweis": "소리를 ~; 음악을",
-  "rang": 88
+  "rang": 88,
+  "extras_auto": true
  },
  {
   "id": "t-65",
@@ -1046,11 +1052,12 @@
  {
   "id": "t-117",
   "ko": "들어가다",
-  "en": null,
+  "en": "go in; enter",
   "pos": "verb",
   "hanja": null,
   "hinweis": "방으로",
-  "rang": 158
+  "rang": 158,
+  "extras_auto": true
  },
  {
   "id": "t-118",
@@ -1451,11 +1458,12 @@
  {
   "id": "t-162",
   "ko": "동안",
-  "en": null,
+  "en": "during; for",
   "pos": "noun",
   "hanja": null,
   "hinweis": "며칠 동안; 시간의 길이",
-  "rang": 214
+  "rang": 214,
+  "extras_auto": true
  },
  {
   "id": "t-163",
@@ -1676,11 +1684,12 @@
  {
   "id": "t-187",
   "ko": "또는",
-  "en": null,
+  "en": "or",
   "pos": "adv",
   "hanja": null,
   "hinweis": "남자 또는 여자",
-  "rang": 250
+  "rang": 250,
+  "extras_auto": true
  },
  {
   "id": "t-188",
@@ -1712,11 +1721,12 @@
  {
   "id": "t-191",
   "ko": "들어오다",
-  "en": null,
+  "en": "come in",
   "pos": "verb",
   "hanja": null,
   "hinweis": "학교로",
-  "rang": 256
+  "rang": 256,
+  "extras_auto": true
  },
  {
   "id": "t-192",
@@ -1784,11 +1794,12 @@
  {
   "id": "t-199",
   "ko": "두다",
-  "en": null,
+  "en": "put; place",
   "pos": "verb",
   "hanja": null,
   "hinweis": "책상 위에",
-  "rang": 266
+  "rang": 266,
+  "extras_auto": true
  },
  {
   "id": "t-200",
@@ -1955,11 +1966,12 @@
  {
   "id": "t-218",
   "ko": "뜻",
-  "en": null,
+  "en": "meaning",
   "pos": "noun",
   "hanja": null,
   "hinweis": "이 어렵다",
-  "rang": 296
+  "rang": 296,
+  "extras_auto": true
  },
  {
   "id": "t-219",
@@ -1982,11 +1994,12 @@
  {
   "id": "t-221",
   "ko": "떨어지다",
-  "en": null,
+  "en": "fall",
   "pos": "verb",
   "hanja": null,
   "hinweis": "낭떠러지로",
-  "rang": 299
+  "rang": 299,
+  "extras_auto": true
  },
  {
   "id": "t-222",
@@ -2117,11 +2130,12 @@
  {
   "id": "t-236",
   "ko": "땅",
-  "en": null,
+  "en": "ground; land",
   "pos": "noun",
   "hanja": null,
   "hinweis": "에 떨어지다",
-  "rang": 321
+  "rang": 321,
+  "extras_auto": true
  },
  {
   "id": "t-237",
@@ -2144,11 +2158,12 @@
  {
   "id": "t-239",
   "ko": "떠나다",
-  "en": null,
+  "en": "leave",
   "pos": "verb",
   "hanja": null,
   "hinweis": "어디론가",
-  "rang": 327
+  "rang": 327,
+  "extras_auto": true
  },
  {
   "id": "t-240",
@@ -2396,11 +2411,12 @@
  {
   "id": "t-267",
   "ko": "돌아오다",
-  "en": null,
+  "en": "come back; return",
   "pos": "verb",
   "hanja": null,
   "hinweis": "학교에서",
-  "rang": 377
+  "rang": 377,
+  "extras_auto": true
  },
  {
   "id": "t-268",
@@ -3116,11 +3132,12 @@
  {
   "id": "t-347",
   "ko": "돌리다",
-  "en": null,
+  "en": "turn; spin",
   "pos": "verb",
   "hanja": null,
   "hinweis": "바퀴를; 팽이를 ~",
-  "rang": 505
+  "rang": 505,
+  "extras_auto": true
  },
  {
   "id": "t-348",
@@ -3161,11 +3178,12 @@
  {
   "id": "t-352",
   "ko": "돌아가다",
-  "en": null,
+  "en": "turn; rotate",
   "pos": "verb",
   "hanja": null,
   "hinweis": "바퀴가",
-  "rang": 519
+  "rang": 519,
+  "extras_auto": true
  },
  {
   "id": "t-353",
@@ -3206,11 +3224,12 @@
  {
   "id": "t-357",
   "ko": "동시",
-  "en": null,
+  "en": "same time",
   "pos": "noun",
   "hanja": "同時",
   "hinweis": "에 일어나다",
-  "rang": 529
+  "rang": 529,
+  "extras_auto": true
  },
  {
   "id": "t-358",
@@ -3359,11 +3378,12 @@
  {
   "id": "t-374",
   "ko": "둘",
-  "en": null,
+  "en": "two",
   "pos": "number",
   "hanja": null,
   "hinweis": "숫자",
-  "rang": 575
+  "rang": 575,
+  "extras_auto": true
  },
  {
   "id": "t-375",
@@ -3512,11 +3532,12 @@
  {
   "id": "t-391",
   "ko": "동생",
-  "en": null,
+  "en": "younger sibling",
   "pos": "noun",
   "hanja": null,
   "hinweis": "이 태어나다",
-  "rang": 602
+  "rang": 602,
+  "extras_auto": true
  },
  {
   "id": "t-392",
@@ -3656,11 +3677,12 @@
  {
   "id": "t-407",
   "ko": "딸",
-  "en": null,
+  "en": "daughter",
   "pos": "noun",
   "hanja": null,
   "hinweis": "아들",
-  "rang": 625
+  "rang": 625,
+  "extras_auto": true
  },
  {
   "id": "t-408",
@@ -4466,11 +4488,12 @@
  {
   "id": "t-497",
   "ko": "동네",
-  "en": null,
+  "en": "neighborhood",
   "pos": "noun",
   "hanja": "洞-",
   "hinweis": "동네 사람",
-  "rang": 793
+  "rang": 793,
+  "extras_auto": true
  },
  {
   "id": "t-498",
@@ -4709,11 +4732,12 @@
  {
   "id": "t-524",
   "ko": "들리다",
-  "en": null,
+  "en": "be heard",
   "pos": "verb",
   "hanja": null,
   "hinweis": "소리가 ~",
-  "rang": 866
+  "rang": 866,
+  "extras_auto": true
  },
  {
   "id": "t-525",
@@ -4961,11 +4985,12 @@
  {
   "id": "t-552",
   "ko": "돌다",
-  "en": null,
+  "en": "turn; rotate",
   "pos": "verb",
   "hanja": null,
   "hinweis": "바퀴가",
-  "rang": 927
+  "rang": 927,
+  "extras_auto": true
  },
  {
   "id": "t-553",
@@ -5321,11 +5346,12 @@
  {
   "id": "t-592",
   "ko": "등",
-  "en": null,
+  "en": "back",
   "pos": "noun",
   "hanja": null,
   "hinweis": "신체의 일부",
-  "rang": 1019
+  "rang": 1019,
+  "extras_auto": true
  },
  {
   "id": "t-593",
@@ -5627,11 +5653,12 @@
  {
   "id": "t-626",
   "ko": "돕다",
-  "en": null,
+  "en": "help",
   "pos": "verb",
   "hanja": null,
   "hinweis": "아버지를",
-  "rang": 1109
+  "rang": 1109,
+  "extras_auto": true
  },
  {
   "id": "t-627",
@@ -5879,11 +5906,12 @@
  {
   "id": "t-654",
   "ko": "뜨겁다",
-  "en": null,
+  "en": "hot",
   "pos": "adj",
   "hanja": null,
   "hinweis": "국물이",
-  "rang": 1178
+  "rang": 1178,
+  "extras_auto": true
  },
  {
   "id": "t-655",
@@ -6077,11 +6105,12 @@
  {
   "id": "t-676",
   "ko": "드라마",
-  "en": null,
+  "en": "drama",
   "pos": "noun",
   "hanja": null,
   "hinweis": "drama; 를 보다",
-  "rang": 1237
+  "rang": 1237,
+  "extras_auto": true
  },
  {
   "id": "t-677",
@@ -6212,11 +6241,12 @@
  {
   "id": "t-691",
   "ko": "동물",
-  "en": null,
+  "en": "animal",
   "pos": "noun",
   "hanja": "動物",
   "hinweis": "을 키우다",
-  "rang": 1294
+  "rang": 1294,
+  "extras_auto": true
  },
  {
   "id": "t-692",
@@ -6275,20 +6305,22 @@
  {
   "id": "t-698",
   "ko": "따뜻하다",
-  "en": null,
+  "en": "warm",
   "pos": "adj",
   "hanja": null,
   "hinweis": "방 안이",
-  "rang": 1312
+  "rang": 1312,
+  "extras_auto": true
  },
  {
   "id": "t-699",
   "ko": "따로",
-  "en": null,
+  "en": "separately",
   "pos": "adv",
   "hanja": null,
   "hinweis": "따로 분리하다",
-  "rang": 1313
+  "rang": 1313,
+  "extras_auto": true
  },
  {
   "id": "t-700",
@@ -6482,20 +6514,22 @@
  {
   "id": "t-721",
   "ko": "돌",
-  "en": null,
+  "en": "stone",
   "pos": "noun",
   "hanja": null,
   "hinweis": "~멩이; 을 던지다",
-  "rang": 1375
+  "rang": 1375,
+  "extras_auto": true
  },
  {
   "id": "t-722",
   "ko": "똑같다",
-  "en": null,
+  "en": "identical; same",
   "pos": "adj",
   "hanja": null,
   "hinweis": "모양이",
-  "rang": 1376
+  "rang": 1376,
+  "extras_auto": true
  },
  {
   "id": "t-723",
@@ -6536,11 +6570,12 @@
  {
   "id": "t-727",
   "ko": "땀",
-  "en": null,
+  "en": "sweat",
   "pos": "noun",
   "hanja": null,
   "hinweis": "이 나다",
-  "rang": 1399
+  "rang": 1399,
+  "extras_auto": true
  },
  {
   "id": "t-728",
@@ -6671,11 +6706,12 @@
  {
   "id": "t-742",
   "ko": "떡",
-  "en": null,
+  "en": "rice cake",
   "pos": "noun",
   "hanja": null,
   "hinweis": "음식",
-  "rang": 1443
+  "rang": 1443,
+  "extras_auto": true
  },
  {
   "id": "t-743",
@@ -6743,11 +6779,12 @@
  {
   "id": "t-750",
   "ko": "드리다",
-  "en": null,
+  "en": "give",
   "pos": "verb",
   "hanja": null,
   "hinweis": "용돈을; 인사를 ~",
-  "rang": 1460
+  "rang": 1460,
+  "extras_auto": true
  },
  {
   "id": "t-751",
@@ -7067,11 +7104,12 @@
  {
   "id": "t-786",
   "ko": "라디오",
-  "en": null,
+  "en": "radio",
   "pos": "noun",
   "hanja": null,
   "hinweis": "radio; 를 켜다",
-  "rang": 1571
+  "rang": 1571,
+  "extras_auto": true
  },
  {
   "id": "t-787",
@@ -7220,11 +7258,12 @@
  {
   "id": "t-803",
   "ko": "뛰다",
-  "en": null,
+  "en": "run",
   "pos": "verb",
   "hanja": null,
   "hinweis": "빨리 나아가다; 운동장을",
-  "rang": 1626
+  "rang": 1626,
+  "extras_auto": true
  },
  {
   "id": "t-804",
@@ -7346,11 +7385,12 @@
  {
   "id": "t-817",
   "ko": "둘째",
-  "en": null,
+  "en": "second",
   "pos": "number",
   "hanja": null,
   "hinweis": "둘째 딸",
-  "rang": 1660
+  "rang": 1660,
+  "extras_auto": true
  },
  {
   "id": "t-818",
@@ -7382,11 +7422,12 @@
  {
   "id": "t-821",
   "ko": "뜨다",
-  "en": null,
+  "en": "open (eyes)",
   "pos": "verb",
   "hanja": null,
   "hinweis": "눈을 ~",
-  "rang": 1673
+  "rang": 1673,
+  "extras_auto": true
  },
  {
   "id": "t-822",
@@ -8111,11 +8152,12 @@
  {
   "id": "t-902",
   "ko": "들르다",
-  "en": null,
+  "en": "stop by",
   "pos": "verb",
   "hanja": null,
   "hinweis": "서점에",
-  "rang": 1961
+  "rang": 1961,
+  "extras_auto": true
  },
  {
   "id": "t-903",
@@ -8318,11 +8360,12 @@
  {
   "id": "t-925",
   "ko": "드디어",
-  "en": null,
+  "en": "finally",
   "pos": "adv",
   "hanja": null,
   "hinweis": "드디어 끝나다",
-  "rang": 2078
+  "rang": 2078,
+  "extras_auto": true
  },
  {
   "id": "t-926",
@@ -9227,11 +9270,12 @@
  {
   "id": "t-1026",
   "ko": "동쪽",
-  "en": null,
+  "en": "east",
   "pos": "noun",
   "hanja": "東-",
   "hinweis": "방향",
-  "rang": 2569
+  "rang": 2569,
+  "extras_auto": true
  },
  {
   "id": "t-1027",
@@ -9335,20 +9379,22 @@
  {
   "id": "t-1038",
   "ko": "똑같이",
-  "en": null,
+  "en": "equally",
   "pos": "adv",
   "hanja": null,
   "hinweis": "똑같이 나누다",
-  "rang": 2622
+  "rang": 2622,
+  "extras_auto": true
  },
  {
   "id": "t-1039",
   "ko": "라면",
-  "en": null,
+  "en": "ramen",
   "pos": "noun",
   "hanja": null,
   "hinweis": "&일ramen; 음식",
-  "rang": 2623
+  "rang": 2623,
+  "extras_auto": true
  },
  {
   "id": "t-1040",
@@ -9551,11 +9597,12 @@
  {
   "id": "t-1062",
   "ko": "떠들다",
-  "en": null,
+  "en": "chatter, be noisy",
   "pos": "verb",
   "hanja": null,
   "hinweis": "말하다; 시끄럽게",
-  "rang": 2765
+  "rang": 2765,
+  "extras_auto": true
  },
  {
   "id": "t-1063",
@@ -9659,11 +9706,12 @@
  {
   "id": "t-1074",
   "ko": "두껍다",
-  "en": null,
+  "en": "thick",
   "pos": "adj",
   "hanja": null,
   "hinweis": "책이",
-  "rang": 2827
+  "rang": 2827,
+  "extras_auto": true
  },
  {
   "id": "t-1075",
@@ -9794,11 +9842,12 @@
  {
   "id": "t-1089",
   "ko": "돼지",
-  "en": null,
+  "en": "pig",
   "pos": "noun",
   "hanja": null,
   "hinweis": "를 기르다",
-  "rang": 2893
+  "rang": 2893,
+  "extras_auto": true
  },
  {
   "id": "t-1090",
@@ -9983,11 +10032,12 @@
  {
   "id": "t-1110",
   "ko": "디자인",
-  "en": null,
+  "en": "design",
   "pos": "noun",
   "hanja": null,
   "hinweis": "design; 이 예쁘다",
-  "rang": 3036
+  "rang": 3036,
+  "extras_auto": true
  },
  {
   "id": "t-1111",
@@ -10829,11 +10879,12 @@
  {
   "id": "t-1204",
   "ko": "똑똑하다",
-  "en": null,
+  "en": "smart",
   "pos": "adj",
   "hanja": null,
   "hinweis": "머리가",
-  "rang": 3864
+  "rang": 3864,
+  "extras_auto": true
  },
  {
   "id": "t-1205",
@@ -11306,11 +11357,12 @@
  {
   "id": "t-1257",
   "ko": "돼지고기",
-  "en": null,
+  "en": "pork",
   "pos": "noun",
   "hanja": null,
   "hinweis": "를 먹다",
-  "rang": 4418
+  "rang": 4418,
+  "extras_auto": true
  },
  {
   "id": "t-1258",
@@ -11369,11 +11421,12 @@
  {
   "id": "t-1264",
   "ko": "동전",
-  "en": null,
+  "en": "coin",
   "pos": "noun",
   "hanja": "銅錢",
   "hinweis": "백 원짜리 동전",
-  "rang": 4503
+  "rang": 4503,
+  "extras_auto": true
  },
  {
   "id": "t-1265",
@@ -11441,11 +11494,12 @@
  {
   "id": "t-1272",
   "ko": "뛰어가다",
-  "en": null,
+  "en": "run to",
   "pos": "verb",
   "hanja": null,
   "hinweis": "학교로",
-  "rang": 4598
+  "rang": 4598,
+  "extras_auto": true
  },
  {
   "id": "t-1273",
@@ -11729,20 +11783,22 @@
  {
   "id": "t-1304",
   "ko": "된장",
-  "en": null,
+  "en": "soybean paste",
   "pos": "noun",
   "hanja": "-醬",
   "hinweis": "에 찍다",
-  "rang": 4994
+  "rang": 4994,
+  "extras_auto": true
  },
  {
   "id": "t-1305",
   "ko": "등산",
-  "en": null,
+  "en": "hiking",
   "pos": "noun",
   "hanja": "登山",
   "hinweis": "을 가다",
-  "rang": 4996
+  "rang": 4996,
+  "extras_auto": true
  },
  {
   "id": "t-1306",
@@ -11828,11 +11884,12 @@
  {
   "id": "t-1315",
   "ko": "뒤쪽",
-  "en": null,
+  "en": "back side",
   "pos": "noun",
   "hanja": null,
   "hinweis": "방향",
-  "rang": 5100
+  "rang": 5100,
+  "extras_auto": true
  },
  {
   "id": "t-1316",
@@ -11900,11 +11957,12 @@
  {
   "id": "t-1323",
   "ko": "똑바로",
-  "en": null,
+  "en": "straight",
   "pos": "adv",
   "hanja": null,
   "hinweis": "똑바로 가다",
-  "rang": 5201
+  "rang": 5201,
+  "extras_auto": true
  },
  {
   "id": "t-1324",
@@ -12089,11 +12147,12 @@
  {
   "id": "t-1344",
   "ko": "두부",
-  "en": null,
+  "en": "tofu",
   "pos": "noun",
   "hanja": "豆腐",
   "hinweis": "를 먹다",
-  "rang": 5603
+  "rang": 5603,
+  "extras_auto": true
  },
  {
   "id": "t-1345",
@@ -12224,11 +12283,12 @@
  {
   "id": "t-1359",
   "ko": "레스토랑",
-  "en": null,
+  "en": "restaurant",
   "pos": "noun",
   "hanja": null,
   "hinweis": "&프restaurant; 에서 먹다",
-  "rang": 5892
+  "rang": 5892,
+  "extras_auto": true
  },
  {
   "id": "t-1360",
@@ -12530,11 +12590,12 @@
  {
   "id": "t-1393",
   "ko": "두통",
-  "en": null,
+  "en": "headache",
   "pos": "noun",
   "hanja": "頭痛",
   "hinweis": "을 앓다",
-  "rang": 6394
+  "rang": 6394,
+  "extras_auto": true
  },
  {
   "id": "t-1394",
@@ -12692,11 +12753,12 @@
  {
   "id": "t-1411",
   "ko": "돌려주다",
-  "en": null,
+  "en": "return",
   "pos": "verb",
   "hanja": null,
   "hinweis": "책을",
-  "rang": 6776
+  "rang": 6776,
+  "extras_auto": true
  },
  {
   "id": "t-1412",
@@ -13169,11 +13231,12 @@
  {
   "id": "t-1464",
   "ko": "딸기",
-  "en": null,
+  "en": "strawberry",
   "pos": "noun",
   "hanja": null,
   "hinweis": "과일",
-  "rang": 8053
+  "rang": 8053,
+  "extras_auto": true
  },
  {
   "id": "t-1465",
@@ -13790,11 +13853,12 @@
  {
   "id": "t-1533",
   "ko": "된장찌개",
-  "en": null,
+  "en": "soybean paste stew",
   "pos": "noun",
   "hanja": "-醬-",
   "hinweis": "를 먹다",
-  "rang": 10482
+  "rang": 10482,
+  "extras_auto": true
  },
  {
   "id": "t-1534",
@@ -13952,11 +14016,12 @@
  {
   "id": "t-1551",
   "ko": "뚱뚱하다",
-  "en": null,
+  "en": "fat",
   "pos": "adj",
   "hanja": null,
   "hinweis": "몸매가",
-  "rang": 11721
+  "rang": 11721,
+  "extras_auto": true
  },
  {
   "id": "t-1552",
@@ -14024,11 +14089,12 @@
  {
   "id": "t-1559",
   "ko": "동물원",
-  "en": null,
+  "en": "zoo",
   "pos": "noun",
   "hanja": "動物園",
   "hinweis": "에 가다",
-  "rang": 12428
+  "rang": 12428,
+  "extras_auto": true
  },
  {
   "id": "t-1560",
@@ -14141,11 +14207,12 @@
  {
   "id": "t-1572",
   "ko": "떡볶이",
-  "en": null,
+  "en": "spicy rice cake",
   "pos": "noun",
   "hanja": null,
   "hinweis": "음식",
-  "rang": 13255
+  "rang": 13255,
+  "extras_auto": true
  },
  {
   "id": "t-1573",
@@ -14411,11 +14478,12 @@
  {
   "id": "t-1602",
   "ko": "떡국",
-  "en": null,
+  "en": "rice cake soup",
   "pos": "noun",
   "hanja": null,
   "hinweis": "음식",
-  "rang": 18402
+  "rang": 18402,
+  "extras_auto": true
  },
  {
   "id": "t-1603",
@@ -14726,29 +14794,32 @@
  {
   "id": "t-1637",
   "ko": "감기약",
-  "en": null,
+  "en": "cold medicine",
   "pos": "noun",
   "hanja": null,
   "hinweis": "을 먹다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1638",
   "ko": "거절",
-  "en": null,
+  "en": "refusal",
   "pos": "noun",
   "hanja": null,
   "hinweis": "을 하다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1639",
   "ko": "검정",
-  "en": null,
+  "en": "black",
   "pos": "noun",
   "hanja": null,
   "hinweis": "색깔",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1640",
@@ -14762,11 +14833,12 @@
  {
   "id": "t-1641",
   "ko": "교통비",
-  "en": null,
+  "en": "transportation fee",
   "pos": "noun",
   "hanja": null,
   "hinweis": "가 들다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1642",
@@ -14780,74 +14852,82 @@
  {
   "id": "t-1643",
   "ko": "귀걸이",
-  "en": null,
+  "en": "earrings",
   "pos": "noun",
   "hanja": null,
   "hinweis": "를  달다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1644",
   "ko": "귀여워하다",
-  "en": null,
+  "en": "love, adore",
   "pos": "verb",
   "hanja": null,
   "hinweis": "강아지를",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1645",
   "ko": "기말시험",
-  "en": null,
+  "en": "final exam",
   "pos": "noun",
   "hanja": null,
   "hinweis": "을 보다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1646",
   "ko": "기차역",
-  "en": null,
+  "en": "train station",
   "pos": "noun",
   "hanja": null,
   "hinweis": "에 도착하다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1647",
   "ko": "기차표",
-  "en": null,
+  "en": "train ticket",
   "pos": "noun",
   "hanja": null,
   "hinweis": "를 끊다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1648",
   "ko": "꽃다발",
-  "en": null,
+  "en": "bouquet",
   "pos": "noun",
   "hanja": null,
   "hinweis": "을 선물하다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1649",
   "ko": "꽃병",
-  "en": null,
+  "en": "vase",
   "pos": "noun",
   "hanja": null,
   "hinweis": "을 깨뜨리다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1650",
   "ko": "꽃집",
-  "en": null,
+  "en": "flower shop",
   "pos": "noun",
   "hanja": null,
   "hinweis": "을 열다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1651",
@@ -14861,11 +14941,12 @@
  {
   "id": "t-1652",
   "ko": "날씬하다",
-  "en": null,
+  "en": "slim",
   "pos": "adj",
   "hanja": null,
   "hinweis": "몸매가",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1653",
@@ -14888,11 +14969,12 @@
  {
   "id": "t-1655",
   "ko": "낮잠",
-  "en": null,
+  "en": "nap",
   "pos": "noun",
   "hanja": null,
   "hinweis": "을 자다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1656",
@@ -14915,29 +14997,32 @@
  {
   "id": "t-1658",
   "ko": "다림질",
-  "en": null,
+  "en": "ironing",
   "pos": "noun",
   "hanja": null,
   "hinweis": "을 하다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1659",
   "ko": "다양",
-  "en": null,
+  "en": "various",
   "pos": "noun",
   "hanja": null,
   "hinweis": "다양한 방법",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1660",
   "ko": "다음날",
-  "en": null,
+  "en": "next day",
   "pos": "noun",
   "hanja": null,
   "hinweis": "에 만나다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1661",
@@ -14978,74 +15063,82 @@
  {
   "id": "t-1665",
   "ko": "돈가스",
-  "en": null,
+  "en": "pork cutlet",
   "pos": "noun",
   "hanja": null,
   "hinweis": "를 먹다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1666",
   "ko": "동대문",
-  "en": null,
+  "en": "Dongdaemun",
   "pos": "noun",
   "hanja": null,
   "hinweis": "고적",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1667",
   "ko": "러시아",
-  "en": null,
+  "en": "Russia",
   "pos": "noun",
   "hanja": null,
   "hinweis": "나라",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1668",
   "ko": "마트",
-  "en": null,
+  "en": "mart",
   "pos": "noun",
   "hanja": null,
   "hinweis": "에서 사다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1669",
   "ko": "말레이시아",
-  "en": null,
+  "en": "Malaysia",
   "pos": "noun",
   "hanja": null,
   "hinweis": "나라",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1670",
   "ko": "매표소",
-  "en": null,
+  "en": "ticket office",
   "pos": "noun",
   "hanja": null,
   "hinweis": "극장 매표소",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1671",
   "ko": "목도리",
-  "en": null,
+  "en": "scarf",
   "pos": "noun",
   "hanja": null,
   "hinweis": "를 하다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1672",
   "ko": "몽골",
-  "en": null,
+  "en": "Mongolia",
   "pos": "noun",
   "hanja": null,
   "hinweis": "나라",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1673",
@@ -15068,74 +15161,82 @@
  {
   "id": "t-1675",
   "ko": "미안",
-  "en": null,
+  "en": "sorry",
   "pos": "noun",
   "hanja": null,
   "hinweis": "인사",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1676",
   "ko": "미역국",
-  "en": null,
+  "en": "seaweed soup",
   "pos": "noun",
   "hanja": null,
   "hinweis": "을 끓이다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1677",
   "ko": "반바지",
-  "en": null,
+  "en": "shorts",
   "pos": "noun",
   "hanja": null,
   "hinweis": "를 입다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1678",
   "ko": "받아쓰다",
-  "en": null,
+  "en": "take dictation",
   "pos": "verb",
   "hanja": null,
   "hinweis": "노트에",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1679",
   "ko": "배탈",
-  "en": null,
+  "en": "stomachache",
   "pos": "noun",
   "hanja": null,
   "hinweis": "이 나다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1680",
   "ko": "백만",
-  "en": null,
+  "en": "million",
   "pos": "determiner",
   "hanja": null,
   "hinweis": "백만 개",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1681",
   "ko": "베트남",
-  "en": null,
+  "en": "Vietnam",
   "pos": "noun",
   "hanja": null,
   "hinweis": "나라",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1682",
   "ko": "병문안",
-  "en": null,
+  "en": "hospital visit",
   "pos": "noun",
   "hanja": null,
   "hinweis": "을 가다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1683",
@@ -15158,47 +15259,52 @@
  {
   "id": "t-1685",
   "ko": "분식",
-  "en": null,
+  "en": "snack food",
   "pos": "noun",
   "hanja": null,
   "hinweis": "을 먹다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1686",
   "ko": "빵집",
-  "en": null,
+  "en": "bakery",
   "pos": "noun",
   "hanja": null,
   "hinweis": "에서 일하다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1687",
   "ko": "사거리",
-  "en": null,
+  "en": "intersection",
   "pos": "noun",
   "hanja": null,
   "hinweis": "를 건너다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1688",
   "ko": "사이다",
-  "en": null,
+  "en": "cider (soda)",
   "pos": "noun",
   "hanja": null,
   "hinweis": "를 마시다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1689",
   "ko": "사이즈",
-  "en": null,
+  "en": "size",
   "pos": "noun",
   "hanja": null,
   "hinweis": "가 크다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1690",
@@ -15212,20 +15318,22 @@
  {
   "id": "t-1691",
   "ko": "삼거리",
-  "en": null,
+  "en": "three-way intersection",
   "pos": "noun",
   "hanja": null,
   "hinweis": "가 나오다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1692",
   "ko": "삼겹살",
-  "en": null,
+  "en": "pork belly",
   "pos": "noun",
   "hanja": null,
   "hinweis": "음식",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1693",
@@ -15248,92 +15356,102 @@
  {
   "id": "t-1695",
   "ko": "선선하다",
-  "en": null,
+  "en": "cool",
   "pos": "adj",
   "hanja": null,
   "hinweis": "날씨가",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1696",
   "ko": "세배",
-  "en": null,
+  "en": "New Year's bow",
   "pos": "noun",
   "hanja": null,
   "hinweis": "를 드리다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1697",
   "ko": "소고기",
-  "en": null,
+  "en": "beef",
   "pos": "noun",
   "hanja": null,
   "hinweis": "를 먹다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1698",
   "ko": "소화제",
-  "en": null,
+  "en": "digestive medicine",
   "pos": "noun",
   "hanja": null,
   "hinweis": "약",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1699",
   "ko": "수영복",
-  "en": null,
+  "en": "swimsuit",
   "pos": "noun",
   "hanja": null,
   "hinweis": "을 입다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1700",
   "ko": "수첩",
-  "en": null,
+  "en": "notebook",
   "pos": "noun",
   "hanja": null,
   "hinweis": "에 쓰다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1701",
   "ko": "순두부찌개",
-  "en": null,
+  "en": "soft tofu stew",
   "pos": "noun",
   "hanja": null,
   "hinweis": "음식",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1702",
   "ko": "스카프",
-  "en": null,
+  "en": "scarf",
   "pos": "noun",
   "hanja": null,
   "hinweis": "를 매다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1703",
   "ko": "스파게티",
-  "en": null,
+  "en": "spaghetti",
   "pos": "noun",
   "hanja": null,
   "hinweis": "음식",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1704",
   "ko": "시간표",
-  "en": null,
+  "en": "schedule",
   "pos": "noun",
   "hanja": null,
   "hinweis": "를 짜다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1705",
@@ -15347,92 +15465,102 @@
  {
   "id": "t-1706",
   "ko": "시다",
-  "en": null,
+  "en": "sour",
   "pos": "adj",
   "hanja": null,
   "hinweis": "맛이",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1707",
   "ko": "신분증",
-  "en": null,
+  "en": "ID card",
   "pos": "noun",
   "hanja": null,
   "hinweis": "을 확인하다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1708",
   "ko": "십만",
-  "en": null,
+  "en": "hundred thousand",
   "pos": "determiner",
   "hanja": null,
   "hinweis": "숫자",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1709",
   "ko": "쌀쌀하다",
-  "en": null,
+  "en": "chilly",
   "pos": "adj",
   "hanja": null,
   "hinweis": "날씨가",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1710",
   "ko": "안내문",
-  "en": null,
+  "en": "notice",
   "pos": "noun",
   "hanja": null,
   "hinweis": "을 받다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1711",
   "ko": "약사",
-  "en": null,
+  "en": "pharmacist",
   "pos": "noun",
   "hanja": null,
   "hinweis": "가 되다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1712",
   "ko": "양식집",
-  "en": null,
+  "en": "Western restaurant",
   "pos": "noun",
   "hanja": null,
   "hinweis": "에 가다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1713",
   "ko": "양치질",
-  "en": null,
+  "en": "brushing teeth",
   "pos": "noun",
   "hanja": null,
   "hinweis": "을 하다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1714",
   "ko": "여쭙다",
-  "en": null,
+  "en": "ask (honorific)",
   "pos": "verb",
   "hanja": null,
   "hinweis": "선생님께",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1715",
   "ko": "여행지",
-  "en": null,
+  "en": "travel destination",
   "pos": "noun",
   "hanja": null,
   "hinweis": "로 떠나다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1716",
@@ -15464,20 +15592,22 @@
  {
   "id": "t-1719",
   "ko": "영수증",
-  "en": null,
+  "en": "receipt",
   "pos": "noun",
   "hanja": null,
   "hinweis": "을 받다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1720",
   "ko": "예매",
-  "en": null,
+  "en": "reservation",
   "pos": "noun",
   "hanja": null,
   "hinweis": "영화표 예매",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1721",
@@ -15491,38 +15621,42 @@
  {
   "id": "t-1722",
   "ko": "올림",
-  "en": null,
+  "en": "sincerely (letter closing)",
   "pos": "noun",
   "hanja": null,
   "hinweis": "편지",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1723",
   "ko": "옷걸이",
-  "en": null,
+  "en": "hanger",
   "pos": "noun",
   "hanja": null,
   "hinweis": "에 걸다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1724",
   "ko": "옷장",
-  "en": null,
+  "en": "wardrobe",
   "pos": "noun",
   "hanja": null,
   "hinweis": "에 넣다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1725",
   "ko": "우동",
-  "en": null,
+  "en": "udon",
   "pos": "noun",
   "hanja": null,
   "hinweis": "을 먹다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1726",
@@ -15536,47 +15670,52 @@
  {
   "id": "t-1727",
   "ko": "육교",
-  "en": null,
+  "en": "overpass",
   "pos": "noun",
   "hanja": null,
   "hinweis": "를 건너다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1728",
   "ko": "윷놀이",
-  "en": null,
+  "en": "yut game",
   "pos": "noun",
   "hanja": null,
   "hinweis": "를 하다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1729",
   "ko": "이다",
-  "en": null,
+  "en": "to be",
   "pos": null,
   "hanja": null,
   "hinweis": "책이다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1730",
   "ko": "이삿짐",
-  "en": null,
+  "en": "moving luggage",
   "pos": "noun",
   "hanja": null,
   "hinweis": "을 싸다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1731",
   "ko": "인도네시아",
-  "en": null,
+  "en": "Indonesia",
   "pos": "noun",
   "hanja": null,
   "hinweis": "나라",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1732",
@@ -15608,56 +15747,62 @@
  {
   "id": "t-1735",
   "ko": "일식집",
-  "en": null,
+  "en": "Japanese restaurant",
   "pos": "noun",
   "hanja": null,
   "hinweis": "에서 먹다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1736",
   "ko": "입장권",
-  "en": null,
+  "en": "admission ticket",
   "pos": "noun",
   "hanja": null,
   "hinweis": "을 사다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1737",
   "ko": "입학시험",
-  "en": null,
+  "en": "entrance exam",
   "pos": "noun",
   "hanja": null,
   "hinweis": "에 합격하다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1738",
   "ko": "자기소개",
-  "en": null,
+  "en": "self-introduction",
   "pos": "noun",
   "hanja": null,
   "hinweis": "를 하다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1739",
   "ko": "자동판매기",
-  "en": null,
+  "en": "vending machine",
   "pos": "noun",
   "hanja": null,
   "hinweis": "를 누르다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1740",
   "ko": "잡채",
-  "en": null,
+  "en": "japchae",
   "pos": "noun",
   "hanja": null,
   "hinweis": "음식",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1741",
@@ -15671,47 +15816,52 @@
  {
   "id": "t-1742",
   "ko": "저금",
-  "en": null,
+  "en": "savings",
   "pos": "noun",
   "hanja": null,
   "hinweis": "을 하다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1743",
   "ko": "저분",
-  "en": null,
+  "en": "that person",
   "pos": "pronoun",
   "hanja": null,
   "hinweis": "이분",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1744",
   "ko": "정형외과",
-  "en": null,
+  "en": "orthopedics",
   "pos": "noun",
   "hanja": null,
   "hinweis": "에서 치료하다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1745",
   "ko": "정확",
-  "en": null,
+  "en": "accuracy",
   "pos": "noun",
   "hanja": null,
   "hinweis": "발음이",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1746",
   "ko": "제",
-  "en": null,
+  "en": "my",
   "pos": "pronoun",
   "hanja": null,
   "hinweis": "사람(1인칭)",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1747",
@@ -15725,11 +15875,12 @@
  {
   "id": "t-1748",
   "ko": "조심",
-  "en": null,
+  "en": "caution",
   "pos": "noun",
   "hanja": null,
   "hinweis": "운전 조심",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1749",
@@ -15743,11 +15894,12 @@
  {
   "id": "t-1750",
   "ko": "주황색",
-  "en": null,
+  "en": "orange (color)",
   "pos": "noun",
   "hanja": null,
   "hinweis": "색깔",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1751",
@@ -15770,83 +15922,92 @@
  {
   "id": "t-1753",
   "ko": "지하철역",
-  "en": null,
+  "en": "subway station",
   "pos": "noun",
   "hanja": null,
   "hinweis": "에 도착하다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1754",
   "ko": "집들이",
-  "en": null,
+  "en": "housewarming party",
   "pos": "noun",
   "hanja": null,
   "hinweis": "에 초대하다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1755",
   "ko": "짬뽕",
-  "en": null,
+  "en": "jjamppong",
   "pos": "noun",
   "hanja": null,
   "hinweis": "음식",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1756",
   "ko": "책장",
-  "en": null,
+  "en": "bookshelf",
   "pos": "noun",
   "hanja": null,
   "hinweis": "가구",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1757",
   "ko": "천만",
-  "en": null,
+  "en": "ten million",
   "pos": "determiner",
   "hanja": null,
   "hinweis": "숫자",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1758",
   "ko": "체크무늬",
-  "en": null,
+  "en": "checkered pattern",
   "pos": "noun",
   "hanja": null,
   "hinweis": "체크무늬 남방",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1759",
   "ko": "초대장",
-  "en": null,
+  "en": "invitation card",
   "pos": "noun",
   "hanja": null,
   "hinweis": "을 보내다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1760",
   "ko": "출석",
-  "en": null,
+  "en": "attendance",
   "pos": "noun",
   "hanja": null,
   "hinweis": "을 부르다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1761",
   "ko": "치킨",
-  "en": null,
+  "en": "chicken",
   "pos": "noun",
   "hanja": null,
   "hinweis": "음식",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1762",
@@ -15860,83 +16021,92 @@
  {
   "id": "t-1763",
   "ko": "커피숍",
-  "en": null,
+  "en": "coffee shop",
   "pos": "noun",
   "hanja": null,
   "hinweis": "에서 만나다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1764",
   "ko": "케이크",
-  "en": null,
+  "en": "cake",
   "pos": "noun",
   "hanja": null,
   "hinweis": "를 먹다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1765",
   "ko": "켤레",
-  "en": null,
+  "en": "pair",
   "pos": "noun",
   "hanja": null,
   "hinweis": "한 켤레",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1766",
   "ko": "콧물",
-  "en": null,
+  "en": "snot",
   "pos": "noun",
   "hanja": null,
   "hinweis": "이 나오다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1767",
   "ko": "탕수육",
-  "en": null,
+  "en": "sweet and sour pork",
   "pos": "noun",
   "hanja": null,
   "hinweis": "음식",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1768",
   "ko": "태국",
-  "en": null,
+  "en": "Thailand",
   "pos": "noun",
   "hanja": null,
   "hinweis": "나라",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1769",
   "ko": "태극기",
-  "en": null,
+  "en": "Korean flag",
   "pos": "noun",
   "hanja": null,
   "hinweis": "를 달다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1770",
   "ko": "택배",
-  "en": null,
+  "en": "parcel delivery",
   "pos": "noun",
   "hanja": null,
   "hinweis": "로 보내다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1771",
   "ko": "테니스장",
-  "en": null,
+  "en": "tennis court",
   "pos": "noun",
   "hanja": null,
   "hinweis": "에서 연습핟",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1772",
@@ -15950,38 +16120,42 @@
  {
   "id": "t-1773",
   "ko": "편리",
-  "en": null,
+  "en": "convenience",
   "pos": "noun",
   "hanja": null,
   "hinweis": "고객의 편리",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1774",
   "ko": "편안",
-  "en": null,
+  "en": "comfort",
   "pos": "noun",
   "hanja": null,
   "hinweis": "을 바라다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1775",
   "ko": "편찮다",
-  "en": null,
+  "en": "be ill",
   "pos": "adj",
   "hanja": null,
   "hinweis": "할아버지께서",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1776",
   "ko": "프라이팬",
-  "en": null,
+  "en": "frying pan",
   "pos": "noun",
   "hanja": null,
   "hinweis": "에 볶다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1777",
@@ -15995,20 +16169,22 @@
  {
   "id": "t-1778",
   "ko": "하늘색",
-  "en": null,
+  "en": "sky blue",
   "pos": "noun",
   "hanja": null,
   "hinweis": "색깔",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1779",
   "ko": "하숙비",
-  "en": null,
+  "en": "boarding fee",
   "pos": "noun",
   "hanja": null,
   "hinweis": "를 내다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1780",
@@ -16031,91 +16207,101 @@
  {
   "id": "t-1782",
   "ko": "한식집",
-  "en": null,
+  "en": "Korean restaurant",
   "pos": "noun",
   "hanja": null,
   "hinweis": "음식점",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1783",
   "ko": "한옥",
-  "en": null,
+  "en": "Korean house",
   "pos": "noun",
   "hanja": null,
   "hinweis": "에 살다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1784",
   "ko": "한턱",
-  "en": null,
+  "en": "treat",
   "pos": "noun",
   "hanja": null,
   "hinweis": "을 내다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1785",
   "ko": "항공권",
-  "en": null,
+  "en": "airline ticket",
   "pos": "noun",
   "hanja": null,
   "hinweis": "을 예약하다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1786",
   "ko": "헬스클럽",
-  "en": null,
+  "en": "gym",
   "pos": "noun",
   "hanja": null,
   "hinweis": "에서 운동하다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1787",
   "ko": "화내다",
-  "en": null,
+  "en": "get angry",
   "pos": "verb",
   "hanja": null,
   "hinweis": "친구에게",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1788",
   "ko": "환전",
-  "en": null,
+  "en": "currency exchange",
   "pos": "noun",
   "hanja": null,
   "hinweis": "달러 환전",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1789",
   "ko": "회사원",
-  "en": null,
+  "en": "office worker",
   "pos": "noun",
   "hanja": null,
   "hinweis": "직업",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1790",
   "ko": "휴게실",
-  "en": null,
+  "en": "lounge",
   "pos": "noun",
   "hanja": null,
   "hinweis": "에서 쉬다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  },
  {
   "id": "t-1791",
   "ko": "휴대폰",
-  "en": null,
+  "en": "cell phone",
   "pos": "noun",
   "hanja": null,
   "hinweis": "으로 전화하다",
-  "rang": 99999
+  "rang": 99999,
+  "extras_auto": true
  }
 ]
