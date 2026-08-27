@@ -277,6 +277,21 @@ Deno.serve(async (req) => {
   try {
     if (!ANTHROPIC_KEY) return json({ error: 'no-key' }, 500)
 
+    /* ---------- Nur eingeloggte Nutzer ----------
+       Der Dashboard-Schalter "Verify JWT (legacy)" lässt den
+       öffentlichen App-Schlüssel durch — der steht aber für alle
+       sichtbar im GitHub-Pages-Code. Deshalb prüfen WIR selbst:
+       Wir fragen Supabase Auth, ob das mitgeschickte Token zu
+       einem echten angemeldeten Nutzer gehört (es gibt genau
+       zwei; Registrierung ist abgeschaltet). Der öffentliche
+       Schlüssel fällt hier durch. */
+    const auth = req.headers.get('Authorization') ?? ''
+    const userToken = auth.startsWith('Bearer ') ? auth.slice(7) : ''
+    const wer = await fetch(`${SB_URL}/auth/v1/user`, {
+      headers: { apikey: SB_SERVICE, Authorization: `Bearer ${userToken}` },
+    })
+    if (!wer.ok) return json({ error: 'auth' }, 401)
+
     const body = await req.json()
     const { action, profile, mode, scenario, messages } = body
 
