@@ -55,6 +55,8 @@ import { textFor, targetTextFor } from '../shared/i18n'
 import { setActiveProfile } from '../core/storage'
 import { readSession, onAuthChange } from '../core/auth'
 import Login from './Login'
+import Kalibrierung from '../features/kalibrierung/Kalibrierung'
+import { kalibrierungErledigt } from '../core/kalibrierung'
 
 function App() {
   /* Welche Seite der App: 'ko' (Franz) oder 'de' (seine Freundin).
@@ -452,10 +454,15 @@ function App() {
             articleKind={useKind}
             onCalendar={() => setView('calendar')}
             onSwitchProfile={switchProfile}
+            onKalibrierung={() => setView('kalibrierung')}
+            kalOffen={!kalibrierungErledigt(profileId)}
             profile={profile}
             t={t}
             tt={tt}
           />
+        )}
+        {view === 'kalibrierung' && (
+          <Kalibrierung profile={profile} t={t} onExit={() => setView('home')} />
         )}
         {view === 'daily' && (
           <DailyWord

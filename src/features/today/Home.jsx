@@ -37,6 +37,8 @@ function Home({
   articleKind,
   onCalendar,
   onSwitchProfile,
+  onKalibrierung,
+  kalOffen,
   profile,
   t,
   tt,
@@ -94,6 +96,16 @@ function Home({
 
       {/* ---------- Tagesaufgaben ---------- */}
       <main className="actions">
+        {/* Einmalige Einladung zur Kalibrierung — verschwindet danach */}
+        {kalOffen && (
+          <button className="kal-banner" onClick={onKalibrierung}>
+            <span className="kal-banner-emoji">🧭</span>
+            <div className="action-text">
+              <span className="action-title">{t.kalBannerTitle}</span>
+              <span className="action-sub">{t.kalBannerSub}</span>
+            </div>
+          </button>
+        )}
         <button
           className={dailyDone ? 'action action-secondary' : 'action action-full action-full-purple'}
           onClick={onDaily}

@@ -3440,6 +3440,96 @@ textarea {
 }
 
 /* ============================================================
+   KALIBRIERUNG — einmaliger Kenntnisstand-Check
+   ============================================================ */
+.kal-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px;
+  text-align: left;
+  border-radius: 18px;
+  border: 1.5px dashed var(--primary);
+  background: var(--primary-soft);
+}
+
+.kal-banner-emoji {
+  font-size: 26px;
+  line-height: 1;
+}
+
+.kal-mitte {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  text-align: center;
+  padding: 0 18px calc(24px + env(safe-area-inset-bottom));
+}
+
+.kal-emoji { font-size: 52px; }
+.kal-titel { margin: 0; font-size: 22px; }
+.kal-text { margin: 0; font-size: 14.5px; line-height: 1.6; color: var(--text-soft); max-width: 320px; }
+.kal-schritt {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+}
+.kal-frage { margin: 0; font-size: 17px; font-weight: 600; line-height: 1.5; max-width: 320px; }
+
+.kal-karte {
+  width: 100%;
+  max-width: 320px;
+  min-height: 150px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 24px 18px;
+  border-radius: 22px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  touch-action: pan-y;
+  user-select: none;
+  cursor: grab;
+}
+
+.kal-wort { font-size: 30px; font-weight: 700; word-break: keep-all; }
+.kal-karte-satz { cursor: default; }
+.kal-satz { font-size: 19px; font-weight: 600; line-height: 1.5; }
+.kal-satz-tr { font-size: 13px; color: var(--text-soft); }
+
+.kal-antworten {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  max-width: 340px;
+}
+
+.kal-btn {
+  flex: 1;
+  padding: 13px 8px;
+  border-radius: 14px;
+  font-size: 14.5px;
+  font-weight: 700;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.kal-ja { border-color: var(--primary); color: var(--primary); background: var(--primary-soft); }
+.kal-nein { border-color: var(--accent); color: var(--accent-ink, var(--accent)); background: var(--accent-soft); }
+.kal-halb { color: var(--text-soft); }
+
+.kal-zaehler { margin: 0; font-size: 12.5px; color: var(--text-soft); }
+
+/* ============================================================
    LOGIN — nur die zwei dürfen rein
    ============================================================ */
 .login-screen {
