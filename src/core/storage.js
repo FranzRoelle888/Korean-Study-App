@@ -23,7 +23,10 @@ import { PROFILES, DEFAULT_PROFILE } from './profiles'
 
 const START_EASE = 2.5
 const MIN_EASE = 1.3
-const DAILY_NEW = 2 // neue Vokabeln pro Tag (leicht änderbar)
+/* Neue Vokabeln pro Tag (Entscheidung Franz, 28.08.2026: von 2 auf
+   3 erhöht — passt ins 10-15-Minuten-Budget, s. docs/TAGESAUFGABEN.md;
+   einstellbar 2-5 kommt mit der Einstellungen-Seite) */
+const DAILY_NEW = 3
 const REVIEW_CAP = 50 // max. Nachhol-Karten pro Tag
 
 /* ============================================================
