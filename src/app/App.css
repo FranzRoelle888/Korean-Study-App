@@ -4210,6 +4210,18 @@ textarea {
   color: var(--text-soft);
 }
 
+/* Grammatik-Check-Zugang auf der Skills-Seite */
+.skills-gramcheck {
+  align-self: flex-start;
+  padding: 10px 16px;
+  border-radius: 999px;
+  border: 1.5px dashed var(--primary);
+  background: var(--primary-soft);
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--primary);
+}
+
 /* ---------- Hand-Eingabe (eingeklappt) ---------- */
 .skills-manual-toggle {
   align-self: flex-start;

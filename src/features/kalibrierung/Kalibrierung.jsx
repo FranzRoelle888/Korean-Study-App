@@ -27,8 +27,11 @@ import { addSkill } from '../../core/storage'
    scheitert das Speichern, bleibt alles wiederholbar.
    ============================================================ */
 
-function Kalibrierung({ profile, t, onExit }) {
-  const [phase, setPhase] = useState('intro')
+/* nurGrammatik: Direkteinstieg in Phase 3 — zum Nachholen oder
+   Wiederholen des Grammatik-Checks (von "My grammar" aus).
+   Ergebnisse überschreiben alte Urteile sauber per Upsert. */
+function Kalibrierung({ profile, t, onExit, nurGrammatik = false }) {
+  const [phase, setPhase] = useState(nurGrammatik ? 'laden' : 'intro')
   const [fehler, setFehler] = useState(false)
   const [busy, setBusy] = useState(false)
 
@@ -53,10 +56,15 @@ function Kalibrierung({ profile, t, onExit }) {
   /* Grammatik */
   const [grammatik, setGrammatik] = useState(null)
   const [gramIdx, setGramIdx] = useState(0)
-  const [gramNeinFolge, setGramNeinFolge] = useState(0)
   const [gramStatus, setGramStatus] = useState([])
 
   const fragen = t.candoFragen(profile.targetName)
+
+  /* Nachhol-Modus: direkt bei der Grammatik einsteigen */
+  useEffect(() => {
+    if (nurGrammatik) grammatikStarten([])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   /* ---------- Phase 1: Can-do ---------- */
   function candoAntwort(punkte) {
@@ -157,11 +165,12 @@ function Kalibrierung({ profile, t, onExit }) {
       const g = await ladeGrammatikInventar(profile.id)
       setGrammatik(g)
       setGramIdx(0)
-      setGramNeinFolge(0)
       setPhase('grammatik')
-    } catch {
+    } catch (e) {
+      console.warn('Grammatik-Start fehlgeschlagen:', e?.message || e)
       setFehler(true)
-      setPhase('wischen')
+      /* Im Nachhol-Modus gibt es keine Wisch-Phase zum Zurückfallen */
+      setPhase(nurGrammatik ? 'intro' : 'wischen')
     }
   }
 
@@ -172,12 +181,12 @@ function Kalibrierung({ profile, t, onExit }) {
       { item_id: eintrag.id, kind: 'grammatik', status, label: eintrag.label },
     ]
     setGramStatus(neu)
-    const folge = status === 'unbekannt' ? gramNeinFolge + 1 : 0
-    /* 3× hintereinander "nein" = Grenze gefunden */
-    if (folge >= 3 || gramIdx + 1 >= grammatik.length) {
+    /* Bewusst OHNE Früh-Stopp (Entscheidung Franz): wilde Lerner
+       haben Wissensinseln weit hinter ihrer "Grenze" — die komplette
+       Liste dauert nur ein, zwei Minuten und erwischt sie alle. */
+    if (gramIdx + 1 >= grammatik.length) {
       abschliessen(neu)
     } else {
-      setGramNeinFolge(folge)
       setGramIdx(gramIdx + 1)
     }
   }
@@ -191,9 +200,14 @@ function Kalibrierung({ profile, t, onExit }) {
       /* Die Intuitions-Zusammenfassung für den Trainer: EIN
          Skills-Eintrag statt hundert Einzelfakten */
       const sicherGram = gramFinal.filter((g) => g.status === 'sicher').length
+      const kanon = profile.id === 'ko' ? 'TOPIK I' : 'CEFR A1-A2'
+      const wortTeil =
+        zaehler.sicher + zaehler.unbekannt > 0
+          ? `Vocabulary self-check: knows ~${zaehler.sicher} of ${zaehler.sicher + zaehler.unbekannt} sampled inventory words. `
+          : ''
       await addSkill(
         `Kalibrierung ${new Date().toISOString().slice(0, 10)}`,
-        `Vocabulary self-check: knows ~${zaehler.sicher} of ${zaehler.sicher + zaehler.unbekannt} sampled inventory words. Grammar: confident up to item ${sicherGram} of the canonical ${profile.id === 'ko' ? 'TOPIK I' : 'CEFR A1-A2'} sequence.`
+        `${wortTeil}Grammar self-check: confident in ${sicherGram} of ${gramFinal.length} checked points of the canonical ${kanon} sequence.`
       )
       merkeKalibrierungErledigt(profile.id)
       setPhase('fertig')
@@ -330,7 +344,9 @@ function Kalibrierung({ profile, t, onExit }) {
       <div className="kal-mitte">
         <div className="kal-emoji pop">🎉</div>
         <h2 className="kal-titel">{t.kalFertigTitle}</h2>
-        <p className="kal-text">{t.kalFertigText(zaehler.sicher)}</p>
+        <p className="kal-text">
+          {nurGrammatik ? t.kalGramFertig : t.kalFertigText(zaehler.sicher)}
+        </p>
         <button className="done-btn" onClick={onExit}>{t.back}</button>
       </div>
     </div>

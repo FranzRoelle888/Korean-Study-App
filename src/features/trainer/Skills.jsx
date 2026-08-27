@@ -45,7 +45,7 @@ async function fotoVerkleinern(file) {
   }
 }
 
-function Skills({ profile, t, onBack }) {
+function Skills({ profile, t, onBack, onGramCheck }) {
   const [skills, setSkills] = useState(null) /* null = lädt noch */
   const [error, setError] = useState(null)
 
@@ -192,6 +192,13 @@ function Skills({ profile, t, onBack }) {
 
       <main className="skills-main">
         <p className="skills-hint">{t.skillsSub}</p>
+
+        {/* Grammatik-Check der Kalibrierung nachholen/wiederholen */}
+        {onGramCheck && (
+          <button type="button" className="skills-gramcheck" onClick={onGramCheck}>
+            🧭 {t.skillsGramCheck}
+          </button>
+        )}
 
         {/* ---------- Schritt 1: erzählen (und/oder Foto) ---------- */}
         {!vorschlag && (

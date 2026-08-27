@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import TrainerChat, { readActiveChat } from './TrainerChat'
 import Skills from './Skills'
+import Kalibrierung from '../kalibrierung/Kalibrierung'
 import { ChevronIcon } from '../../shared/icons'
 
 /* ============================================================
@@ -41,6 +42,8 @@ function Trainer({ profile, t, onChatActive }) {
      direkt wieder darin statt im Menü. */
   const [aktiv, setAktiv] = useState(() => readActiveChat(profile.id))
   const [zeigeSkills, setZeigeSkills] = useState(false)
+  /* Grammatik-Check nachholen/wiederholen (aus der Skills-Seite) */
+  const [zeigeGramCheck, setZeigeGramCheck] = useState(false)
 
   /* Der App melden, ob gerade ein Chat läuft — dann versteckt sie
      die Tab-Leiste, damit nichts über der Tastatur aufflackert. */
@@ -70,8 +73,29 @@ function Trainer({ profile, t, onChatActive }) {
     )
   }
 
+  if (zeigeGramCheck) {
+    return (
+      <Kalibrierung
+        profile={profile}
+        t={t}
+        nurGrammatik
+        onExit={() => setZeigeGramCheck(false)}
+      />
+    )
+  }
+
   if (zeigeSkills) {
-    return <Skills profile={profile} t={t} onBack={() => setZeigeSkills(false)} />
+    return (
+      <Skills
+        profile={profile}
+        t={t}
+        onBack={() => setZeigeSkills(false)}
+        onGramCheck={() => {
+          setZeigeSkills(false)
+          setZeigeGramCheck(true)
+        }}
+      />
+    )
   }
 
   return (
