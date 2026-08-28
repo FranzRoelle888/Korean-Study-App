@@ -223,6 +223,9 @@ function Home({
         <p className="vocab-count-note">{t.wordsInLibrary(vocabCount)}</p>
       </main>
 
+      {/* Bau-Kennung: welche Version läuft gerade? (Cache-Kontrolle) */}
+      <span className="version-note">v {__BUILD_KENNUNG__}</span>
+
       {/* Liegt hinter dem Inhalt (siehe .mountain-band in App.css) */}
       <Band />
     </div>

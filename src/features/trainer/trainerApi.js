@@ -39,6 +39,13 @@ export function trainerSummary({ profile, mode, scenario, messages }) {
   return call({ action: 'summary', profile, mode, scenario, messages })
 }
 
+/* Übungsrunde abgeschlossen -> kurzes KI-Feedback; die Funktion
+   schreibt nebenbei Journal-Eintrag und Grammatik-Belege.
+   ergebnisse: [{grammatik_id, grammatik_name, loesung, antwort, richtig}] */
+export function trainerUebung({ profile, ergebnisse }) {
+  return call({ action: 'uebung', profile, ergebnisse })
+}
+
 /* Grammatik-Erklärung (Text und/oder Foto) -> Vorschlagsliste.
    image: { media_type: 'image/jpeg', data: '<base64>' } oder null.
    Gespeichert wird erst nach Bestätigung in der App. */

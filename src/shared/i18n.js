@@ -158,6 +158,10 @@ const en = {
   ltWeiter: 'Next',
   ltErgebnis: 'See result',
   ltFertig: (n, m) => (n === m ? `Perfect — ${n} of ${m}!` : `${n} of ${m} — nice work!`),
+  ltHinweis: 'Fill every gap. Grey text in a field is the base form to transform.',
+  ltFeedbackLaedt: 'Your trainer is looking at the results…',
+  ltNochEiner: 'One more text',
+  updateDa: 'Update available ⟳',
 
   kalTitle: 'Check-in',
   kalIntroTitle: 'Tell the app what you already know',
@@ -351,6 +355,10 @@ const ko = {
   ltWeiter: '다음',
   ltErgebnis: '결과 보기',
   ltFertig: (n, m) => (n === m ? `완벽해요 — ${m}개 중 ${n}개!` : `${m}개 중 ${n}개 — 잘했어요!`),
+  ltHinweis: '빈칸을 모두 채워요. 칸 안의 회색 글자는 바꿔야 할 기본형이에요.',
+  ltFeedbackLaedt: '트레이너가 결과를 보고 있어요…',
+  ltNochEiner: '한 개 더',
+  updateDa: '새 버전 있어요 ⟳',
 
   kalTitle: '레벨 체크',
   kalIntroTitle: '이미 아는 것을 앱에 알려 주세요',

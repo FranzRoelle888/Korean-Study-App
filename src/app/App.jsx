@@ -82,6 +82,9 @@ function App() {
   /* Läuft gerade ein Trainer-Chat? Dann verschwindet die
      Tab-Leiste — sonst flackert sie über der Tastatur auf. */
   const [chatOffen, setChatOffen] = useState(false)
+  /* Liegt auf dem Server eine neuere Version als die, die gerade
+     läuft? Dann erscheint die Update-Pille (Cache-Raten ade). */
+  const [updateDa, setUpdateDa] = useState(false)
   const [dailyLog, setDailyLog] = useState([])
   const [partnerLog, setPartnerLog] = useState([])
 
@@ -124,10 +127,29 @@ function App() {
   /* Die App laedt sonst NUR beim Start. Auf dem Handy bleibt sie
      als Verknuepfung tagelang offen — ohne das hier saehe man den
      Stand von vorgestern und zwei Geraete driften auseinander. */
+  /* Versions-Wächter: vergleicht die Bau-Kennung im Server-HTML
+     mit dem gerade laufenden Skript. Im Dev-Modus greift das nie
+     (dort gibt es kein gebautes Asset). */
+  async function pruefeNeueVersion() {
+    try {
+      const r = await fetch(import.meta.env.BASE_URL + 'index.html', { cache: 'no-store' })
+      const m = /assets\/(index-[^"]+\.js)/.exec(await r.text())
+      if (m && !Array.from(document.scripts).some((s) => s.src.includes(m[1]))) {
+        setUpdateDa(true)
+      }
+    } catch {
+      /* offline — egal */
+    }
+  }
+  useEffect(() => {
+    pruefeNeueVersion()
+  }, [])
+
   useEffect(() => {
     if (!angemeldet) return
     function refresh() {
       if (document.visibilityState !== 'visible') return
+      pruefeNeueVersion()
       Promise.all([loadInitial(), loadDailyLog(), loadPartnerLog()]).then(([data, log, plog]) => {
         setWords(data.words)
         setCards(data.cards)
@@ -434,6 +456,13 @@ function App() {
   return (
     <div className="app">
       {offline && <div className="offline-banner">{t.offline}</div>}
+
+      {/* Neue Version auf dem Server: ein Tipp lädt sie */}
+      {updateDa && (
+        <button className="update-pille" onClick={() => window.location.reload()}>
+          {t.updateDa}
+        </button>
+      )}
 
       <div className="page">
         {view === 'home' && (

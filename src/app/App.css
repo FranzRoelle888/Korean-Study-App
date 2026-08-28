@@ -3728,6 +3728,132 @@ textarea {
   color: var(--text-soft);
 }
 
+/* ---------- V2: Fließtext mit mehreren Lücken ---------- */
+.lt2-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 18px calc(24px + env(safe-area-inset-bottom));
+}
+
+.lt-punkte {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+}
+
+.lt2-text {
+  max-width: 360px;
+}
+
+.lt2-text .lt-satz {
+  font-size: 18.5px;
+  line-height: 2.05;
+  text-align: left;
+}
+
+.lt2-feld {
+  display: inline-block;
+  margin: 0 2px;
+  padding: 1px 6px;
+  border: none;
+  border-bottom: 2.5px solid var(--primary);
+  border-radius: 6px 6px 0 0;
+  background: var(--primary-soft);
+  font: inherit;
+  font-size: 16px; /* iOS-Zoom-Grenze */
+  color: var(--text);
+  text-align: center;
+  width: auto;
+  max-width: 150px;
+}
+
+.lt2-feld::placeholder {
+  color: var(--text-soft);
+  opacity: 0.75;
+}
+
+.lt2-feld:focus {
+  outline: none;
+  background: var(--surface-2);
+}
+
+.lt2-feld-kurz {
+  max-width: 64px;
+}
+
+.lt2-korrektur s {
+  opacity: 0.75;
+  font-weight: 600;
+}
+
+.lt2-hinweis {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--text-soft);
+  text-align: center;
+  max-width: 320px;
+}
+
+.lt2-pruefen:disabled {
+  opacity: 0.4;
+}
+
+.lt2-feedback {
+  margin: 0;
+  max-width: 340px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--primary-soft);
+  font-size: 14px;
+  line-height: 1.55;
+  text-align: left;
+}
+
+.lt2-feedback-laedt {
+  color: var(--text-soft);
+  background: var(--surface-2);
+}
+
+.lt2-ende {
+  display: flex;
+  gap: 10px;
+}
+
+.lt2-fertigknopf {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+/* ---------- Versions-Hinweis (Startseite, unten rechts) ---------- */
+.version-note {
+  position: absolute;
+  right: 14px;
+  bottom: 8px;
+  font-size: 10px;
+  color: var(--text-soft);
+  opacity: 0.7;
+}
+
+.update-pille {
+  position: fixed;
+  right: 14px;
+  bottom: calc(70px + env(safe-area-inset-bottom));
+  z-index: 40;
+  padding: 9px 14px;
+  border-radius: 999px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 700;
+  box-shadow: var(--shadow-sm);
+}
+
 /* ============================================================
    LOGIN — nur die zwei dürfen rein
    ============================================================ */

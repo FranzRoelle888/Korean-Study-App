@@ -10,4 +10,12 @@ import react from '@vitejs/plugin-react'
 export default defineConfig(({ command }) => ({
   base: command === 'build' ? '/Korean-Study-App/' : '/',
   plugins: [react()],
+  // Bau-Kennung: erscheint klein auf der Startseite, damit man
+  // sofort sieht, welche Version das Handy gerade ausführt
+  // (das leidige Cache-Raten hat damit ein Ende).
+  define: {
+    __BUILD_KENNUNG__: JSON.stringify(
+      new Date().toISOString().slice(0, 16).replace('T', ' ') + ' UTC'
+    ),
+  },
 }))

@@ -1,80 +1,55 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../core/supabaseClient'
-import ClearableInput from '../../shared/ClearableInput'
+import { trainerUebung } from '../trainer/trainerApi'
 import { SpeakButton, prewarmSpeech } from '../../shared/tts'
 
 /* ============================================================
-   LÜCKENTEXT — der erste Übungs-Modus aus der Aufgaben-Bank
+   LÜCKENTEXT V2 — zusammenhängende Texte mit mehreren Lücken
 
-   Ablauf: 5 Aufgaben pro Runde. Jede zeigt einen Satz mit EINER
-   Lücke und dem Basis-Wort in Klammern — dadurch ist die Lösung
-   eindeutig (Konzept-Entscheidung), die App prüft sofort und
-   kostenlos. Unbekannte Wörter im Satz sind antippbar und zeigen
-   ihre Bedeutung (Glossar, vom Nacht-Batch miterzeugt).
-
-   Ergebnisse werden in der Bank vermerkt (korrekt/falsch) —
-   daraus speist sich später das Grammatik-Wissensmodell.
-   Leere Bank: freundlicher Hinweis, der Nacht-Batch füllt nach.
+   Nach Franz' Test-Feedback (28.08.2026) neu gebaut:
+   - EIN Fließtext (2–4 Sätze), 6–8 Lücken aus gemischter
+     Grammatik — fordernder, weil der Kontext trägt.
+   - Form-Lücken zeigen die Grundform GRAU IM FELD (nicht mehr
+     doppelt daneben); Partikel-Lücken sind schmal und leer.
+   - Glossar-Wörter (gepunktet unterstrichen) sind antippbar.
+   - Geprüft wird alles auf einen Schlag; falsche Lücken zeigen
+     die Lösung, die eigene Antwort bleibt durchgestrichen sichtbar.
+   - Danach: kurzes KI-Feedback (fließt zugleich als Beleg in
+     Grammatik-Zustände und Lernjournal — der Rückfluss!).
    ============================================================ */
 
-const RUNDE = 5
+/* Text + Lücken + Glossar in eine renderbare Stückliste zerlegen */
+function zerlege(payload) {
+  const teile = payload.text.split('___')
+  return teile.map((teil, i) => ({ text: teil, lueckeIdx: i < teile.length - 1 ? i : null }))
+}
 
-/* Satz in Stücke zerlegen: Lücke + antippbare Glossar-Wörter */
-function SatzMitLuecke({ satz, glossar, lang, kind, eingabe }) {
-  const [offen, setOffen] = useState(null)
-
-  /* erst an der Lücke teilen, dann Glossar-Wörter markieren */
-  const teile = satz.split('___')
-  const rendered = teile.map((teil, i) => {
-    let rest = teil
-    const stuecke = []
-    for (const g of glossar ?? []) {
-      const pos = rest.indexOf(g.wort)
-      if (pos === -1) continue
-      if (pos > 0) stuecke.push(rest.slice(0, pos))
-      stuecke.push(
-        <button
-          type="button"
-          className="lt-gloss"
-          key={`${i}-${g.wort}`}
-          onClick={() => setOffen(offen === g.wort ? null : g.wort)}
-        >
-          {g.wort}
-        </button>
-      )
-      rest = rest.slice(pos + g.wort.length)
-    }
-    stuecke.push(rest)
-    return (
-      <span key={i}>
-        {stuecke}
-        {i < teile.length - 1 && <span className="lt-luecke">{eingabe}</span>}
-      </span>
+function GlossText({ text, glossar, lang, onGloss }) {
+  const stuecke = []
+  let rest = text
+  let k = 0
+  for (const g of glossar ?? []) {
+    const pos = rest.indexOf(g.wort)
+    if (pos === -1) continue
+    if (pos > 0) stuecke.push(<span key={`t${k++}`}>{rest.slice(0, pos)}</span>)
+    stuecke.push(
+      <button type="button" className="lt-gloss" key={`g${k++}`} onClick={() => onGloss(g)}>
+        {g.wort}
+      </button>
     )
-  })
-
-  const aktiv = (glossar ?? []).find((g) => g.wort === offen)
-  return (
-    <div className="lt-satz-block">
-      <p className="lt-satz" lang={lang}>
-        {rendered}
-      </p>
-      {aktiv && (
-        <p className="lt-gloss-bubble">
-          <strong lang={lang}>{aktiv.wort}</strong> — {aktiv.bedeutung}
-        </p>
-      )}
-    </div>
-  )
+    rest = rest.slice(pos + g.wort.length)
+  }
+  stuecke.push(<span key={`r${k}`}>{rest}</span>)
+  return <span lang={lang}>{stuecke}</span>
 }
 
 function Lueckentext({ profile, t, onExit }) {
-  const [aufgaben, setAufgaben] = useState(null) /* null = lädt */
+  const [texte, setTexte] = useState(null) /* null = lädt */
   const [idx, setIdx] = useState(0)
-  const [eingabe, setEingabe] = useState('')
-  const [geprueft, setGeprueft] = useState(null) /* null | 'ok' | 'falsch' */
-  const [punkte, setPunkte] = useState(0)
-  const [fertig, setFertig] = useState(false)
+  const [antworten, setAntworten] = useState([])
+  const [geprueft, setGeprueft] = useState(false)
+  const [gloss, setGloss] = useState(null)
+  const [feedback, setFeedback] = useState(null) /* null | 'laedt' | string */
 
   useEffect(() => {
     let weg = false
@@ -84,52 +59,69 @@ function Lueckentext({ profile, t, onExit }) {
       .eq('profile', profile.id)
       .eq('typ', 'lueckentext')
       .eq('status', 'neu')
+      .eq('payload->>version', '2')
       .order('created_at', { ascending: true })
-      .limit(RUNDE)
+      .limit(3)
       .then(({ data, error }) => {
         if (weg) return
-        setAufgaben(error ? [] : (data ?? []))
+        setTexte(error ? [] : (data ?? []))
       })
     return () => {
       weg = true
     }
   }, [profile.id])
 
-  const aufgabe = aufgaben && aufgaben[idx]
+  const aufgabe = texte && texte[idx]
+  const luecken = aufgabe ? aufgabe.payload.luecken : []
 
-  /* Stimme für den vollständigen Satz vorwärmen */
+  /* Antwort-Felder zurücksetzen + Stimme vorwärmen, wenn ein
+     neuer Text dran ist */
   useEffect(() => {
-    if (aufgabe) {
-      prewarmSpeech(aufgabe.payload.satz.replace('___', aufgabe.payload.loesung), profile.targetLang)
-    }
+    if (!aufgabe) return
+    setAntworten(aufgabe.payload.luecken.map(() => ''))
+    setGeprueft(false)
+    setFeedback(null)
+    setGloss(null)
+    let voll = aufgabe.payload.text
+    for (const l of aufgabe.payload.luecken) voll = voll.replace('___', l.loesung)
+    prewarmSpeech(voll, profile.targetLang)
   }, [aufgabe && aufgabe.id])
 
-  function pruefen(e) {
-    e.preventDefault()
-    if (!aufgabe || geprueft) return
-    const antwort = eingabe.trim()
-    if (!antwort) return
-    const p = aufgabe.payload
-    const richtig =
-      antwort === p.loesung || (p.auch_ok ?? []).some((a) => antwort === String(a).trim())
-    setGeprueft(richtig ? 'ok' : 'falsch')
-    if (richtig) setPunkte((z) => z + 1)
-    /* Ergebnis in der Bank vermerken — Beleg fürs Wissensmodell.
-       Fehler beim Speichern sind still: die Übung läuft weiter. */
-    supabase
-      .from('exercise_bank')
-      .update({ status: 'erledigt', korrekt: richtig, erledigt_am: new Date().toISOString() })
-      .eq('id', aufgabe.id)
-      .then(() => {})
+  function istRichtig(i) {
+    const a = (antworten[i] ?? '').trim()
+    const l = luecken[i]
+    return a === l.loesung || (l.auch_ok ?? []).some((x) => a === String(x).trim())
   }
 
-  function weiter() {
-    if (idx + 1 >= aufgaben.length) {
-      setFertig(true)
-    } else {
-      setIdx(idx + 1)
-      setEingabe('')
-      setGeprueft(null)
+  async function pruefen() {
+    if (geprueft || antworten.some((a) => !a.trim())) return
+    setGeprueft(true)
+    const ergebnisse = luecken.map((l, i) => ({
+      grammatik_id: l.grammatik_id,
+      grammatik_name:
+        (aufgabe.payload.punkte ?? []).find((p) => p.id === l.grammatik_id)?.name ?? l.grammatik_id,
+      loesung: l.loesung,
+      antwort: antworten[i].trim(),
+      richtig: istRichtig(i),
+    }))
+    /* Ergebnis in der Bank vermerken (still bei Fehlern) */
+    supabase
+      .from('exercise_bank')
+      .update({
+        status: 'erledigt',
+        korrekt: ergebnisse.every((e) => e.richtig),
+        erledigt_am: new Date().toISOString(),
+      })
+      .eq('id', aufgabe.id)
+      .then(() => {})
+    /* KI-Feedback + Beleg-Rückfluss — der Kern des Konzepts.
+       Offline/Fehler: die Übung bleibt trotzdem abgeschlossen. */
+    setFeedback('laedt')
+    try {
+      const res = await trainerUebung({ profile: profile.id, ergebnisse })
+      setFeedback(res.feedback || '')
+    } catch {
+      setFeedback('')
     }
   }
 
@@ -141,13 +133,15 @@ function Lueckentext({ profile, t, onExit }) {
         </svg>
       </button>
       <span className="daily-label">{t.modeGap}</span>
-      {aufgaben && aufgaben.length > 0 && !fertig && (
-        <span className="lt-zaehler">{idx + 1} / {aufgaben.length}</span>
+      {geprueft && (
+        <span className="lt-zaehler">
+          {luecken.filter((_, i) => istRichtig(i)).length} / {luecken.length}
+        </span>
       )}
     </div>
   )
 
-  if (aufgaben === null) {
+  if (texte === null) {
     return (
       <div className="screen">
         {kopf}
@@ -156,7 +150,7 @@ function Lueckentext({ profile, t, onExit }) {
     )
   }
 
-  if (aufgaben.length === 0) {
+  if (!aufgabe) {
     return (
       <div className="screen">
         {kopf}
@@ -169,79 +163,94 @@ function Lueckentext({ profile, t, onExit }) {
     )
   }
 
-  if (fertig) {
-    return (
-      <div className="screen">
-        {kopf}
-        <div className="kal-mitte">
-          <div className="kal-emoji pop">{punkte === aufgaben.length ? '🏆' : '🎉'}</div>
-          <h2 className="kal-titel">{t.ltFertig(punkte, aufgaben.length)}</h2>
-          <button className="done-btn" onClick={onExit}>{t.back}</button>
-        </div>
-      </div>
-    )
-  }
-
   const p = aufgabe.payload
+  const stuecke = zerlege(p)
+  const alleGefuellt = antworten.every((a) => a.trim())
+
   return (
     <div className="screen">
       {kopf}
-      <div className="lt-mitte">
-        <span className="lt-grammatik">{p.grammatik_name}</span>
+      <div className="lt2-scroll">
+        <div className="lt-punkte">
+          {(p.punkte ?? []).map((pt) => (
+            <span className="lt-grammatik" key={pt.id}>{pt.name}</span>
+          ))}
+        </div>
 
-        <SatzMitLuecke
-          satz={p.satz}
-          glossar={p.glossar}
-          lang={profile.targetLang}
-          eingabe={
-            geprueft ? (
-              <strong className={geprueft === 'ok' ? 'lt-ok' : 'lt-falsch'}>{p.loesung}</strong>
-            ) : (
-              '？'
-            )
-          }
-        />
+        <div className="lt-satz-block lt2-text">
+          <p className="lt-satz" lang={profile.targetLang}>
+            {stuecke.map((s, i) => (
+              <span key={i}>
+                <GlossText text={s.text} glossar={p.glossar} lang={profile.targetLang} onGloss={(g) => setGloss(gloss?.wort === g.wort ? null : g)} />
+                {s.lueckeIdx !== null && (
+                  geprueft ? (
+                    istRichtig(s.lueckeIdx) ? (
+                      <strong className="lt-ok">{luecken[s.lueckeIdx].loesung}</strong>
+                    ) : (
+                      <span className="lt2-korrektur">
+                        <s className="lt-falsch">{antworten[s.lueckeIdx]}</s>{' '}
+                        <strong className="lt-ok">{luecken[s.lueckeIdx].loesung}</strong>
+                      </span>
+                    )
+                  ) : (
+                    <input
+                      className={luecken[s.lueckeIdx].art === 'partikel' ? 'lt2-feld lt2-feld-kurz' : 'lt2-feld'}
+                      value={antworten[s.lueckeIdx]}
+                      onChange={(e) => {
+                        const neu = [...antworten]
+                        neu[s.lueckeIdx] = e.target.value
+                        setAntworten(neu)
+                      }}
+                      placeholder={luecken[s.lueckeIdx].art === 'form' ? luecken[s.lueckeIdx].basis : '…'}
+                      lang={profile.targetLang}
+                      autoCapitalize="none"
+                      autoCorrect="off"
+                      spellCheck={false}
+                      size={Math.max(luecken[s.lueckeIdx].art === 'partikel' ? 2 : 5, (luecken[s.lueckeIdx].basis ?? '').length)}
+                    />
+                  )
+                )}
+              </span>
+            ))}
+          </p>
+          {gloss && (
+            <p className="lt-gloss-bubble">
+              <strong lang={profile.targetLang}>{gloss.wort}</strong> — {gloss.bedeutung}
+            </p>
+          )}
+        </div>
 
-        <p className="lt-basis">
-          [ <span lang={profile.targetLang}>{p.basis}</span> ]
-        </p>
+        {!geprueft && <p className="lt2-hinweis">{t.ltHinweis}</p>}
 
-        {geprueft === null ? (
-          <form className="lt-form" onSubmit={pruefen}>
-            <ClearableInput
-              autoFocus
-              value={eingabe}
-              onChange={(e) => setEingabe(e.target.value)}
-              onClear={() => setEingabe('')}
-              placeholder={t.ltPlaceholder}
-              lang={profile.targetLang}
-              autoComplete="off"
-            />
-            <button type="submit" className="add-btn" disabled={!eingabe.trim()}>
-              {t.check}
-            </button>
-          </form>
+        {!geprueft ? (
+          <button className="done-btn lt2-pruefen" onClick={pruefen} disabled={!alleGefuellt}>
+            {t.check}
+          </button>
         ) : (
           <div className="lt-aufloesung">
-            {geprueft === 'falsch' && (
-              <p className="lt-deine">
-                {t.ltDeine}: <span lang={profile.targetLang}>{eingabe}</span>
-              </p>
-            )}
-            <p className={geprueft === 'ok' ? 'lt-note lt-ok' : 'lt-note lt-falsch'}>
-              {geprueft === 'ok' ? t.correct : t.ltLoesungWar(p.loesung)}
-            </p>
             <p className="lt-uebersetzung">
               {p.uebersetzung}
               <SpeakButton
-                text={p.satz.replace('___', p.loesung)}
+                text={luecken.reduce((txt, l) => txt.replace('___', l.loesung), p.text)}
                 lang={profile.targetLang}
                 className="speak-inline"
               />
             </p>
-            <button className="done-btn" onClick={weiter}>
-              {idx + 1 >= aufgaben.length ? t.ltErgebnis : t.ltWeiter}
-            </button>
+            {feedback === 'laedt' ? (
+              <p className="lt2-feedback lt2-feedback-laedt">{t.ltFeedbackLaedt}</p>
+            ) : feedback ? (
+              <p className="lt2-feedback">{feedback}</p>
+            ) : null}
+            <div className="lt2-ende">
+              {idx + 1 < texte.length && (
+                <button className="done-btn" onClick={() => setIdx(idx + 1)}>
+                  {t.ltNochEiner}
+                </button>
+              )}
+              <button className="done-btn lt2-fertigknopf" onClick={onExit}>
+                {t.back}
+              </button>
+            </div>
           </div>
         )}
       </div>

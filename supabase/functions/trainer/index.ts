@@ -57,6 +57,16 @@ async function dbInsert(table: string, row: unknown) {
   if (!r.ok) throw new Error(`DB insert ${r.status}: ${await r.text()}`)
 }
 
+/* Upsert (z. B. Grammatik-Zustände: neuer Beleg überschreibt alten) */
+async function dbUpsert(table: string, rows: unknown, konflikt: string) {
+  const r = await fetch(`${SB_URL}/rest/v1/${table}?on_conflict=${konflikt}`, {
+    method: 'POST',
+    headers: { ...dbHead, Prefer: 'resolution=merge-duplicates,return=minimal' },
+    body: JSON.stringify(rows),
+  })
+  if (!r.ok) throw new Error(`DB upsert ${r.status}: ${await r.text()}`)
+}
+
 /* ---------- Der Lernstand-Steckbrief (Konzept §3) ----------
    Strukturiert statt Rohliste: sicher / wackelig / frisch, dazu
    Skills und die letzten Einheiten aus dem Lernjournal. */
@@ -295,7 +305,7 @@ async function overLimit(profile: string) {
   /* Nur die eigenen Aktionen zählen — die speech-Funktion führt
      ihr eigenes Limit in speech_usage */
   const rows = await dbGet(
-    `trainer_usage?profile=eq.${profile}&action=in.(chat,summary,extract)&created_at=gt.${oneHourAgo}&select=id`
+    `trainer_usage?profile=eq.${profile}&action=in.(chat,summary,extract,uebung)&created_at=gt.${oneHourAgo}&select=id`
   )
   return rows.length >= MAX_CALLS_PER_HOUR
 }
@@ -331,12 +341,99 @@ Deno.serve(async (req) => {
     const { action, profile, mode, scenario, messages } = body
 
     if (profile !== 'ko' && profile !== 'de') return json({ error: 'bad-profile' }, 400)
-    /* extract hat keinen Verlauf — die Prüfung gilt nur für
-       chat und summary */
-    if (action !== 'extract' && (!Array.isArray(messages) || messages.length > 60))
+    /* extract und uebung haben keinen Verlauf — die Prüfung gilt
+       nur für chat und summary */
+    if (
+      action !== 'extract' &&
+      action !== 'uebung' &&
+      (!Array.isArray(messages) || messages.length > 60)
+    )
       return json({ error: 'bad-messages' }, 400)
 
     if (await overLimit(profile)) return json({ error: 'rate-limit' }, 429)
+
+    /* ---------- Übungs-Abschluss: Feedback + Beleg-Rückfluss ----------
+       Kommt nach jeder ABGESCHLOSSENEN Übungsrunde (Konzept:
+       Abgebrochenes zählt nicht). Drei Wirkungen:
+       1. kurzes KI-Feedback für den Fertig-Bildschirm
+       2. Eintrag ins Lernjournal (sessions) — der Trainer weiß
+          morgen, was heute geübt wurde
+       3. Grammatik-Zustände: alle Versuche eines Punkts richtig
+          -> sicher (Quelle: uebung, macht den Balken "satt");
+          ein Fehler -> wackelig */
+    if (action === 'uebung') {
+      const ergebnisse = Array.isArray(body.ergebnisse) ? body.ergebnisse.slice(0, 20) : []
+      if (!ergebnisse.length) return json({ error: 'empty' }, 400)
+
+      /* je Grammatikpunkt bündeln */
+      const punkte = new Map<string, { name: string; richtig: number; falsch: number }>()
+      for (const e of ergebnisse) {
+        const id = String(e.grammatik_id ?? '')
+        if (!id) continue
+        const p = punkte.get(id) ?? { name: String(e.grammatik_name ?? id), richtig: 0, falsch: 0 }
+        e.richtig ? p.richtig++ : p.falsch++
+        punkte.set(id, p)
+      }
+
+      await dbUpsert(
+        'inventory_status',
+        [...punkte.entries()].map(([id, p]) => ({
+          profile,
+          item_id: id,
+          kind: 'grammatik',
+          status: p.falsch === 0 ? 'sicher' : 'wackelig',
+          label: p.name,
+          source: 'uebung',
+        })),
+        'profile,item_id'
+      )
+
+      const learnsKorean = profile === 'ko'
+      const explain = learnsKorean ? 'English' : 'Korean'
+      const zusammenfassung = ergebnisse
+        .map(
+          (e) =>
+            `${e.grammatik_name}: expected "${e.loesung}", answered "${e.antwort}" (${e.richtig ? 'correct' : 'WRONG'})`
+        )
+        .join('\n')
+
+      const out = await callModel(
+        [
+          `You are the learner's warm ${learnsKorean ? 'Korean' : 'German'} trainer. They just finished a cloze exercise round. Based on the results, write SHORT feedback in ${explain}:`,
+          '2-4 sentences: name what clearly sits, then the ONE pattern most worth practicing (with the correct form and a tiny why), end encouraging. No lists, no lecture.',
+          'Reply with ONLY this JSON: {"feedback":"...","summary":"<1 sentence for YOUR OWN memory: what was practiced, which pattern needs work>","errors":["<error pattern>", ...max 2, empty if none]}',
+        ].join('\n'),
+        [{ role: 'user', content: `Results:\n${zusammenfassung}` }]
+      )
+      let feedback = ''
+      let summary = 'Cloze round completed.'
+      let errs: string[] = []
+      try {
+        const j = JSON.parse(
+          out.text.replace(/^```(?:json)?/m, '').replace(/```\s*$/m, '').trim()
+        )
+        feedback = typeof j.feedback === 'string' ? j.feedback : out.text
+        if (typeof j.summary === 'string') summary = j.summary
+        if (Array.isArray(j.errors)) errs = j.errors.map(String).slice(0, 2)
+      } catch {
+        feedback = out.text
+      }
+
+      await dbInsert('trainer_usage', {
+        profile,
+        action: 'uebung',
+        input_tokens: out.inputTokens,
+        output_tokens: out.outputTokens,
+      })
+      await dbInsert('sessions', {
+        profile,
+        mode: 'lueckentext',
+        scenario: null,
+        summary,
+        errors: errs,
+      })
+      return json({ feedback })
+    }
 
     /* ---------- Grammatik aus einer Erklärung ziehen ---------- */
     if (action === 'extract') {
