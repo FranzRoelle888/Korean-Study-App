@@ -32,6 +32,8 @@ permissions:
 jobs:
   bauen:
     runs-on: ubuntu-latest
+    outputs:
+      committet: ${{ steps.commit.outputs.committet }}
     steps:
       - uses: actions/checkout@v4
 
@@ -60,10 +62,27 @@ jobs:
           echo '```' >> $GITHUB_STEP_SUMMARY
 
       - name: Ergebnis committen
+        id: commit
         run: |
           git config user.name "lektionen-bot"
           git config user.email "actions@users.noreply.github.com"
           git add src/core/lektionen/
-          git diff --cached --quiet && echo "nichts zu committen" && exit 0
+          if git diff --cached --quiet; then
+            echo "nichts zu committen"
+            echo "committet=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
           git commit -m "Nacht-Batch: Grammatik-Lektionen gebaut (extras_auto)"
           git push
+          echo "committet=true" >> $GITHUB_OUTPUT
+
+  # Bot-Commits triggern den Pages-Deploy nicht von selbst
+  # (GitHub-Schutz) — deshalb hier explizit hinterher
+  deployen:
+    needs: bauen
+    if: needs.bauen.outputs.committet == 'true'
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    uses: ./.github/workflows/deploy.yml

@@ -6,6 +6,11 @@ on:
   push:
     branches: [main]
   workflow_dispatch: # erlaubt auch manuelles Auslösen im GitHub-Web
+  # Aufrufbar aus anderen Workflows: Bot-Commits (Lektionen,
+  # Inventare) lösen den Push-Trigger absichtlich NICHT aus
+  # (GitHub-Schutz vor Schleifen) — die Inhalte-Workflows rufen
+  # das Deploy deshalb nach ihrem Commit direkt selbst auf.
+  workflow_call:
 
 # Rechte, die der Workflow zum Veröffentlichen braucht
 permissions:

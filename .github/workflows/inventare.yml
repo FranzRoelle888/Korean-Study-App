@@ -20,6 +20,8 @@ permissions:
 jobs:
   fuellen:
     runs-on: ubuntu-latest
+    outputs:
+      committet: ${{ steps.commit.outputs.committet }}
     steps:
       - uses: actions/checkout@v4
 
@@ -38,11 +40,27 @@ jobs:
           fi
 
       - name: Ergebnis committen
+        id: commit
         if: ${{ inputs.dry != true }}
         run: |
           git config user.name "inventar-bot"
           git config user.email "actions@users.noreply.github.com"
           git add src/core/inventare/*.json
-          git diff --cached --quiet && echo "nichts zu committen" && exit 0
+          if git diff --cached --quiet; then
+            echo "nichts zu committen"
+            echo "committet=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
           git commit -m "Nacht-Batch: Inventar-Uebersetzungen gefuellt (extras_auto)"
           git push
+          echo "committet=true" >> $GITHUB_OUTPUT
+
+  # Bot-Commits triggern den Pages-Deploy nicht von selbst — hier explizit
+  deployen:
+    needs: fuellen
+    if: needs.fuellen.outputs.committet == 'true'
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    uses: ./.github/workflows/deploy.yml
