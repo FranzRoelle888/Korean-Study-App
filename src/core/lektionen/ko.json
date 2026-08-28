@@ -1,1 +1,57 @@
-{}
+{
+ "tg-subj-i-ga": {
+  "titel": "N이/가 (subject particle)",
+  "erklaerung": "In Korean, 이/가 marks the subject of a sentence — the person or thing doing the action or being described. Attach 가 after a noun ending in a vowel, and 이 after a noun ending in a consonant. For example: 친구가 와요 (my friend is coming) or 학생이 있어요 (there is a student). This particle basically points at 'who or what' the sentence is about. Native English speakers often skip it because English doesn't need a subject marker, but in Korean it's essential to show who/what is doing something, especially when the subject isn't obvious from context. The most common mistake is using 는/은 instead of 이/가, or forgetting the particle entirely — 이/가 introduces new or specific information (often 'what', 'who', or something happening right now), while 는/은 tends to set up contrast or topic. Just remember: check the last letter of the noun — vowel gets 가, consonant gets 이!",
+  "beispiele": [
+   {
+    "satz": "날씨가 좋아요.",
+    "tr": "The weather is nice."
+   },
+   {
+    "satz": "학생이 교실에 있어요.",
+    "tr": "A student is in the classroom."
+   },
+   {
+    "satz": "친구가 지금 와요.",
+    "tr": "My friend is coming now."
+   }
+  ],
+  "erkennen": [
+   {
+    "richtig": "아이가 놀아요.",
+    "falsch": "아이는 놀아요.",
+    "tr": "A child is playing."
+   },
+   {
+    "richtig": "선생님이 말해요.",
+    "falsch": "선생님 말해요.",
+    "tr": "The teacher is speaking."
+   }
+  ],
+  "luecken": [
+   {
+    "satz": "날씨___ 추워요.",
+    "hinweis": "weather (subject)",
+    "basis": "",
+    "loesung": "가",
+    "auch_ok": []
+   },
+   {
+    "satz": "학생___ 책을 읽어요.",
+    "hinweis": "student (subject)",
+    "basis": "",
+    "loesung": "이",
+    "auch_ok": []
+   },
+   {
+    "satz": "친구___ 노래해요.",
+    "hinweis": "friend (subject)",
+    "basis": "",
+    "loesung": "가",
+    "auch_ok": []
+   }
+  ],
+  "produzieren": "Write two sentences about your daily life using 이/가 to mark the subject — for example, talk about your friend, family member, or the weather today.",
+  "extras_auto": true
+ }
+}
