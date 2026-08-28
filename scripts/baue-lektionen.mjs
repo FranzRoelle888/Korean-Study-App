@@ -169,14 +169,19 @@ const system = [
   '',
   'Lesson parts:',
   `1. "erklaerung": 4-8 friendly ${erklaersprache} sentences: what the pattern does, when to use it, how it attaches/conjugates, and THE one typical pitfall. Concrete, warm, no jargon walls.`,
-  `2. "beispiele": exactly 3 natural ${zielsprache} sentences${PROFIL === 'ko' ? ' (해요체)' : ''} showing the pattern in different situations, each with ${erklaersprache} translation "tr".`,
+  `2. "beispiele": exactly 3 objects {"satz": natural ${zielsprache} sentence${PROFIL === 'ko' ? ' (해요체)' : ''} showing the pattern, "tr": ${erklaersprache} translation} in different situations.`,
   `3. "erkennen": exactly 2 pairs {"richtig": correct sentence, "falsch": same idea with a TYPICAL learner error in the target pattern, "tr": translation of the correct one}. The error must be plausible, not absurd.`,
   `4. "luecken": exactly 3 single-gap sentences {"satz": with ONE ___, "hinweis": ${erklaersprache} meaning of the word to insert, "basis": dictionary form (must NOT appear in satz; empty string if the gap is a particle), "loesung", "auch_ok":[]}. The gap tests THIS pattern.`,
   `5. "produzieren": one short ${erklaersprache} writing prompt asking the learner to build their own sentence with the pattern (give a relatable everyday topic).`,
   '',
   `Vocabulary for parts 2-4: prefer the learner's words: ${whitelist || '(basic everyday words)'} — a few common extra words are fine.`,
   '',
-  'Reply with ONLY the JSON object {"erklaerung":...,"beispiele":[...],"erkennen":[...],"luecken":[...],"produzieren":"..."}.',
+  'Reply with ONLY this JSON object (exact keys!):',
+  '{"erklaerung":"...",',
+  ' "beispiele":[{"satz":"...","tr":"..."} ×3],',
+  ' "erkennen":[{"richtig":"...","falsch":"...","tr":"..."} ×2],',
+  ' "luecken":[{"satz":"...___...","hinweis":"...","basis":"...","loesung":"...","auch_ok":[]} ×3],',
+  ' "produzieren":"..."}',
 ].join('\n')
 
 let gebaut = 0
@@ -185,12 +190,16 @@ for (const punkt of ziele) {
     let l = await frage(system, `The pattern to teach: "${punkt.muster}" (${punkt.name}). Canonical example: ${punkt.beispiel}`)
     let fehler = pruefe(l, PROFIL)
     if (fehler) {
-      console.warn(`${punkt.muster}: 1. Versuch (${fehler}) — zweiter Versuch`)
+      console.warn(
+        `${punkt.muster}: 1. Versuch (${fehler}) — zweiter Versuch\n  Probe: ${JSON.stringify(l).slice(0, 300)}`
+      )
       l = await frage(system, `The pattern: "${punkt.muster}" (${punkt.name}). Example: ${punkt.beispiel}\nYour previous attempt was rejected: ${fehler}. Fix exactly that.`)
       fehler = pruefe(l, PROFIL)
     }
     if (fehler) {
-      console.warn(`${punkt.muster}: verworfen — ${fehler}`)
+      console.warn(
+        `${punkt.muster}: verworfen — ${fehler}\n  Probe: ${JSON.stringify(l).slice(0, 300)}`
+      )
       continue
     }
     bestand[punkt.id] = {
