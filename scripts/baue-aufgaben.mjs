@@ -192,13 +192,19 @@ async function fuelleProfil(profil) {
     }
     const erlaubteIds = new Set(punkte.map((p) => p.id))
     try {
-      const a = await frage(
-        system,
+      const auftrag =
         'Target grammar points for THIS text:\n' +
-          punkte.map((p) => `- ${p.id}: "${p.muster}" (${p.name}), example: ${p.beispiel}`).join('\n') +
-          '\nCreate ONE connected cloze text now.'
-      )
-      const fehler = pruefe(a, profil, erlaubteIds)
+        punkte.map((p) => `- ${p.id}: "${p.muster}" (${p.name}), example: ${p.beispiel}`).join('\n') +
+        '\nCreate ONE connected cloze text now.'
+      let a = await frage(system, auftrag)
+      let fehler = pruefe(a, profil, erlaubteIds)
+      if (fehler) {
+        /* Ein zweiter Versuch mit dem konkreten Fehler als Hinweis —
+           verdoppelt die Trefferquote für kleines Geld */
+        console.warn(`Text ${i + 1}: 1. Versuch verworfen (${fehler}) — zweiter Versuch`)
+        a = await frage(system, `${auftrag}\nYour previous attempt was rejected: ${fehler}. Fix exactly that.`)
+        fehler = pruefe(a, profil, erlaubteIds)
+      }
       if (fehler) {
         verworfen++
         /* Grund + Probe ausgeben — sonst rät man im Log nur herum */
