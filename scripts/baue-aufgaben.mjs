@@ -74,7 +74,13 @@ async function frage(system, nutzer) {
     },
     body: JSON.stringify({
       model: MODEL,
-      max_tokens: 2500,
+      /* Großzügig: Das Modell denkt unsichtbar VOR der Antwort, und
+         diese Denk-Tokens zählen gegen max_tokens mit. 2500 war zu
+         knapp — die V2-Texte kamen abgeschnitten oder leer an
+         ("Unexpected end of JSON input", Lauf #3). */
+      max_tokens: 8000,
+      /* Schablonen-Arbeit braucht kein tiefes Grübeln */
+      output_config: { effort: 'medium' },
       system: [{ type: 'text', text: system, cache_control: { type: 'ephemeral' } }],
       messages: [{ role: 'user', content: nutzer }],
     }),
@@ -82,6 +88,8 @@ async function frage(system, nutzer) {
   if (!r.ok) throw new Error(`Anthropic ${r.status}: ${(await r.text()).slice(0, 150)}`)
   const data = await r.json()
   const text = (data.content ?? []).map((c) => c.text ?? '').join('')
+  if (data.stop_reason === 'max_tokens') throw new Error('Antwort abgeschnitten (max_tokens erreicht)')
+  if (!text.trim()) throw new Error(`leere Antwort (stop_reason: ${data.stop_reason})`)
   return JSON.parse(text.replace(/^```(?:json)?/m, '').replace(/```\s*$/m, '').trim())
 }
 
