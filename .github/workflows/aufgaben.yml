@@ -31,8 +31,18 @@ jobs:
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
+          set -o pipefail
           if [ "${{ inputs.dry }}" = "true" ]; then
-            node scripts/baue-aufgaben.mjs --dry
+            node scripts/baue-aufgaben.mjs --dry 2>&1 | tee lauf.log
           else
-            node scripts/baue-aufgaben.mjs
+            node scripts/baue-aufgaben.mjs 2>&1 | tee lauf.log
           fi
+
+      # Protokoll prominent auf die Run-Übersichtsseite
+      - name: Protokoll anzeigen
+        if: always()
+        run: |
+          echo '## Aufgaben-Lauf' >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          tail -n 60 lauf.log >> $GITHUB_STEP_SUMMARY || true
+          echo '```' >> $GITHUB_STEP_SUMMARY

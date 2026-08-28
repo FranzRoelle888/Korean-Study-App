@@ -45,6 +45,8 @@ function GlossText({ text, glossar, lang, onGloss }) {
 
 function Lueckentext({ profile, t, onExit }) {
   const [texte, setTexte] = useState(null) /* null = lädt */
+  /* Diagnose für den Leer-Bildschirm: was liegt WIRKLICH in der Bank? */
+  const [bankInfo, setBankInfo] = useState(null)
   const [idx, setIdx] = useState(0)
   const [antworten, setAntworten] = useState([])
   const [geprueft, setGeprueft] = useState(false)
@@ -65,6 +67,26 @@ function Lueckentext({ profile, t, onExit }) {
       .then(({ data, error }) => {
         if (weg) return
         setTexte(error ? [] : (data ?? []))
+        if (error || !data || data.length === 0) {
+          /* Leer? Dann nachzählen, was überhaupt da ist — die
+             Zahlen erscheinen klein auf dem Leer-Bildschirm und
+             verraten sofort, WO es klemmt (Bank leer vs. Filter) */
+          Promise.all([
+            supabase
+              .from('exercise_bank')
+              .select('id', { count: 'exact', head: true })
+              .eq('profile', profile.id)
+              .eq('typ', 'lueckentext'),
+            supabase
+              .from('exercise_bank')
+              .select('id', { count: 'exact', head: true })
+              .eq('profile', profile.id)
+              .eq('typ', 'lueckentext')
+              .eq('status', 'neu'),
+          ]).then(([alle, neue]) => {
+            if (!weg) setBankInfo({ alle: alle.count ?? 0, neu: neue.count ?? 0, fehler: error?.message })
+          })
+        }
       })
     return () => {
       weg = true
@@ -157,6 +179,12 @@ function Lueckentext({ profile, t, onExit }) {
         <div className="kal-mitte">
           <div className="kal-emoji">🌙</div>
           <p className="kal-text">{t.ltEmpty}</p>
+          {bankInfo && (
+            <p className="lt-bankinfo">
+              Bank: {bankInfo.alle} gesamt · {bankInfo.neu} offen · 0 im neuen Format
+              {bankInfo.fehler ? ` · Fehler: ${bankInfo.fehler}` : ''}
+            </p>
+          )}
           <button className="done-btn" onClick={onExit}>{t.back}</button>
         </div>
       </div>

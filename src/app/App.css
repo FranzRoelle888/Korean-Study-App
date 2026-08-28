@@ -3722,6 +3722,13 @@ textarea {
 .lt-ok { color: var(--primary); }
 .lt-falsch { color: var(--accent-ink, var(--accent)); }
 
+.lt-bankinfo {
+  margin: 0;
+  font-size: 11px;
+  color: var(--text-soft);
+  opacity: 0.8;
+}
+
 .lt-uebersetzung {
   margin: 0;
   font-size: 13.5px;
