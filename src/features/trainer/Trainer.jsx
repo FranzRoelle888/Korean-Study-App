@@ -3,6 +3,7 @@ import TrainerChat, { readActiveChat } from './TrainerChat'
 import Skills from './Skills'
 import Kalibrierung from '../kalibrierung/Kalibrierung'
 import Lueckentext from '../ueben/Lueckentext'
+import GrammatikModus from '../ueben/GrammatikModus'
 import { ChevronIcon } from '../../shared/icons'
 
 /* ============================================================
@@ -47,6 +48,7 @@ function Trainer({ profile, t, onChatActive }) {
   const [zeigeGramCheck, setZeigeGramCheck] = useState(false)
   /* Lückentext-Übung (aus der Aufgaben-Bank) */
   const [zeigeLueckentext, setZeigeLueckentext] = useState(false)
+  const [zeigeGrammatik, setZeigeGrammatik] = useState(false)
 
   /* Der App melden, ob gerade ein Chat läuft — dann versteckt sie
      die Tab-Leiste, damit nichts über der Tastatur aufflackert. */
@@ -78,6 +80,10 @@ function Trainer({ profile, t, onChatActive }) {
 
   if (zeigeLueckentext) {
     return <Lueckentext profile={profile} t={t} onExit={() => setZeigeLueckentext(false)} />
+  }
+
+  if (zeigeGrammatik) {
+    return <GrammatikModus profile={profile} t={t} onExit={() => setZeigeGrammatik(false)} />
   }
 
   if (zeigeGramCheck) {
@@ -135,12 +141,11 @@ function Trainer({ profile, t, onChatActive }) {
             <span className="mode-sub">{t.modeGapSub}</span>
           </button>
 
-          <div className="mode-card mode-locked" aria-disabled="true">
-            <span className="mode-badge">{t.comingSoon}</span>
+          <button className="mode-card" onClick={() => setZeigeGrammatik(true)}>
             <span className="mode-emoji">📖</span>
             <span className="mode-title">{t.modeGrammar}</span>
             <span className="mode-sub">{t.modeGrammarSub}</span>
-          </div>
+          </button>
         </div>
 
         <button className="skills-entry" onClick={() => setZeigeSkills(true)}>

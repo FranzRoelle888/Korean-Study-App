@@ -46,6 +46,12 @@ export function trainerUebung({ profile, ergebnisse }) {
   return call({ action: 'uebung', profile, ergebnisse })
 }
 
+/* Eigener Satz im Produzieren-Schritt der Lektion -> Urteil
+   { ok, feedback, korrektur } */
+export function trainerSatz({ profile, muster, satz }) {
+  return call({ action: 'satz', profile, muster, satz })
+}
+
 /* Grammatik-Erklärung (Text und/oder Foto) -> Vorschlagsliste.
    image: { media_type: 'image/jpeg', data: '<base64>' } oder null.
    Gespeichert wird erst nach Bestätigung in der App. */

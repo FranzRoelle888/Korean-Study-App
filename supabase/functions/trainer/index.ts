@@ -305,7 +305,7 @@ async function overLimit(profile: string) {
   /* Nur die eigenen Aktionen zählen — die speech-Funktion führt
      ihr eigenes Limit in speech_usage */
   const rows = await dbGet(
-    `trainer_usage?profile=eq.${profile}&action=in.(chat,summary,extract,uebung)&created_at=gt.${oneHourAgo}&select=id`
+    `trainer_usage?profile=eq.${profile}&action=in.(chat,summary,extract,uebung,satz)&created_at=gt.${oneHourAgo}&select=id`
   )
   return rows.length >= MAX_CALLS_PER_HOUR
 }
@@ -346,6 +346,7 @@ Deno.serve(async (req) => {
     if (
       action !== 'extract' &&
       action !== 'uebung' &&
+      action !== 'satz' &&
       (!Array.isArray(messages) || messages.length > 60)
     )
       return json({ error: 'bad-messages' }, 400)
@@ -433,6 +434,43 @@ Deno.serve(async (req) => {
         errors: errs,
       })
       return json({ feedback })
+    }
+
+    /* ---------- Eigener Satz in der Lektion (Produzieren-Schritt) ----------
+       Der Lernende baut einen freien Satz mit dem Ziel-Muster;
+       die KI beurteilt und gibt eine kurze, freundliche Erklärung. */
+    if (action === 'satz') {
+      const satz = typeof body.satz === 'string' ? body.satz.trim().slice(0, 200) : ''
+      const muster = typeof body.muster === 'string' ? body.muster.slice(0, 80) : ''
+      if (!satz || !muster) return json({ error: 'empty' }, 400)
+      const learnsKorean = profile === 'ko'
+      const explain = learnsKorean ? 'English' : 'Korean'
+      const out = await callModel(
+        [
+          `You judge one sentence written by an A1-A2 ${learnsKorean ? 'Korean' : 'German'} learner practicing the pattern "${muster}".`,
+          'Be encouraging and forgiving of minor spelling slips. The sentence passes if it is understandable, grammatical enough for the level, AND actually uses the target pattern.',
+          `Reply with ONLY this JSON: {"ok":true|false,"feedback":"<1-2 warm ${explain} sentences: what works / what to fix and why>","korrektur":"<the corrected sentence, or empty string if ok>"}`,
+        ].join('\n'),
+        [{ role: 'user', content: satz }]
+      )
+      let urteil = { ok: false, feedback: out.text, korrektur: '' }
+      try {
+        const j = JSON.parse(out.text.replace(/^```(?:json)?/m, '').replace(/```\s*$/m, '').trim())
+        urteil = {
+          ok: !!j.ok,
+          feedback: typeof j.feedback === 'string' ? j.feedback : '',
+          korrektur: typeof j.korrektur === 'string' ? j.korrektur : '',
+        }
+      } catch {
+        /* Rohtext als Feedback lassen */
+      }
+      await dbInsert('trainer_usage', {
+        profile,
+        action: 'satz',
+        input_tokens: out.inputTokens,
+        output_tokens: out.outputTokens,
+      })
+      return json(urteil)
     }
 
     /* ---------- Grammatik aus einer Erklärung ziehen ---------- */

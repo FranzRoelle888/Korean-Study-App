@@ -1,0 +1,69 @@
+# ============================================================
+# Grammatik-Lektionen bauen. Von Hand starten:
+# Actions -> "Lektionen bauen" -> Run workflow.
+#   nur = "auto"  -> Pilot: eine Lektion für den nächsten
+#                    anstehenden Punkt des gewählten Profils
+#   nur = "<id>"  -> gezielt diesen Punkt (z. B. tg-wenn-myeon)
+#   alle = true   -> Massenlauf (alles Fehlende, ohne Basics)
+# Das Ergebnis committet der Lauf selbst ins Repo — die App
+# bekommt die Lektionen mit dem nächsten Pages-Deploy.
+# ============================================================
+name: Lektionen bauen
+
+on:
+  workflow_dispatch:
+    inputs:
+      profil:
+        description: 'Profil (ko oder de)'
+        type: choice
+        options: [ko, de]
+        default: ko
+      nur:
+        description: 'auto | <punkt-id> (leer lassen bei alle)'
+        default: 'auto'
+      alle:
+        description: 'Massenlauf: alle fehlenden Lektionen'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  bauen:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Lektionen erzeugen
+        env:
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          set -o pipefail
+          if [ "${{ inputs.alle }}" = "true" ]; then
+            node scripts/baue-lektionen.mjs --profil "${{ inputs.profil }}" --alle 2>&1 | tee lauf.log
+          else
+            node scripts/baue-lektionen.mjs --profil "${{ inputs.profil }}" --nur "${{ inputs.nur }}" 2>&1 | tee lauf.log
+          fi
+
+      - name: Protokoll anzeigen
+        if: always()
+        run: |
+          echo '## Lektionen-Lauf' >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          tail -n 40 lauf.log >> $GITHUB_STEP_SUMMARY || true
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+      - name: Ergebnis committen
+        run: |
+          git config user.name "lektionen-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add src/core/lektionen/
+          git diff --cached --quiet && echo "nichts zu committen" && exit 0
+          git commit -m "Nacht-Batch: Grammatik-Lektionen gebaut (extras_auto)"
+          git push

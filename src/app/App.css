@@ -3837,6 +3837,191 @@ textarea {
   color: var(--text);
 }
 
+/* ---------- Grammatik-Modus: Übersicht + Lektion ---------- */
+.gram-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 18px calc(24px + env(safe-area-inset-bottom));
+}
+
+.gram-weiter {
+  width: 100%;
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 16px;
+  border-radius: 18px;
+  border: 1.5px dashed var(--primary);
+  background: var(--primary-soft);
+  text-align: left;
+}
+
+.gram-weiter-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--primary);
+}
+
+.gram-weiter-titel {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.gram-liste {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.gram-zeile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  text-align: left;
+}
+
+.gram-zeile:disabled {
+  opacity: 0.5;
+}
+
+.gram-sicher {
+  opacity: 0.75;
+}
+
+.gram-status {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 800;
+  border: 1.5px solid var(--border);
+  color: var(--text-soft);
+}
+
+.gram-status-sicher {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: var(--primary-soft);
+}
+
+.gram-status-wackelig {
+  border-color: var(--accent);
+  color: var(--accent-ink, var(--accent));
+}
+
+.gram-muster {
+  font-size: 14.5px;
+  font-weight: 700;
+  flex: none;
+}
+
+.gram-name {
+  font-size: 12px;
+  color: var(--text-soft);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lektion-erklaerung {
+  margin: 0;
+  max-width: 360px;
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+.lektion-beispiele {
+  width: 100%;
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.lektion-beispiel {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-size: 16.5px;
+}
+
+.lektion-tr {
+  font-size: 12.5px;
+  color: var(--text-soft);
+}
+
+.lektion-erk {
+  width: 100%;
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.lektion-erk-satz {
+  padding: 14px;
+  border-radius: 14px;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  font-size: 16.5px;
+  text-align: left;
+  line-height: 1.5;
+}
+
+.lektion-erk-richtig {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+}
+
+.lektion-erk-falsch {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.lektion-satzfeld {
+  width: 100%;
+  max-width: 360px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-size: 16px;
+  font-family: inherit;
+  line-height: 1.5;
+  resize: none;
+}
+
+.lektion-satzfeld:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
 /* ---------- Versions-Hinweis (Startseite, unten rechts) ---------- */
 .version-note {
   position: absolute;
