@@ -41,6 +41,10 @@ const dbKopf = {
   'Content-Type': 'application/json',
 }
 
+/* Wurde in diesem Lauf überhaupt Nachschub gebraucht? (Für die
+   Ehrlichkeits-Prüfung am Ende: voller Puffer ist kein Fehler.) */
+let brauchteNachschub = false
+
 async function dbGet(pfad) {
   const r = await fetch(`${SUPABASE_URL}/rest/v1/${pfad}`, { headers: dbKopf })
   if (!r.ok) throw new Error(`DB ${r.status}: ${(await r.text()).slice(0, 150)}`)
@@ -135,6 +139,7 @@ async function fuelleProfil(profil) {
     console.log(`Puffer voll (${vorhandene.length}/${ZIEL_TEXTE}) — nichts zu tun.`)
     return 0
   }
+  brauchteNachschub = true
 
   /* Punkte-Pool: wackelig zuerst, dann sicher — innerhalb dessen
      die SPÄTEREN Kanon-Punkte (= schwereren) bevorzugt. Ohne
@@ -196,7 +201,10 @@ async function fuelleProfil(profil) {
       const fehler = pruefe(a, profil, erlaubteIds)
       if (fehler) {
         verworfen++
-        console.warn(`Text ${i + 1}: verworfen — ${fehler}`)
+        /* Grund + Probe ausgeben — sonst rät man im Log nur herum */
+        console.warn(
+          `Text ${i + 1}: verworfen — ${fehler}\n  Probe: ${JSON.stringify(a).slice(0, 260)}`
+        )
         continue
       }
       const zeile = {
@@ -237,4 +245,13 @@ async function fuelleProfil(profil) {
 }
 
 const summe = (await fuelleProfil('ko')) + (await fuelleProfil('de'))
-console.log(`\nok — ${summe} neue Texte insgesamt${TROCKEN ? ' (Trockenlauf)' : ''}`)
+console.log(`\n${summe} neue Texte insgesamt${TROCKEN ? ' (Trockenlauf)' : ''}`)
+
+/* Ehrlichkeit des Laufs: Wenn NICHTS gespeichert wurde, obwohl
+   etwas fehlte, soll der Lauf ROT sein — grün muss "Aufgaben
+   liegen bereit" bedeuten, nicht "Skript ist durchgelaufen". */
+if (summe === 0 && brauchteNachschub && !TROCKEN) {
+  console.error('ABBRUCH: Nachschub war nötig, aber 0 Texte gespeichert — Gründe stehen oben im Log.')
+  process.exit(1)
+}
+console.log('ok')
