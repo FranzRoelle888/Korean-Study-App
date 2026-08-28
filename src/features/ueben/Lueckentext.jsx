@@ -229,12 +229,25 @@ function Lueckentext({ profile, t, onExit }) {
                         neu[s.lueckeIdx] = e.target.value
                         setAntworten(neu)
                       }}
-                      placeholder={luecken[s.lueckeIdx].art === 'form' ? luecken[s.lueckeIdx].basis : '…'}
+                      placeholder={
+                        luecken[s.lueckeIdx].art === 'form'
+                          ? /* Der Denk-Hinweis: die BEDEUTUNG in der gekonnten
+                               Sprache — Wort abrufen UND Form bauen (ältere
+                               Texte ohne Hinweis zeigen noch die Grundform) */
+                            luecken[s.lueckeIdx].hinweis || luecken[s.lueckeIdx].basis
+                          : '…'
+                      }
                       lang={profile.targetLang}
                       autoCapitalize="none"
                       autoCorrect="off"
                       spellCheck={false}
-                      size={Math.max(luecken[s.lueckeIdx].art === 'partikel' ? 2 : 5, (luecken[s.lueckeIdx].basis ?? '').length)}
+                      size={Math.max(
+                        luecken[s.lueckeIdx].art === 'partikel' ? 2 : 5,
+                        Math.min(
+                          14,
+                          (luecken[s.lueckeIdx].hinweis || luecken[s.lueckeIdx].basis || '').length
+                        )
+                      )}
                     />
                   )
                 )}

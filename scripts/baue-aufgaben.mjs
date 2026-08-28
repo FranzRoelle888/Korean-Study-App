@@ -110,6 +110,10 @@ function pruefe(a, profil, erlaubteIds) {
     if (!erlaubteIds.has(l.grammatik_id)) return `fremde grammatik_id ${l.grammatik_id}`
     if (l.art === 'form') {
       if (typeof l.basis !== 'string' || !l.basis.trim() || l.basis.length > 30) return 'Basis fehlt'
+      /* Der Denk-Hinweis in der gekonnten Sprache (Entscheidung
+         Franz: erst das Wort abrufen, dann die Form bauen) */
+      if (typeof l.hinweis !== 'string' || !l.hinweis.trim() || l.hinweis.length > 50)
+        return 'Hinweis fehlt'
       /* Die V1-Verwirrung: die Grundform darf NICHT im Text stehen */
       if (text.includes(l.basis.trim())) return `Basis "${l.basis}" steht im Text`
     } else if (l.art === 'partikel') {
@@ -173,8 +177,8 @@ async function fuelleProfil(profil) {
     `- 2-4 natural, flowing ${zielsprache} sentences${profil === 'ko' ? ' (해요체 politeness level)' : ''} that belong together.`,
     '- 6-8 gaps written as ___ , spread across the text, each testing one of the TARGET grammar points given per request. Use each target point at least once.',
     '- Two gap kinds:',
-    '  * "form": the learner must produce a transformed form. Give "basis" (the dictionary form). The basis must NOT appear anywhere in the text — only the gap.',
-    '  * "partikel": the gap is ONLY a particle/small function word (short, no basis).',
+    `  * "form": the learner must RECALL the word from its ${erklaersprache} meaning AND produce the right form. Give "basis" (the dictionary form) and "hinweis" (the ${erklaersprache} meaning shown to the learner, e.g. "to meet"). The basis must NOT appear anywhere in the text — only the gap.`,
+    '  * "partikel": the gap is ONLY a particle/small function word (short, no basis, no hinweis).',
     '- Make it CHALLENGING within known material: natural register, connectors, varied sentence length — no baby sentences.',
     `- Vocabulary: use the learner's word list below. 1-2 words beyond the list are WELCOME for naturalness — but every such word MUST appear in "glossar" with a short ${erklaersprache} meaning.`,
     `- "uebersetzung": ${erklaersprache} translation of the COMPLETE text (gaps filled).`,
@@ -183,7 +187,7 @@ async function fuelleProfil(profil) {
     '',
     'Reply with ONLY a JSON object:',
     '{"text":"... ___ ... ___ ...",',
-    ' "luecken":[{"art":"form","basis":"...","loesung":"...","auch_ok":[],"grammatik_id":"..."}, {"art":"partikel","loesung":"...","auch_ok":[],"grammatik_id":"..."}, ...],',
+    ' "luecken":[{"art":"form","basis":"...","hinweis":"...","loesung":"...","auch_ok":[],"grammatik_id":"..."}, {"art":"partikel","loesung":"...","auch_ok":[],"grammatik_id":"..."}, ...],',
     ' "uebersetzung":"...",',
     ' "glossar":[{"wort":"...","bedeutung":"..."}]}',
     'luecken must be in the same order as the ___ markers appear in the text.',
@@ -231,6 +235,7 @@ async function fuelleProfil(profil) {
           luecken: a.luecken.map((l) => ({
             art: l.art,
             basis: l.art === 'form' ? l.basis.trim() : null,
+            hinweis: l.art === 'form' ? l.hinweis.trim() : null,
             loesung: l.loesung.trim(),
             auch_ok: (l.auch_ok ?? []).map(String).slice(0, 4),
             grammatik_id: l.grammatik_id,
