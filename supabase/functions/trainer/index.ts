@@ -305,7 +305,7 @@ async function overLimit(profile: string) {
   /* Nur die eigenen Aktionen zählen — die speech-Funktion führt
      ihr eigenes Limit in speech_usage */
   const rows = await dbGet(
-    `trainer_usage?profile=eq.${profile}&action=in.(chat,summary,extract,uebung,satz)&created_at=gt.${oneHourAgo}&select=id`
+    `trainer_usage?profile=eq.${profile}&action=in.(chat,summary,extract,uebung,satz,schreiben)&created_at=gt.${oneHourAgo}&select=id`
   )
   return rows.length >= MAX_CALLS_PER_HOUR
 }
@@ -347,6 +347,7 @@ Deno.serve(async (req) => {
       action !== 'extract' &&
       action !== 'uebung' &&
       action !== 'satz' &&
+      action !== 'schreiben' &&
       (!Array.isArray(messages) || messages.length > 60)
     )
       return json({ error: 'bad-messages' }, 400)
@@ -376,18 +377,37 @@ Deno.serve(async (req) => {
         punkte.set(id, p)
       }
 
-      await dbUpsert(
-        'inventory_status',
-        [...punkte.entries()].map(([id, p]) => ({
-          profile,
-          item_id: id,
-          kind: 'grammatik',
-          status: p.falsch === 0 ? 'sicher' : 'wackelig',
-          label: p.name,
-          source: 'uebung',
-        })),
-        'profile,item_id'
-      )
+      /* Entschärft (Feedback Franz 30.08.): EIN Ausrutscher bei
+         sonst richtigen Antworten ist meist ein Tippfehler — der
+         Punkt bleibt dann unangetastet, statt auf wackelig zu
+         fallen. Zurückgestuft wird erst bei 2+ Fehlern oder wenn
+         mehr daneben ging als saß. */
+      const urteile = [...punkte.entries()]
+        .map(([id, p]) => ({
+          id,
+          p,
+          status:
+            p.falsch === 0
+              ? 'sicher'
+              : p.falsch >= 2 || p.falsch > p.richtig
+                ? 'wackelig'
+                : null /* einzelner Ausrutscher: kein Urteil */,
+        }))
+        .filter((u) => u.status !== null)
+      if (urteile.length) {
+        await dbUpsert(
+          'inventory_status',
+          urteile.map((u) => ({
+            profile,
+            item_id: u.id,
+            kind: 'grammatik',
+            status: u.status,
+            label: u.p.name,
+            source: 'uebung',
+          })),
+          'profile,item_id'
+        )
+      }
 
       const learnsKorean = profile === 'ko'
       const explain = learnsKorean ? 'English' : 'Korean'
@@ -471,6 +491,107 @@ Deno.serve(async (req) => {
         output_tokens: out.outputTokens,
       })
       return json(urteil)
+    }
+
+    /* ---------- Schreibwerkstatt: freien Text bewerten ----------
+       Die wertvollste Übungsform (selbst formulieren) und zugleich
+       der beste Verifikations-Kanal: Je Pflicht-Muster gibt es ein
+       Urteil, das als Beleg ins Wissensmodell fließt. Dreistufiges
+       Feedback statt Rotstift: Muster-Bilanz, die 1-2 wichtigsten
+       Fehler, eine Muttersprachler-Version zum Vergleichen. */
+    if (action === 'schreiben') {
+      const text = typeof body.text === 'string' ? body.text.trim().slice(0, 1200) : ''
+      const thema = typeof body.thema === 'string' ? body.thema.slice(0, 120) : ''
+      const muster = (Array.isArray(body.muster) ? body.muster : [])
+        .slice(0, 3)
+        .filter((m) => m && typeof m.id === 'string' && typeof m.muster === 'string')
+        .map((m) => ({
+          id: m.id.slice(0, 60),
+          muster: String(m.muster).slice(0, 80),
+          name: String(m.name ?? '').slice(0, 80),
+          min: Math.max(1, Math.min(5, Number(m.min) || 1)),
+        }))
+      if (text.length < 20 || !muster.length) return json({ error: 'empty' }, 400)
+
+      const learnsKorean = profile === 'ko'
+      const explain = learnsKorean ? 'English' : 'Korean'
+      const out = await callModel(
+        [
+          `You are the learner's warm ${learnsKorean ? 'Korean' : 'German'} trainer. They wrote a short free text (level A1-A2) about: "${thema}".`,
+          'Required grammar patterns for this task:',
+          ...muster.map((m) => `- id "${m.id}": ${m.muster} (${m.name}), required at least ${m.min}x`),
+          '',
+          'Evaluate:',
+          '1. For EACH required pattern: how often was it actually used ("verwendet"), and were those uses grammatically correct ("korrekt")? A minor spelling slip does not make a use incorrect. If a pattern was not used at all: verwendet 0, korrekt false, no kommentar.',
+          `2. "feedback": 2-4 warm ${explain} sentences — name what genuinely works, then the ONE or TWO most important errors with the correct form and a tiny why. Not every small mistake; the important ones.`,
+          `3. "muster_version": rewrite THEIR text (same content, same length) the way a natural native ${learnsKorean ? 'Korean (해요체)' : 'German'} speaker would put it.`,
+          `4. "summary": 1 ${explain} sentence for YOUR OWN memory: what was written about, which pattern needs work.`,
+          '',
+          `Reply with ONLY this JSON: {"muster":[{"id":"...","verwendet":0,"korrekt":true,"kommentar":"<short ${explain} note, empty if fine>"}],"feedback":"...","muster_version":"...","summary":"..."}`,
+        ].join('\n'),
+        [{ role: 'user', content: text }],
+        2000
+      )
+
+      let ergebnis: {
+        muster: { id: string; verwendet: number; korrekt: boolean; kommentar: string }[]
+        feedback: string
+        muster_version: string
+        summary: string
+      } = { muster: [], feedback: out.text, muster_version: '', summary: 'Writing task completed.' }
+      try {
+        const j = JSON.parse(out.text.replace(/^```(?:json)?/m, '').replace(/```\s*$/m, '').trim())
+        ergebnis = {
+          muster: (Array.isArray(j.muster) ? j.muster : [])
+            .filter((m: { id?: unknown }) => muster.some((s) => s.id === m.id))
+            .map((m: { id: string; verwendet?: unknown; korrekt?: unknown; kommentar?: unknown }) => ({
+              id: m.id,
+              verwendet: Math.max(0, Number(m.verwendet) || 0),
+              korrekt: !!m.korrekt,
+              kommentar: typeof m.kommentar === 'string' ? m.kommentar.slice(0, 200) : '',
+            })),
+          feedback: typeof j.feedback === 'string' ? j.feedback : out.text,
+          muster_version: typeof j.muster_version === 'string' ? j.muster_version : '',
+          summary: typeof j.summary === 'string' ? j.summary : 'Writing task completed.',
+        }
+      } catch {
+        /* Rohtext als Feedback lassen, keine Belege buchen */
+      }
+
+      /* Beleg-Rückfluss: korrekt angewandt -> sicher; versucht,
+         aber fehlerhaft -> wackelig; GAR NICHT verwendet -> kein
+         Urteil (Vermeidung ist nur ein schwaches Signal, dafür
+         wird niemand zurückgestuft). */
+      const belege = ergebnis.muster
+        .filter((m) => m.verwendet > 0)
+        .map((m) => ({
+          profile,
+          item_id: m.id,
+          kind: 'grammatik',
+          status: m.korrekt ? 'sicher' : 'wackelig',
+          label: muster.find((s) => s.id === m.id)?.muster ?? m.id,
+          source: 'uebung',
+        }))
+      if (belege.length) await dbUpsert('inventory_status', belege, 'profile,item_id')
+
+      await dbInsert('trainer_usage', {
+        profile,
+        action: 'schreiben',
+        input_tokens: out.inputTokens,
+        output_tokens: out.outputTokens,
+      })
+      await dbInsert('sessions', {
+        profile,
+        mode: 'schreibwerkstatt',
+        scenario: thema || null,
+        summary: ergebnis.summary,
+        errors: [],
+      })
+      return json({
+        muster: ergebnis.muster,
+        feedback: ergebnis.feedback,
+        muster_version: ergebnis.muster_version,
+      })
     }
 
     /* ---------- Grammatik aus einer Erklärung ziehen ---------- */

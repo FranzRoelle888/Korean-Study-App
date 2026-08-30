@@ -52,6 +52,14 @@ export function trainerSatz({ profile, muster, satz }) {
   return call({ action: 'satz', profile, muster, satz })
 }
 
+/* Schreibwerkstatt: freien Text bewerten. Die Funktion prüft die
+   Pflicht-Muster, schreibt Belege + Journal und liefert
+   { muster: [{id, verwendet, korrekt, kommentar}], feedback,
+     muster_version } zurück. */
+export function trainerSchreiben({ profile, thema, muster, text }) {
+  return call({ action: 'schreiben', profile, thema, muster, text })
+}
+
 /* Grammatik-Erklärung (Text und/oder Foto) -> Vorschlagsliste.
    image: { media_type: 'image/jpeg', data: '<base64>' } oder null.
    Gespeichert wird erst nach Bestätigung in der App. */

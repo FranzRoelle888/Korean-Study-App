@@ -4,6 +4,7 @@ import Skills from './Skills'
 import Kalibrierung from '../kalibrierung/Kalibrierung'
 import Lueckentext from '../ueben/Lueckentext'
 import GrammatikModus from '../ueben/GrammatikModus'
+import Schreibwerkstatt from '../ueben/Schreibwerkstatt'
 import { ChevronIcon } from '../../shared/icons'
 
 /* ============================================================
@@ -49,6 +50,7 @@ function Trainer({ profile, t, onChatActive }) {
   /* Lückentext-Übung (aus der Aufgaben-Bank) */
   const [zeigeLueckentext, setZeigeLueckentext] = useState(false)
   const [zeigeGrammatik, setZeigeGrammatik] = useState(false)
+  const [zeigeSchreiben, setZeigeSchreiben] = useState(false)
 
   /* Der App melden, ob gerade ein Chat läuft — dann versteckt sie
      die Tab-Leiste, damit nichts über der Tastatur aufflackert. */
@@ -84,6 +86,10 @@ function Trainer({ profile, t, onChatActive }) {
 
   if (zeigeGrammatik) {
     return <GrammatikModus profile={profile} t={t} onExit={() => setZeigeGrammatik(false)} />
+  }
+
+  if (zeigeSchreiben) {
+    return <Schreibwerkstatt profile={profile} t={t} onExit={() => setZeigeSchreiben(false)} />
   }
 
   if (zeigeGramCheck) {
@@ -145,6 +151,12 @@ function Trainer({ profile, t, onChatActive }) {
             <span className="mode-emoji">📖</span>
             <span className="mode-title">{t.modeGrammar}</span>
             <span className="mode-sub">{t.modeGrammarSub}</span>
+          </button>
+
+          <button className="mode-card" onClick={() => setZeigeSchreiben(true)}>
+            <span className="mode-emoji">✍️</span>
+            <span className="mode-title">{t.modeWrite}</span>
+            <span className="mode-sub">{t.modeWriteSub}</span>
           </button>
         </div>
 

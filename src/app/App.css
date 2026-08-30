@@ -3844,6 +3844,126 @@ textarea {
   color: var(--text-soft);
 }
 
+/* ---------- Schreibwerkstatt ---------- */
+.sw-auftrag {
+  width: 100%;
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--surface-2);
+  text-align: left;
+}
+
+.sw-thema {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.sw-pflicht {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+
+.sw-woerter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-size: 13.5px;
+}
+
+.sw-woerter-label {
+  color: var(--text-soft);
+  font-size: 12.5px;
+}
+
+/* 16px Pflicht: kleiner zoomt iOS beim Fokussieren die Seite */
+.sw-feld {
+  width: 100%;
+  max-width: 360px;
+  padding: 12px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 16px;
+  font-family: inherit;
+  line-height: 1.6;
+  resize: none;
+}
+
+.sw-feld:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.sw-fehler {
+  margin: 0;
+  max-width: 320px;
+  font-size: 12.5px;
+  color: var(--text-soft);
+  text-align: center;
+}
+
+.sw-eigener {
+  margin: 0;
+  width: 100%;
+  max-width: 360px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: var(--surface-2);
+  font-size: 15px;
+  line-height: 1.7;
+  text-align: left;
+}
+
+.sw-bilanz {
+  width: 100%;
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: left;
+  font-size: 13.5px;
+  line-height: 1.55;
+}
+
+.sw-bilanz p {
+  margin: 0;
+}
+
+.sw-b-ok { color: var(--good, #2e7d4f); }
+.sw-b-halb { color: var(--text); }
+.sw-b-offen { color: var(--text-soft); }
+
+.sw-vorbild {
+  width: 100%;
+  max-width: 360px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  border: 1px dashed var(--border);
+  text-align: left;
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+.sw-vorbild p {
+  margin: 0;
+}
+
+.sw-vorbild-label {
+  font-size: 12px;
+  color: var(--text-soft);
+  margin-bottom: 4px !important;
+}
+
 .lt2-korrektur s {
   opacity: 0.75;
   font-weight: 600;
