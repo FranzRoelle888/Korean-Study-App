@@ -118,9 +118,22 @@ function pruefe(a, profil, erlaubteIds) {
       if (text.includes(l.basis.trim())) return `Basis "${l.basis}" steht im Text`
     } else if (l.art === 'partikel') {
       if (l.loesung.trim().length > 6 || /\s/.test(l.loesung.trim())) return 'Partikel-Lösung zu lang'
+    } else if (l.art === 'chunk') {
+      /* Feste Wendung: 2-4 Wörter, mit Bedeutungs-Hinweis */
+      const woerter = l.loesung.trim().split(/\s+/).length
+      if (woerter < 2 || woerter > 4) return 'Chunk-Länge'
+      if (typeof l.hinweis !== 'string' || !l.hinweis.trim()) return 'Chunk ohne Hinweis'
     } else {
       return `unbekannte Art ${l.art}`
     }
+  }
+  if (a.luecken.filter((l) => l.art === 'chunk').length > 1) return 'mehr als ein Chunk'
+  /* Kurz-Erklärungen: für jeden Ziel-Punkt eine */
+  if (!Array.isArray(a.punkte)) return 'punkte fehlen'
+  for (const id of erlaubteIds) {
+    const p = a.punkte.find((x) => x.id === id)
+    if (!p || typeof p.kurz !== 'string' || p.kurz.length < 20 || p.kurz.length > 400)
+      return `kurz-Erklärung fehlt für ${id}`
   }
   if (a.glossar && !Array.isArray(a.glossar)) return 'Glossar kein Array'
   for (const g of a.glossar ?? []) {
@@ -139,7 +152,7 @@ async function fuelleProfil(profil) {
     dbGet(`inventory_status?profile=eq.${profil}&kind=eq.grammatik&select=item_id,status`).catch(() => []),
     dbGet(`words?profile=eq.${profil}&select=ko,en`),
     dbGet(
-      `exercise_bank?profile=eq.${profil}&typ=eq.lueckentext&status=eq.neu&payload->>version=eq.2&select=id`
+      `exercise_bank?profile=eq.${profil}&typ=eq.lueckentext&status=eq.neu&payload->>version=eq.3&select=id`
     ),
   ])
   const wortStatus = await dbGet(
@@ -176,12 +189,14 @@ async function fuelleProfil(profil) {
     'Each exercise is ONE coherent everyday mini-story or situation:',
     `- 2-4 natural, flowing ${zielsprache} sentences${profil === 'ko' ? ' (해요체 politeness level)' : ''} that belong together.`,
     '- 6-8 gaps written as ___ , spread across the text, each testing one of the TARGET grammar points given per request. Use each target point at least once.',
-    '- Two gap kinds:',
+    '- Three gap kinds:',
     `  * "form": the learner must RECALL the word from its ${erklaersprache} meaning AND produce the right form. Give "basis" (the dictionary form) and "hinweis" (the ${erklaersprache} meaning shown to the learner, e.g. "to meet"). The basis must NOT appear anywhere in the text — only the gap.`,
     '  * "partikel": the gap is ONLY a particle/small function word (short, no basis, no hinweis).',
+    `  * "chunk": OPTIONAL, at most ONE per text: the gap is a common FIXED expression of 2-4 words (a formulaic phrase, not free prose). "hinweis" = its ${erklaersprache} meaning. Include natural spelling/spacing variants in "auch_ok". Only use expressions with essentially one natural wording.`,
     '- Make it CHALLENGING within known material: natural register, connectors, varied sentence length — no baby sentences.',
-    `- Vocabulary: use the learner's word list below. 1-2 words beyond the list are WELCOME for naturalness — but every such word MUST appear in "glossar" with a short ${erklaersprache} meaning.`,
+    `- Vocabulary: build mainly from the learner's word list below. A few words beyond the list are fine — but EVERY word or expression in the text that is NOT on the list MUST appear in "glossar" with a short ${erklaersprache} meaning. Err on the side of glossing MORE: an unglossed unknown word blocks the learner completely.`,
     `- "uebersetzung": ${erklaersprache} translation of the COMPLETE text (gaps filled).`,
+    `- "punkte": for EACH target grammar point, a "kurz" note: 1-2 friendly ${erklaersprache} sentences explaining how the pattern is built/used (a mini-reminder above the exercise).`,
     '',
     `Learner's words: ${whitelistText || '(list empty — use only the most basic everyday words and gloss every content word)'}`,
     '',
@@ -189,7 +204,8 @@ async function fuelleProfil(profil) {
     '{"text":"... ___ ... ___ ...",',
     ' "luecken":[{"art":"form","basis":"...","hinweis":"...","loesung":"...","auch_ok":[],"grammatik_id":"..."}, {"art":"partikel","loesung":"...","auch_ok":[],"grammatik_id":"..."}, ...],',
     ' "uebersetzung":"...",',
-    ' "glossar":[{"wort":"...","bedeutung":"..."}]}',
+    ' "glossar":[{"wort":"...","bedeutung":"..."}],',
+    ' "punkte":[{"id":"...","kurz":"..."}]}',
     'luecken must be in the same order as the ___ markers appear in the text.',
   ].join('\n')
 
@@ -230,19 +246,28 @@ async function fuelleProfil(profil) {
         typ: 'lueckentext',
         grammatik_id: punkte[0].id,
         payload: {
-          version: 2,
+          version: 3,
           text: a.text.trim(),
           luecken: a.luecken.map((l) => ({
             art: l.art,
             basis: l.art === 'form' ? l.basis.trim() : null,
-            hinweis: l.art === 'form' ? l.hinweis.trim() : null,
+            hinweis: l.art === 'partikel' ? null : (l.hinweis ?? '').trim(),
             loesung: l.loesung.trim(),
             auch_ok: (l.auch_ok ?? []).map(String).slice(0, 4),
             grammatik_id: l.grammatik_id,
           })),
           uebersetzung: a.uebersetzung.trim(),
-          glossar: (a.glossar ?? []).slice(0, 4),
-          punkte: punkte.map((p) => ({ id: p.id, name: `${p.muster} (${p.name})` })),
+          /* Glossar großzügig: unglossierte unbekannte Wörter
+             blockieren das Verständnis (Feedback Franz) */
+          glossar: (a.glossar ?? []).slice(0, 10),
+          punkte: punkte.map((p) => ({
+            id: p.id,
+            name: `${p.muster} (${p.name})`,
+            kurz: (a.punkte.find((x) => x.id === p.id)?.kurz ?? '').trim(),
+            /* neu = sitzt noch nicht felsenfest -> Erklärung wird
+               in der App automatisch über dem Text gezeigt */
+            neu: stand.get(p.id) !== 'sicher',
+          })),
         },
       }
       if (!TROCKEN) {

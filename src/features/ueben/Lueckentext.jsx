@@ -51,6 +51,8 @@ function Lueckentext({ profile, t, onExit }) {
   const [antworten, setAntworten] = useState([])
   const [geprueft, setGeprueft] = useState(false)
   const [gloss, setGloss] = useState(null)
+  /* welcher Grammatik-Chip ist aufgeklappt (nicht-neue Punkte) */
+  const [punktOffen, setPunktOffen] = useState(null)
   const [feedback, setFeedback] = useState(null) /* null | 'laedt' | string */
 
   useEffect(() => {
@@ -61,7 +63,7 @@ function Lueckentext({ profile, t, onExit }) {
       .eq('profile', profile.id)
       .eq('typ', 'lueckentext')
       .eq('status', 'neu')
-      .eq('payload->>version', '2')
+      .eq('payload->>version', '3')
       .order('created_at', { ascending: true })
       .limit(3)
       .then(({ data, error }) => {
@@ -181,7 +183,7 @@ function Lueckentext({ profile, t, onExit }) {
           <p className="kal-text">{t.ltEmpty}</p>
           {bankInfo && (
             <p className="lt-bankinfo">
-              Bank: {bankInfo.alle} gesamt · {bankInfo.neu} offen · 0 im neuen Format
+              Bank: {bankInfo.alle} gesamt · {bankInfo.neu} offen · 0 im aktuellen Format (v3)
               {bankInfo.fehler ? ` · Fehler: ${bankInfo.fehler}` : ''}
             </p>
           )}
@@ -201,9 +203,34 @@ function Lueckentext({ profile, t, onExit }) {
       <div className="lt2-scroll">
         <div className="lt-punkte">
           {(p.punkte ?? []).map((pt) => (
-            <span className="lt-grammatik" key={pt.id}>{pt.name}</span>
+            <button
+              type="button"
+              className="lt-grammatik"
+              key={pt.id}
+              onClick={() => setPunktOffen(punktOffen === pt.id ? null : pt.id)}
+            >
+              {pt.name}
+            </button>
           ))}
         </div>
+
+        {/* Kurz-Erklärungen: noch nicht felsenfeste Punkte automatisch,
+            sichere auf Chip-Tipp (Feedback Franz: Neues nie unerklärt) */}
+        {(() => {
+          const zeigen = (p.punkte ?? []).filter(
+            (pt) => pt.kurz && (pt.neu || punktOffen === pt.id)
+          )
+          if (!zeigen.length) return null
+          return (
+            <div className="lt-kurzbox">
+              {zeigen.map((pt) => (
+                <p key={pt.id}>
+                  <strong>{pt.name}:</strong> {pt.kurz}
+                </p>
+              ))}
+            </div>
+          )
+        })()}
 
         <div className="lt-satz-block lt2-text">
           <p className="lt-satz" lang={profile.targetLang}>
@@ -222,7 +249,14 @@ function Lueckentext({ profile, t, onExit }) {
                     )
                   ) : (
                     <input
-                      className={luecken[s.lueckeIdx].art === 'partikel' ? 'lt2-feld lt2-feld-kurz' : 'lt2-feld'}
+                      className={
+                        luecken[s.lueckeIdx].art === 'partikel'
+                          ? 'lt2-feld lt2-feld-kurz'
+                          : luecken[s.lueckeIdx].art === 'chunk'
+                            ? 'lt2-feld lt2-feld-breit lt2-feld-chunk'
+                            : /* einheitlich breite Wort-Felder (Feedback Franz) */
+                              'lt2-feld lt2-feld-breit'
+                      }
                       value={antworten[s.lueckeIdx]}
                       onChange={(e) => {
                         const neu = [...antworten]
@@ -230,24 +264,17 @@ function Lueckentext({ profile, t, onExit }) {
                         setAntworten(neu)
                       }}
                       placeholder={
-                        luecken[s.lueckeIdx].art === 'form'
-                          ? /* Der Denk-Hinweis: die BEDEUTUNG in der gekonnten
-                               Sprache — Wort abrufen UND Form bauen (ältere
-                               Texte ohne Hinweis zeigen noch die Grundform) */
+                        luecken[s.lueckeIdx].art === 'partikel'
+                          ? '…'
+                          : /* Der Denk-Hinweis: die BEDEUTUNG in der gekonnten
+                               Sprache — Wort abrufen UND Form bauen */
                             luecken[s.lueckeIdx].hinweis || luecken[s.lueckeIdx].basis
-                          : '…'
                       }
                       lang={profile.targetLang}
                       autoCapitalize="none"
                       autoCorrect="off"
                       spellCheck={false}
-                      size={Math.max(
-                        luecken[s.lueckeIdx].art === 'partikel' ? 2 : 5,
-                        Math.min(
-                          14,
-                          (luecken[s.lueckeIdx].hinweis || luecken[s.lueckeIdx].basis || '').length
-                        )
-                      )}
+                      size={luecken[s.lueckeIdx].art === 'partikel' ? 2 : undefined}
                     />
                   )
                 )}

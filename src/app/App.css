@@ -3794,6 +3794,37 @@ textarea {
   max-width: 64px;
 }
 
+/* Einheitlich breite Wort-Felder — die Lösung soll hineinpassen
+   (Feedback Franz); Chunks (feste Wendungen) noch etwas breiter */
+.lt2-feld-breit {
+  width: 8.5em;
+  max-width: 200px;
+}
+
+.lt2-feld-chunk {
+  width: 12em;
+  max-width: 260px;
+}
+
+/* Kurz-Erklärungen der Grammatikpunkte über dem Text */
+.lt-kurzbox {
+  width: 100%;
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: var(--surface-2);
+  font-size: 13px;
+  line-height: 1.55;
+  text-align: left;
+}
+
+.lt-kurzbox p {
+  margin: 0;
+}
+
 .lt2-korrektur s {
   opacity: 0.75;
   font-weight: 600;
