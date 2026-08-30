@@ -3825,6 +3825,25 @@ textarea {
   margin: 0;
 }
 
+/* "Kann ich längst"-Knopf: bewusst leise (Geist-Stil), damit er
+   die Übung nicht dominiert — er ist eine Randnotiz ans System */
+.lt-kannich {
+  margin-top: 4px;
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-soft);
+  font-size: 12px;
+  font-family: inherit;
+}
+
+.lt-kannich-ok {
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--text-soft);
+}
+
 .lt2-korrektur s {
   opacity: 0.75;
   font-weight: 600;

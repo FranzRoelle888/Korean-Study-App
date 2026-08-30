@@ -53,6 +53,8 @@ function Lueckentext({ profile, t, onExit }) {
   const [gloss, setGloss] = useState(null)
   /* welcher Grammatik-Chip ist aufgeklappt (nicht-neue Punkte) */
   const [punktOffen, setPunktOffen] = useState(null)
+  /* in dieser Sitzung als "kann ich längst" markierte Punkte */
+  const [laengstOk, setLaengstOk] = useState(() => new Set())
   const [feedback, setFeedback] = useState(null) /* null | 'laedt' | string */
 
   useEffect(() => {
@@ -110,6 +112,23 @@ function Lueckentext({ profile, t, onExit }) {
     for (const l of aufgabe.payload.luecken) voll = voll.replace('___', l.loesung)
     prewarmSpeech(voll, profile.targetLang)
   }, [aufgabe && aufgabe.id])
+
+  /* "Kann ich längst": die direkteste Lernstand-Info, die es gibt —
+     der Punkt wird sofort als sicher gebucht und taucht damit in
+     künftigen Texten seltener als Ziel auf. source bleibt
+     'kalibrierung', denn es ist eine SELBSTeinschätzung — im
+     Fortschritts-Balken zählt sie deshalb blass, nicht satt. */
+  function kannIchLaengst(pt) {
+    setLaengstOk((alt) => new Set([...alt, pt.id]))
+    setPunktOffen(pt.id) /* Box offen halten, damit die Bestätigung sichtbar ist */
+    supabase
+      .from('inventory_status')
+      .upsert(
+        [{ profile: profile.id, item_id: pt.id, kind: 'grammatik', status: 'sicher', label: pt.name, source: 'kalibrierung' }],
+        { onConflict: 'profile,item_id' }
+      )
+      .then(() => {})
+  }
 
   function istRichtig(i) {
     const a = (antworten[i] ?? '').trim()
@@ -218,15 +237,28 @@ function Lueckentext({ profile, t, onExit }) {
             sichere auf Chip-Tipp (Feedback Franz: Neues nie unerklärt) */}
         {(() => {
           const zeigen = (p.punkte ?? []).filter(
-            (pt) => pt.kurz && (pt.neu || punktOffen === pt.id)
+            (pt) => pt.kurz && ((pt.neu && !laengstOk.has(pt.id)) || punktOffen === pt.id)
           )
           if (!zeigen.length) return null
           return (
             <div className="lt-kurzbox">
               {zeigen.map((pt) => (
-                <p key={pt.id}>
-                  <strong>{pt.name}:</strong> {pt.kurz}
-                </p>
+                <div key={pt.id}>
+                  <p>
+                    <strong>{pt.name}:</strong> {pt.kurz}
+                  </p>
+                  {/* Direkter Draht ins Wissensmodell: sofort als
+                      sicher buchen, statt es die App raten zu lassen */}
+                  {pt.neu && (
+                    laengstOk.has(pt.id) ? (
+                      <p className="lt-kannich-ok">✓ {t.ltKannIchOk}</p>
+                    ) : (
+                      <button type="button" className="lt-kannich" onClick={() => kannIchLaengst(pt)}>
+                        ✓ {t.ltKannIch}
+                      </button>
+                    )
+                  )}
+                </div>
               ))}
             </div>
           )
