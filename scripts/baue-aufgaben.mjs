@@ -32,19 +32,21 @@ if (!DB_KEY || !KI_KEY) {
 }
 
 const MODEL = 'claude-sonnet-5'
-/* Iterationsphase: kleiner Vorrat, damit Format-Änderungen nicht
-   ewig dauern und nicht massenhaft Veraltetes produzieren. Wenn
-   das Format steht, wieder anheben (z. B. 8). */
-const ZIEL_TEXTE = 3
+/* Iterationsphase: EIN Text als Vorrat, damit Format-Änderungen
+   in Sekunden testbar sind und nichts Veraltetes herumliegt
+   (Beschluss Franz 30.08.). Wenn das Format steht und die App
+   den Modus offiziell führt, wieder anheben (z. B. 8). */
+const ZIEL_TEXTE = 1
 const PUNKTE_JE_TEXT = 4 /* aus so vielen Grammatikpunkten mischt ein Text */
 const GLEICHZEITIG = 3 /* Texte parallel erzeugen statt nacheinander */
 
-/* --profil ko | de | beide (Standard: beide) */
+/* --profil ko | de | beide. Standard: ko — die deutsche Seite
+   zieht erst nach, wenn die koreanische rund läuft (Franz). */
 const argWert = (name) => {
   const i = process.argv.indexOf(name)
   return i === -1 ? null : process.argv[i + 1]
 }
-const PROFIL_WAHL = argWert('--profil') ?? 'beide'
+const PROFIL_WAHL = argWert('--profil') ?? 'ko'
 
 const dbKopf = {
   apikey: DB_KEY,
@@ -177,14 +179,31 @@ async function fuelleProfil(profil) {
   }
   brauchteNachschub = true
 
-  /* Punkte-Pool: wackelig zuerst, dann sicher — innerhalb dessen
-     die SPÄTEREN Kanon-Punkte (= schwereren) bevorzugt. Ohne
-     Kalibrierung: die ersten 12 Kanon-Punkte. */
+  /* Ziel-Auswahl (Feedback Franz 30.08.: "fast nur dieselben
+     einfachen Sachen"). Vorher galt stur "wackelig zuerst" — und
+     der Wackelig-Stapel besteht am Anfang vor allem aus frühen,
+     leichten Punkten (에/에서, 요-Endung …). Die dominierten dann
+     jede Übung.
+
+     Jetzt: die bekannten Punkte werden am mittleren Kanon-Rang
+     geteilt. Die OBERE Hälfte (die späteren, schwereren) ist die
+     "Front" und stellt 3 der 4 Ziele je Text; aus der unteren
+     Hälfte kommt höchstens 1 Erhaltungs-Ziel. Leichte Muster
+     tauchen im Satzbau sowieso ständig auf — sie müssen nicht
+     auch noch die Lücke sein. */
   const stand = new Map(statusZeilen.map((z) => [z.item_id, z.status]))
-  const wacklig = inventar.filter((g) => stand.get(g.id) === 'wackelig').sort((a, b) => b.rang - a.rang)
-  const sicher = inventar.filter((g) => stand.get(g.id) === 'sicher').sort((a, b) => b.rang - a.rang)
-  const pool = [...wacklig, ...sicher]
-  const basisPool = pool.length >= PUNKTE_JE_TEXT ? pool : inventar.slice(0, 12)
+  const bekannt = inventar
+    .filter((g) => stand.get(g.id) === 'wackelig' || stand.get(g.id) === 'sicher')
+    .sort((a, b) => a.rang - b.rang)
+  /* Innerhalb jeder Hälfte: wacklige zuerst, dann die schwereren */
+  const wackligZuerst = (a, b) =>
+    (stand.get(b.id) === 'wackelig') - (stand.get(a.id) === 'wackelig') || b.rang - a.rang
+  const schnitt = Math.floor(bekannt.length / 2)
+  const front = bekannt.slice(schnitt).sort(wackligZuerst)
+  const erhaltung = bekannt.slice(0, schnitt).sort(wackligZuerst)
+  /* Ohne Kalibrierung fehlt jede Standortbestimmung: dann einfach
+     die ersten 12 Kanon-Punkte nehmen. */
+  const basisPool = bekannt.length < PUNKTE_JE_TEXT ? inventar.slice(0, 12) : null
 
   const whitelist = [
     ...eigeneWoerter.map((w) => w.ko),
@@ -224,13 +243,26 @@ async function fuelleProfil(profil) {
   let verworfen = 0
 
   async function baueText(i) {
-    /* Für jeden Text eine andere Punkt-Mischung (rotierend durch
-       den Pool, damit alles drankommt) */
-    const punkte = []
-    for (let k = 0; k < PUNKTE_JE_TEXT; k++) {
-      punkte.push(basisPool[(i * PUNKTE_JE_TEXT + k) % basisPool.length])
+    /* Für jeden Text eine andere Punkt-Mischung: 3 von der Front
+       (rotierend, damit alles drankommt) + 1 Erhaltungs-Ziel von
+       unten. Doppelte (bei sehr kleiner Front) werden entfernt. */
+    let punkte = []
+    if (basisPool) {
+      for (let k = 0; k < PUNKTE_JE_TEXT; k++) {
+        punkte.push(basisPool[(i * PUNKTE_JE_TEXT + k) % basisPool.length])
+      }
+    } else {
+      const vonFront = erhaltung.length ? PUNKTE_JE_TEXT - 1 : PUNKTE_JE_TEXT
+      for (let k = 0; k < vonFront; k++) {
+        punkte.push(front[(i * vonFront + k) % front.length])
+      }
+      if (erhaltung.length) punkte.push(erhaltung[i % erhaltung.length])
     }
+    punkte = [...new Map(punkte.map((p) => [p.id, p])).values()]
     const erlaubteIds = new Set(punkte.map((p) => p.id))
+    /* Ziele ins Protokoll — so sieht man auf der Run-Seite sofort,
+       ob die Front-Auswahl greift oder wieder Leichtes dominiert */
+    console.log(`Text ${i + 1}: Ziele ${punkte.map((p) => p.muster).join(' · ')}`)
     try {
       const auftrag =
         'Target grammar points for THIS text:\n' +

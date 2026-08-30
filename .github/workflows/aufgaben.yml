@@ -1,14 +1,16 @@
 # ============================================================
 # Aufgaben-Bank füllen: Lückentext-Aufgaben passend zum
-# Lernstand beider Profile. Läuft jede Nacht um 03:00 UTC und
-# von Hand über Actions -> "Aufgaben-Bank füllen" -> Run workflow.
+# Lernstand. Aktuell NUR von Hand (Actions -> "Aufgaben-Bank
+# füllen" -> Run workflow) — der Nachtlauf ist abgestellt,
+# solange die App offiziell im Alt-Modus (Vokabeln) läuft.
+# Zum Reaktivieren den schedule-Block wieder einkommentieren:
+#   schedule:
+#     - cron: '0 3 * * *'
 # Schreibt direkt in die Datenbank (exercise_bank).
 # ============================================================
 name: Aufgaben-Bank füllen
 
 on:
-  schedule:
-    - cron: '0 3 * * *'
   workflow_dispatch:
     inputs:
       dry:
@@ -19,7 +21,8 @@ on:
         description: 'Nur ein Profil bauen (schneller beim Iterieren)'
         type: choice
         options: [beide, ko, de]
-        default: beide
+        # Entwicklung läuft derzeit nur auf der koreanischen Seite
+        default: ko
 
 jobs:
   fuellen:
