@@ -32,8 +32,19 @@ if (!DB_KEY || !KI_KEY) {
 }
 
 const MODEL = 'claude-sonnet-5'
-const ZIEL_TEXTE = 8 /* so viele "neu"-Texte je Profil vorrätig halten */
+/* Iterationsphase: kleiner Vorrat, damit Format-Änderungen nicht
+   ewig dauern und nicht massenhaft Veraltetes produzieren. Wenn
+   das Format steht, wieder anheben (z. B. 8). */
+const ZIEL_TEXTE = 3
 const PUNKTE_JE_TEXT = 4 /* aus so vielen Grammatikpunkten mischt ein Text */
+const GLEICHZEITIG = 3 /* Texte parallel erzeugen statt nacheinander */
+
+/* --profil ko | de | beide (Standard: beide) */
+const argWert = (name) => {
+  const i = process.argv.indexOf(name)
+  return i === -1 ? null : process.argv[i + 1]
+}
+const PROFIL_WAHL = argWert('--profil') ?? 'beide'
 
 const dbKopf = {
   apikey: DB_KEY,
@@ -211,7 +222,8 @@ async function fuelleProfil(profil) {
 
   let gespeichert = 0
   let verworfen = 0
-  for (let i = 0; i < fehlen; i++) {
+
+  async function baueText(i) {
     /* Für jeden Text eine andere Punkt-Mischung (rotierend durch
        den Pool, damit alles drankommt) */
     const punkte = []
@@ -239,7 +251,7 @@ async function fuelleProfil(profil) {
         console.warn(
           `Text ${i + 1}: verworfen — ${fehler}\n  Probe: ${JSON.stringify(a).slice(0, 260)}`
         )
-        continue
+        return
       }
       const zeile = {
         profile: profil,
@@ -284,11 +296,23 @@ async function fuelleProfil(profil) {
       console.warn(`Text ${i + 1}: übersprungen — ${e.message}`)
     }
   }
+
+  /* Parallel in kleinen Gruppen statt nacheinander — die Wandzeit
+     schrumpft auf etwa ein Drittel (Feedback Franz: 18-Minuten-
+     Läufe nerven) */
+  for (let von = 0; von < fehlen; von += GLEICHZEITIG) {
+    await Promise.all(
+      Array.from({ length: Math.min(GLEICHZEITIG, fehlen - von) }, (_, k) => baueText(von + k))
+    )
+  }
+
   console.log(`Profil ${profil}: ${gespeichert} Texte gespeichert, ${verworfen} verworfen`)
   return gespeichert
 }
 
-const summe = (await fuelleProfil('ko')) + (await fuelleProfil('de'))
+const profile = PROFIL_WAHL === 'beide' ? ['ko', 'de'] : [PROFIL_WAHL]
+let summe = 0
+for (const p of profile) summe += await fuelleProfil(p)
 console.log(`\n${summe} neue Texte insgesamt${TROCKEN ? ' (Trockenlauf)' : ''}`)
 
 /* Ehrlichkeit des Laufs: Wenn NICHTS gespeichert wurde, obwohl

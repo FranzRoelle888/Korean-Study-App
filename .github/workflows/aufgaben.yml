@@ -15,6 +15,11 @@ on:
         description: 'Trockenlauf (nichts schreiben)'
         type: boolean
         default: false
+      profil:
+        description: 'Nur ein Profil bauen (schneller beim Iterieren)'
+        type: choice
+        options: [beide, ko, de]
+        default: beide
 
 jobs:
   fuellen:
@@ -32,10 +37,11 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
           set -o pipefail
+          PROFIL="${{ inputs.profil }}"
           if [ "${{ inputs.dry }}" = "true" ]; then
-            node scripts/baue-aufgaben.mjs --dry 2>&1 | tee lauf.log
+            node scripts/baue-aufgaben.mjs --dry --profil "${PROFIL:-beide}" 2>&1 | tee lauf.log
           else
-            node scripts/baue-aufgaben.mjs 2>&1 | tee lauf.log
+            node scripts/baue-aufgaben.mjs --profil "${PROFIL:-beide}" 2>&1 | tee lauf.log
           fi
 
       # Protokoll prominent auf die Run-Übersichtsseite
