@@ -575,7 +575,7 @@ function App() {
             partnerNote={partnerDoneToday ? t.partnerDoneToday(partnerName) : null}
           />}
         {view === 'trainer' && profile.trainer && (
-          <Trainer profile={profile} t={t} onChatActive={setChatOffen} />
+          <Trainer profile={profile} t={t} onChatActive={setChatOffen} onAddWord={handleAdd} />
         )}
         {view === 'sets' &&
           (openSet ? (

@@ -39,7 +39,7 @@ const SCENARIOS_KO = [
   { id: 'weekend', emoji: '🎉', title: 'Weekend plans', ko: '주말 계획' },
 ]
 
-function Trainer({ profile, t, onChatActive }) {
+function Trainer({ profile, t, onChatActive, onAddWord }) {
   /* null = Menü, sonst { mode, scenario, title }.
      Läuft noch ein Gespräch (Tab-Wechsel mittendrin), landet man
      direkt wieder darin statt im Menü. */
@@ -89,7 +89,7 @@ function Trainer({ profile, t, onChatActive }) {
   }
 
   if (zeigeSchreiben) {
-    return <Schreibwerkstatt profile={profile} t={t} onExit={() => setZeigeSchreiben(false)} />
+    return <Schreibwerkstatt profile={profile} t={t} onExit={() => setZeigeSchreiben(false)} onAddWord={onAddWord} />
   }
 
   if (zeigeGramCheck) {
