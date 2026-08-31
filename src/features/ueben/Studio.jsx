@@ -1,51 +1,48 @@
 import { useEffect, useRef, useState } from 'react'
 import { supabase } from '../../core/supabaseClient'
 import { ladeGrammatikInventar } from '../../core/kalibrierung'
-import { studioErklaerung, studioAufgaben, studioBilanz } from '../trainer/trainerApi'
+import { studioErklaerung, studioAufgaben, studioAntwort, studioBilanz } from '../trainer/trainerApi'
+import Nachfrage from './Nachfrage'
 import { SpeakButton } from '../../shared/tts'
 
 /* ============================================================
    GRAMMATIK-STUDIO — neues Konzept lernen + einschleifen
-   (Konzept: Chat 31.08., ersetzt die alte 5-Phasen-Lektion)
+   (Konzept: Chat 31.08., V2 nach Franz' erstem Test)
 
    Ein Bildschirm, zwei Zonen:
-   - Oben die Erklärungskarte (wann / wie bauen / 3 Beispiele mit
-     Vorlesen). Beim Scrollen bleibt eine kompakte SPICKZETTEL-
-     Leiste oben kleben — antippen klappt die Bau-Regel auf.
-   - Darunter 8 lehrbuchartige Drills, bewusst gleichförmig.
-     Jede Antwort wird SOFORT lokal geprüft (grün/rot); unter 50%
-     klappen 3 Reserve-Aufgaben auf ("noch einmal festigen").
+   - Oben die Erklärungskarte (wann / wie bauen / ggf. Abgrenzung
+     zu verwechselbaren Mustern / 3 Beispiele mit Vorlesen). Beim
+     Scrollen bleibt eine SPICKZETTEL-Leiste oben kleben.
+   - Darunter 8 OFFENE Drills (V2: keine hartkodierte Lösung mehr):
+     jede bestätigte Antwort (✓) startet sofort eine HINTERGRUND-
+     Bewertung durch die KI, während man schon weitertippt — der
+     Stift daneben macht die Antwort wieder editierbar (die
+     vorbereitete Bewertung verfällt dann).
 
-   Am Ende EIN KI-Aufruf (studio_bilanz): erkennt Systemfehler vs.
-   Ausrutscher, gibt Feedback und stuft den Punkt ein — bestanden
-   -> wackelig (frisch Gelerntes ist nie "sicher"; sicher machen
-   es die Belege der Folgetage in Lückentext & Schreibwerkstatt).
+   Ampel statt richtig/falsch (Entscheidung Franz):
+     grün = grammatisch korrekt + passt zur Aufgabe (Wortwahl egal)
+     gelb = Ziel-Muster im Kern richtig, aber Vokabel-/Tippfehler
+     rot  = Muster falsch verstanden oder schwere Fehler
+   Grün UND Gelb zählen als "Konzept angewandt"; über 50 % Rot
+   klappen 3 Reserve-Aufgaben auf. Bei Gelb/Rot erscheint eine
+   Muster-Antwort zum Vergleichen.
 
-   Erzeugung in Etappen mit echtem Fortschritt: erst die
-   Erklärung (sofort lesbar), dann die Aufgaben. Einmal erzeugte
-   Lektionen werden in exercise_bank gecacht (typ 'studio') —
-   Wiederholen kostet nichts mehr.
+   Abschluss: studio_bilanz (Feedback + Einstufung: bestanden ->
+   wackelig, nie ein sicher überschreiben) + Nachfrage-Dialog.
+   Lektionen werden in exercise_bank gecacht (payload.version 2).
    ============================================================ */
 
-/* Antworten großzügig vergleichen: Leerraum normalisieren, und
-   fürs Koreanische zusätzlich ganz ohne Leerzeichen (die
-   Worttrennung ist dort notorisch uneinheitlich getippt) */
-function stimmt(antwort, aufgabe, profilId) {
-  const norm = (s) => String(s).trim().replace(/\s+/g, ' ')
-  const eng = (s) => String(s).replace(/\s+/g, '')
-  const kandidaten = [aufgabe.loesung, ...(aufgabe.auch_ok ?? [])]
-  return kandidaten.some(
-    (k) => norm(antwort) === norm(k) || (profilId === 'ko' && eng(antwort) === eng(k))
-  )
-}
+const AMPEL_ZEICHEN = { gruen: '✓', gelb: '~', rot: '✗' }
 
 function Studio({ profile, t, onExit, punkt: punktProp }) {
   const [punkt, setPunkt] = useState(punktProp ?? null)
   /* 'waehlt' | 'leer' | 'erklaerung' | 'aufgaben' | 'fehler' | 'bereit' */
   const [phase, setPhase] = useState(punktProp ? 'erklaerung' : 'waehlt')
-  const [lektion, setLektion] = useState(null) /* {wann,bau,beispiele,aufgaben,reserve} */
+  const [lektion, setLektion] = useState(null)
   const [spickOffen, setSpickOffen] = useState(false)
-  /* je Aufgabe: {wert, geprueft, richtig} */
+  /* je Aufgabe: {wert, status: 'offen'|'wartet'|'fertig',
+     ampel, kommentar, token} — token verwirft veraltete
+     Hintergrund-Antworten nach einem Stift-Klick */
   const [antworten, setAntworten] = useState([])
   const [reserveAktiv, setReserveAktiv] = useState(false)
   /* null | 'laedt' | 'offline' | {feedback, bestanden} */
@@ -92,31 +89,35 @@ function Studio({ profile, t, onExit, punkt: punktProp }) {
     }
   }, [profile.id])
 
-  /* Lektion besorgen: erst Cache, sonst in zwei Etappen erzeugen */
+  /* Lektion besorgen: erst Cache (Version 2!), sonst in zwei
+     Etappen erzeugen — die Erklärung kommt zuerst und ist lesbar,
+     während die Aufgaben noch entstehen */
   useEffect(() => {
     if (!punkt || gestartet.current) return
     gestartet.current = true
     let weg = false
+    const frisch = (n) =>
+      Array.from({ length: n }, () => ({
+        wert: '', status: 'offen', ampel: null, kommentar: '', token: 0,
+      }))
     ;(async () => {
       try {
-        /* Cache-Blick: schon einmal erzeugt? */
         const { data } = await supabase
           .from('exercise_bank')
           .select('payload')
           .eq('profile', profile.id)
           .eq('typ', 'studio')
           .eq('grammatik_id', punkt.id)
-          .eq('payload->>version', '1')
+          .eq('payload->>version', '2')
           .limit(1)
         if (weg) return
         if (data && data.length) {
           const p = data[0].payload
           setLektion(p)
-          setAntworten(p.aufgaben.map(() => ({ wert: '', geprueft: false, richtig: false })))
+          setAntworten(frisch(p.aufgaben.length))
           setPhase('bereit')
           return
         }
-        /* Etappe 1: Erklärung — sofort anzeigen, Lesezeit = Wartezeit */
         const erk = await studioErklaerung({
           profile: profile.id,
           punkt: { id: punkt.id, muster: punkt.muster, name: punkt.name, beispiel: punkt.satz },
@@ -124,16 +125,15 @@ function Studio({ profile, t, onExit, punkt: punktProp }) {
         if (weg) return
         setLektion({ ...erk, aufgaben: null, reserve: [] })
         setPhase('aufgaben')
-        /* Etappe 2: Drills */
         const auf = await studioAufgaben({
           profile: profile.id,
           punkt: { id: punkt.id, muster: punkt.muster, name: punkt.name },
           bau: erk.bau,
         })
         if (weg) return
-        const voll = { version: 1, ...erk, aufgaben: auf.aufgaben, reserve: auf.reserve }
+        const voll = { version: 2, ...erk, aufgaben: auf.aufgaben, reserve: auf.reserve }
         setLektion(voll)
-        setAntworten(auf.aufgaben.map(() => ({ wert: '', geprueft: false, richtig: false })))
+        setAntworten(frisch(auf.aufgaben.length))
         setPhase('bereit')
         /* In den Cache — Wiederholen ist dann gratis (still bei Fehlern) */
         supabase
@@ -156,31 +156,73 @@ function Studio({ profile, t, onExit, punkt: punktProp }) {
     setAntworten((alt) => alt.map((a, k) => (k === i ? { ...a, wert } : a)))
   }
 
-  function pruefe(i) {
+  /* ✓: Antwort einfrieren und die Bewertung im HINTERGRUND
+     anstoßen — der Lernende macht derweil die nächste Aufgabe */
+  function bestaetige(i) {
+    const a = antworten[i]
+    if (!a.wert.trim() || a.status !== 'offen') return
+    const token = a.token + 1
     setAntworten((alt) =>
-      alt.map((a, k) =>
-        k === i && a.wert.trim()
-          ? { ...a, geprueft: true, richtig: stimmt(a.wert, aktive[i], profile.id) }
-          : a
+      alt.map((x, k) => (k === i ? { ...x, status: 'wartet', token } : x))
+    )
+    studioAntwort({
+      profile: profile.id,
+      punkt: { id: punkt.id, muster: punkt.muster, name: punkt.name },
+      frage: aktive[i].frage,
+      antwort: a.wert.trim(),
+    })
+      .then((res) => {
+        setAntworten((alt) =>
+          alt.map((x, k) =>
+            k === i && x.token === token && x.status === 'wartet'
+              ? { ...x, status: 'fertig', ampel: res.ampel, kommentar: res.kommentar || '' }
+              : x
+          )
+        )
+      })
+      .catch(() => {
+        /* Bewertung fehlgeschlagen: Feld wieder öffnen, ✓ erneut
+           tippen versucht es noch einmal */
+        setAntworten((alt) =>
+          alt.map((x, k) =>
+            k === i && x.token === token && x.status === 'wartet'
+              ? { ...x, status: 'offen' }
+              : x
+          )
+        )
+      })
+  }
+
+  /* Stift: wieder bearbeiten — eine laufende oder fertige
+     Bewertung verfällt (token zählt hoch, Stale-Antworten
+     werden ignoriert) */
+  function bearbeite(i) {
+    setAntworten((alt) =>
+      alt.map((x, k) =>
+        k === i ? { ...x, status: 'offen', ampel: null, kommentar: '', token: x.token + 1 } : x
       )
     )
   }
 
-  const alleGeprueft = antworten.length > 0 && antworten.every((a) => a.geprueft)
-  const quote = alleGeprueft
-    ? antworten.filter((a) => a.richtig).length / antworten.length
-    : null
-  /* Unter 50 % nach den Haupt-Drills: Reserve aufklappen */
+  const alleFertig = antworten.length > 0 && antworten.every((a) => a.status === 'fertig')
+  const rotAnteil = alleFertig
+    ? antworten.filter((a) => a.ampel === 'rot').length / antworten.length
+    : 0
+  const gekonnt = antworten.filter((a) => a.ampel === 'gruen' || a.ampel === 'gelb').length
+
+  /* Über die Hälfte rot nach den Haupt-Drills: Reserve aufklappen */
   useEffect(() => {
-    if (!alleGeprueft || reserveAktiv || bilanz) return
-    if (quote < 0.5 && (lektion?.reserve ?? []).length) {
+    if (!alleFertig || reserveAktiv || bilanz) return
+    if (rotAnteil > 0.5 && (lektion?.reserve ?? []).length) {
       setReserveAktiv(true)
       setAntworten((alt) => [
         ...alt,
-        ...lektion.reserve.map(() => ({ wert: '', geprueft: false, richtig: false })),
+        ...lektion.reserve.map(() => ({
+          wert: '', status: 'offen', ampel: null, kommentar: '', token: 0,
+        })),
       ])
     }
-  }, [alleGeprueft]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [alleFertig]) // eslint-disable-line react-hooks/exhaustive-deps
 
   async function abschliessen() {
     setBilanz('laedt')
@@ -190,9 +232,8 @@ function Studio({ profile, t, onExit, punkt: punktProp }) {
         punkt: { id: punkt.id, muster: punkt.muster, name: punkt.name },
         antworten: aktive.map((a, i) => ({
           frage: a.frage,
-          loesung: a.loesung,
           antwort: antworten[i].wert.trim(),
-          richtig: antworten[i].richtig,
+          ampel: antworten[i].ampel,
         })),
       })
       setBilanz(res)
@@ -246,24 +287,31 @@ function Studio({ profile, t, onExit, punkt: punktProp }) {
     )
   }
 
-  /* Bilanz-Bildschirm */
+  /* Bilanz-Bildschirm — mit Nachfrage-Dialog (Idee Franz) */
   if (bilanz && bilanz !== 'laedt') {
-    const bestanden = bilanz === 'offline' ? quote >= 0.5 : bilanz.bestanden
+    const bestanden = bilanz === 'offline' ? gekonnt / antworten.length >= 0.5 : bilanz.bestanden
+    const kontext =
+      `Grammar studio drill for "${punkt.muster}" (${punkt.name}). Results:\n` +
+      aktive
+        .map((a, i) => `${a.frage} -> "${antworten[i].wert}" (${antworten[i].ampel})`)
+        .join('\n') +
+      (bilanz !== 'offline' && bilanz.feedback ? `\nTrainer feedback: ${bilanz.feedback}` : '')
     return (
       <div className="screen">
         {kopf}
-        <div className="kal-mitte">
-          <div className="kal-emoji">{bestanden ? '🌱' : '💪'}</div>
-          <p className="kal-text">
-            {t.studioErgebnis(antworten.filter((a) => a.richtig).length, antworten.length)}
-          </p>
-          {bilanz !== 'offline' && bilanz.feedback && (
-            <p className="lt2-feedback studio-feedback">{bilanz.feedback}</p>
-          )}
-          <p className="studio-hinweis">
-            {bilanz === 'offline' ? t.studioOffline : bestanden ? t.studioGepflanzt : t.studioSpaeter}
-          </p>
-          <button className="done-btn" onClick={onExit}>{t.back}</button>
+        <div className="lt2-scroll">
+          <div className="kal-mitte studio-fertig">
+            <div className="kal-emoji">{bestanden ? '🌱' : '💪'}</div>
+            <p className="kal-text">{t.studioErgebnis(gekonnt, antworten.length)}</p>
+            {bilanz !== 'offline' && bilanz.feedback && (
+              <p className="lt2-feedback studio-feedback">{bilanz.feedback}</p>
+            )}
+            <p className="studio-hinweis">
+              {bilanz === 'offline' ? t.studioOffline : bestanden ? t.studioGepflanzt : t.studioSpaeter}
+            </p>
+            {bilanz !== 'offline' && <Nachfrage profile={profile} t={t} kontext={kontext} />}
+            <button className="done-btn" onClick={onExit}>{t.back}</button>
+          </div>
         </div>
       </div>
     )
@@ -289,6 +337,11 @@ function Studio({ profile, t, onExit, punkt: punktProp }) {
             <p className="studio-name">{punkt.name}</p>
             <p className="studio-wann">{lektion.wann}</p>
             <p className="studio-bau">🔧 {lektion.bau}</p>
+            {/* Abgrenzung zu verwechselbaren Mustern — genau der
+                Teil, der bei 어떤/무슨 gefehlt hat */}
+            {lektion.abgrenzung ? (
+              <p className="studio-abgrenzung">⚠️ {lektion.abgrenzung}</p>
+            ) : null}
             <div className="studio-beispiele">
               {(lektion.beispiele ?? []).map((b, i) => (
                 <p key={i}>
@@ -320,23 +373,14 @@ function Studio({ profile, t, onExit, punkt: punktProp }) {
                   <p className="studio-frage">
                     <span className="studio-nr">{i + 1}</span> {a.frage}
                   </p>
-                  {st.geprueft ? (
-                    st.richtig ? (
-                      <p className="studio-ok" lang={profile.targetLang}>✓ {st.wert}</p>
-                    ) : (
-                      <p className="studio-falsch">
-                        <s lang={profile.targetLang}>{st.wert}</s>{' '}
-                        <strong className="lt-ok" lang={profile.targetLang}>{a.loesung}</strong>
-                      </p>
-                    )
-                  ) : (
+                  {st.status === 'offen' ? (
                     <div className="studio-eingabe">
                       <input
                         className="lt2-feld studio-feld"
                         value={st.wert}
                         onChange={(e) => setzeWert(i, e.target.value)}
                         onKeyDown={(e) => {
-                          if (e.key === 'Enter') pruefe(i)
+                          if (e.key === 'Enter') bestaetige(i)
                         }}
                         lang={profile.targetLang}
                         autoCapitalize="none"
@@ -346,25 +390,54 @@ function Studio({ profile, t, onExit, punkt: punktProp }) {
                       <button
                         type="button"
                         className="studio-check"
-                        onClick={() => pruefe(i)}
+                        onClick={() => bestaetige(i)}
                         disabled={!st.wert.trim()}
                         aria-label={t.check}
                       >
                         ✓
                       </button>
                     </div>
+                  ) : (
+                    <div className={`studio-ergebnis studio-a-${st.ampel ?? 'wartet'}`}>
+                      <div className="studio-ergebnis-zeile">
+                        <span className="studio-ampel">
+                          {st.status === 'wartet' ? '⋯' : AMPEL_ZEICHEN[st.ampel] ?? '?'}
+                        </span>
+                        <span className="studio-antwort-text" lang={profile.targetLang}>{st.wert}</span>
+                        <button
+                          type="button"
+                          className="studio-stift"
+                          onClick={() => bearbeite(i)}
+                          aria-label={t.studioBearbeiten}
+                        >
+                          ✎
+                        </button>
+                      </div>
+                      {st.kommentar && <p className="studio-kommentar">{st.kommentar}</p>}
+                      {/* Muster-Antwort bei Gelb/Rot (Entscheidung Franz) */}
+                      {(st.ampel === 'gelb' || st.ampel === 'rot') && a.muster && (
+                        <p className="studio-kommentar">
+                          {t.studioMusterLabel}{' '}
+                          <span lang={profile.targetLang}>{a.muster}</span>
+                        </p>
+                      )}
+                    </div>
                   )}
                 </div>
               )
             })}
 
-            {alleGeprueft && (
+            {antworten.length > 0 && antworten.every((a) => a.status !== 'offen') && (
               <button
                 className="done-btn lt2-pruefen"
                 onClick={abschliessen}
-                disabled={bilanz === 'laedt'}
+                disabled={!alleFertig || bilanz === 'laedt'}
               >
-                {bilanz === 'laedt' ? t.ltFeedbackLaedt : t.studioAbschliessen}
+                {!alleFertig
+                  ? t.studioWartet
+                  : bilanz === 'laedt'
+                    ? t.ltFeedbackLaedt
+                    : t.studioAbschliessen}
               </button>
             )}
           </div>

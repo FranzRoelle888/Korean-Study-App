@@ -72,6 +72,18 @@ export function studioBilanz({ profile, punkt, antworten }) {
   return call({ action: 'studio_bilanz', profile, punkt, antworten })
 }
 
+/* Eine einzelne Drill-Antwort bewerten (läuft im Hintergrund,
+   sobald ✓ getippt wird) -> { ampel: gruen|gelb|rot, kommentar } */
+export function studioAntwort({ profile, punkt, frage, antwort }) {
+  return call({ action: 'studio_antwort', profile, punkt, frage, antwort })
+}
+
+/* Nachfrage aufs Übungs-Feedback: kleiner Dialog mit Kontext.
+   messages: [{role:'user'|'assistant', text}] -> { text } */
+export function trainerNachfrage({ profile, kontext, messages }) {
+  return call({ action: 'nachfrage', profile, kontext, messages })
+}
+
 /* Grammatik-Erklärung (Text und/oder Foto) -> Vorschlagsliste.
    image: { media_type: 'image/jpeg', data: '<base64>' } oder null.
    Gespeichert wird erst nach Bestätigung in der App. */

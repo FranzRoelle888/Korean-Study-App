@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../core/supabaseClient'
 import { trainerUebung } from '../trainer/trainerApi'
+import Nachfrage from './Nachfrage'
 import { SpeakButton, prewarmSpeech } from '../../shared/tts'
 
 /* ============================================================
@@ -339,7 +340,21 @@ function Lueckentext({ profile, t, onExit }) {
             {feedback === 'laedt' ? (
               <p className="lt2-feedback lt2-feedback-laedt">{t.ltFeedbackLaedt}</p>
             ) : feedback ? (
-              <p className="lt2-feedback">{feedback}</p>
+              <>
+                <p className="lt2-feedback">{feedback}</p>
+                {/* Nachfragen aufs Feedback — unmittelbarer Lerneffekt */}
+                <Nachfrage
+                  profile={profile}
+                  t={t}
+                  kontext={
+                    `Cloze exercise. Text: ${luecken.reduce((txt, l) => txt.replace('___', l.loesung), p.text)}\nGaps: ` +
+                    luecken
+                      .map((l, i) => `expected "${l.loesung}", answered "${antworten[i]}" (${istRichtig(i) ? 'ok' : 'wrong'})`)
+                      .join('; ') +
+                    `\nTrainer feedback: ${feedback}`
+                  }
+                />
+              </>
             ) : null}
             <div className="lt2-ende">
               {idx + 1 < texte.length && (

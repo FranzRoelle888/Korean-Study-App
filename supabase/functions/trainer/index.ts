@@ -305,7 +305,7 @@ async function overLimit(profile: string) {
   /* Nur die eigenen Aktionen zählen — die speech-Funktion führt
      ihr eigenes Limit in speech_usage */
   const rows = await dbGet(
-    `trainer_usage?profile=eq.${profile}&action=in.(chat,summary,extract,uebung,satz,schreiben,studio_erklaerung,studio_aufgaben,studio_bilanz)&created_at=gt.${oneHourAgo}&select=id`
+    `trainer_usage?profile=eq.${profile}&action=in.(chat,summary,extract,uebung,satz,schreiben,studio_erklaerung,studio_aufgaben,studio_antwort,studio_bilanz,nachfrage)&created_at=gt.${oneHourAgo}&select=id`
   )
   return rows.length >= MAX_CALLS_PER_HOUR
 }
@@ -620,15 +620,19 @@ Deno.serve(async (req) => {
         const beispiel = typeof punkt.beispiel === 'string' ? punkt.beispiel.slice(0, 160) : ''
         const out = await callModel(
           [
-            `You write a MINI grammar lesson for an ambitious A1-A2 ${ziel} learner in a private app. Target pattern: "${pMuster}" (${pName}).${beispiel ? ` Canon example: ${beispiel}` : ''}`,
+            `You write a MINI grammar lesson for an ambitious A1-A2 ${ziel} learner in a private app. Their base language is ${explain}. Target pattern: "${pMuster}" (${pName}).${beispiel ? ` Canon example: ${beispiel}` : ''}`,
+            '',
+            `FIRST, silently judge how confusing this pattern is FROM THE ${explain} SPEAKER'S PERSPECTIVE. Patterns that map 1:1 onto ${explain} need only a short explanation. But if the distinction does NOT exist in ${explain} (e.g. two ${ziel} words that both translate to the same ${explain} word, or a grammatical category ${explain} lacks), you MUST invest extra effort: explain the difference through the lens of what the ${explain} speaker already knows, with contrasting examples.`,
+            '',
             'Reply with ONLY this JSON:',
-            `{"wann":"<1-2 friendly ${explain} sentences: WHEN this pattern is used, what it expresses>",`,
-            ` "bau":"<how to BUILD it, short and concrete, incl. the important stem/sound rules, in ${explain}>",`,
+            `{"wann":"<friendly ${explain} sentences: WHEN this pattern is used, what it expresses. As long as the concept needs — a hard concept deserves 3-5 sentences>",`,
+            ` "bau":"<how to BUILD it, concrete, incl. the important stem/sound rules, in ${explain}>",`,
+            ` "abgrenzung":"<ONLY if the pattern is easily confused with a sibling pattern or has no ${explain} equivalent: the contrast, explained via a minimal pair of example sentences showing when to use WHICH. Empty string if genuinely not needed>",`,
             ` "beispiele":[{"satz":"...","tr":"..."},{"satz":"...","tr":"..."},{"satz":"...","tr":"..."}]}`,
             `Rules: examples use very common everyday words${learnsKorean ? ', 해요체 politeness' : ''}, natural, from short to slightly longer. "tr" is the ${explain} translation.`,
           ].join('\n'),
           [{ role: 'user', content: 'Write the mini lesson now.' }],
-          1400
+          2200
         )
         let l: { wann?: unknown; bau?: unknown; beispiele?: unknown } = {}
         try {
@@ -636,13 +640,14 @@ Deno.serve(async (req) => {
         } catch {
           return json({ error: 'parse' }, 502)
         }
-        const beispiele = (Array.isArray(l.beispiele) ? l.beispiele : [])
+        const le = l as { wann?: unknown; bau?: unknown; abgrenzung?: unknown; beispiele?: unknown }
+        const beispiele = (Array.isArray(le.beispiele) ? le.beispiele : [])
           .filter((b: { satz?: unknown; tr?: unknown }) =>
             typeof b.satz === 'string' && typeof b.tr === 'string' && hatZielschrift(b.satz))
           .slice(0, 3)
         if (
-          typeof l.wann !== 'string' || l.wann.length < 15 ||
-          typeof l.bau !== 'string' || l.bau.length < 10 ||
+          typeof le.wann !== 'string' || le.wann.length < 15 ||
+          typeof le.bau !== 'string' || le.bau.length < 10 ||
           beispiele.length < 2
         )
           return json({ error: 'invalid' }, 502)
@@ -652,21 +657,30 @@ Deno.serve(async (req) => {
           input_tokens: out.inputTokens,
           output_tokens: out.outputTokens,
         })
-        return json({ wann: l.wann.slice(0, 400), bau: l.bau.slice(0, 500), beispiele })
+        return json({
+          wann: le.wann.slice(0, 900),
+          bau: le.bau.slice(0, 700),
+          abgrenzung: typeof le.abgrenzung === 'string' ? le.abgrenzung.slice(0, 900) : '',
+          beispiele,
+        })
       }
 
       if (action === 'studio_aufgaben') {
-        const bau = typeof body.bau === 'string' ? body.bau.slice(0, 500) : ''
+        const bau = typeof body.bau === 'string' ? body.bau.slice(0, 700) : ''
+        /* OFFENE Aufgaben (Entscheidung Franz 31.08.): keine
+           hartkodierte Lösung mehr — jede Antwort wird einzeln von
+           der KI bewertet (studio_antwort). "muster" ist nur EIN
+           Beispiel, wie man antworten könnte. */
         const out = await callModel(
           [
             `You create textbook-style DRILLS for the ${ziel} pattern "${pMuster}" (${pName}) for an A1-A2 learner.${bau ? ` The learner just read this build rule: ${bau}` : ''}`,
             'Create 11 short tasks in ONE uniform format — deliberately repetitive (that is the point of drilling). Vary only the content words.',
-            `Each task: "frage" = a short ${explain} instruction the learner answers by TYPING one short ${ziel} form or sentence${learnsKorean ? ' (해요체)' : ''} — e.g. 'Say it in ${ziel}: I met a friend yesterday.' or 'Combine: <A> + <B>'.`,
-            '"loesung" = the expected answer. "auch_ok" = acceptable variants (different spacing, optional pronoun dropped, natural synonyms) — be GENEROUS, typed answers vary.',
+            `Each task: "frage" = a short ${explain} instruction or question the learner answers by TYPING one short ${ziel} sentence${learnsKorean ? ' (해요체)' : ''} that USES the target pattern. The task must be OPEN: many different correct answers exist (answer a question about themselves, form a sentence from given words, react to a small situation). NOT a pure translation with exactly one solution.`,
+            '"muster" = ONE natural example of a correct answer (shown to the learner only after grading).',
             'Use only very common everyday vocabulary; every content word in a frage must be guessable at A1-A2.',
             'Reply with ONLY this JSON:',
-            '{"aufgaben":[{"frage":"...","loesung":"...","auch_ok":["..."]}, ... 8 items],',
-            ' "reserve":[{"frage":"...","loesung":"...","auch_ok":[]}, ... 3 items]}',
+            '{"aufgaben":[{"frage":"...","muster":"..."}, ... 8 items],',
+            ' "reserve":[{"frage":"...","muster":"..."}, ... 3 items]}',
           ].join('\n'),
           [{ role: 'user', content: 'Create the drills now.' }],
           3000
@@ -679,14 +693,13 @@ Deno.serve(async (req) => {
         }
         const sauber = (roh: unknown) =>
           (Array.isArray(roh) ? roh : [])
-            .filter((a: { frage?: unknown; loesung?: unknown }) =>
-              typeof a.frage === 'string' && a.frage.length >= 8 && a.frage.length <= 220 &&
-              typeof a.loesung === 'string' && a.loesung.trim().length >= 1 &&
-              a.loesung.length <= 90 && hatZielschrift(a.loesung))
-            .map((a: { frage: string; loesung: string; auch_ok?: unknown }) => ({
+            .filter((a: { frage?: unknown; muster?: unknown }) =>
+              typeof a.frage === 'string' && a.frage.length >= 8 && a.frage.length <= 260 &&
+              typeof a.muster === 'string' && a.muster.trim().length >= 1 &&
+              a.muster.length <= 120 && hatZielschrift(a.muster))
+            .map((a: { frage: string; muster: string }) => ({
               frage: a.frage.trim(),
-              loesung: a.loesung.trim(),
-              auch_ok: (Array.isArray(a.auch_ok) ? a.auch_ok : []).map(String).slice(0, 5),
+              muster: a.muster.trim(),
             }))
         const aufgaben = sauber(l.aufgaben).slice(0, 8)
         const reserve = sauber(l.reserve).slice(0, 3)
@@ -700,32 +713,79 @@ Deno.serve(async (req) => {
         return json({ aufgaben, reserve })
       }
 
-      /* studio_bilanz */
+      /* Eine einzelne Drill-Antwort bewerten — läuft im HINTERGRUND,
+         sobald der Lernende ✓ tippt (Idee Franz: Wartezeit
+         verschwindet, weil die nächste Aufgabe schon dran ist).
+         Ampel statt richtig/falsch:
+           gruen = grammatisch korrekt UND passt zur Aufgabe —
+                   welche Wörter, ist egal
+           gelb  = Ziel-Muster im Kern richtig angewandt, aber
+                   falsche Vokabel / Tippfehler / Kleinkram
+           rot   = Muster falsch verstanden oder schwere
+                   Grammatik-/Satzbaufehler */
+      if (action === 'studio_antwort') {
+        const frage = typeof body.frage === 'string' ? body.frage.slice(0, 300) : ''
+        const antwort = typeof body.antwort === 'string' ? body.antwort.trim().slice(0, 200) : ''
+        if (!frage || !antwort) return json({ error: 'empty' }, 400)
+        const out = await callModel(
+          [
+            `You grade ONE answer from an A1-A2 ${ziel} learner drilling the pattern "${pMuster}" (${pName}).`,
+            'Traffic-light verdict:',
+            '- "gruen": grammatically correct AND fits the task. There is NO single expected answer — any fitting sentence counts. Ignore which content words they chose.',
+            `- "gelb": the TARGET PATTERN is applied correctly at its core, but there is a wrong/odd vocabulary choice, a typo, or a small unrelated slip.`,
+            '- "rot": the target pattern is misunderstood/misapplied, or the sentence has severe grammar/word-order errors.',
+            `"kommentar": for gelb/rot ONE short ${explain} sentence naming the issue; empty string for gruen.`,
+            'Reply with ONLY this JSON: {"ampel":"gruen","kommentar":""}',
+          ].join('\n'),
+          [{ role: 'user', content: `Task: ${frage}\nLearner's answer: ${antwort}` }],
+          400
+        )
+        let ampel = 'rot'
+        let kommentar = ''
+        try {
+          const j = JSON.parse(out.text.replace(/^```(?:json)?/m, '').replace(/```\s*$/m, '').trim())
+          if (j.ampel === 'gruen' || j.ampel === 'gelb' || j.ampel === 'rot') ampel = j.ampel
+          if (typeof j.kommentar === 'string') kommentar = j.kommentar.slice(0, 200)
+        } catch { /* bei Parse-Fehler lieber rot als geraten grün */ }
+        await dbInsert('trainer_usage', {
+          profile,
+          action: 'studio_antwort',
+          input_tokens: out.inputTokens,
+          output_tokens: out.outputTokens,
+        })
+        return json({ ampel, kommentar })
+      }
+
+      /* studio_bilanz — Ampel-Wertung (Entscheidung Franz): Grün
+         UND Gelb zählen als "Konzept angewandt" (Vokabelfehler sind
+         kein Grammatik-Urteil); nur Rot zählt dagegen. */
       const antworten = (Array.isArray(body.antworten) ? body.antworten : [])
         .slice(0, 12)
-        .filter((a: { loesung?: unknown; antwort?: unknown }) =>
-          typeof a.loesung === 'string' && typeof a.antwort === 'string')
+        .filter((a: { frage?: unknown; antwort?: unknown }) =>
+          typeof a.frage === 'string' && typeof a.antwort === 'string')
       if (!antworten.length) return json({ error: 'empty' }, 400)
-      const richtig = antworten.filter((a: { richtig?: unknown }) => !!a.richtig).length
-      const bestanden = richtig / antworten.length >= 0.5
+      const gekonnt = antworten.filter(
+        (a: { ampel?: unknown }) => a.ampel === 'gruen' || a.ampel === 'gelb'
+      ).length
+      const bestanden = gekonnt / antworten.length >= 0.5
 
       const out = await callModel(
         [
-          `You are the learner's warm ${ziel} trainer. They just finished a drill session for the pattern "${pMuster}" (${pName}): ${richtig}/${antworten.length} correct.`,
-          `Write SHORT feedback in ${explain} (2-4 sentences): overall verdict; whether the mistakes look SYSTEMATIC (rule not yet understood — say what exactly goes wrong) or just slips; one concrete tip. Encouraging, no lecture.`,
+          `You are the learner's warm ${ziel} trainer. They just finished a drill session for the pattern "${pMuster}" (${pName}): ${gekonnt}/${antworten.length} answers applied the pattern correctly (green = fully correct, yellow = pattern right but vocabulary/typo slip, red = pattern misapplied).`,
+          `Write SHORT feedback in ${explain} (2-4 sentences): overall verdict; whether the red answers look SYSTEMATIC (rule not yet understood — say what exactly goes wrong) or just slips; one concrete tip. Encouraging, no lecture.`,
           'Reply with ONLY this JSON: {"feedback":"...","summary":"<1 sentence for your own memory: what was drilled, how it went>"}',
         ].join('\n'),
         [{
           role: 'user',
           content: antworten
-            .map((a: { frage?: string; loesung: string; antwort: string; richtig?: boolean }) =>
-              `${a.frage ?? ''} -> expected "${a.loesung}", answered "${a.antwort}" (${a.richtig ? 'ok' : 'WRONG'})`)
+            .map((a: { frage: string; antwort: string; ampel?: string }) =>
+              `${a.frage} -> "${a.antwort}" (${a.ampel ?? '?'})`)
             .join('\n'),
         }],
         900
       )
       let feedback = out.text
-      let summary = `Studio drill for ${pMuster}: ${richtig}/${antworten.length}.`
+      let summary = `Studio drill for ${pMuster}: ${gekonnt}/${antworten.length}.`
       try {
         const j = JSON.parse(out.text.replace(/^```(?:json)?/m, '').replace(/```\s*$/m, '').trim())
         if (typeof j.feedback === 'string') feedback = j.feedback
@@ -763,6 +823,43 @@ Deno.serve(async (req) => {
         errors: [],
       })
       return json({ feedback, bestanden })
+    }
+
+    /* ---------- Nachfrage aufs Feedback (Idee Franz 31.08.) ----------
+       Unter jedem Übungs-Feedback kann der Lernende antworten oder
+       Folgefragen stellen — unmittelbarer Lerneffekt statt stummem
+       Abnicken. Der Trainer kennt den Übungs-Kontext (Aufgaben +
+       Antworten + Feedback) und bleibt beim Thema. */
+    if (action === 'nachfrage') {
+      const kontext = typeof body.kontext === 'string' ? body.kontext.slice(0, 3000) : ''
+      const verlauf = (Array.isArray(messages) ? messages : [])
+        .slice(-24)
+        .filter((m: { role?: unknown; text?: unknown }) =>
+          (m.role === 'user' || m.role === 'assistant') && typeof m.text === 'string')
+        .map((m: { role: string; text: string }) => ({
+          role: m.role,
+          content: String(m.text).slice(0, 600),
+        }))
+      if (!verlauf.length || verlauf[verlauf.length - 1].role !== 'user')
+        return json({ error: 'empty' }, 400)
+      const learnsKorean = profile === 'ko'
+      const explain = learnsKorean ? 'English' : 'Korean'
+      const out = await callModel(
+        [
+          `You are the learner's warm ${learnsKorean ? 'Korean' : 'German'} trainer. They just finished an exercise and are asking follow-up questions about your feedback.`,
+          `Exercise context:\n${kontext || '(none provided)'}`,
+          `Answer in ${explain}, SHORT and concrete (2-5 sentences), with ${learnsKorean ? 'Korean' : 'German'} example sentences where they help. Stay on the topic of this exercise and its grammar; if asked something unrelated, gently point to the free chat.`,
+        ].join('\n'),
+        verlauf,
+        700
+      )
+      await dbInsert('trainer_usage', {
+        profile,
+        action: 'nachfrage',
+        input_tokens: out.inputTokens,
+        output_tokens: out.outputTokens,
+      })
+      return json({ text: out.text })
     }
 
     /* ---------- Grammatik aus einer Erklärung ziehen ---------- */

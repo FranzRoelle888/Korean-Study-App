@@ -4232,6 +4232,139 @@ textarea {
   font-weight: 700;
 }
 
+/* Abgrenzung zu verwechselbaren Mustern */
+.studio-abgrenzung {
+  font-size: 13.5px;
+  line-height: 1.6;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: var(--surface);
+  border-left: 3px solid #e2a93b;
+}
+
+/* Bestätigte Antwort mit Ampel-Ergebnis */
+.studio-ergebnis {
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: var(--surface-2);
+  border-left: 3px solid var(--border);
+}
+
+.studio-a-gruen { border-left-color: #2e7d4f; }
+.studio-a-gelb { border-left-color: #e2a93b; }
+.studio-a-rot { border-left-color: var(--accent); }
+
+.studio-ergebnis-zeile {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.studio-ampel {
+  font-weight: 800;
+  min-width: 16px;
+}
+
+.studio-a-gruen .studio-ampel { color: #2e7d4f; }
+.studio-a-gelb .studio-ampel { color: #b07d1a; }
+.studio-a-rot .studio-ampel { color: var(--accent); }
+
+.studio-antwort-text {
+  flex: 1;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+/* Stift: Antwort wieder bearbeiten (verwirft die Bewertung) */
+.studio-stift {
+  border: none;
+  background: none;
+  color: var(--text-soft);
+  font-size: 16px;
+  padding: 4px 6px;
+}
+
+.studio-kommentar {
+  margin: 6px 0 0;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--text-soft);
+}
+
+.studio-fertig {
+  min-height: auto;
+  padding-bottom: 24px;
+}
+
+/* ---------- Nachfrage-Dialog unter dem Feedback ---------- */
+.nf-oeffnen {
+  padding: 8px 14px;
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  background: transparent;
+  color: var(--text-soft);
+  font-size: 13px;
+  font-family: inherit;
+}
+
+.nf-box {
+  width: 100%;
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: left;
+}
+
+.nf-frage,
+.nf-antwort {
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 1.55;
+  max-width: 90%;
+}
+
+.nf-frage {
+  align-self: flex-end;
+  background: var(--accent);
+  color: #fff;
+}
+
+.nf-antwort {
+  align-self: flex-start;
+  background: var(--surface-2);
+}
+
+.nf-fehler {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--text-soft);
+}
+
+.nf-eingabe {
+  display: flex;
+  gap: 8px;
+}
+
+/* 16px Pflicht: kleiner zoomt iOS beim Fokussieren */
+.nf-feld {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 16px;
+  font-family: inherit;
+}
+
+.nf-feld:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
 .studio-feedback {
   max-width: 320px;
 }

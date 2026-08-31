@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../../core/supabaseClient'
 import { trainerSchreiben } from '../trainer/trainerApi'
 import { baueSchreibauftrag } from './schreibauftrag'
+import Nachfrage from './Nachfrage'
 import { SpeakButton } from '../../shared/tts'
 
 /* ============================================================
@@ -267,6 +268,18 @@ function Schreibwerkstatt({ profile, t, onExit, onAddWord }) {
                 </p>
               </div>
             )}
+
+            {/* Nachfragen aufs Feedback — unmittelbarer Lerneffekt */}
+            <Nachfrage
+              profile={profile}
+              t={t}
+              kontext={
+                `Writing task about "${auftrag.themaIntern}". Required patterns: ` +
+                muster.map((m) => m.muster).join(', ') +
+                `.\nLearner's text: ${text}\nTrainer feedback: ${ergebnis.feedback ?? ''}` +
+                (ergebnis.muster_version ? `\nNative version: ${ergebnis.muster_version}` : '')
+              }
+            />
 
             {/* Benutzte neue Wörter: Ein-Tipp-Übernahme ins Deck */}
             {onAddWord && benutzteWoerter.length > 0 && (
