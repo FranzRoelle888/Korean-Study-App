@@ -305,7 +305,7 @@ async function overLimit(profile: string) {
   /* Nur die eigenen Aktionen zählen — die speech-Funktion führt
      ihr eigenes Limit in speech_usage */
   const rows = await dbGet(
-    `trainer_usage?profile=eq.${profile}&action=in.(chat,summary,extract,uebung,satz,schreiben)&created_at=gt.${oneHourAgo}&select=id`
+    `trainer_usage?profile=eq.${profile}&action=in.(chat,summary,extract,uebung,satz,schreiben,studio_erklaerung,studio_aufgaben,studio_bilanz)&created_at=gt.${oneHourAgo}&select=id`
   )
   return rows.length >= MAX_CALLS_PER_HOUR
 }
@@ -348,6 +348,7 @@ Deno.serve(async (req) => {
       action !== 'uebung' &&
       action !== 'satz' &&
       action !== 'schreiben' &&
+      !String(action).startsWith('studio_') &&
       (!Array.isArray(messages) || messages.length > 60)
     )
       return json({ error: 'bad-messages' }, 400)
@@ -592,6 +593,176 @@ Deno.serve(async (req) => {
         feedback: ergebnis.feedback,
         muster_version: ergebnis.muster_version,
       })
+    }
+
+    /* ---------- Grammatik-Studio (Konzept: Chat 31.08.) ----------
+       Drei Etappen statt eines Riesen-Aufrufs (Zeitlimits + echter
+       Fortschritt in der App):
+       1. studio_erklaerung  — die Mini-Lektion (wann / wie bauen /
+          3 Beispiele)
+       2. studio_aufgaben    — 8 lehrbuchartige Drills + 3 Reserve
+          (die App prüft jede Antwort sofort lokal)
+       3. studio_bilanz      — KI-Gesamturteil über alle Antworten
+          + Einstufung ins Wissensmodell + Journal-Eintrag */
+    if (String(action).startsWith('studio_')) {
+      const punkt = body.punkt ?? {}
+      const pMuster = typeof punkt.muster === 'string' ? punkt.muster.slice(0, 80) : ''
+      const pName = typeof punkt.name === 'string' ? punkt.name.slice(0, 80) : ''
+      const pId = typeof punkt.id === 'string' ? punkt.id.slice(0, 60) : ''
+      if (!pMuster || !pId) return json({ error: 'empty' }, 400)
+      const learnsKorean = profile === 'ko'
+      const ziel = learnsKorean ? 'Korean' : 'German'
+      const explain = learnsKorean ? 'English' : 'Korean'
+      const hatZielschrift = (s: string) =>
+        learnsKorean ? /[가-힣]/.test(s) : !/[가-힣]/.test(s)
+
+      if (action === 'studio_erklaerung') {
+        const beispiel = typeof punkt.beispiel === 'string' ? punkt.beispiel.slice(0, 160) : ''
+        const out = await callModel(
+          [
+            `You write a MINI grammar lesson for an ambitious A1-A2 ${ziel} learner in a private app. Target pattern: "${pMuster}" (${pName}).${beispiel ? ` Canon example: ${beispiel}` : ''}`,
+            'Reply with ONLY this JSON:',
+            `{"wann":"<1-2 friendly ${explain} sentences: WHEN this pattern is used, what it expresses>",`,
+            ` "bau":"<how to BUILD it, short and concrete, incl. the important stem/sound rules, in ${explain}>",`,
+            ` "beispiele":[{"satz":"...","tr":"..."},{"satz":"...","tr":"..."},{"satz":"...","tr":"..."}]}`,
+            `Rules: examples use very common everyday words${learnsKorean ? ', 해요체 politeness' : ''}, natural, from short to slightly longer. "tr" is the ${explain} translation.`,
+          ].join('\n'),
+          [{ role: 'user', content: 'Write the mini lesson now.' }],
+          1400
+        )
+        let l: { wann?: unknown; bau?: unknown; beispiele?: unknown } = {}
+        try {
+          l = JSON.parse(out.text.replace(/^```(?:json)?/m, '').replace(/```\s*$/m, '').trim())
+        } catch {
+          return json({ error: 'parse' }, 502)
+        }
+        const beispiele = (Array.isArray(l.beispiele) ? l.beispiele : [])
+          .filter((b: { satz?: unknown; tr?: unknown }) =>
+            typeof b.satz === 'string' && typeof b.tr === 'string' && hatZielschrift(b.satz))
+          .slice(0, 3)
+        if (
+          typeof l.wann !== 'string' || l.wann.length < 15 ||
+          typeof l.bau !== 'string' || l.bau.length < 10 ||
+          beispiele.length < 2
+        )
+          return json({ error: 'invalid' }, 502)
+        await dbInsert('trainer_usage', {
+          profile,
+          action: 'studio_erklaerung',
+          input_tokens: out.inputTokens,
+          output_tokens: out.outputTokens,
+        })
+        return json({ wann: l.wann.slice(0, 400), bau: l.bau.slice(0, 500), beispiele })
+      }
+
+      if (action === 'studio_aufgaben') {
+        const bau = typeof body.bau === 'string' ? body.bau.slice(0, 500) : ''
+        const out = await callModel(
+          [
+            `You create textbook-style DRILLS for the ${ziel} pattern "${pMuster}" (${pName}) for an A1-A2 learner.${bau ? ` The learner just read this build rule: ${bau}` : ''}`,
+            'Create 11 short tasks in ONE uniform format — deliberately repetitive (that is the point of drilling). Vary only the content words.',
+            `Each task: "frage" = a short ${explain} instruction the learner answers by TYPING one short ${ziel} form or sentence${learnsKorean ? ' (해요체)' : ''} — e.g. 'Say it in ${ziel}: I met a friend yesterday.' or 'Combine: <A> + <B>'.`,
+            '"loesung" = the expected answer. "auch_ok" = acceptable variants (different spacing, optional pronoun dropped, natural synonyms) — be GENEROUS, typed answers vary.',
+            'Use only very common everyday vocabulary; every content word in a frage must be guessable at A1-A2.',
+            'Reply with ONLY this JSON:',
+            '{"aufgaben":[{"frage":"...","loesung":"...","auch_ok":["..."]}, ... 8 items],',
+            ' "reserve":[{"frage":"...","loesung":"...","auch_ok":[]}, ... 3 items]}',
+          ].join('\n'),
+          [{ role: 'user', content: 'Create the drills now.' }],
+          3000
+        )
+        let l: { aufgaben?: unknown; reserve?: unknown } = {}
+        try {
+          l = JSON.parse(out.text.replace(/^```(?:json)?/m, '').replace(/```\s*$/m, '').trim())
+        } catch {
+          return json({ error: 'parse' }, 502)
+        }
+        const sauber = (roh: unknown) =>
+          (Array.isArray(roh) ? roh : [])
+            .filter((a: { frage?: unknown; loesung?: unknown }) =>
+              typeof a.frage === 'string' && a.frage.length >= 8 && a.frage.length <= 220 &&
+              typeof a.loesung === 'string' && a.loesung.trim().length >= 1 &&
+              a.loesung.length <= 90 && hatZielschrift(a.loesung))
+            .map((a: { frage: string; loesung: string; auch_ok?: unknown }) => ({
+              frage: a.frage.trim(),
+              loesung: a.loesung.trim(),
+              auch_ok: (Array.isArray(a.auch_ok) ? a.auch_ok : []).map(String).slice(0, 5),
+            }))
+        const aufgaben = sauber(l.aufgaben).slice(0, 8)
+        const reserve = sauber(l.reserve).slice(0, 3)
+        if (aufgaben.length < 5) return json({ error: 'invalid' }, 502)
+        await dbInsert('trainer_usage', {
+          profile,
+          action: 'studio_aufgaben',
+          input_tokens: out.inputTokens,
+          output_tokens: out.outputTokens,
+        })
+        return json({ aufgaben, reserve })
+      }
+
+      /* studio_bilanz */
+      const antworten = (Array.isArray(body.antworten) ? body.antworten : [])
+        .slice(0, 12)
+        .filter((a: { loesung?: unknown; antwort?: unknown }) =>
+          typeof a.loesung === 'string' && typeof a.antwort === 'string')
+      if (!antworten.length) return json({ error: 'empty' }, 400)
+      const richtig = antworten.filter((a: { richtig?: unknown }) => !!a.richtig).length
+      const bestanden = richtig / antworten.length >= 0.5
+
+      const out = await callModel(
+        [
+          `You are the learner's warm ${ziel} trainer. They just finished a drill session for the pattern "${pMuster}" (${pName}): ${richtig}/${antworten.length} correct.`,
+          `Write SHORT feedback in ${explain} (2-4 sentences): overall verdict; whether the mistakes look SYSTEMATIC (rule not yet understood — say what exactly goes wrong) or just slips; one concrete tip. Encouraging, no lecture.`,
+          'Reply with ONLY this JSON: {"feedback":"...","summary":"<1 sentence for your own memory: what was drilled, how it went>"}',
+        ].join('\n'),
+        [{
+          role: 'user',
+          content: antworten
+            .map((a: { frage?: string; loesung: string; antwort: string; richtig?: boolean }) =>
+              `${a.frage ?? ''} -> expected "${a.loesung}", answered "${a.antwort}" (${a.richtig ? 'ok' : 'WRONG'})`)
+            .join('\n'),
+        }],
+        900
+      )
+      let feedback = out.text
+      let summary = `Studio drill for ${pMuster}: ${richtig}/${antworten.length}.`
+      try {
+        const j = JSON.parse(out.text.replace(/^```(?:json)?/m, '').replace(/```\s*$/m, '').trim())
+        if (typeof j.feedback === 'string') feedback = j.feedback
+        if (typeof j.summary === 'string') summary = j.summary
+      } catch { /* Rohtext als Feedback lassen */ }
+
+      /* Einstufung: bestanden -> wackelig (frisch Gelerntes ist nie
+         "sicher" — sicher machen es erst die Belege der Folgetage).
+         Nie ein bestehendes "sicher" überschreiben. Nicht bestanden
+         -> kein Eintrag, der Punkt bleibt offen und wird wieder
+         vorgeschlagen. */
+      if (bestanden) {
+        const vorhanden = await dbGet(
+          `inventory_status?profile=eq.${profile}&item_id=eq.${encodeURIComponent(pId)}&select=status`
+        ).catch(() => [])
+        if (!vorhanden.some((z: { status?: string }) => z.status === 'sicher')) {
+          await dbUpsert(
+            'inventory_status',
+            [{ profile, item_id: pId, kind: 'grammatik', status: 'wackelig', label: `${pMuster} (${pName})`, source: 'lektion' }],
+            'profile,item_id'
+          )
+        }
+      }
+      await dbInsert('trainer_usage', {
+        profile,
+        action: 'studio_bilanz',
+        input_tokens: out.inputTokens,
+        output_tokens: out.outputTokens,
+      })
+      await dbInsert('sessions', {
+        profile,
+        mode: 'studio',
+        scenario: pMuster,
+        summary,
+        errors: [],
+      })
+      return json({ feedback, bestanden })
     }
 
     /* ---------- Grammatik aus einer Erklärung ziehen ---------- */

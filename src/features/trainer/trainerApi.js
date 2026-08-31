@@ -60,6 +60,18 @@ export function trainerSchreiben({ profile, thema, muster, text }) {
   return call({ action: 'schreiben', profile, thema, muster, text })
 }
 
+/* Grammatik-Studio, drei Etappen (Konzept: Chat 31.08.).
+   punkt: {id, muster, name, beispiel} aus dem Kanon. */
+export function studioErklaerung({ profile, punkt }) {
+  return call({ action: 'studio_erklaerung', profile, punkt })
+}
+export function studioAufgaben({ profile, punkt, bau }) {
+  return call({ action: 'studio_aufgaben', profile, punkt, bau })
+}
+export function studioBilanz({ profile, punkt, antworten }) {
+  return call({ action: 'studio_bilanz', profile, punkt, antworten })
+}
+
 /* Grammatik-Erklärung (Text und/oder Foto) -> Vorschlagsliste.
    image: { media_type: 'image/jpeg', data: '<base64>' } oder null.
    Gespeichert wird erst nach Bestätigung in der App. */

@@ -40,6 +40,7 @@ function Home({
   onSwitchProfile,
   onKalibrierung,
   kalOffen,
+  onStudioTest,
   profile,
   t,
   tt,
@@ -110,6 +111,13 @@ function Home({
               <span className="action-title">{t.kalBannerTitle}</span>
               <span className="action-sub">{t.kalBannerSub}</span>
             </div>
+          </button>
+        )}
+        {/* Vorläufiger Test-Zugang zum Grammatik-Studio — fliegt
+            raus, sobald das Studio im Tagespensum/Dojo hängt */}
+        {onStudioTest && (
+          <button className="studio-test" onClick={onStudioTest}>
+            🧪 {t.studioTestBtn}
           </button>
         )}
         <button

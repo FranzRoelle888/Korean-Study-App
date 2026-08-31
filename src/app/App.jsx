@@ -56,6 +56,7 @@ import { setActiveProfile } from '../core/storage'
 import { readSession, onAuthChange } from '../core/auth'
 import Login from './Login'
 import Kalibrierung from '../features/kalibrierung/Kalibrierung'
+import Studio from '../features/ueben/Studio'
 import { kalibrierungErledigt } from '../core/kalibrierung'
 
 function App() {
@@ -485,6 +486,7 @@ function App() {
             onSwitchProfile={switchProfile}
             onKalibrierung={() => setView('kalibrierung')}
             kalOffen={!kalibrierungErledigt(profileId)}
+            onStudioTest={() => setView('studio')}
             profile={profile}
             t={t}
             tt={tt}
@@ -492,6 +494,9 @@ function App() {
         )}
         {view === 'kalibrierung' && (
           <Kalibrierung profile={profile} t={t} onExit={() => setView('home')} />
+        )}
+        {view === 'studio' && (
+          <Studio profile={profile} t={t} onExit={() => setView('home')} />
         )}
         {view === 'daily' && (
           <DailyWord
