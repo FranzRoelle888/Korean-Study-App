@@ -149,7 +149,11 @@ function Library({ vocab, cards, onAdd, onEdit, onDelete, trickyIds, profile, t,
     const wort = ko.trim()
     vorschlagNr.current++
     const nr = vorschlagNr.current
-    if (wort.length < 2 || en.trim()) {
+    /* Koreanisch hat viele Einsilber (물, 밥, 집 …) — dort reicht
+       EIN Zeichen. Nur auf der deutschen Seite wären einzelne
+       Buchstaben Rauschen. (Bug-Meldung Franz: 물 kam nie.) */
+    const mindestens = profile.id === 'ko' ? 1 : 2
+    if (wort.length < mindestens || en.trim()) {
       setVorschlag(null)
       return
     }

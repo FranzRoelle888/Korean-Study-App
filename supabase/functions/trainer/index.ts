@@ -312,7 +312,7 @@ async function overLimit(profile: string) {
   /* Nur die eigenen Aktionen zählen — die speech-Funktion führt
      ihr eigenes Limit in speech_usage */
   const rows = await dbGet(
-    `trainer_usage?profile=eq.${profile}&action=in.(chat,summary,extract,uebung,satz,schreiben,studio_erklaerung,studio_aufgaben,studio_antwort,studio_bilanz,nachfrage,uebersetzung)&created_at=gt.${oneHourAgo}&select=id`
+    `trainer_usage?profile=eq.${profile}&action=in.(chat,summary,extract,uebung,satz,schreiben,studio_erklaerung,studio_aufgaben,studio_antwort,studio_bilanz,nachfrage)&created_at=gt.${oneHourAgo}&select=id`
   )
   return rows.length >= MAX_CALLS_PER_HOUR
 }
@@ -361,7 +361,19 @@ Deno.serve(async (req) => {
     )
       return json({ error: 'bad-messages' }, 400)
 
-    if (await overLimit(profile)) return json({ error: 'rate-limit' }, 429)
+    /* Der Übersetzungs-Vorschlag hat einen EIGENEN, großzügigen
+       Topf (winzige Aufrufe, ~0,05 Cent): Beim Massen-Eintragen
+       von Vokabeln fraß er sonst das 40er-Stundenlimit leer und
+       ab Wort 41 blieb der Vorschlag stumm (Bug-Meldung Haein). */
+    if (action === 'uebersetzung') {
+      const oneHourAgo = new Date(Date.now() - 3600_000).toISOString()
+      const rows = await dbGet(
+        `trainer_usage?profile=eq.${profile}&action=eq.uebersetzung&created_at=gt.${oneHourAgo}&select=id`
+      )
+      if (rows.length >= 200) return json({ error: 'rate-limit' }, 429)
+    } else if (await overLimit(profile)) {
+      return json({ error: 'rate-limit' }, 429)
+    }
 
     /* ---------- Übungs-Abschluss: Feedback + Beleg-Rückfluss ----------
        Kommt nach jeder ABGESCHLOSSENEN Übungsrunde (Konzept:
