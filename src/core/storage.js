@@ -541,10 +541,21 @@ export function dueCards(words, cards) {
 
   const fresh = all.filter(isNew)
   const again = all.filter((c) => c.reps === 0 && c.lastReviewed)
+
+  /* Der Deckel ist ein TAGESPENSUM, keine Stapelgroesse (Fix
+     31.08., gemeldet von 해인 mit 100+ Rueckstand): Vorher wurden
+     nach 50 erledigten Wiederholungen einfach die naechsten 50
+     Ueberfaelligen nachgeschoben — der Tag war nie zu Ende.
+     Jetzt zaehlen HEUTE schon erledigte Wiederholungen gegen den
+     Deckel: Karten tragen nach dem Bewerten lastReviewed = heute,
+     das laesst sich also direkt aus den (synchronisierten) Karten
+     ablesen — kein extra Zaehler, funktioniert auf jedem Geraet. */
+  const heuteErledigt = cards.filter((c) => c.lastReviewed === t && c.reps > 0).length
+  const restDeckel = Math.max(0, REVIEW_CAP - heuteErledigt)
   const review = all
     .filter((c) => c.reps > 0)
     .sort((a, b) => (a.due < b.due ? -1 : a.due > b.due ? 1 : 0))
-    .slice(0, REVIEW_CAP)
+    .slice(0, restDeckel)
 
   /* Der Deckel gilt fuer den GESAMTEN Stapel, nicht nur fuer die
      Wiederholungen. Vorher liefen neue Karten ungedeckelt hinten
@@ -559,7 +570,7 @@ export function dueCards(words, cards) {
   const dayStart = learningDayStartMs()
   const freshToday = fresh.filter((c) => c.createdAt >= dayStart)
   const backlog = fresh.filter((c) => c.createdAt < dayStart)
-  const slots = Math.max(0, REVIEW_CAP - review.length - again.length - freshToday.length)
+  const slots = Math.max(0, restDeckel - review.length - again.length - freshToday.length)
   const freshCapped = [...freshToday, ...backlog.slice(0, slots)]
 
   return [

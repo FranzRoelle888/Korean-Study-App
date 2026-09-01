@@ -4365,6 +4365,41 @@ textarea {
   border-color: var(--accent);
 }
 
+/* ---------- Bedeutungs-Vorschlag im Eintrags-Formular ---------- */
+.lib-vorschlag {
+  margin: -4px 0 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  color: var(--text-soft);
+}
+
+.lib-vorschlag-ok {
+  padding: 2px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 14px;
+  font-family: inherit;
+}
+
+/* kleiner Ladekreis */
+.lib-kreis {
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--border);
+  border-top-color: var(--text-soft);
+  border-radius: 50%;
+  display: inline-block;
+  animation: lib-drehen 0.9s linear infinite;
+}
+
+@keyframes lib-drehen {
+  to { transform: rotate(360deg); }
+}
+
 .studio-feedback {
   max-width: 320px;
 }

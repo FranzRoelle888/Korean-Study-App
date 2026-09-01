@@ -1,0 +1,52 @@
+# ============================================================
+# TTS-Vorrat: alle Vokabel- und Beispielsatz-Audios vorab in den
+# Cache legen (null Latenz beim Lautsprecher-Knopf). Von Hand
+# starten: Actions -> "TTS-Vorrat bauen" -> Run workflow.
+# Was schon im Cache liegt, wird übersprungen — ein zweiter Lauf
+# kostet nichts. Braucht die Secrets SUPABASE_SERVICE_KEY und
+# OPENAI_API_KEY (Settings -> Secrets and variables -> Actions).
+# ============================================================
+name: TTS-Vorrat bauen
+
+on:
+  workflow_dispatch:
+    inputs:
+      profil:
+        description: 'Welche Seite'
+        type: choice
+        options: [beide, ko, de]
+        default: beide
+      dry:
+        description: 'Trockenlauf (nur zählen, nichts erzeugen)'
+        type: boolean
+        default: false
+
+jobs:
+  bauen:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Audios erzeugen
+        env:
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          set -o pipefail
+          if [ "${{ inputs.dry }}" = "true" ]; then
+            node scripts/baue-tts.mjs --dry --profil "${{ inputs.profil }}" 2>&1 | tee lauf.log
+          else
+            node scripts/baue-tts.mjs --profil "${{ inputs.profil }}" 2>&1 | tee lauf.log
+          fi
+
+      - name: Protokoll anzeigen
+        if: always()
+        run: |
+          echo '## TTS-Lauf' >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          tail -n 40 lauf.log >> $GITHUB_STEP_SUMMARY || true
+          echo '```' >> $GITHUB_STEP_SUMMARY

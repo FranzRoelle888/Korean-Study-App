@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { PlusIcon, SearchIcon, EditIcon, TrashIcon, InfoIcon } from '../../shared/icons'
 import ClearableInput from '../../shared/ClearableInput'
 import { SpeakButton, prewarmSpeech } from '../../shared/tts'
+import { trainerUebersetzung } from '../trainer/trainerApi'
 
 /* ============================================================
    LIBRARY
@@ -135,6 +136,38 @@ function Library({ vocab, cards, onAdd, onEdit, onDelete, trickyIds, profile, t,
   const hasPos = vocab.some((v) => v.pos)
   const hasTricky = !!trickyIds && trickyIds.size > 0
 
+  /* ---------- Bedeutungs-Vorschlag (Wunsch 해인, 31.08.) ----------
+     Sobald im Zielsprachen-Feld getippt wurde und das Bedeutungs-
+     Feld noch leer ist: nach 1 s Tipp-Pause im Hintergrund einen
+     Vorschlag holen. Übernehmen per ✓ ist freiwillig — selbst
+     tippen geht jederzeit (dann verschwindet der Vorschlag).
+     Der Zähl-Trick (Ref) verwirft verspätete Antworten, wenn
+     inzwischen weitergetippt wurde. */
+  const [vorschlag, setVorschlag] = useState(null) /* null | 'laedt' | string */
+  const vorschlagNr = useRef(0)
+  useEffect(() => {
+    const wort = ko.trim()
+    vorschlagNr.current++
+    const nr = vorschlagNr.current
+    if (wort.length < 2 || en.trim()) {
+      setVorschlag(null)
+      return
+    }
+    setVorschlag(null)
+    const timer = setTimeout(async () => {
+      if (vorschlagNr.current !== nr) return
+      setVorschlag('laedt')
+      try {
+        const res = await trainerUebersetzung({ profile: profile.id, wort })
+        if (vorschlagNr.current !== nr) return
+        setVorschlag(res.vorschlag ? res.vorschlag : null)
+      } catch {
+        if (vorschlagNr.current === nr) setVorschlag(null)
+      }
+    }, 1000)
+    return () => clearTimeout(timer)
+  }, [ko, en, profile.id])
+
   function handleSubmit(e) {
     e.preventDefault()
     const result = onAdd(en, ko, pos)
@@ -179,6 +212,29 @@ function Library({ vocab, cards, onAdd, onEdit, onDelete, trickyIds, profile, t,
             autoComplete="off"
           />
         </label>
+
+        {/* Bedeutungs-Vorschlag unter dem Muttersprach-Feld */}
+        {vorschlag === 'laedt' ? (
+          <p className="lib-vorschlag lib-vorschlag-laedt">
+            <span className="lib-kreis" aria-hidden="true" /> {t.libVorschlagLaedt}
+          </p>
+        ) : vorschlag ? (
+          <p className="lib-vorschlag">
+            💡 {vorschlag}
+            <button
+              type="button"
+              className="lib-vorschlag-ok"
+              onClick={() => {
+                setEn(vorschlag)
+                setVorschlag(null)
+              }}
+              aria-label={t.libVorschlagNehmen}
+            >
+              ✓
+            </button>
+          </p>
+        ) : null}
+
         <label className="field">
           <span>{profile.targetName}</span>
           <ClearableInput

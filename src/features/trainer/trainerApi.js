@@ -84,6 +84,11 @@ export function trainerNachfrage({ profile, kontext, messages }) {
   return call({ action: 'nachfrage', profile, kontext, messages })
 }
 
+/* Bedeutungs-Vorschlag beim Vokabel-Eintragen -> { vorschlag } */
+export function trainerUebersetzung({ profile, wort }) {
+  return call({ action: 'uebersetzung', profile, wort })
+}
+
 /* Grammatik-Erklärung (Text und/oder Foto) -> Vorschlagsliste.
    image: { media_type: 'image/jpeg', data: '<base64>' } oder null.
    Gespeichert wird erst nach Bestätigung in der App. */

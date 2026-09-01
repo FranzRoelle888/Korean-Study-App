@@ -305,7 +305,7 @@ async function overLimit(profile: string) {
   /* Nur die eigenen Aktionen zählen — die speech-Funktion führt
      ihr eigenes Limit in speech_usage */
   const rows = await dbGet(
-    `trainer_usage?profile=eq.${profile}&action=in.(chat,summary,extract,uebung,satz,schreiben,studio_erklaerung,studio_aufgaben,studio_antwort,studio_bilanz,nachfrage)&created_at=gt.${oneHourAgo}&select=id`
+    `trainer_usage?profile=eq.${profile}&action=in.(chat,summary,extract,uebung,satz,schreiben,studio_erklaerung,studio_aufgaben,studio_antwort,studio_bilanz,nachfrage,uebersetzung)&created_at=gt.${oneHourAgo}&select=id`
   )
   return rows.length >= MAX_CALLS_PER_HOUR
 }
@@ -348,6 +348,7 @@ Deno.serve(async (req) => {
       action !== 'uebung' &&
       action !== 'satz' &&
       action !== 'schreiben' &&
+      action !== 'uebersetzung' &&
       !String(action).startsWith('studio_') &&
       (!Array.isArray(messages) || messages.length > 60)
     )
@@ -823,6 +824,44 @@ Deno.serve(async (req) => {
         errors: [],
       })
       return json({ feedback, bestanden })
+    }
+
+    /* ---------- Übersetzungs-Vorschlag beim Vokabel-Eintragen ----------
+       (Wunsch 해인, 31.08.) Die App schickt das getippte Wort der
+       Zielsprache; zurück kommt EIN knapper Bedeutungs-Vorschlag im
+       Format des jeweiligen Stapels. Übernehmen bleibt freiwillig. */
+    if (action === 'uebersetzung') {
+      const wort = typeof body.wort === 'string' ? body.wort.trim().slice(0, 60) : ''
+      if (!wort) return json({ error: 'empty' }, 400)
+      const learnsKorean = profile === 'ko'
+      const out = await callModel(
+        learnsKorean
+          ? [
+              'You suggest the dictionary meaning for ONE Korean word a learner is adding to their vocabulary app.',
+              'Reply with ONLY this JSON: {"vorschlag":"<concise English meaning, like a dictionary gloss: \'to meet\', \'weather\', \'spicy\'. If the word has 2 common meanings, separate with \', \'>"}',
+              'If the input is not a real Korean word (typo, gibberish), reply {"vorschlag":""}.',
+            ].join('\n')
+          : [
+              'You suggest the meaning for ONE German word a Korean learner is adding to her vocabulary app.',
+              'Her card format is: English meaning followed by Korean in parentheses — e.g. "to meet (만나다)", "the weather (날씨)".',
+              'Reply with ONLY this JSON: {"vorschlag":"<English (한국어)> in exactly that format"}',
+              'If the input is not a real German word (typo, gibberish), reply {"vorschlag":""}.',
+            ].join('\n'),
+        [{ role: 'user', content: wort }],
+        200
+      )
+      let vorschlag = ''
+      try {
+        const j = JSON.parse(out.text.replace(/^```(?:json)?/m, '').replace(/```\s*$/m, '').trim())
+        if (typeof j.vorschlag === 'string') vorschlag = j.vorschlag.slice(0, 120)
+      } catch { /* leer lassen */ }
+      await dbInsert('trainer_usage', {
+        profile,
+        action: 'uebersetzung',
+        input_tokens: out.inputTokens,
+        output_tokens: out.outputTokens,
+      })
+      return json({ vorschlag })
     }
 
     /* ---------- Nachfrage aufs Feedback (Idee Franz 31.08.) ----------
