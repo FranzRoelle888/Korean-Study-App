@@ -165,8 +165,12 @@ function Library({ vocab, cards, onAdd, onEdit, onDelete, trickyIds, profile, t,
         const res = await trainerUebersetzung({ profile: profile.id, wort })
         if (vorschlagNr.current !== nr) return
         setVorschlag(res.vorschlag ? res.vorschlag : null)
-      } catch {
-        if (vorschlagNr.current === nr) setVorschlag(null)
+      } catch (e) {
+        /* NICHT stumm verschwinden (Debug-Hoelle bei 해인):
+           Limit und andere Fehler bekommen eine kleine sichtbare
+           Meldung — dann wissen wir, WORAN es liegt. */
+        if (vorschlagNr.current === nr)
+          setVorschlag(e && e.message === 'rate-limit' ? '#limit' : '#fehler')
       }
     }, 1000)
     return () => clearTimeout(timer)
@@ -236,6 +240,10 @@ function Library({ vocab, cards, onAdd, onEdit, onDelete, trickyIds, profile, t,
         {vorschlag === 'laedt' ? (
           <p className="lib-vorschlag lib-vorschlag-laedt">
             <span className="lib-kreis" aria-hidden="true" /> {t.libVorschlagLaedt}
+          </p>
+        ) : vorschlag === '#limit' || vorschlag === '#fehler' ? (
+          <p className="lib-vorschlag">
+            {vorschlag === '#limit' ? t.libVorschlagLimit : t.libVorschlagFehler}
           </p>
         ) : vorschlag ? (
           <p className="lib-vorschlag">

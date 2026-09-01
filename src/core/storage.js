@@ -595,16 +595,25 @@ export function dueCards(words, cards) {
      Selbst ein 150-Woerter-Bulk macht den Tag damit nie groesser
      als 56 Karten. */
   const dayStart = learningDayStartMs()
+  /* Nachzieh-Woerter (Goethe/TOPIK-Stapel) haben VORRANG vor
+     haendisch Eingetragenem (Franz 01.09.): Sonst staenden die 3
+     Tages-Woerter ganz hinten in der Schlange von 해인s Buecher-
+     Haufen. Erkennung ueber die kuratierte Pool-Liste selbst —
+     ein Wort, das dort steht, kam (sehr wahrscheinlich) uebers
+     Nachziehen und nicht von Hand. */
+  const poolListe = new Set(poolFor(activeProfile).map((e) => e.ko.trim()))
+  const ausPool = (c) => (poolListe.has((c.ko || '').trim()) ? 1 : 0)
+
   const heutige = fresh
     .filter((c) => c.createdAt >= dayStart)
-    .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
+    .sort((a, b) => ausPool(b) - ausPool(a) || (b.createdAt || 0) - (a.createdAt || 0))
   const bonus = heutige.slice(0, DAILY_NEW * 2)
   const bonusIds = new Set(bonus.map((c) => c.id))
-  const pool = fresh
+  const nachrueckPool = fresh
     .filter((c) => !bonusIds.has(c.id))
-    .sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0))
+    .sort((a, b) => ausPool(b) - ausPool(a) || (a.createdAt || 0) - (b.createdAt || 0))
   const slots = Math.max(0, restDeckel - review.length - again.length)
-  const freshCapped = [...bonus, ...pool.slice(0, slots)]
+  const freshCapped = [...bonus, ...nachrueckPool.slice(0, slots)]
 
   return [
     ...spaceOutPairs(shuffleForToday([...again, ...review])),
