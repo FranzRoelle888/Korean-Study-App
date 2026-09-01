@@ -594,25 +594,37 @@ export function dueCards(words, cards) {
         gelernt, sind sie normale Karten im regulaeren Rhythmus.
      Selbst ein 150-Woerter-Bulk macht den Tag damit nie groesser
      als 56 Karten. */
-  const dayStart = learningDayStartMs()
-  /* Nachzieh-Woerter (Goethe/TOPIK-Stapel) haben VORRANG vor
-     haendisch Eingetragenem (Franz 01.09.): Sonst staenden die 3
-     Tages-Woerter ganz hinten in der Schlange von 해인s Buecher-
-     Haufen. Erkennung ueber die kuratierte Pool-Liste selbst —
-     ein Wort, das dort steht, kam (sehr wahrscheinlich) uebers
-     Nachziehen und nicht von Hand. */
+  /* Nachzieh-Woerter (Goethe/TOPIK-Stapel) erkennt die App an der
+     kuratierten Pool-Liste selbst — ein Wort, das dort steht, kam
+     (sehr wahrscheinlich) uebers Nachziehen, nicht von Hand. */
   const poolListe = new Set(poolFor(activeProfile).map((e) => e.ko.trim()))
-  const ausPool = (c) => (poolListe.has((c.ko || '').trim()) ? 1 : 0)
+  const ausPool = (c) => (poolListe.has((((byId[c.wordId] || {}).ko ?? c.ko) || '').trim()) ? 1 : 0)
 
-  const heutige = fresh
-    .filter((c) => c.createdAt >= dayStart)
-    .sort((a, b) => ausPool(b) - ausPool(a) || (b.createdAt || 0) - (a.createdAt || 0))
-  const bonus = heutige.slice(0, DAILY_NEW * 2)
+  /* Heute ERSTMALS gelernte Karten (reps genau 1) zaehlen gegen
+     ihre jeweiligen Toepfe — sonst gibt jede erledigte neue Karte
+     ihren Platz sofort wieder frei und der naechste Schwung rueckt
+     nach, endlos (Bug-Meldung 해인, 01.09.). */
+  const ersteHeute = cards.filter((c) => c.lastReviewed === t && c.reps === 1)
+  const poolHeuteGelernt = ersteHeute.filter(ausPool).length
+  const neuHeuteGelernt = ersteHeute.length - poolHeuteGelernt
+
+  /* 6 RESERVIERTE Slots (3 Woerter x 2 Karten), die AUSSCHLIESSLICH
+     Pool-Woerter belegen koennen (Entscheidung Franz 01.09.) — die
+     Tages-Woerter landen damit garantiert sofort im Stapel, egal
+     wie gross der haendische Rueckstand ist. Haendische Eintraege
+     kommen NIE in diese Slots. */
+  const bonus = fresh
+    .filter((c) => ausPool(c))
+    .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
+    .slice(0, Math.max(0, DAILY_NEW * 2 - poolHeuteGelernt))
   const bonusIds = new Set(bonus.map((c) => c.id))
+
+  /* Alles uebrige Neue rueckt nur in freie Deckel-Plaetze nach —
+     und heute schon Gelerntes haelt seinen Platz besetzt. */
   const nachrueckPool = fresh
     .filter((c) => !bonusIds.has(c.id))
     .sort((a, b) => ausPool(b) - ausPool(a) || (a.createdAt || 0) - (b.createdAt || 0))
-  const slots = Math.max(0, restDeckel - review.length - again.length)
+  const slots = Math.max(0, restDeckel - review.length - again.length - neuHeuteGelernt)
   const freshCapped = [...bonus, ...nachrueckPool.slice(0, slots)]
 
   return [
