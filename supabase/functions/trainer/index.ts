@@ -254,7 +254,7 @@ function parseExtract(text: string) {
 /* ---------- Anthropic ---------- */
 /* content ist meist ein String, beim Foto-Upload ein Array aus
    Bild- und Textblöcken — die API akzeptiert beides. */
-async function callModel(system: string, messages: { role: string; content: unknown }[], maxTokens = 800) {
+async function callModel(system: string, messages: { role: string; content: unknown }[], maxTokens = 1600) {
   const r = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
@@ -264,6 +264,13 @@ async function callModel(system: string, messages: { role: string; content: unkn
     },
     body: JSON.stringify({
       model: MODEL,
+      /* WICHTIG: Das Modell denkt standardmäßig unsichtbar VOR der
+         Antwort, und diese Denk-Tokens zählen gegen max_tokens.
+         Ohne die Effort-Bremse frisst das Denken kleine Budgets
+         komplett auf -> leere Antworten (Bug beim Übersetzungs-
+         Vorschlag, 31.08.). Trainer-Arbeit braucht kein tiefes
+         Grübeln — medium reicht und ist schneller. */
+      output_config: { effort: 'medium' },
       max_tokens: maxTokens,
       system: [{ type: 'text', text: system, cache_control: { type: 'ephemeral' } }],
       messages,
@@ -532,7 +539,7 @@ Deno.serve(async (req) => {
           `Reply with ONLY this JSON: {"muster":[{"id":"...","verwendet":0,"korrekt":true,"kommentar":"<short ${explain} note, empty if fine>"}],"feedback":"...","muster_version":"...","summary":"..."}`,
         ].join('\n'),
         [{ role: 'user', content: text }],
-        2000
+        2600
       )
 
       let ergebnis: {
@@ -739,7 +746,7 @@ Deno.serve(async (req) => {
             'Reply with ONLY this JSON: {"ampel":"gruen","kommentar":""}',
           ].join('\n'),
           [{ role: 'user', content: `Task: ${frage}\nLearner's answer: ${antwort}` }],
-          400
+          1200
         )
         let ampel = 'rot'
         let kommentar = ''
@@ -783,7 +790,7 @@ Deno.serve(async (req) => {
               `${a.frage} -> "${a.antwort}" (${a.ampel ?? '?'})`)
             .join('\n'),
         }],
-        900
+        1500
       )
       let feedback = out.text
       let summary = `Studio drill for ${pMuster}: ${gekonnt}/${antworten.length}.`
@@ -848,13 +855,18 @@ Deno.serve(async (req) => {
               'If the input is not a real German word (typo, gibberish), reply {"vorschlag":""}.',
             ].join('\n'),
         [{ role: 'user', content: wort }],
-        200
+        1200
       )
       let vorschlag = ''
       try {
         const j = JSON.parse(out.text.replace(/^```(?:json)?/m, '').replace(/```\s*$/m, '').trim())
         if (typeof j.vorschlag === 'string') vorschlag = j.vorschlag.slice(0, 120)
-      } catch { /* leer lassen */ }
+      } catch {
+        /* Notnagel: Antwort kam als blanker Text statt JSON —
+           kurze Phrasen trotzdem als Vorschlag durchreichen */
+        const roh = out.text.trim()
+        if (roh && roh.length <= 120 && !roh.includes('{')) vorschlag = roh.replace(/^"|"$/g, '')
+      }
       await dbInsert('trainer_usage', {
         profile,
         action: 'uebersetzung',
@@ -890,7 +902,7 @@ Deno.serve(async (req) => {
           `Answer in ${explain}, SHORT and concrete (2-5 sentences), with ${learnsKorean ? 'Korean' : 'German'} example sentences where they help. Stay on the topic of this exercise and its grammar; if asked something unrelated, gently point to the free chat.`,
         ].join('\n'),
         verlauf,
-        700
+        1400
       )
       await dbInsert('trainer_usage', {
         profile,
@@ -922,7 +934,7 @@ Deno.serve(async (req) => {
       if (text) blocks.push({ type: 'text', text })
       if (blocks.length === 0) return json({ error: 'empty' }, 400)
 
-      const out = await callModel(extractSystem(profile), [{ role: 'user', content: blocks }], 1500)
+      const out = await callModel(extractSystem(profile), [{ role: 'user', content: blocks }], 2500)
       await dbInsert('trainer_usage', {
         profile,
         action: 'extract',

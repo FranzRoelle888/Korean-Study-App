@@ -200,8 +200,23 @@ function Library({ vocab, cards, onAdd, onEdit, onDelete, trickyIds, profile, t,
       <h1 className="page-title">{t.library}</h1>
       <p className="page-sub">{t.wordsCount(vocab.length)}</p>
 
-      {/* ---------- Add ---------- */}
+      {/* ---------- Add ----------
+          Zielsprache OBEN, Muttersprache unten (Wunsch Franz
+          31.08.) — man traegt zuerst das fremde Wort ein, und der
+          Bedeutungs-Vorschlag erscheint direkt unter dem Feld,
+          in das er gehoert. */}
       <form className="add-card" onSubmit={handleSubmit}>
+        <label className="field">
+          <span>{profile.targetName}</span>
+          <ClearableInput
+            value={ko}
+            onChange={(e) => setKo(e.target.value)}
+            onClear={() => setKo('')}
+            placeholder={tt.example}
+            lang={profile.targetLang}
+            autoComplete="off"
+          />
+        </label>
         <label className="field">
           <span>{profile.knownName}</span>
           <ClearableInput
@@ -234,18 +249,6 @@ function Library({ vocab, cards, onAdd, onEdit, onDelete, trickyIds, profile, t,
             </button>
           </p>
         ) : null}
-
-        <label className="field">
-          <span>{profile.targetName}</span>
-          <ClearableInput
-            value={ko}
-            onChange={(e) => setKo(e.target.value)}
-            onClear={() => setKo('')}
-            placeholder={tt.example}
-            lang={profile.targetLang}
-            autoComplete="off"
-          />
-        </label>
 
         <div className="pos-row">
           {POS_KEYS.map((k) => (
