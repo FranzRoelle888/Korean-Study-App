@@ -5,6 +5,7 @@ import Kalibrierung from '../kalibrierung/Kalibrierung'
 import Lueckentext from '../ueben/Lueckentext'
 import GrammatikModus from '../ueben/GrammatikModus'
 import Schreibwerkstatt from '../ueben/Schreibwerkstatt'
+import ArtikelSwipe from '../ueben/ArtikelSwipe'
 import { ChevronIcon } from '../../shared/icons'
 
 /* ============================================================
@@ -51,6 +52,7 @@ function Trainer({ profile, t, onChatActive, onAddWord }) {
   const [zeigeLueckentext, setZeigeLueckentext] = useState(false)
   const [zeigeGrammatik, setZeigeGrammatik] = useState(false)
   const [zeigeSchreiben, setZeigeSchreiben] = useState(false)
+  const [zeigeArtikel, setZeigeArtikel] = useState(false)
 
   /* Der App melden, ob gerade ein Chat läuft — dann versteckt sie
      die Tab-Leiste, damit nichts über der Tastatur aufflackert. */
@@ -90,6 +92,10 @@ function Trainer({ profile, t, onChatActive, onAddWord }) {
 
   if (zeigeSchreiben) {
     return <Schreibwerkstatt profile={profile} t={t} onExit={() => setZeigeSchreiben(false)} onAddWord={onAddWord} />
+  }
+
+  if (zeigeArtikel) {
+    return <ArtikelSwipe profile={profile} t={t} onExit={() => setZeigeArtikel(false)} />
   }
 
   if (zeigeGramCheck) {
@@ -158,6 +164,17 @@ function Trainer({ profile, t, onChatActive, onAddWord }) {
             <span className="mode-title">{t.modeWrite}</span>
             <span className="mode-sub">{t.modeWriteSub}</span>
           </button>
+
+          {/* Artikel-Swipe gibt es nur auf der deutschen Seite —
+              Koreanisch kennt keine Artikel. Vorerst hier zum
+              Testen; ersetzt später das Artikel-Quiz auf Heute. */}
+          {profile.id === 'de' && (
+            <button className="mode-card" onClick={() => setZeigeArtikel(true)}>
+              <span className="mode-emoji">🃏</span>
+              <span className="mode-title">{t.modeArtikel}</span>
+              <span className="mode-sub">{t.modeArtikelSub}</span>
+            </button>
+          )}
         </div>
 
         <button className="skills-entry" onClick={() => setZeigeSkills(true)}>

@@ -41,6 +41,7 @@ function Home({
   onKalibrierung,
   kalOffen,
   onStudioTest,
+  onArtikelTest,
   profile,
   t,
   tt,
@@ -118,6 +119,14 @@ function Home({
         {onStudioTest && (
           <button className="studio-test" onClick={onStudioTest}>
             🧪 {t.studioTestBtn}
+          </button>
+        )}
+        {/* Artikel-Swipe-Test: erscheint nur mit ?test in der URL
+            (Franz testet die de-Seite, ohne dass 해인 den
+            unfertigen Modus sieht) */}
+        {onArtikelTest && (
+          <button className="studio-test" onClick={onArtikelTest}>
+            🃏 {t.modeArtikel} (Test)
           </button>
         )}
         <button

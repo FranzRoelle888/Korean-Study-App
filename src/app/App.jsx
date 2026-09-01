@@ -57,6 +57,7 @@ import { readSession, onAuthChange } from '../core/auth'
 import Login from './Login'
 import Kalibrierung from '../features/kalibrierung/Kalibrierung'
 import Studio from '../features/ueben/Studio'
+import ArtikelSwipe from '../features/ueben/ArtikelSwipe'
 import { kalibrierungErledigt } from '../core/kalibrierung'
 
 function App() {
@@ -486,7 +487,15 @@ function App() {
             onSwitchProfile={switchProfile}
             onKalibrierung={() => setView('kalibrierung')}
             kalOffen={!kalibrierungErledigt(profileId)}
-            onStudioTest={() => setView('studio')}
+            /* Test-Zugaenge: Studio nur auf Franz' ko-Seite; das
+               Artikel-Spiel nur auf der de-Seite UND nur mit
+               ?test in der URL — 해인 sieht nichts Unfertiges */
+            onStudioTest={profileId === 'ko' ? () => setView('studio') : undefined}
+            onArtikelTest={
+              profileId === 'de' && new URLSearchParams(window.location.search).has('test')
+                ? () => setView('artikeltest')
+                : undefined
+            }
             profile={profile}
             t={t}
             tt={tt}
@@ -497,6 +506,9 @@ function App() {
         )}
         {view === 'studio' && (
           <Studio profile={profile} t={t} onExit={() => setView('home')} />
+        )}
+        {view === 'artikeltest' && (
+          <ArtikelSwipe profile={profile} t={t} onExit={() => setView('home')} />
         )}
         {view === 'daily' && (
           <DailyWord
