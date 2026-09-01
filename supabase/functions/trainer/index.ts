@@ -863,7 +863,7 @@ Deno.serve(async (req) => {
           : [
               'You suggest the meaning for ONE German word a Korean learner is adding to her vocabulary app.',
               'Her card format is: English meaning followed by Korean in parentheses — e.g. "to meet (만나다)", "the weather (날씨)".',
-              'ALSO check the German entry itself. Put a corrected dictionary form into "korrektur" when the entry is: a PLURAL of a countable noun (e.g. "die Lebensmittel" -> "das Lebensmittel"), a noun MISSING its article ("Tisch" -> "der Tisch"), or a noun with the WRONG article. korrektur = article + singular. For plural-only nouns (die Leute, die Eltern, die Ferien), non-nouns and correct entries: korrektur = "".',
+              'ALSO check the German entry itself. Put a corrected dictionary form into "korrektur" when the entry is: an obvious MISSPELLING of a standard German word (e.g. "Toillette" -> "die Toilette"), a PLURAL of a countable noun (e.g. "die Lebensmittel" -> "das Lebensmittel"), a noun MISSING its article ("Tisch" -> "der Tisch"), or a noun with the WRONG article. For nouns: korrektur = article + singular; for verbs/adjectives: the corrected form alone. Be conservative: slang, colloquialisms, names and anything plausibly intentional are NOT errors. For plural-only nouns (die Leute, die Eltern, die Ferien) and correct entries: korrektur = "".',
               'Reply with ONLY this JSON: {"vorschlag":"<English (한국어)> in exactly that format","korrektur":""}',
               'If the input is not a real German word (typo, gibberish), reply {"vorschlag":"","korrektur":""}.',
             ].join('\n'),
@@ -876,10 +876,13 @@ Deno.serve(async (req) => {
         const j = JSON.parse(out.text.replace(/^```(?:json)?/m, '').replace(/```\s*$/m, '').trim())
         if (typeof j.vorschlag === 'string') vorschlag = j.vorschlag.slice(0, 120)
         /* Korrektur nur, wenn sie wie ein Wörterbuch-Eintrag
-           aussieht und sich wirklich vom Getippten unterscheidet */
+           aussieht (Artikel+Nomen ODER einzelnes Wort, z. B. ein
+           korrigiertes Verb) und sich vom Getippten unterscheidet */
         if (
           typeof j.korrektur === 'string' &&
-          /^(der|die|das) \S/.test(j.korrektur.trim()) &&
+          /^[A-Za-zÄÖÜäöüß][A-Za-zÄÖÜäöüß-]*( [A-Za-zÄÖÜäöüß][A-Za-zÄÖÜäöüß-]*){0,2}$/.test(
+            j.korrektur.trim()
+          ) &&
           j.korrektur.trim() !== wort
         )
           korrektur = j.korrektur.trim().slice(0, 60)

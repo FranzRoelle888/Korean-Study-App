@@ -4484,6 +4484,17 @@ textarea {
   line-height: 1.1;
 }
 
+/* Level-up-Puls beim Erreichen einer schnelleren Tempo-Stufe */
+.as-serie-puls {
+  animation: as-puls 0.5s ease-out;
+}
+
+@keyframes as-puls {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.45); color: var(--accent); }
+  100% { transform: scale(1); }
+}
+
 .as-bestanden {
   font-size: 20px;
 }

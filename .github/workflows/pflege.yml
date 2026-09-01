@@ -1,0 +1,62 @@
+# ============================================================
+# Wörter-Pflege: nächtliche Daten-Hygiene der Bibliothek
+# (Rechtschreibung + Artikel + falsche Plurale; nur EINDEUTIGE
+# Fehler, Slang & Co. bleiben unangetastet).
+#
+# Läuft jede Nacht 03:40 UTC über die seit dem letzten Lauf neu
+# eingetragenen Wörter. Von Hand (Actions -> "Wörter pflegen"):
+#   vorschau=true  -> nur auflisten, nichts schreiben
+#   alle=true      -> kompletten Bestand prüfen (ersetzt die
+#                     einmalige Nomen-Bereinigung)
+# Jede Änderung steht im Protokoll auf der Run-Seite; das
+# Nacht-Backup (02:30) läuft vorher.
+# ============================================================
+name: Wörter pflegen
+
+on:
+  schedule:
+    - cron: '40 3 * * *'
+  workflow_dispatch:
+    inputs:
+      vorschau:
+        description: 'Nur Vorschau (nichts schreiben)'
+        type: boolean
+        default: false
+      alle:
+        description: 'Kompletten Bestand prüfen statt nur Neues'
+        type: boolean
+        default: false
+      profil:
+        description: 'Welche Seite'
+        type: choice
+        options: [beide, ko, de]
+        default: beide
+
+jobs:
+  pflegen:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Wörter prüfen
+        env:
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          set -o pipefail
+          ARGS="--profil ${{ inputs.profil || 'beide' }}"
+          if [ "${{ inputs.vorschau }}" = "true" ]; then ARGS="$ARGS --vorschau"; fi
+          if [ "${{ inputs.alle }}" = "true" ]; then ARGS="$ARGS --alle"; fi
+          node scripts/pflege-woerter.mjs $ARGS 2>&1 | tee lauf.log
+
+      - name: Protokoll anzeigen
+        if: always()
+        run: |
+          echo '## Pflege-Lauf' >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          tail -n 80 lauf.log >> $GITHUB_STEP_SUMMARY || true
+          echo '```' >> $GITHUB_STEP_SUMMARY

@@ -30,8 +30,19 @@ import { supabase } from '../../core/supabaseClient'
 const RICHTUNGEN = { links: 'der', oben: 'die', rechts: 'das' }
 const SCHWELLE = 70 /* px Fingerweg, ab dem ein Wisch zählt */
 const HIGHSCORE_ID = 'meta-artikel-highscore'
-/* 5 Sekunden je Karte (Idee Franz: Instinkt statt Grübeln) */
-const TIMER_MS = 5000
+
+/* Timer wird mit der Serie stufig schneller (Kurve: Franz 01.09.).
+   Die ersten 8 Karten (spätere Bestanden-Schwelle) bleiben fair;
+   ab Serie 20 gilt die Untergrenze — darunter würde die Lesezeit
+   langer Wörter zum Glücksspiel. */
+function tempoFuer(serie) {
+  if (serie >= 20) return 2200
+  if (serie >= 15) return 2600
+  if (serie >= 10) return 3200
+  if (serie >= 5) return 4000
+  return 5000
+}
+const stufeFuer = (serie) => Math.min(4, Math.floor(serie / 5))
 
 function mischen(liste) {
   const a = [...liste]
@@ -125,11 +136,12 @@ function ArtikelSwipe({ profile, t, onExit }) {
      Zurückkommen frische 5 Sekunden statt eines Sofort-Fails. */
   useEffect(() => {
     if (phase !== 'spiel' || flug || !stapel.length) return
-    let timer = setTimeout(fehlgeschlagen, TIMER_MS)
+    const dauer = tempoFuer(serie)
+    let timer = setTimeout(fehlgeschlagen, dauer)
     const sichtbarkeit = () => {
       if (!document.hidden) {
         clearTimeout(timer)
-        timer = setTimeout(fehlgeschlagen, TIMER_MS)
+        timer = setTimeout(fehlgeschlagen, dauer)
       }
     }
     document.addEventListener('visibilitychange', sichtbarkeit)
@@ -137,7 +149,7 @@ function ArtikelSwipe({ profile, t, onExit }) {
       clearTimeout(timer)
       document.removeEventListener('visibilitychange', sichtbarkeit)
     }
-  }, [idx, phase, flug, stapel]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [idx, phase, flug, stapel, serie]) // eslint-disable-line react-hooks/exhaustive-deps
 
   function geantwortet(richtung) {
     const karte = stapel[idx]
@@ -291,8 +303,13 @@ function ArtikelSwipe({ profile, t, onExit }) {
               >
                 {/* Der schrumpfende Balken (reine Optik — die echte
                     Uhr ist der JS-Timer oben); key={idx} startet
-                    ihn mit jeder Karte neu */}
-                <span key={idx} className="as-timer" />
+                    ihn mit jeder Karte neu, die Laufzeit folgt der
+                    aktuellen Tempo-Stufe */}
+                <span
+                  key={idx}
+                  className="as-timer"
+                  style={{ animationDuration: `${tempoFuer(serie)}ms` }}
+                />
                 <span className="as-nomen" lang="de">{karte.nomen}</span>
               </div>
             )
@@ -304,7 +321,9 @@ function ArtikelSwipe({ profile, t, onExit }) {
 
       {/* Zähler, Krone, Ausstieg */}
       <div className="as-fuss">
-        <p className="as-serie">
+        {/* key = Tempo-Stufe: beim Stufenwechsel pulst der Zähler
+            kurz auf — der Level-up-Moment */}
+        <p className={`as-serie${stufeFuer(serie) > 0 ? ' as-serie-puls' : ''}`} key={stufeFuer(serie)}>
           {serie}
           {serie >= 8 && <span className="as-bestanden"> 🌱</span>}
         </p>
