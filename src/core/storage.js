@@ -445,11 +445,28 @@ export function applyRating(card, rating) {
     } else if (reps === 1) {
       intervalDays =
         rating === 'hard' ? pick(seed, 2, 3) : rating === 'easy' ? pick(seed, 6, 9) : pick(seed, 3, 5)
+    } else if (rating === 'hard') {
+      /* "Schwer" heisst: knapp gewusst — bald wiedersehen, nicht
+         spaeter (Fall 화장실, Franz 01.09.): Das alte SM-2-Verhalten
+         (Intervall x 1,2) machte aus 47 Tagen 56 — laenger statt
+         kuerzer, ohne Mittelweg zwischen "Nochmal" und 2 Monaten.
+         Jetzt: ein VIERTEL des alten Abstands, mindestens 2 Tage.
+         Aus 47 Tagen werden ~12, aus 8 Tagen 2. */
+      intervalDays = fuzzDays(Math.max(2, Math.round(intervalDays * 0.25)), seed)
     } else {
-      const factor = rating === 'hard' ? 1.2 : rating === 'easy' ? ease * 1.3 : ease
+      const factor = rating === 'easy' ? ease * 1.3 : ease
       intervalDays = fuzzDays(Math.max(1, Math.round(intervalDays * factor)), seed)
     }
     reps = reps + 1
+
+    /* Wiederholungstaeter-Deckel: Eine Karte mit 3+ Aussetzern
+       darf nach dem Wieder-Aufbau nicht sofort fuer 2 Monate
+       verschwinden. Bis sie seit dem letzten Aussetzer 2 saubere
+       Durchgaenge hat (reps zaehlt genau das — "Nochmal" setzt
+       es auf 0), bleibt das Intervall bei maximal 21 Tagen. */
+    if (lapses >= 3 && reps <= 2) {
+      intervalDays = Math.min(intervalDays, 21)
+    }
   }
 
   return {
@@ -549,29 +566,45 @@ export function dueCards(words, cards) {
      Jetzt zaehlen HEUTE schon erledigte Wiederholungen gegen den
      Deckel: Karten tragen nach dem Bewerten lastReviewed = heute,
      das laesst sich also direkt aus den (synchronisierten) Karten
-     ablesen — kein extra Zaehler, funktioniert auf jedem Geraet. */
-  const heuteErledigt = cards.filter((c) => c.lastReviewed === t && c.reps > 0).length
+     ablesen — kein extra Zaehler, funktioniert auf jedem Geraet.
+
+     reps >= 2 heisst: Das war eine echte WIEDERHOLUNG. Heute zum
+     ersten Mal gelernte Karten stehen nach dem Bewerten bei
+     reps 1 — die duerfen den Deckel nicht anfressen, sonst
+     wuerden die 3 Tages-Woerter vom 50er-Pensum abgezogen. */
+  const heuteErledigt = cards.filter((c) => c.lastReviewed === t && c.reps >= 2).length
   const restDeckel = Math.max(0, REVIEW_CAP - heuteErledigt)
   const review = all
     .filter((c) => c.reps > 0)
     .sort((a, b) => (a.due < b.due ? -1 : a.due > b.due ? 1 : 0))
     .slice(0, restDeckel)
 
-  /* Der Deckel gilt fuer den GESAMTEN Stapel, nicht nur fuer die
-     Wiederholungen. Vorher liefen neue Karten ungedeckelt hinten
-     rein — wer 100 Woerter am Stueck in die Bibliothek eintrug,
-     bekam einen Stapel von 200 Karten und konnte den Tag nie
-     abschliessen (Streak fuer immer bei 0).
-
-     Ausnahme: HEUTE hinzugefuegte Woerter (Vokabel des Tages,
-     manuelle Eintraege) erscheinen immer sofort — das war eine
-     bewusste Entscheidung von Anfang an. Der Rest des Rueckstands
-     fuellt nur die verbleibenden Plaetze und kommt sonst morgen. */
+  /* Prio-Regel fuer NEUE Karten (Entscheidung Franz 01.09., nach
+     해인s Buecher-Massen-Eintrag):
+     1. Regulaere Wiederholungen + heutige Nochmal-Karten haben
+        Vorrang und fuellen den 50er-Deckel.
+     2. On top kommen IMMER bis zu 6 heute erstellte Karten
+        (= die 3 Tages-Woerter mit je 2 Karten) -> Tagesmaximum 56.
+        (Die App kann Tages-Woerter nicht von handischen Eintraegen
+        unterscheiden — die NEUESTEN 6 des Tages sind an normalen
+        Tagen exakt die Tages-Woerter.)
+     3. Alle uebrigen neuen Karten (Massen-Eintraege, alter
+        Rueckstand) ruecken nur NACH, wenn unter dem Deckel Platz
+        frei ist — aelteste zuerst, Stueck fuer Stueck. Einmal
+        gelernt, sind sie normale Karten im regulaeren Rhythmus.
+     Selbst ein 150-Woerter-Bulk macht den Tag damit nie groesser
+     als 56 Karten. */
   const dayStart = learningDayStartMs()
-  const freshToday = fresh.filter((c) => c.createdAt >= dayStart)
-  const backlog = fresh.filter((c) => c.createdAt < dayStart)
-  const slots = Math.max(0, restDeckel - review.length - again.length - freshToday.length)
-  const freshCapped = [...freshToday, ...backlog.slice(0, slots)]
+  const heutige = fresh
+    .filter((c) => c.createdAt >= dayStart)
+    .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
+  const bonus = heutige.slice(0, DAILY_NEW * 2)
+  const bonusIds = new Set(bonus.map((c) => c.id))
+  const pool = fresh
+    .filter((c) => !bonusIds.has(c.id))
+    .sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0))
+  const slots = Math.max(0, restDeckel - review.length - again.length)
+  const freshCapped = [...bonus, ...pool.slice(0, slots)]
 
   return [
     ...spaceOutPairs(shuffleForToday([...again, ...review])),
