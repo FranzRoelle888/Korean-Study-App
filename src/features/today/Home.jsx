@@ -121,12 +121,10 @@ function Home({
             🧪 {t.studioTestBtn}
           </button>
         )}
-        {/* Artikel-Swipe-Test: erscheint nur mit ?test in der URL
-            (Franz testet die de-Seite, ohne dass 해인 den
-            unfertigen Modus sieht) */}
+        {/* Artikel-Swipe: der/die/das-Spiel (nur de-Seite) */}
         {onArtikelTest && (
           <button className="studio-test" onClick={onArtikelTest}>
-            🃏 {t.modeArtikel} (Test)
+            🃏 {t.modeArtikel}
           </button>
         )}
         <button

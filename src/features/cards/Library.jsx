@@ -164,7 +164,14 @@ function Library({ vocab, cards, onAdd, onEdit, onDelete, trickyIds, profile, t,
       try {
         const res = await trainerUebersetzung({ profile: profile.id, wort })
         if (vorschlagNr.current !== nr) return
-        setVorschlag(res.vorschlag ? res.vorschlag : null)
+        /* korrektur = bessere Wörterbuch-Form des GETIPPTEN Worts
+           (falscher Plural, fehlender/falscher Artikel) — kommt
+           nur auf der deutschen Seite */
+        setVorschlag(
+          res.vorschlag || res.korrektur
+            ? { text: res.vorschlag || '', korrektur: res.korrektur || '' }
+            : null
+        )
       } catch (e) {
         /* NICHT stumm verschwinden (Debug-Hoelle bei 해인):
            Limit und andere Fehler bekommen eine kleine sichtbare
@@ -246,20 +253,41 @@ function Library({ vocab, cards, onAdd, onEdit, onDelete, trickyIds, profile, t,
             {vorschlag === '#limit' ? t.libVorschlagLimit : t.libVorschlagFehler}
           </p>
         ) : vorschlag ? (
-          <p className="lib-vorschlag">
-            💡 {vorschlag}
-            <button
-              type="button"
-              className="lib-vorschlag-ok"
-              onClick={() => {
-                setEn(vorschlag)
-                setVorschlag(null)
-              }}
-              aria-label={t.libVorschlagNehmen}
-            >
-              ✓
-            </button>
-          </p>
+          <>
+            {vorschlag.text && (
+              <p className="lib-vorschlag">
+                💡 {vorschlag.text}
+                <button
+                  type="button"
+                  className="lib-vorschlag-ok"
+                  onClick={() => {
+                    setEn(vorschlag.text)
+                    setVorschlag(null)
+                  }}
+                  aria-label={t.libVorschlagNehmen}
+                >
+                  ✓
+                </button>
+              </p>
+            )}
+            {/* Bessere Form des getippten Worts (z. B. falscher
+                Plural-Eintrag) — ein Tipp ersetzt das Zielsprach-Feld */}
+            {vorschlag.korrektur && (
+              <p className="lib-vorschlag">
+                ✏️ {t.libKorrektur}: <strong lang={profile.targetLang}>{vorschlag.korrektur}</strong>
+                <button
+                  type="button"
+                  className="lib-vorschlag-ok"
+                  onClick={() => {
+                    setKo(vorschlag.korrektur)
+                  }}
+                  aria-label={t.libVorschlagNehmen}
+                >
+                  ✓
+                </button>
+              </p>
+            )}
+          </>
         ) : null}
 
         <div className="pos-row">

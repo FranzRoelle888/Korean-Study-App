@@ -487,15 +487,11 @@ function App() {
             onSwitchProfile={switchProfile}
             onKalibrierung={() => setView('kalibrierung')}
             kalOffen={!kalibrierungErledigt(profileId)}
-            /* Test-Zugaenge: Studio nur auf Franz' ko-Seite; das
-               Artikel-Spiel nur auf der de-Seite UND nur mit
-               ?test in der URL — 해인 sieht nichts Unfertiges */
+            /* Studio-Test nur auf Franz' ko-Seite; das Artikel-
+               Spiel ist seit Franz' Abnahme (01.09.) regulär auf
+               der de-Seite sichtbar */
             onStudioTest={profileId === 'ko' ? () => setView('studio') : undefined}
-            onArtikelTest={
-              profileId === 'de' && new URLSearchParams(window.location.search).has('test')
-                ? () => setView('artikeltest')
-                : undefined
-            }
+            onArtikelTest={profileId === 'de' ? () => setView('artikeltest') : undefined}
             profile={profile}
             t={t}
             tt={tt}

@@ -30,6 +30,8 @@ import { supabase } from '../../core/supabaseClient'
 const RICHTUNGEN = { links: 'der', oben: 'die', rechts: 'das' }
 const SCHWELLE = 70 /* px Fingerweg, ab dem ein Wisch zählt */
 const HIGHSCORE_ID = 'meta-artikel-highscore'
+/* 5 Sekunden je Karte (Idee Franz: Instinkt statt Grübeln) */
+const TIMER_MS = 5000
 
 function mischen(liste) {
   const a = [...liste]
@@ -107,6 +109,36 @@ function ArtikelSwipe({ profile, t, onExit }) {
     setPhase('spiel')
   }
 
+  /* Auflösung zeigen (Entscheidung Franz), dann neuer Stapel —
+     gilt für Fehlwisch UND abgelaufenen Timer */
+  function fehlgeschlagen() {
+    setPhase('fail')
+    setZug(null)
+    start.current = null
+    setTimeout(neustart, 1800)
+  }
+
+  /* Der 5-Sekunden-Timer: ein JS-Timer je Karte (der rote Balken
+     auf der Karte ist reine Optik mit derselben Laufzeit). Läuft
+     er ab, gilt das wie ein Fehlwisch. Fairness: Wer die App
+     zwischendurch verlässt (Anruf, Sperrbildschirm), bekommt beim
+     Zurückkommen frische 5 Sekunden statt eines Sofort-Fails. */
+  useEffect(() => {
+    if (phase !== 'spiel' || flug || !stapel.length) return
+    let timer = setTimeout(fehlgeschlagen, TIMER_MS)
+    const sichtbarkeit = () => {
+      if (!document.hidden) {
+        clearTimeout(timer)
+        timer = setTimeout(fehlgeschlagen, TIMER_MS)
+      }
+    }
+    document.addEventListener('visibilitychange', sichtbarkeit)
+    return () => {
+      clearTimeout(timer)
+      document.removeEventListener('visibilitychange', sichtbarkeit)
+    }
+  }, [idx, phase, flug, stapel]) // eslint-disable-line react-hooks/exhaustive-deps
+
   function geantwortet(richtung) {
     const karte = stapel[idx]
     if (!karte) return
@@ -127,10 +159,7 @@ function ArtikelSwipe({ profile, t, onExit }) {
         else setIdx(idx + 1)
       }, 180)
     } else {
-      /* Auflösung zeigen (Entscheidung Franz), dann neuer Stapel */
-      setPhase('fail')
-      setZug(null)
-      setTimeout(neustart, 1800)
+      fehlgeschlagen()
     }
   }
 
@@ -260,6 +289,10 @@ function ArtikelSwipe({ profile, t, onExit }) {
                 onPointerUp={loslassen}
                 onPointerCancel={loslassen}
               >
+                {/* Der schrumpfende Balken (reine Optik — die echte
+                    Uhr ist der JS-Timer oben); key={idx} startet
+                    ihn mit jeder Karte neu */}
+                <span key={idx} className="as-timer" />
                 <span className="as-nomen" lang="de">{karte.nomen}</span>
               </div>
             )
