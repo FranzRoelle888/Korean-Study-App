@@ -55,6 +55,35 @@ Gast-Antworten 20–40 Wörter mit EINEM Detail pro Turn. Die Ja/Nein-
 Aussagen PARAPHRASIEREN (nie wörtlich); Falsch-Aussagen drehen ein
 Detail um (Zahl, Person, Zeitpunkt).
 
+## 2b. Stil-DNA Lesen (aus dem Modellsatz destilliert, 04.09.)
+
+**Teil 1 (Medientext, 5× MC a/b/c):** Zeitungsporträt/Bericht
+~150–200 Wörter (z. B. TV-Koch: Werdegang chronologisch + Zitat).
+Fragen folgen der Textreihenfolge; die LETZTE fragt oft global
+(„Dieser Text informiert über …"). Optionen paraphrasieren den Text;
+Distraktoren drehen genau ein Detail um oder nehmen Textwörter in
+falscher Kombination.
+
+**Teil 2 (Informationstafel, 5× MC):** Verzeichnis mit 6–7 Zeilen
+(Kaufhaus-Stockwerke, Programm). Frage: „In welchen Stock gehen
+Sie?" — Situationen erfordern UMDENKEN über Kategorien (Rosen →
+Blumenladen → EG; Laufhose → Sportkleidung → 3. Stock, NICHT Mode!).
+Immer eine „anderer Stock"-Option — die richtige Antwort, wenn die
+Kategorie woanders steckt.
+
+**Teil 3 (private E-Mail, 5× MC):** ~200 Wörter, persönlicher
+Erzählton mit 4–5 Themenblöcken (Einleben, WG, Sprache, Besuch).
+Fragen in Textreihenfolge, stark paraphrasiert; Distraktoren
+verdrehen Personen/Details („kocht jeder einmal" vs. „kochen alle
+zusammen").
+
+**Teil 4 (Anzeigen zuordnen, 5 Personen → Anzeigen a–f):** Sechs
+kompakte Web-Anzeigen; EINE passt zu niemandem, die Beispiel-Anzeige
+ist verbraucht. Falle: Oberflächen-Wortmatch führt in die Irre
+(„Wein zu Hause anbieten" ≠ Weinhaus-RESTAURANT — richtig ist der
+Lieferservice). Jede Situation hat 1–2 harte Bedingungen (Ort,
+Anlass, Personenzahl), die exakt EINE Anzeige erfüllt.
+
 ## 3. Schreiben (beide Sätze)
 
 - Teil 1 (SMS, du, 20–30 W.): Situationen „unterwegs/Änderung": zu spät

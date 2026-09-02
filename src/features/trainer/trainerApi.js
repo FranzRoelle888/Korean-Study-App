@@ -97,6 +97,12 @@ export function trainerA2Hoeren({ profile, teil }) {
   return call({ action: 'a2hoeren', profile, teil })
 }
 
+/* A2-Leseverstehen: prüfungsechtes Lese-Paket erzeugen ->
+   { teil, daten } (Struktur je Teil, jede Frage mit warum) */
+export function trainerA2Lesen({ profile, teil }) {
+  return call({ action: 'a2lesen', profile, teil })
+}
+
 /* A2-Sprechen Teil 1 (Fragen-Spiel): eingesprochene Frage bzw.
    Antwort bewerten -> { ok, fragetyp, kommentar, korrektur,
    partnerAntwort } */

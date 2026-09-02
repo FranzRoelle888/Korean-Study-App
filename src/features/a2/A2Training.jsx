@@ -7,6 +7,8 @@ import ZahlenDiktat from './ZahlenDiktat'
 import FragenSpiel from './FragenSpiel'
 import Monolog from './Monolog'
 import Shadowing from './Shadowing'
+import LeseTraining from './LeseTraining'
+import SatzBaukasten from './SatzBaukasten'
 import { trainerA2Frage } from '../trainer/trainerApi'
 
 /* ============================================================
@@ -107,15 +109,16 @@ const MODULE = [
       '함정: 모든 보기의 단어가 본문에 그대로 나와요 — 단어가 아니라 "뜻이 같은" 보기를 골라야 해요.',
     ],
     aufgaben: [
-      { id: 'lv', titel: 'Leseverstehen', ko: '읽기 연습', aktiv: false },
-      { id: 'anzeigen', titel: 'Anzeigen-Detektiv', ko: '광고 매칭', aktiv: false },
+      /* Anzeigen-Detektiv wohnt als Teil 4 IM Lese-Training
+         (Entscheidung Franz 04.09. — keine Dopplung im Menü) */
+      { id: 'lv', titel: 'Leseverstehen', ko: '읽기 연습', aktiv: true },
     ],
   },
 ]
 
 const GRUNDLAGEN = [
   { id: 'artikel', emoji: '🃏', titel: 'Artikel-Spiel', ko: '관사 게임', aktiv: true },
-  { id: 'satzbau', emoji: '🧱', titel: 'Satz-Baukasten', ko: '문장 조립', aktiv: false },
+  { id: 'satzbau', emoji: '🧱', titel: 'Satz-Baukasten', ko: '문장 조립', aktiv: true },
   { id: 'redemittel', emoji: '💬', titel: 'Redemittel', ko: '표현 카드', aktiv: true },
 ]
 
@@ -299,6 +302,14 @@ function A2Training({ profile, t }) {
 
   if (uebung === 'aussprache') {
     return <Shadowing profile={profile} t={t} onExit={() => setUebung(null)} />
+  }
+
+  if (uebung === 'lv') {
+    return <LeseTraining profile={profile} t={t} onExit={() => setUebung(null)} />
+  }
+
+  if (uebung === 'satzbau') {
+    return <SatzBaukasten t={t} onExit={() => setUebung(null)} />
   }
 
   /* ---------- Modul-Seite ---------- */

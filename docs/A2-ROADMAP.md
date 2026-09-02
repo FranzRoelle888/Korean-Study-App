@@ -61,12 +61,12 @@ Quelle Prüfungsformat: A2_Uebungssatz_Erwachsene.pdf (goethe.de/a2).
 
 ## Phase 4 — Lesen & Baukasten (Woche 4–5)
 
-- [ ] **Satzumbau-Baukasten**: Blöcke ziehen; feste Stufenleiter (Verb Pos. 2 →
+- [x] **Satzumbau-Baukasten**: Blöcke ziehen; feste Stufenleiter (Verb Pos. 2 →
       Inversion → Verbklammer → trennbare Verben → Nebensätze → Fragen),
       Aufstieg ab ~8/10, Stufen-Einführung im Studio-Stil
-- [ ] **Leseverstehen** in den 4 Formaten, Niveau-Anstieg bis Goethe-A2,
+- [x] **Leseverstehen** in den 4 Formaten, Niveau-Anstieg bis Goethe-A2,
       Distraktoren-Training als explizites Ziel
-- [ ] **Anzeigen-Detektiv** (T4 mit „X = keine Lösung"-Falle)
+- [x] **Anzeigen-Detektiv** (T4 mit „X = keine Lösung"-Falle)
 
 ## Phase 5 — Ernstfall (ab Woche 5, wöchentlich)
 

@@ -312,7 +312,7 @@ async function overLimit(profile: string) {
   /* Nur die eigenen Aktionen zählen — die speech-Funktion führt
      ihr eigenes Limit in speech_usage */
   const rows = await dbGet(
-    `trainer_usage?profile=eq.${profile}&action=in.(chat,summary,extract,uebung,satz,schreiben,studio_erklaerung,studio_aufgaben,studio_antwort,studio_bilanz,nachfrage,a2frage,a2schreiben,a2hoeren,a2sprechen1,a2sprechen2)&created_at=gt.${oneHourAgo}&select=id`
+    `trainer_usage?profile=eq.${profile}&action=in.(chat,summary,extract,uebung,satz,schreiben,studio_erklaerung,studio_aufgaben,studio_antwort,studio_bilanz,nachfrage,a2frage,a2schreiben,a2hoeren,a2lesen,a2sprechen1,a2sprechen2)&created_at=gt.${oneHourAgo}&select=id`
   )
   return rows.length >= MAX_CALLS_PER_HOUR
 }
@@ -358,6 +358,7 @@ Deno.serve(async (req) => {
       action !== 'schreiben' &&
       action !== 'a2schreiben' &&
       action !== 'a2hoeren' &&
+      action !== 'a2lesen' &&
       action !== 'a2sprechen1' &&
       action !== 'a2sprechen2' &&
       action !== 'uebersetzung' &&
@@ -1083,6 +1084,91 @@ Deno.serve(async (req) => {
       await dbInsert('trainer_usage', {
         profile,
         action: 'a2hoeren',
+        input_tokens: out.inputTokens,
+        output_tokens: out.outputTokens,
+      })
+      return json({ teil, daten })
+    }
+
+    /* ---------- A2-Leseverstehen: Übung erzeugen ----------
+       Erzeugt EIN prüfungsechtes Lese-Paket je Teil-Format,
+       Stil-DNA aus dem Modellsatz (docs/GOETHE-A2-REFERENZ.md,
+       04.09.). Jede Frage bekommt ein "warum" (Koreanisch) —
+       der Lernmotor in der Auflösung. */
+    if (action === 'a2lesen') {
+      const teil = [1, 2, 3, 4].includes(body.teil) ? body.teil : 1
+      const spezifikation =
+        teil === 1
+          ? [
+              'TEIL 1: ONE newspaper portrait/report (150-200 words, e.g. a person with an interesting job/hobby: chronological career + one quote). Then 5 multiple-choice questions following the text order; the LAST question asks globally ("Dieser Text informiert über …").',
+              'CRUCIAL exam style: options PARAPHRASE the text (never quote whole sentences); wrong options twist exactly one detail or combine text words wrongly.',
+              'Reply: {"teil":1,"titel":"...","text":"...","fragen":[{"frage":"...","optionen":["...","...","..."],"loesung":0,"warum":"<short Korean explanation>"}]} — exactly 5 fragen.',
+            ]
+          : teil === 2
+            ? [
+                'TEIL 2: ONE information board with 6-7 rows (department store floors OR an event/course program with rooms), each row: a location label and a comma-separated list of 8-14 items/offers. Then 5 situation questions ("Sie möchten … Wohin gehen Sie?") with 3 options: two location labels + one "anderer Stock"/"anderer Raum" option.',
+                'CRUCIAL exam trap: situations require RE-THINKING categories (roses -> flower shop -> ground floor; running trousers -> sports clothing -> electronics floor if listed there). In 1-2 of the 5 questions the "anderer …" option is correct.',
+                'Reply: {"teil":2,"titel":"Kaufhaus …","zeilen":[{"ort":"4. Stock","inhalt":"Bücher, Geschenke, …"}],"fragen":[{"situation":"...","optionen":["1. Stock","4. Stock","anderer Stock"],"loesung":0,"warum":"<short Korean explanation>"}]} — exactly 5 fragen.',
+              ]
+            : teil === 3
+              ? [
+                  'TEIL 3: ONE private e-mail (~180-220 words, personal narrative tone, 4-5 topic blocks: settling in, flat/colleagues, language, plans, an invitation). Then 5 multiple-choice questions in text order.',
+                  'CRUCIAL exam style: questions strongly PARAPHRASE; wrong options twist persons or details ("kocht jeder einmal" vs "kochen alle zusammen").',
+                  'Reply: {"teil":3,"von":"<first name>","text":"Liebe/r …","fragen":[{"frage":"...","optionen":["...","...","..."],"loesung":0,"warum":"<short Korean explanation>"}]} — exactly 5 fragen.',
+                ]
+              : [
+                  'TEIL 4: 5 person situations (name + 1-2 sentences with 1-2 HARD conditions: place, occasion, number of people, budget) and 6 compact web ads (id a-f: shop/restaurant/service with concrete details). Each situation matches exactly ONE ad — except ONE situation that matches NO ad (loesung "x").',
+                  'CRUCIAL exam trap: surface word matches must mislead ("Wein zu Hause anbieten" must NOT match a Weinhaus RESTAURANT — the delivery service is right). One ad stays unused.',
+                  'Reply: {"teil":4,"situationen":[{"name":"Sarah","text":"..."}],"anzeigen":[{"id":"a","titel":"www.…","text":"..."}],"loesungen":["c","x","a","f","b"],"warum":["<short Korean explanation per situation>"]} — exactly 5 situationen, 6 anzeigen, loesungen aligned with situationen.',
+                ]
+
+      const out = await callModel(
+        [
+          'You create a READING exercise for the Goethe-Zertifikat A2 exam (German, level A2). ONLY common A2 vocabulary, natural written German, numbers/times/prices welcome.',
+          ...spezifikation,
+          'No markdown, ONLY the JSON object.',
+        ].join('\n'),
+        [{ role: 'user', content: 'Create the exercise now. Vary topics from typical exam ones (jobs, hobbies, moving, shopping, courses, celebrations, travel).' }],
+        3500
+      )
+
+      let daten: Record<string, unknown>
+      try {
+        daten = JSON.parse(out.text.replace(/^```(?:json)?/m, '').replace(/```\s*$/m, '').trim())
+      } catch {
+        return json({ error: 'parse' }, 502)
+      }
+      const istText = (x: unknown, max = 400) => typeof x === 'string' && x.trim().length > 0 && x.length <= max
+      const optOk = (o: unknown, n: number) => Array.isArray(o) && o.length === n && o.every((x) => istText(x, 120))
+      const frageOk = (f: { frage?: unknown; situation?: unknown; optionen?: unknown; loesung?: unknown }) =>
+        (istText(f.frage, 200) || istText(f.situation, 300)) && optOk(f.optionen, 3) &&
+        typeof f.loesung === 'number' && f.loesung >= 0 && f.loesung <= 2
+      let gueltig = false
+      if ((teil === 1 || teil === 3) && Array.isArray(daten.fragen) && daten.fragen.length === 5) {
+        gueltig = istText(daten.text, 2000) && (daten.fragen as Record<string, unknown>[]).every(frageOk)
+      } else if (teil === 2 && Array.isArray(daten.fragen) && daten.fragen.length === 5) {
+        gueltig =
+          Array.isArray(daten.zeilen) && daten.zeilen.length >= 5 &&
+          (daten.zeilen as { ort?: unknown; inhalt?: unknown }[]).every((z) => istText(z.ort, 40) && istText(z.inhalt, 400)) &&
+          (daten.fragen as Record<string, unknown>[]).every(frageOk)
+      } else if (teil === 4) {
+        const ids = ['a', 'b', 'c', 'd', 'e', 'f']
+        gueltig =
+          Array.isArray(daten.situationen) && daten.situationen.length === 5 &&
+          (daten.situationen as { name?: unknown; text?: unknown }[]).every((s) => istText(s.name, 40) && istText(s.text, 300)) &&
+          Array.isArray(daten.anzeigen) && daten.anzeigen.length === 6 &&
+          (daten.anzeigen as { id?: unknown; titel?: unknown; text?: unknown }[]).every(
+            (a) => typeof a.id === 'string' && ids.includes(a.id) && istText(a.titel, 80) && istText(a.text, 400)
+          ) &&
+          Array.isArray(daten.loesungen) && daten.loesungen.length === 5 &&
+          (daten.loesungen as unknown[]).every((l) => l === 'x' || (typeof l === 'string' && ids.includes(l))) &&
+          (daten.loesungen as string[]).includes('x')
+      }
+      if (!gueltig) return json({ error: 'invalid' }, 502)
+
+      await dbInsert('trainer_usage', {
+        profile,
+        action: 'a2lesen',
         input_tokens: out.inputTokens,
         output_tokens: out.outputTokens,
       })

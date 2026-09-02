@@ -5411,6 +5411,191 @@ textarea {
   line-height: 1.65;
 }
 
+/* ---------- Lese-Training ---------- */
+.ls-uhr {
+  margin-left: auto;
+  font-size: 14px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-soft);
+}
+
+.ls-uhr-um {
+  color: var(--accent);
+}
+
+/* der Lesetext als „Papier" */
+.ls-text {
+  width: 100%;
+  max-width: 460px;
+  background: var(--surface);
+  border: 1px solid var(--text);
+  border-radius: 6px;
+  padding: 16px 18px;
+  box-shadow: var(--shadow-sm);
+  font-size: 15px;
+  line-height: 1.65;
+  text-align: left;
+}
+
+.ls-text p {
+  margin: 0 0 10px;
+}
+
+.ls-text p:last-child {
+  margin-bottom: 0;
+}
+
+.ls-titel {
+  font-weight: 800;
+  font-size: 16px;
+}
+
+.ls-tafel-zeile strong {
+  display: inline-block;
+  min-width: 74px;
+}
+
+.ls-gruss {
+  font-style: italic;
+}
+
+.ls-anzeigen {
+  width: 100%;
+  max-width: 460px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.ls-anzeige {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--text);
+  border-radius: 6px;
+  padding: 10px 12px;
+  text-align: left;
+}
+
+.ls-anzeige-id {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  font-weight: 800;
+  font-size: 12px;
+  border: 1.5px solid var(--text);
+  border-radius: 4px;
+  padding: 0 5px;
+}
+
+.ls-anzeige-titel {
+  margin: 0 14px 4px 0;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--primary);
+  word-break: break-all;
+}
+
+.ls-anzeige-text {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.ls-fragen {
+  width: 100%;
+  max-width: 460px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ls-optionen {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.ls-gewaehlt {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+  font-weight: 700;
+}
+
+.ls-zuordnung {
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+.ls-aufloesung-block {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-bottom: 8px;
+}
+
+/* ---------- Satz-Baukasten ---------- */
+.sb-stufen {
+  justify-content: center;
+}
+
+.sb-tipp {
+  max-width: 380px;
+}
+
+.sb-satzfeld {
+  width: 100%;
+  max-width: 460px;
+  min-height: 92px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: flex-start;
+  align-content: flex-start;
+  background: var(--surface);
+  border: 1.5px dashed var(--border);
+  border-radius: 14px;
+  padding: 12px;
+}
+
+.sb-baustein {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: 10px;
+  padding: 9px 12px;
+  font-size: 15.5px;
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+}
+
+.sb-fest {
+  background: var(--surface-2);
+  color: var(--text-soft);
+  box-shadow: none;
+}
+
+.sb-vorrat {
+  background: var(--primary-soft);
+  border-color: var(--primary);
+}
+
+.sb-kacheln {
+  width: 100%;
+  max-width: 460px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+
+.sb-luecke {
+  width: 44px;
+  height: 36px;
+  border: 1.5px dashed var(--border);
+  border-radius: 10px;
+}
+
 /* ---------- Prüfungs-Coach ---------- */
 .a2-coach {
   width: 100%;
@@ -5719,6 +5904,14 @@ textarea {
 
   .sh-karte {
     max-width: 560px;
+  }
+
+  .ls-text,
+  .ls-anzeigen,
+  .ls-fragen,
+  .sb-satzfeld,
+  .sb-kacheln {
+    max-width: 540px;
   }
 
   .fs-karte-wort {
