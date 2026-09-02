@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import ArtikelSwipe from '../ueben/ArtikelSwipe'
+import SchreibTraining from './SchreibTraining'
 import { trainerA2Frage } from '../trainer/trainerApi'
 
 /* ============================================================
@@ -82,7 +83,7 @@ const MODULE = [
       'A2 수준의 작은 문법 실수는 관대하게 봐줘요 — 빠뜨린 내용이 훨씬 큰 감점이에요.',
     ],
     aufgaben: [
-      { id: 'smsmail', titel: 'SMS & E-Mail', ko: 'SMS와 이메일', aktiv: false },
+      { id: 'smsmail', titel: 'SMS & E-Mail', ko: 'SMS와 이메일', aktiv: true },
     ],
   },
   {
@@ -214,6 +215,10 @@ function A2Training({ profile, t }) {
 
   if (uebung === 'artikel') {
     return <ArtikelSwipe profile={profile} t={t} onExit={() => setUebung(null)} />
+  }
+
+  if (uebung === 'smsmail') {
+    return <SchreibTraining profile={profile} t={t} onExit={() => setUebung(null)} />
   }
 
   /* ---------- Modul-Seite ---------- */

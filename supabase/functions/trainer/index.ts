@@ -312,7 +312,7 @@ async function overLimit(profile: string) {
   /* Nur die eigenen Aktionen zählen — die speech-Funktion führt
      ihr eigenes Limit in speech_usage */
   const rows = await dbGet(
-    `trainer_usage?profile=eq.${profile}&action=in.(chat,summary,extract,uebung,satz,schreiben,studio_erklaerung,studio_aufgaben,studio_antwort,studio_bilanz,nachfrage,a2frage)&created_at=gt.${oneHourAgo}&select=id`
+    `trainer_usage?profile=eq.${profile}&action=in.(chat,summary,extract,uebung,satz,schreiben,studio_erklaerung,studio_aufgaben,studio_antwort,studio_bilanz,nachfrage,a2frage,a2schreiben)&created_at=gt.${oneHourAgo}&select=id`
   )
   return rows.length >= MAX_CALLS_PER_HOUR
 }
@@ -355,6 +355,7 @@ Deno.serve(async (req) => {
       action !== 'uebung' &&
       action !== 'satz' &&
       action !== 'schreiben' &&
+      action !== 'a2schreiben' &&
       action !== 'uebersetzung' &&
       !String(action).startsWith('studio_') &&
       (!Array.isArray(messages) || messages.length > 60)
@@ -901,6 +902,88 @@ Deno.serve(async (req) => {
       return json({ vorschlag, korrektur })
     }
 
+    /* ---------- A2-Schreib-Training: Bewertung nach Goethe-Raster ----------
+       Bewertet SMS (Teil 1) bzw. halb offizielle E-Mail (Teil 2)
+       EXAKT wie die Prüferblätter: je Leitpunkt voll/teilweise/
+       fehlt, Register (Anrede/Gruß/du-Sie), daraus Aufgaben-
+       erfüllung A-E und Sprache A-E (5/3,5/2/0,5/0 Punkte).
+       Die Wortzahl-Nullregel prüft die APP vorher deterministisch.
+       Geeicht mit den Original-Leistungsbeispielen aus dem
+       Übungssatz (echte, BESTANDENE Lernertexte mit Fehlern). */
+    if (action === 'a2schreiben') {
+      const text = typeof body.text === 'string' ? body.text.trim().slice(0, 900) : ''
+      const teil = body.teil === 2 ? 2 : 1
+      const situation = typeof body.situation === 'string' ? body.situation.slice(0, 400) : ''
+      const leitpunkte = (Array.isArray(body.leitpunkte) ? body.leitpunkte : [])
+        .slice(0, 3)
+        .map((l: unknown) => String(l).slice(0, 160))
+      if (!text || leitpunkte.length !== 3) return json({ error: 'empty' }, 400)
+
+      const register = teil === 1 ? 'informal (du), SMS to a friend' : 'semi-formal (Sie), e-mail'
+      const out = await callModel(
+        [
+          `You are a certified Goethe-Zertifikat A2 examiner grading SCHREIBEN Teil ${teil} (${register}). Grade EXACTLY like the official criteria — and remember: at A2, examiners are LENIENT about grammar. Real passing examples from the official Übungssatz contain errors like "dass ich kann nicht am Freitag anreisen", "Ich will dir am Samstagabend einladen", "ein neuen Preisangebot" — such texts still score well when content and register are right.`,
+          '',
+          `Task: ${situation}`,
+          'Required content points:',
+          ...leitpunkte.map((l, i) => `${i + 1}. ${l}`),
+          '',
+          'Evaluate:',
+          '1. Each content point: "voll" (clearly addressed), "teil" (only touched), "fehlt" (missing). Short Korean comment for teil/fehlt.',
+          `2. Register: greeting + closing + consistent ${teil === 1 ? 'du' : 'Sie'}? ok true/false + short Korean comment if not.`,
+          '3. "aufgabenerfuellung" A-E per official table: A = all 3 points fully addressed AND register fits · B = 2 full or 1 full + 2 partial · C = 1 full + 1 partial, or all partial · D = only 1 point addressed at all, or register clearly wrong · E = topic missed.',
+          '4. "sprache" A-E: A = occasional slips, never blocking understanding · B = several slips, understanding intact · C = errors partly block understanding · D = errors severely block understanding · E = incomprehensible. Judge at A2 level — leniently!',
+          `5. "feedback": 2-4 KOREAN sentences: what was good, what to fix first (with the correct German form). Warm, concrete.`,
+          `6. "muster": a natural model answer in German (${teil === 1 ? '20-30' : '30-40'} words, correct greeting/closing) covering all 3 points.`,
+          '',
+          'Reply with ONLY this JSON:',
+          '{"leitpunkte":[{"status":"voll","kommentar":""},{"status":"teil","kommentar":"..."},{"status":"fehlt","kommentar":"..."}],',
+          ' "register":{"ok":true,"kommentar":""},',
+          ' "aufgabenerfuellung":"B","sprache":"B","feedback":"...","muster":"..."}',
+        ].join('\n'),
+        [{ role: 'user', content: text }],
+        2200
+      )
+
+      const NOTEN: Record<string, number> = { A: 5, B: 3.5, C: 2, D: 0.5, E: 0 }
+      let ergebnis: Record<string, unknown> = {}
+      try {
+        const j = JSON.parse(out.text.replace(/^```(?:json)?/m, '').replace(/```\s*$/m, '').trim())
+        const ae = typeof j.aufgabenerfuellung === 'string' && j.aufgabenerfuellung in NOTEN ? j.aufgabenerfuellung : 'C'
+        const sp = typeof j.sprache === 'string' && j.sprache in NOTEN ? j.sprache : 'C'
+        /* Original-Regel: Aufgabenerfüllung E -> ganze Aufgabe 0 */
+        const punkte = ae === 'E' ? 0 : NOTEN[ae] + NOTEN[sp]
+        ergebnis = {
+          leitpunkte: (Array.isArray(j.leitpunkte) ? j.leitpunkte : []).slice(0, 3).map(
+            (l: { status?: unknown; kommentar?: unknown }) => ({
+              status: l.status === 'voll' || l.status === 'teil' || l.status === 'fehlt' ? l.status : 'teil',
+              kommentar: typeof l.kommentar === 'string' ? l.kommentar.slice(0, 200) : '',
+            })
+          ),
+          register: {
+            ok: !!j.register?.ok,
+            kommentar: typeof j.register?.kommentar === 'string' ? j.register.kommentar.slice(0, 200) : '',
+          },
+          aufgabenerfuellung: ae,
+          sprache: sp,
+          punkte,
+          max: 10,
+          feedback: typeof j.feedback === 'string' ? j.feedback : '',
+          muster: typeof j.muster === 'string' ? j.muster : '',
+        }
+      } catch {
+        return json({ error: 'parse' }, 502)
+      }
+
+      await dbInsert('trainer_usage', {
+        profile,
+        action: 'a2schreiben',
+        input_tokens: out.inputTokens,
+        output_tokens: out.outputTokens,
+      })
+      return json(ergebnis)
+    }
+
     /* ---------- A2-Fragen-Ecke (Wunsch Franz 02.09.) ----------
        Der Prüfungs-Assistent im A2-Reiter: kennt 해인s kompletten
        Lernstand (buildProfile), alle Fakten zum Goethe-Zertifikat
@@ -932,8 +1015,8 @@ Deno.serve(async (req) => {
           '- SPRECHEN ~15 min in pairs: asking/answering with question cards (4 P), monologue from a topic card with 4 keywords (8 P), planning something together (8 P), pronunciation (5 P). Partner is usually another candidate; scoring is individual.',
           '',
           '## App features she can use (this app, A2 tab)',
-          '- ACTIVE NOW: Artikel-Spiel (article swipe game, under "Grundlagen") · daily words (5/day from the official Goethe word list) · review stack · article/plural/verb of the day on the start page · "Grammatik mitteilen" and placement check in the Profil tab.',
-          '- COMING SOON (built step by step): SMS & E-Mail training (Schreiben), Hörverstehen + Zahlen-Diktat (Hören), Fragen-Spiel/Erzählen/Zusammen planen/Aussprache (Sprechen), Leseverstehen + Anzeigen-Detektiv (Lesen), Satz-Baukasten, Redemittel.',
+          '- ACTIVE NOW: SMS & E-Mail training with real Goethe-style grading (A2 tab > Schreiben) · Artikel-Spiel (article swipe game, under "Grundlagen") · daily words (5/day from the official Goethe word list) · review stack · article/plural/verb of the day on the start page · "Grammatik mitteilen" and placement check in the Profil tab.',
+          '- COMING SOON (built step by step): Hörverstehen + Zahlen-Diktat (Hören), Fragen-Spiel/Erzählen/Zusammen planen/Aussprache (Sprechen), Leseverstehen + Anzeigen-Detektiv (Lesen), Satz-Baukasten, Redemittel.',
           'When her question relates to a task type, point her to the matching exercise — honestly marked as active or coming soon.',
           '',
           '## Her current state',

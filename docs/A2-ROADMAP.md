@@ -29,10 +29,10 @@ Quelle Prüfungsformat: A2_Uebungssatz_Erwachsene.pdf (goethe.de/a2).
 
 ## Phase 1 — Die billigsten Punkte (Woche 1–2)
 
-- [ ] **SMS/E-Mail-Training** (Schreiben T1+T2): 3 Leitpunkte, Wortzähler,
+- [x] **SMS/E-Mail-Training** (Schreiben T1+T2): 3 Leitpunkte, Wortzähler,
       du/Sie-Register, A–E-Bewertung nach Original-Raster, Punkte /20.
       Stufen: Hilfe-Chips → frei → mit Uhr. (Konzept-Runde vor Bau!)
-- [ ] Lernblatt „Schreiben": Anrede/Gruß-Formeln, Leitpunkt-Checkliste,
+- [x] Lernblatt „Schreiben": Anrede/Gruß-Formeln, Leitpunkt-Checkliste,
       typische A2-Fehler, die Goethe verzeiht vs. bestraft
 - [ ] **Redemittel-Drill**: Formel-Chunks (Anrede, Vorschläge, Reagieren)
 

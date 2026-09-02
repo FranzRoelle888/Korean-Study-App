@@ -84,6 +84,13 @@ export function trainerNachfrage({ profile, kontext, messages }) {
   return call({ action: 'nachfrage', profile, kontext, messages })
 }
 
+/* A2-Schreib-Training: SMS/E-Mail nach Goethe-Raster bewerten ->
+   { leitpunkte, register, aufgabenerfuellung, sprache, punkte,
+     max, feedback, muster } */
+export function trainerA2Schreiben({ profile, teil, situation, leitpunkte, text }) {
+  return call({ action: 'a2schreiben', profile, teil, situation, leitpunkte, text })
+}
+
 /* A2-Fragen-Ecke: der Prüfungs-Assistent kennt Haeins Lernstand,
    alle Goethe-A2-Fakten und die Funktionen der App -> { text } */
 export function trainerA2Frage({ profile, messages }) {
