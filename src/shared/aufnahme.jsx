@@ -58,8 +58,10 @@ export async function transkribiere(blob, mime, profileId, lang = 'de') {
 /* ---------- Der Aufnahme-Knopf ----------
    Zustände: bereit -> nimmt auf -> transkribiert -> bereit.
    onFertig({ text, audioUrl, dauer }) feuert nach der
-   Transkription; onFehler(art) bei Mikrofon-/Netzproblemen. */
-export function AufnahmeKnopf({ profile, lang = 'de', maxSek = 90, onFertig, onFehler, label }) {
+   Transkription; onFehler(art) bei Mikrofon-/Netzproblemen.
+   mitText={false}: nur aufnehmen, KEINE Transkription (z. B.
+   Shadowing — reines Vergleichshören, kostet dann auch nichts). */
+export function AufnahmeKnopf({ profile, lang = 'de', maxSek = 90, mitText = true, onFertig, onFehler, label }) {
   const [zustand, setZustand] = useState('bereit') /* bereit | läuft | denkt */
   const [sekunden, setSekunden] = useState(0)
   const rekorder = useRef(null)
@@ -90,6 +92,11 @@ export function AufnahmeKnopf({ profile, lang = 'de', maxSek = 90, onFertig, onF
         stream.getTracks().forEach((t) => t.stop())
         const blob = new Blob(stuecke.current, { type: r.mimeType || 'audio/mp4' })
         const audioUrl = URL.createObjectURL(blob)
+        if (!mitText) {
+          setZustand('bereit')
+          onFertig?.({ text: '', audioUrl, dauer: sekunden })
+          return
+        }
         setZustand('denkt')
         try {
           const text = await transkribiere(blob, r.mimeType, profile.id, lang)

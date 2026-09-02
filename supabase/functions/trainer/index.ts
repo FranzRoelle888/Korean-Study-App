@@ -1083,9 +1083,12 @@ Deno.serve(async (req) => {
 
     /* ---------- A2-Sprechen Teil 1: Fragen-Spiel ----------
        Bewertet eine EINGESPROCHENE Frage (zu einer Stichwortkarte)
-       oder Antwort (auf die Partnerfrage). Das Transkript kommt
-       vom Whisper-Nachfolger — Transkriptionsfehler sind daher
-       möglich; im Zweifel zugunsten der Lernenden werten. */
+       oder Antwort (auf die Partnerfrage). Grundsatz (Franz 04.09.):
+       AUSSPRACHE wird NIEMALS bewertet oder kommentiert — bewertet
+       wird nur die Sprache im Transkript, dort aber genau (Artikel,
+       Endungen, Verbstellung). Das Transkript kommt wortgetreu
+       (speech-Function bittet ausdrücklich darum, Fehler NICHT zu
+       glätten). */
     if (action === 'a2sprechen1') {
       const modus = body.modus === 'antwort' ? 'antwort' : 'frage'
       const transkript = typeof body.transkript === 'string' ? body.transkript.trim().slice(0, 300) : ''
@@ -1096,15 +1099,19 @@ Deno.serve(async (req) => {
       const out = await callModel(
         modus === 'frage'
           ? [
-              `Goethe A2 Sprechen Teil 1: the learner drew the keyword card "${stichwort}" and had to ASK a question about it (spoken; you see the speech-to-text transcript, so ignore punctuation/casing and be lenient about small transcription artifacts).`,
-              'Judge: is it a comprehensible, grammatically acceptable A2 question that fits the keyword? Slight word-order slips are fine if it clearly works as a question.',
+              `Goethe A2 Sprechen Teil 1: the learner drew the keyword card "${stichwort}" and had to ASK a question about it. You see the verbatim speech-to-text transcript of what she said.`,
+              'Judge the QUESTION: does it fit the keyword and work as an A2 question?',
+              'Be PRECISE about grammar: a wrong article, a wrong declension ending, wrong verb position or a missing word in the transcript is HER mistake — name even small ones (quote the German bit) in kommentar and show the fixed question in korrektur. Small slips still keep ok=true (exam-style: a comprehensible question scores), but the kommentar must mention them. ok=false only if the question is incomprehensible or does not fit the keyword.',
+              'NEVER comment on pronunciation or accent — not a word about it. Ignore punctuation and casing. If the transcript is garbled non-German nonsense, set ok=false and ask in kommentar to try again slowly.',
               'Also: answer her question briefly and naturally (1-2 sentences, simple German, du-form) as her exam partner would.',
-              'Reply ONLY JSON: {"ok":true,"fragetyp":"w|janein","kommentar":"<1 short Korean sentence, empty if ok>","korrektur":"<a natural model question, always>","partnerAntwort":"<your 1-2 sentence answer in German>"}',
+              'Reply ONLY JSON: {"ok":true,"fragetyp":"w|janein","kommentar":"<1 short Korean sentence; empty ONLY if the German is flawless>","korrektur":"<the corrected or model question, always>","partnerAntwort":"<your 1-2 sentence answer in German>"}',
             ].join('\n')
           : [
-              `Goethe A2 Sprechen Teil 1: the exam partner asked: "${partnerFrage}". The learner ANSWERED (speech-to-text transcript; be lenient about transcription artifacts).`,
-              'Judge: is it a comprehensible answer that fits the question (a short sentence is enough at A2; single words are "teilweise")?',
-              'Reply ONLY JSON: {"ok":true,"kommentar":"<1 short Korean sentence, empty if ok>","korrektur":"<a natural model answer in German, always>"}',
+              `Goethe A2 Sprechen Teil 1: the exam partner asked: "${partnerFrage}". The learner ANSWERED; you see the verbatim speech-to-text transcript.`,
+              'Judge: does the answer fit the question? A short sentence is enough at A2; single words are "teilweise" (ok=false).',
+              'Be PRECISE about grammar: wrong articles, declension endings or verb position in the transcript are HER mistakes — name even small ones (quote the German bit) in kommentar and show the fixed answer in korrektur. Small slips still keep ok=true, but the kommentar must mention them.',
+              'NEVER comment on pronunciation or accent. Ignore punctuation and casing. If the transcript is garbled nonsense, set ok=false and ask in kommentar to try again slowly.',
+              'Reply ONLY JSON: {"ok":true,"kommentar":"<1 short Korean sentence; empty ONLY if the German is flawless>","korrektur":"<the corrected or model answer in German, always>"}',
             ].join('\n'),
         [{ role: 'user', content: transkript }],
         900

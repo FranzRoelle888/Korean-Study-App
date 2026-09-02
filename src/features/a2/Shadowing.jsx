@@ -8,11 +8,12 @@ import Auftrag from '../../shared/Auftrag'
    AUSSPRACHE-SHADOWING (Sprechen · Aussprache = 5 Punkte)
 
    Hören -> nachsprechen -> VERGLEICHEN: Original und eigene
-   Aufnahme liegen direkt nebeneinander. Dazu zeigt das
-   Transkript, was die Maschine verstanden hat — das ehrlichste
-   maschinelle Aussprache-Signal, das es gibt. Eine NOTE gibt es
-   bewusst nicht: Aussprache seriös benoten kann keine KI;
-   Franz bleibt das menschliche Ohr.
+   Aufnahme liegen direkt nebeneinander, das eigene Ohr urteilt.
+   Grundsatz (Franz 04.09.): Aussprache wird NIEMALS maschinell
+   bewertet — keine Note, keine Trefferquote, kein Transkript.
+   Das kann keine KI seriös; Franz bleibt das menschliche Ohr.
+   Darum läuft die Aufnahme hier auch ganz ohne Transkription
+   (mitText={false}) — kostenlos und offlinefreundlich.
    ============================================================ */
 
 function mische(liste) {
@@ -24,20 +25,10 @@ function mische(liste) {
   return a
 }
 
-/* Grober Wort-Abgleich Transkript vs. Original */
-function trefferQuote(original, transkript) {
-  const norm = (s) =>
-    s.toLowerCase().replace(/[.,!?„"»«]/g, '').split(/\s+/).filter(Boolean)
-  const soll = norm(original)
-  const ist = new Set(norm(transkript))
-  if (!soll.length) return 0
-  return Math.round((soll.filter((w) => ist.has(w)).length / soll.length) * 100)
-}
-
 function Shadowing({ profile, t, onExit }) {
   const [saetze, setSaetze] = useState(() => mische(SHADOWING_SAETZE).slice(0, 6))
   const [index, setIndex] = useState(0)
-  const [aufnahme, setAufnahme] = useState(null) /* {audioUrl, text, quote} */
+  const [aufnahme, setAufnahme] = useState(null) /* {audioUrl} */
   const [fehler, setFehler] = useState(null)
 
   const satz = saetze[index]
@@ -86,9 +77,10 @@ function Shadowing({ profile, t, onExit }) {
         <AufnahmeKnopf
           profile={profile}
           maxSek={15}
-          onFertig={({ text, audioUrl }) => {
+          mitText={false}
+          onFertig={({ audioUrl }) => {
             setFehler(null)
-            setAufnahme({ audioUrl, text, quote: trefferQuote(satz.satz, text) })
+            setAufnahme({ audioUrl })
           }}
           onFehler={(art) =>
             setFehler(art === 'mikro' ? '마이크를 사용할 수 없어요 — 설정에서 허용해 주세요.' : art === 'limit' ? t.trainerRateLimit : t.trainerOffline)
@@ -98,13 +90,9 @@ function Shadowing({ profile, t, onExit }) {
         {fehler && <p className="sw-fehler" lang="ko">{fehler}</p>}
 
         {aufnahme && (
-          <div className="rd-aufloesung">
-            <p className="fs-transkript" lang="de">🗣 „{aufnahme.text}"</p>
-            <p className="a2-ko-klein" lang="ko">
-              기계가 알아들은 단어: {aufnahme.quote}%
-              {aufnahme.quote >= 80 ? ' — 아주 또렷해요! 👏' : aufnahme.quote >= 50 ? ' — 좋아요, 한 번 더!' : ' — 천천히 또박또박 다시 해봐요.'}
-            </p>
-          </div>
+          <p className="a2-ko-klein" lang="ko">
+            👂 번갈아 들으면서 비교해 보세요 — 다르게 들리는 곳을 다시 따라 하면 돼요.
+          </p>
         )}
 
         <div className="lt2-ende">

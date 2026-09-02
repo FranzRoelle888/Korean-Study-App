@@ -16,8 +16,10 @@ import Auftrag from '../../shared/Auftrag'
    - Dann fragt der PARTNER (Musterfrage der nächsten Karte, per
      TTS) und SIE antwortet mündlich -> Bewertung.
    Die App trackt W-Fragen vs. Ja/Nein-Fragen und zeigt das
-   Transkript jeder Aufnahme — was die Maschine versteht, ist
-   das ehrlichste Aussprache-Feedback.
+   Transkript jeder Aufnahme — als Transparenz: GENAU dieser
+   Text wurde bewertet. Aussprache wird nie bewertet (Franz
+   04.09.); benotet wird nur die Sprache im Transkript, dort
+   aber genau (Artikel, Endungen, Verbstellung).
    ============================================================ */
 
 function mische(liste) {
@@ -183,7 +185,7 @@ function FragenSpiel({ profile, t, onExit }) {
 
         {phase === 'ergebnis' && ergebnis && (
           <div className="rd-aufloesung">
-            {/* was die Maschine verstanden hat = ehrliches Aussprache-Signal */}
+            {/* Transparenz: genau dieser Text wurde bewertet */}
             <p className="fs-transkript" lang="de">
               🗣 „{transkript}"
               {audioUrl && (

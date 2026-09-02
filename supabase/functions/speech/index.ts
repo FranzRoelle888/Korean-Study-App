@@ -179,6 +179,17 @@ Deno.serve(async (req) => {
       form.append('file', new Blob([bytes], { type: audio.media_type }), `aufnahme.${endung}`)
       form.append('model', STT_MODEL)
       form.append('language', body.lang === 'de' ? 'de' : 'ko')
+      /* WICHTIG (Franz 04.09.): wortgetreu transkribieren. Die
+         Sprecherin ist Sprachlernerin — das Modell darf ihre
+         Grammatikfehler (Artikel, Endungen, Wortstellung) NICHT
+         stillschweigend glattbügeln, sonst kann der Trainer sie
+         nie korrigieren. */
+      form.append(
+        'prompt',
+        body.lang === 'de'
+          ? 'Der Sprecher lernt Deutsch (Niveau A2). Transkribiere wortgetreu, inklusive Grammatikfehlern, falscher Artikel und falscher Endungen. Nichts korrigieren, nichts ergänzen, nichts weglassen.'
+          : '화자는 한국어 학습자입니다. 문법 오류를 고치지 말고 들리는 그대로 받아 적으세요.'
+      )
 
       const r = await fetch('https://api.openai.com/v1/audio/transcriptions', {
         method: 'POST',
