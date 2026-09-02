@@ -5058,10 +5058,26 @@ textarea {
   box-shadow: none;
 }
 
-.hv-stufe {
+.hv-stufe-sub {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 500;
+  opacity: 0.85;
+}
+
+.hv-wahl {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+  width: 100%;
+  max-width: 460px;
+}
+
+.hv-wahl-knopf {
   flex: none;
-  padding: 6px 10px;
-  font-size: 12px;
+  padding: 7px 12px;
 }
 
 .hv-tage {

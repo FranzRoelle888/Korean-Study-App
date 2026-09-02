@@ -81,6 +81,15 @@ function HoerTraining({ profile, t, onExit }) {
 
   /* ---------- Vorrat: laden oder erzeugen ---------- */
   async function besorgeUebung(imHintergrund = false) {
+    /* Gezielt wiederholen (Feedback Franz): eine gespeicherte
+       Teil-Wahl schlägt die Mix-Rotation. Der Vorrat ist ENDLOS —
+       jede "Nächste Übung" holt oder erzeugt eine frische. */
+    let wahl = 'mix'
+    try {
+      wahl = localStorage.getItem('a2hoeren:wahl') ?? 'mix'
+    } catch {
+      /* egal */
+    }
     const zaehler = (() => {
       try {
         return parseInt(localStorage.getItem('a2hoeren:teil') ?? '0', 10) || 0
@@ -88,7 +97,8 @@ function HoerTraining({ profile, t, onExit }) {
         return 0
       }
     })()
-    const teil = [1, 3, 4, 2][(zaehler + (imHintergrund ? 1 : 0)) % 4]
+    const teil =
+      wahl === 'mix' ? [1, 3, 4, 2][(zaehler + (imHintergrund ? 1 : 0)) % 4] : parseInt(wahl, 10)
 
     const { data } = await supabase
       .from('exercise_bank')
@@ -217,21 +227,28 @@ function HoerTraining({ profile, t, onExit }) {
         </svg>
       </button>
       <span className="daily-label" lang="de">🎧 Hören{uebung?.teil ? ` · Teil ${uebung.teil}` : ''}</span>
-      {uebung?.teil && !fertig && (
-        <button
-          type="button"
-          className={`st-stufe hv-stufe${stufe === 1 ? ' st-stufe-an' : ''}`}
-          onClick={() => {
-            const s = stufe === 1 ? 2 : 1
-            setStufe(s)
-            try {
-              localStorage.setItem('a2hoeren:stufe', String(s))
-            } catch { /* egal */ }
-          }}
-        >
-          {stufe === 1 ? '🐢 학습' : '⏱ 시험'}
-        </button>
-      )}
+    </div>
+  )
+
+  function stufeWaehlen(s) {
+    setStufe(s)
+    try {
+      localStorage.setItem('a2hoeren:stufe', String(s))
+    } catch {
+      /* egal */
+    }
+  }
+
+  /* Zwei klar erkennbare Modus-Knöpfe (Feedback Franz 03.09.:
+     der einzelne Umschalter war nicht verständlich) */
+  const stufenLeiste = (
+    <div className="st-stufen">
+      <button className={stufe === 1 ? 'st-stufe st-stufe-an' : 'st-stufe'} onClick={() => stufeWaehlen(1)}>
+        🐢 학습 모드 <span className="hv-stufe-sub">천천히 · 여러 번</span>
+      </button>
+      <button className={stufe === 2 ? 'st-stufe st-stufe-an' : 'st-stufe'} onClick={() => stufeWaehlen(2)}>
+        ⏱ 시험 모드 <span className="hv-stufe-sub">실제 규칙대로</span>
+      </button>
     </div>
   )
 
@@ -319,8 +336,39 @@ function HoerTraining({ profile, t, onExit }) {
             </div>
           )}
 
+          {/* Gezielt weiterüben: Mix oder ein bestimmter Teil —
+              der Nachschub ist endlos (jede Runde wird frisch
+              erzeugt), Feedback inklusive */}
+          <div className="hv-wahl">
+            <span className="a2-ko-klein" lang="ko">다음 연습:</span>
+            {['mix', '1', '2', '3', '4'].map((w) => {
+              const aktiv = (() => {
+                try {
+                  return (localStorage.getItem('a2hoeren:wahl') ?? 'mix') === w
+                } catch {
+                  return w === 'mix'
+                }
+              })()
+              return (
+                <button
+                  key={w}
+                  className={aktiv ? 'st-stufe st-stufe-an hv-wahl-knopf' : 'st-stufe hv-wahl-knopf'}
+                  onClick={() => {
+                    try {
+                      localStorage.setItem('a2hoeren:wahl', w)
+                    } catch {
+                      /* egal */
+                    }
+                    naechsteUebung()
+                  }}
+                  lang="de"
+                >
+                  {w === 'mix' ? 'Mix' : `Teil ${w}`}
+                </button>
+              )
+            })}
+          </div>
           <div className="lt2-ende">
-            <button className="done-btn" onClick={naechsteUebung} lang="de">Nächste Übung</button>
             <button className="done-btn lt2-fertigknopf" onClick={() => { stoppen(); onExit() }}>{t.back}</button>
           </div>
         </div>
@@ -333,6 +381,7 @@ function HoerTraining({ profile, t, onExit }) {
     <div className="screen">
       {kopf}
       <div className="lt2-scroll">
+        {stufenLeiste}
         <Auftrag id={`hoeren-t${uebung.teil}`} de={RUBRIK[uebung.teil].de} ko={RUBRIK[uebung.teil].ko} />
 
         {(uebung.teil === 1 || uebung.teil === 3) && (

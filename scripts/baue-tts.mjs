@@ -119,6 +119,9 @@ async function sammleTexte(profil) {
     for (const z of lesePool('src/features/a2/zahlen.js', 'ZAHLEN_SAETZE')) {
       nimm(z.satz)
     }
+    for (const z of lesePool('src/features/a2/zahlen.js', 'ZAHLEN_SCHWER')) {
+      nimm(z.satz)
+    }
   }
 
   /* große Inventare (Wort-Ideen der Schreibwerkstatt) */

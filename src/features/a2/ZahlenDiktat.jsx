@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { ZAHLEN_SAETZE, zahlenGleich } from './zahlen'
+import { ZAHLEN_SAETZE, ZAHLEN_SCHWER, zahlenGleich } from './zahlen'
 import { playSequence } from '../../shared/tts'
 import { schreibeA2Beleg } from '../../core/storage'
 import Auftrag from '../../shared/Auftrag'
@@ -26,7 +26,11 @@ function mische(liste) {
 }
 
 function ZahlenDiktat({ profile, t, onExit }) {
-  const [saetze] = useState(() => mische(ZAHLEN_SAETZE).slice(0, PRO_RUNDE))
+  /* Jede Runde: 5 leichte + 3 schwere (mit Ablenker-Zahlen,
+     wie die echten Prüfungs-Fallen) */
+  const [saetze, setSaetze] = useState(() =>
+    mische([...mische(ZAHLEN_SAETZE).slice(0, 5), ...mische(ZAHLEN_SCHWER).slice(0, 3)])
+  )
   const [index, setIndex] = useState(0)
   const [eingabe, setEingabe] = useState('')
   const [gehoert, setGehoert] = useState(0)
@@ -86,7 +90,19 @@ function ZahlenDiktat({ profile, t, onExit }) {
         <div className="kal-mitte">
           <div className="kal-emoji">{richtig >= 6 ? '🌱' : '💪'}</div>
           <p className="kal-text">{richtig} / {saetze.length}</p>
-          <button className="done-btn" onClick={() => { setFertig(false); setIndex(0); setRichtig(0); setEingabe(''); setGehoert(0); setGeloest(null) }} lang="de">
+          <button
+            className="done-btn"
+            onClick={() => {
+              setSaetze(mische([...mische(ZAHLEN_SAETZE).slice(0, 5), ...mische(ZAHLEN_SCHWER).slice(0, 3)]))
+              setFertig(false)
+              setIndex(0)
+              setRichtig(0)
+              setEingabe('')
+              setGehoert(0)
+              setGeloest(null)
+            }}
+            lang="de"
+          >
             Noch eine Runde
           </button>
           <button className="done-btn lt2-fertigknopf" onClick={onExit}>{t.back}</button>
@@ -121,7 +137,9 @@ function ZahlenDiktat({ profile, t, onExit }) {
                 if (e.key === 'Enter') pruefen()
               }}
               placeholder={satz.hinweis}
-              inputMode="numeric"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
             />
             <button className="done-btn lt2-pruefen" onClick={pruefen} disabled={!eingabe.trim()}>
               {t.check}
