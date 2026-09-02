@@ -115,6 +115,10 @@ async function sammleTexte(profil) {
         nimm(f.beispiel)
       }
     }
+    /* Zahlen-Diktat: feste Sätze, einmal vertont = für immer da */
+    for (const z of lesePool('src/features/a2/zahlen.js', 'ZAHLEN_SAETZE')) {
+      nimm(z.satz)
+    }
   }
 
   /* große Inventare (Wort-Ideen der Schreibwerkstatt) */

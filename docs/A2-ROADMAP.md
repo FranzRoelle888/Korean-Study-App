@@ -39,12 +39,12 @@ Quelle Prüfungsformat: A2_Uebungssatz_Erwachsene.pdf (goethe.de/a2).
 
 ## Phase 2 — Hören (Woche 2–3, härtestes Modul)
 
-- [ ] **Hörverstehen-Übung** in den 4 Goethe-Formaten (MC / Bild-bzw.
+- [x] **Hörverstehen-Übung** in den 4 Goethe-Formaten (MC / Bild-bzw.
       Text-Zuordnung / Ja-Nein), Einmal-Hören für T2/T3 nachgebildet
 - [ ] **Franz-Aufnahme-Tool**: App generiert Skripte, Franz spricht sie ein
       (Mikrofon → Audio-Cache), Aufgaben spielen seine Stimme; Mischung mit
       TTS-Stimmen für Zwei-Sprecher-Gespräche
-- [ ] **Zahlen-Diktat**: Uhrzeiten/Preise/Daten/Gleise nach Gehör tippen
+- [x] **Zahlen-Diktat**: Uhrzeiten/Preise/Daten/Gleise nach Gehör tippen
 
 ## Phase 3 — Sprechen (Woche 3–4, K.o.-Hürde)
 

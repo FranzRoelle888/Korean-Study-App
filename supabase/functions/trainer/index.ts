@@ -312,7 +312,7 @@ async function overLimit(profile: string) {
   /* Nur die eigenen Aktionen zählen — die speech-Funktion führt
      ihr eigenes Limit in speech_usage */
   const rows = await dbGet(
-    `trainer_usage?profile=eq.${profile}&action=in.(chat,summary,extract,uebung,satz,schreiben,studio_erklaerung,studio_aufgaben,studio_antwort,studio_bilanz,nachfrage,a2frage,a2schreiben)&created_at=gt.${oneHourAgo}&select=id`
+    `trainer_usage?profile=eq.${profile}&action=in.(chat,summary,extract,uebung,satz,schreiben,studio_erklaerung,studio_aufgaben,studio_antwort,studio_bilanz,nachfrage,a2frage,a2schreiben,a2hoeren)&created_at=gt.${oneHourAgo}&select=id`
   )
   return rows.length >= MAX_CALLS_PER_HOUR
 }
@@ -357,6 +357,7 @@ Deno.serve(async (req) => {
       action !== 'satz' &&
       action !== 'schreiben' &&
       action !== 'a2schreiben' &&
+      action !== 'a2hoeren' &&
       action !== 'uebersetzung' &&
       !String(action).startsWith('studio_') &&
       (!Array.isArray(messages) || messages.length > 60)
@@ -985,6 +986,94 @@ Deno.serve(async (req) => {
       return json(ergebnis)
     }
 
+    /* ---------- A2-Hörverstehen: Übung erzeugen ----------
+       Erzeugt EIN prüfungsechtes Hör-Paket je Teil-Format des
+       Goethe-Zertifikats A2. Nur Skripte + Fragen als Text —
+       vertont wird clientseitig über den TTS-Cache (Dialoge als
+       abwechselnde Stimmen-Clips). Wortschatz strikt A2. */
+    if (action === 'a2hoeren') {
+      const teil = [1, 2, 3, 4].includes(body.teil) ? body.teil : 1
+      const spezifikation =
+        teil === 1
+          ? [
+              'TEIL 1: five short announcement texts (radio traffic/weather, voicemail, station/store announcements). Each 25-45 words, ONE speaker.',
+              'Reply: {"teil":1,"texte":[{"stil":"durchsage|anrufbeantworter|radio","skript":"...","frage":"...","optionen":["...","...","..."],"loesung":0}] } — exactly 5 items, frage+optionen in German, loesung = index 0-2. Distractor rule like the real exam: wrong options mention words that DO occur in the audio.',
+            ]
+          : teil === 2
+            ? [
+                'TEIL 2: ONE longer dialog (friends telling about a week, 10-14 turns, speakers A and B, each turn 1-2 sentences). B asks short questions, A tells what happened each day.',
+                'Reply: {"teil":2,"dialog":[{"s":"A","text":"..."}],"tage":["Samstag","Sonntag","Montag","Dienstag","Mittwoch"],"optionen":["ins Kino gehen","..."],"loesungen":[0,3,1,5,2]} — 8 short activity options (3 are distractors never done), loesungen = option index per day, all different.',
+              ]
+            : teil === 3
+              ? [
+                  'TEIL 3: five short everyday dialogs (2-4 turns each, speakers A and B). Each has one question about a detail (what is bought, how someone travels, when they meet …).',
+                  'Reply: {"teil":3,"gespraeche":[{"dialog":[{"s":"A","text":"..."}],"frage":"...","optionen":["...","...","..."],"loesung":0}] } — exactly 5, optionen are SHORT noun phrases (2-4 words). Distractors must be mentioned in the dialog but rejected/changed.',
+                ]
+              : [
+                  'TEIL 4: ONE radio interview (moderator M, guest G, 10-14 turns; the guest has an interesting everyday topic: job, hobby, travel).',
+                  'Reply: {"teil":4,"dialog":[{"s":"M","text":"..."}],"aussagen":[{"text":"...","wahr":true}] } — exactly 5 statements about the interview, mixed true/false, in German.',
+                ]
+
+      const out = await callModel(
+        [
+          'You create a listening exercise for the Goethe-Zertifikat A2 exam (German, level A2). Natural spoken German, 해요체-equivalent politeness (normal Sie/du), ONLY common A2 vocabulary, numbers/times/prices welcome.',
+          ...spezifikation,
+          'No markdown, ONLY the JSON object.',
+        ].join('\n'),
+        [{ role: 'user', content: 'Create the exercise now. Vary topics from typical exam ones (travel, shopping, appointments, weather, work, free time).' }],
+        3500
+      )
+
+      let daten: Record<string, unknown>
+      try {
+        daten = JSON.parse(out.text.replace(/^```(?:json)?/m, '').replace(/```\s*$/m, '').trim())
+      } catch {
+        return json({ error: 'parse' }, 502)
+      }
+      /* Struktur-Validierung: verwerfen statt reparieren */
+      const istText = (x: unknown, max = 400) => typeof x === 'string' && x.trim().length > 0 && x.length <= max
+      const optOk = (o: unknown, n: number) => Array.isArray(o) && o.length === n && o.every((x) => istText(x, 120))
+      let gueltig = false
+      if (teil === 1 && Array.isArray(daten.texte) && daten.texte.length === 5) {
+        gueltig = daten.texte.every(
+          (x: { skript?: unknown; frage?: unknown; optionen?: unknown; loesung?: unknown }) =>
+            istText(x.skript) && istText(x.frage, 160) && optOk(x.optionen, 3) &&
+            typeof x.loesung === 'number' && x.loesung >= 0 && x.loesung <= 2
+        )
+      } else if (teil === 2) {
+        gueltig =
+          Array.isArray(daten.dialog) && daten.dialog.length >= 8 &&
+          daten.dialog.every((d: { s?: unknown; text?: unknown }) => (d.s === 'A' || d.s === 'B') && istText(d.text, 250)) &&
+          optOk(daten.tage, 5) && Array.isArray(daten.optionen) && daten.optionen.length >= 6 &&
+          Array.isArray(daten.loesungen) && daten.loesungen.length === 5 &&
+          daten.loesungen.every((l: unknown) => typeof l === 'number' && l >= 0 && l < (daten.optionen as unknown[]).length) &&
+          new Set(daten.loesungen as number[]).size === 5
+      } else if (teil === 3 && Array.isArray(daten.gespraeche) && daten.gespraeche.length === 5) {
+        gueltig = daten.gespraeche.every(
+          (g: { dialog?: unknown; frage?: unknown; optionen?: unknown; loesung?: unknown }) =>
+            Array.isArray(g.dialog) && g.dialog.length >= 2 &&
+            (g.dialog as { s?: unknown; text?: unknown }[]).every((d) => (d.s === 'A' || d.s === 'B') && istText(d.text, 250)) &&
+            istText(g.frage, 160) && optOk(g.optionen, 3) &&
+            typeof g.loesung === 'number' && g.loesung >= 0 && g.loesung <= 2
+        )
+      } else if (teil === 4) {
+        gueltig =
+          Array.isArray(daten.dialog) && daten.dialog.length >= 8 &&
+          daten.dialog.every((d: { s?: unknown; text?: unknown }) => (d.s === 'M' || d.s === 'G') && istText(d.text, 300)) &&
+          Array.isArray(daten.aussagen) && daten.aussagen.length === 5 &&
+          daten.aussagen.every((a: { text?: unknown; wahr?: unknown }) => istText(a.text, 200) && typeof a.wahr === 'boolean')
+      }
+      if (!gueltig) return json({ error: 'invalid' }, 502)
+
+      await dbInsert('trainer_usage', {
+        profile,
+        action: 'a2hoeren',
+        input_tokens: out.inputTokens,
+        output_tokens: out.outputTokens,
+      })
+      return json({ teil, daten })
+    }
+
     /* ---------- A2-Fragen-Ecke (Wunsch Franz 02.09.) ----------
        Der Prüfungs-Assistent im A2-Reiter: kennt 해인s kompletten
        Lernstand (buildProfile), alle Fakten zum Goethe-Zertifikat
@@ -1016,8 +1105,8 @@ Deno.serve(async (req) => {
           '- SPRECHEN ~15 min in pairs: asking/answering with question cards (4 P), monologue from a topic card with 4 keywords (8 P), planning something together (8 P), pronunciation (5 P). Partner is usually another candidate; scoring is individual.',
           '',
           '## App features she can use (this app, A2 tab)',
-          '- ACTIVE NOW: SMS & E-Mail training with real Goethe-style grading (A2 tab > Schreiben) · Artikel-Spiel (article swipe game, under "Grundlagen") · daily words (5/day from the official Goethe word list) · review stack · article/plural/verb of the day on the start page · "Grammatik mitteilen" and placement check in the Profil tab.',
-          '- COMING SOON (built step by step): Hörverstehen + Zahlen-Diktat (Hören), Fragen-Spiel/Erzählen/Zusammen planen/Aussprache (Sprechen), Leseverstehen + Anzeigen-Detektiv (Lesen), Satz-Baukasten, Redemittel.',
+          '- ACTIVE NOW: SMS & E-Mail training with real Goethe-style grading (A2 tab > Schreiben) · Hörverstehen in all 4 exam formats + Zahlen-Diktat (A2 tab > Hören) · Redemittel drill with package library (Grundlagen) · Artikel-Spiel (Grundlagen) · daily words (5/day from the official Goethe word list) · review stack · "Grammatik mitteilen" and placement check in the Profil tab.',
+          '- COMING SOON (built step by step): Fragen-Spiel/Erzählen/Zusammen planen/Aussprache (Sprechen), Leseverstehen + Anzeigen-Detektiv (Lesen), Satz-Baukasten.',
           'When her question relates to a task type, point her to the matching exercise — honestly marked as active or coming soon.',
           '',
           '## Her current state',

@@ -2,6 +2,8 @@ import { useState } from 'react'
 import ArtikelSwipe from '../ueben/ArtikelSwipe'
 import SchreibTraining from './SchreibTraining'
 import RedemittelDrill from './RedemittelDrill'
+import HoerTraining from './HoerTraining'
+import ZahlenDiktat from './ZahlenDiktat'
 import { trainerA2Frage } from '../trainer/trainerApi'
 
 /* ============================================================
@@ -41,8 +43,8 @@ const MODULE = [
       '문제를 먼저 읽고 나서 들으세요 — 시험에서도 읽을 시간을 줘요.',
     ],
     aufgaben: [
-      { id: 'hv', titel: 'Hörverstehen', ko: '듣기 연습', aktiv: false },
-      { id: 'zahlen', titel: 'Zahlen-Diktat', ko: '숫자 받아쓰기', aktiv: false },
+      { id: 'hv', titel: 'Hörverstehen', ko: '듣기 연습', aktiv: true },
+      { id: 'zahlen', titel: 'Zahlen-Diktat', ko: '숫자 받아쓰기', aktiv: true },
     ],
   },
   {
@@ -224,6 +226,14 @@ function A2Training({ profile, t }) {
 
   if (uebung === 'redemittel') {
     return <RedemittelDrill profile={profile} t={t} onExit={() => setUebung(null)} />
+  }
+
+  if (uebung === 'hv') {
+    return <HoerTraining profile={profile} t={t} onExit={() => setUebung(null)} />
+  }
+
+  if (uebung === 'zahlen') {
+    return <ZahlenDiktat profile={profile} t={t} onExit={() => setUebung(null)} />
   }
 
   /* ---------- Modul-Seite ---------- */

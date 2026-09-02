@@ -5040,6 +5040,118 @@ textarea {
   display: block;
 }
 
+/* ---------- Hörverstehen + Zahlen-Diktat ---------- */
+.hv-play {
+  width: 74px;
+  height: 74px;
+  border-radius: 50%;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  font-size: 28px;
+  font-family: inherit;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+}
+
+.hv-play:disabled {
+  opacity: 0.35;
+  box-shadow: none;
+}
+
+.hv-stufe {
+  flex: none;
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
+.hv-tage {
+  width: 100%;
+  max-width: 460px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.hv-tag {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hv-tag-name {
+  flex: none;
+  width: 92px;
+  font-weight: 700;
+  text-align: left;
+}
+
+.hv-select {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 16px;
+  font-family: inherit;
+}
+
+.hv-aussage {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  text-align: left;
+  font-size: 14.5px;
+  line-height: 1.5;
+}
+
+.hv-janein {
+  display: flex;
+  gap: 8px;
+}
+
+.hv-janein .st-stufe {
+  flex: none;
+  padding: 6px 18px;
+}
+
+.hv-aufloesung {
+  width: 100%;
+  max-width: 460px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+  font-size: 13.5px;
+  line-height: 1.55;
+}
+
+.hv-zeile {
+  margin: 0;
+}
+
+.hv-ok { color: #2e7d4f; }
+.hv-falsch { color: var(--accent); }
+
+.hv-skript {
+  width: 100%;
+  max-width: 460px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--surface-2);
+  text-align: left;
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.hv-skript p {
+  margin: 0 0 8px;
+}
+
 /* ---------- Fragen-Ecke im A2-Reiter ---------- */
 .a2-fragen {
   width: 100%;

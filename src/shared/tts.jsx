@@ -52,13 +52,14 @@ async function sha256Hex(s) {
   return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('')
 }
 
-async function cacheUrlFuer(text, lang) {
+async function cacheUrlFuer(text, lang, voice) {
   const hash = await sha256Hex(text)
-  return `${SUPABASE_URL}/storage/v1/object/public/tts-cache/${CACHE_VERSION}/${lang}/${VOICES[lang]}/${hash}.mp3`
+  const stimme = voice || VOICES[lang]
+  return `${SUPABASE_URL}/storage/v1/object/public/tts-cache/${CACHE_VERSION}/${lang}/${stimme}/${hash}.mp3`
 }
 
 /* Die Funktion erzeugt den Satz einmalig und gibt die Cache-URL zurück */
-async function erzeugen(text, lang) {
+async function erzeugen(text, lang, voice) {
   const token = await accessToken()
   const r = await fetch(`${SUPABASE_URL}/functions/v1/speech`, {
     method: 'POST',
@@ -71,6 +72,9 @@ async function erzeugen(text, lang) {
       action: 'tts',
       text,
       lang,
+      /* Hör-Übungen brauchen VERSCHIEDENE Sprecher (Dialoge!) —
+         ohne Angabe bleibt es die Standardstimme der Sprache */
+      voice: voice || undefined,
       /* fürs Nutzungs-Log: ko-Audio gehört zu Franz' Seite */
       profile: lang === 'de' ? 'de' : 'ko',
     }),
@@ -119,6 +123,96 @@ export async function speak(text, lang) {
     }
   } catch {
     browserStimme(t, lang)
+  }
+}
+
+/* ---------- Clip-Sequenzen (Hör-Übungen) ----------
+   Spielt eine Liste von Sprech-Teilen nacheinander ab — so
+   entstehen Dialoge aus abwechselnden Stimmen. rate < 1 =
+   Lernmodus (langsamer, gratis über die Abspielrate — kein
+   zweiter Cache nötig). Gibt einen Regler mit stop() zurück;
+   onEnde feuert nach dem letzten Clip (nicht nach stop). */
+export function playSequence(teile, lang, { rate = 1, onEnde } = {}) {
+  if (!player) player = new Audio()
+  entsperren()
+  let gestoppt = false
+  ;(async () => {
+    try {
+      for (const teil of teile) {
+        if (gestoppt) return
+        const url = await cacheUrlFuer(teil.text, lang, teil.voice)
+        try {
+          await abspielenMitEnde(url, rate, () => gestoppt)
+        } catch {
+          if (gestoppt) return
+          await abspielenMitEnde(await erzeugen(teil.text, lang, teil.voice), rate, () => gestoppt)
+        }
+      }
+      if (!gestoppt && onEnde) onEnde()
+    } catch {
+      /* Abbruch/Netz — der Regler meldet nichts, die UI zeigt
+         ihren eigenen Fehlerzustand über onEnde-Ausbleiben */
+      if (!gestoppt && onEnde) onEnde()
+    }
+  })()
+  return {
+    stop() {
+      gestoppt = true
+      try {
+        player.pause()
+      } catch {
+        /* egal */
+      }
+    },
+  }
+}
+
+function abspielenMitEnde(src, rate, istGestoppt) {
+  return new Promise((resolve, reject) => {
+    player.src = src
+    player.playbackRate = rate
+    const fertig = () => {
+      aufraeumen()
+      resolve()
+    }
+    const fehler = () => {
+      aufraeumen()
+      reject(new Error('audio'))
+    }
+    const aufraeumen = () => {
+      player.removeEventListener('ended', fertig)
+      player.removeEventListener('error', fehler)
+    }
+    player.addEventListener('ended', fertig)
+    player.addEventListener('error', fehler)
+    player.play().then(() => {
+      if (istGestoppt()) {
+        aufraeumen()
+        resolve()
+      }
+    }).catch(fehler)
+  })
+}
+
+/* Sequenz-Teile vorwärmen (fürs Hintergrund-Prinzip) */
+export function prewarmSequence(teile, lang) {
+  for (const teil of teile) prewarmVoiced(teil.text, lang, teil.voice)
+}
+
+async function prewarmVoiced(text, lang, voice) {
+  const t = (text || '').trim()
+  if (!t) return
+  const key = `${lang}|${voice || ''}|${t}`
+  if (laufend.has(key)) return
+  laufend.add(key)
+  try {
+    const url = await cacheUrlFuer(t, lang, voice)
+    const kopf = await fetch(url, { method: 'HEAD' })
+    if (!kopf.ok) await erzeugen(t, lang, voice)
+  } catch {
+    /* still */
+  } finally {
+    laufend.delete(key)
   }
 }
 

@@ -91,6 +91,12 @@ export function trainerA2Schreiben({ profile, teil, situation, leitpunkte, text 
   return call({ action: 'a2schreiben', profile, teil, situation, leitpunkte, text })
 }
 
+/* A2-Hörverstehen: EIN prüfungsechtes Hör-Paket erzeugen
+   (teil 1-4) -> { teil, daten } — vertont wird clientseitig */
+export function trainerA2Hoeren({ profile, teil }) {
+  return call({ action: 'a2hoeren', profile, teil })
+}
+
 /* A2-Fragen-Ecke: der Prüfungs-Assistent kennt Haeins Lernstand,
    alle Goethe-A2-Fakten und die Funktionen der App -> { text } */
 export function trainerA2Frage({ profile, messages }) {
