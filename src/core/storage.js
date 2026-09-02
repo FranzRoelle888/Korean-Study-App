@@ -1,5 +1,6 @@
 import { supabase } from './supabaseClient'
 import { poolFor } from './dailyPool'
+import { fsrsSchritt } from './fsrs'
 import { PROFILES, DEFAULT_PROFILE } from './profiles'
 
 /* ============================================================
@@ -159,10 +160,13 @@ function cardFromRow(r) {
     lapses: r.lapses,
     due: r.due,
     lastReviewed: r.last_reviewed,
+    /* FSRS-Zustand (Migration 011) — fehlt vor der Migration */
+    stab: r.stab ?? null,
+    diff: r.diff ?? null,
   }
 }
 function cardToRow(c) {
-  return {
+  const row = {
     id: c.id,
     word_id: c.wordId,
     front: c.front,
@@ -173,6 +177,11 @@ function cardToRow(c) {
     due: c.due,
     last_reviewed: c.lastReviewed,
   }
+  /* Schema-Toleranz: FSRS-Spalten nur mitschicken, wenn befüllt —
+     sonst lehnt die Datenbank vor Migration 011 jedes Update ab */
+  if (c.stab != null) row.stab = c.stab
+  if (c.diff != null) row.diff = c.diff
+  return row
 }
 
 /* ---------- Datums-Helfer (tagesgenau, lokale Zeit) ---------- */
@@ -194,6 +203,56 @@ function addDays(iso, n) {
   const d = new Date(iso + 'T00:00:00')
   d.setDate(d.getDate() + n)
   return toISO(d)
+}
+function tageZwischen(vonIso, bisIso) {
+  return Math.round(
+    (new Date(bisIso + 'T00:00:00') - new Date(vonIso + 'T00:00:00')) / 86400000
+  )
+}
+
+/* ============================================================
+   FSRS-SCHALTER — sanfte Umstellung (Entscheidung Franz 02.09.)
+
+   FSRS braucht die Spalten stab/diff (Migration 011). Solange die
+   fehlen, würde jedes Karten-Update scheitern — deshalb schaltet
+   sich FSRS erst scharf, wenn loadInitial() die Spalten gesehen
+   hat. Das Ergebnis wird lokal gemerkt, damit auch Offline-Starts
+   im richtigen Modus laufen. Bis dahin: SM-2 wie bisher.
+   ============================================================ */
+let fsrsAktiv = null
+export function istFsrsAktiv() {
+  if (fsrsAktiv === null) fsrsAktiv = localStorage.getItem(cacheKey('fsrs')) === '1'
+  return fsrsAktiv
+}
+function merkeFsrs(an) {
+  fsrsAktiv = an
+  localStorage.setItem(cacheKey('fsrs'), an ? '1' : '0')
+}
+
+/* ---------- Antwort-Historie (Migration 011) ----------
+   Jede Bewertung eine Zeile — Grundlage für die spätere
+   persönliche Eichung der FSRS-Parameter und für den Verlauf.
+   Bewusst Feuer-und-vergessen: Die Historie ist wertvoll, aber
+   nie blockierend (fehlt die Tabelle noch, passiert still nichts). */
+export function logReview(vorher, rating, nachher) {
+  try {
+    supabase
+      .from('review_log')
+      .insert(
+        stamp({
+          card_id: String(vorher.id),
+          word_id: vorher.wordId ?? null,
+          rating,
+          elapsed_days: vorher.lastReviewed ? tageZwischen(vorher.lastReviewed, todayStr()) : 0,
+          stab_vorher: vorher.stab ?? null,
+          stab_nachher: nachher.stab ?? null,
+          diff: nachher.diff ?? null,
+        })
+      )
+      .then(() => {})
+  } catch {
+    /* still */
+  }
 }
 
 /* ============================================================
@@ -266,12 +325,15 @@ export async function loadInitial() {
     /* Reihenfolge ist wichtig: erst das Ausstehende hochschieben,
        sonst ueberschreibt der Cloud-Stand es gleich wieder. */
     await flushPending()
-    const [wRes, cRes] = await Promise.all([
+    const [wRes, cRes, fsrsProbe] = await Promise.all([
       mine(supabase.from('words').select('*')).order('created_at', { ascending: false }),
       mine(supabase.from('cards').select('*')),
+      /* Gibt es die FSRS-Spalten schon? (Migration 011) */
+      supabase.from('cards').select('stab').limit(1),
     ])
     if (wRes.error) throw wRes.error
     if (cRes.error) throw cRes.error
+    merkeFsrs(!fsrsProbe.error)
 
     const words = wRes.data.map(wordFromRow)
     const cards = cRes.data.map(cardFromRow)
@@ -424,6 +486,10 @@ export async function deleteWordCloud(id) {
    DER ALGORITHMUS (SM-2, vereinfacht, tagesgenau)
    ============================================================ */
 export function applyRating(card, rating) {
+  /* Ab Migration 011 rechnet FSRS (fsrs.js); der SM-2-Weg darunter
+     bleibt als Rückfalleben erhalten (vor der Migration, und als
+     Notausgang, falls FSRS je zurückgedreht werden soll). */
+  if (istFsrsAktiv()) return applyRatingFsrs(card, rating)
   let { ease, intervalDays, reps, lapses } = card
 
   // Die Streuung dieser Karte für genau diesen Knopf (siehe seeded()).
@@ -477,6 +543,58 @@ export function applyRating(card, rating) {
     lapses,
     due: addDays(todayStr(), intervalDays),
     lastReviewed: todayStr(),
+  }
+}
+
+/* ---------- FSRS-Weg (sanfte Umstellung, Franz 02.09.) ----------
+   Jede Karte wird in dem Moment konvertiert, in dem sie das
+   nächste Mal bewertet wird — kein Massen-Umbau. Die SM-2-Felder
+   (ease/reps/lapses) werden weiter gepflegt: reps/lapses steuern
+   die Stapel-Logik (neu/Nochmal/Tagespensum), und ease hält den
+   Notausgang zurück zu SM-2 offen. */
+function applyRatingFsrs(card, rating) {
+  const klemme = (x, lo, hi) => Math.min(hi, Math.max(lo, x))
+  let { ease, reps, lapses, stab, diff } = card
+  const heute = todayStr()
+
+  /* Alte Karte ohne FSRS-Zustand: Startwerte aus dem SM-2-Stand
+     schätzen. Das Intervall, das SM-2 der Karte gegeben hat, ist
+     ein brauchbarer Näherungswert für ihre Stabilität; die
+     Schwierigkeit entsteht aus Leichtigkeits-Faktor + Aussetzern
+     (so macht es auch Anki bei der Umstellung). */
+  if (stab == null && (card.reps > 0 || card.lastReviewed)) {
+    stab = Math.max(0.5, card.intervalDays || 1)
+    diff = klemme(5 + (2.5 - (ease || 2.5)) * 3 + (lapses || 0) * 0.4, 1, 10)
+  }
+
+  const elapsed = card.lastReviewed ? Math.max(0, tageZwischen(card.lastReviewed, heute)) : 0
+  const erg = fsrsSchritt({ stab, diff, elapsed, rating })
+
+  /* Buchhaltung wie gehabt — die Stapel-Logik hängt daran */
+  if (rating === 'again') {
+    ease = Math.max(MIN_EASE, (ease || START_EASE) - 0.2)
+    reps = 0
+    lapses = (lapses || 0) + 1
+  } else {
+    if (rating === 'hard') ease = Math.max(MIN_EASE, (ease || START_EASE) - 0.15)
+    else if (rating === 'easy') ease = (ease || START_EASE) + 0.15
+    reps = reps + 1
+  }
+
+  /* Streuung gegen Termin-Klumpen — wie beim alten Weg */
+  let intervalDays = erg.intervalDays
+  if (intervalDays > 0) intervalDays = fuzzDays(intervalDays, seeded(card.id, reps, rating))
+
+  return {
+    ...card,
+    ease,
+    reps,
+    lapses,
+    stab: erg.stab,
+    diff: erg.diff,
+    intervalDays,
+    due: addDays(heute, intervalDays),
+    lastReviewed: heute,
   }
 }
 

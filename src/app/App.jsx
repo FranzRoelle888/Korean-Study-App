@@ -9,6 +9,7 @@ import {
   updateWordCloud,
   deleteWordCloud,
   applyRating,
+  logReview,
   dueCards,
   dailyStatus,
   makeIntroducedWord,
@@ -420,6 +421,9 @@ function App() {
     const target = cards.find((c) => c.id === cardId)
     if (!target) return
     const updatedCard = applyRating(target, rating)
+    /* Antwort-Historie (Migration 011): Grundlage für die spätere
+       persönliche FSRS-Eichung — nie blockierend */
+    logReview(target, rating, updatedCard)
     const next = cards.map((c) => (c.id === cardId ? updatedCard : c))
     setCards(next)
     writeCardsCache(next)
