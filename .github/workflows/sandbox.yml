@@ -1,0 +1,36 @@
+# ============================================================
+# Sandbox befüllen: kopiert 해인s de-Daten (Wörter, Karten,
+# Lernstand, Streak) frisch ins versteckte sb-Testprofil.
+# Von Hand starten: Actions -> "Sandbox befüllen".
+# Liest nur von de; löscht/schreibt ausschließlich sb-Zeilen.
+# Danach im Browser testen: <App-Adresse>/?lang=sb
+# ============================================================
+name: Sandbox befüllen
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  fuellen:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Kopieren
+        env:
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          set -o pipefail
+          node scripts/fuelle-sandbox.mjs 2>&1 | tee lauf.log
+
+      - name: Protokoll anzeigen
+        if: always()
+        run: |
+          echo '## Sandbox-Lauf' >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          tail -n 30 lauf.log >> $GITHUB_STEP_SUMMARY || true
+          echo '```' >> $GITHUB_STEP_SUMMARY

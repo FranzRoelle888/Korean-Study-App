@@ -60,6 +60,29 @@ export const PROFILES = {
     /* Der A2-Trainings-Reiter (Goethe-Prüfung) */
     a2: true,
   },
+
+  /* SANDBOX (Wunsch Franz, 03.09.): baugleich mit 해인s Seite,
+     aber eine komplett EIGENE Datenwelt — zum folgenfreien Testen
+     neuer Funktionen, bevor sie sie zu sehen bekommt. Bewusst
+     nur über die Adresse ?lang=sb erreichbar (kein Knopf) und
+     vom Umschalter ausgenommen. Befüllen mit einer Kopie ihrer
+     Daten: Actions -> "Sandbox befüllen". */
+  sb: {
+    id: 'sb',
+    name: 'Sandbox 🧪',
+    greeting: 'Hallo',
+    greetingLang: 'de',
+    targetLang: 'de',
+    targetName: 'Deutsch',
+    knownLang: 'ko',
+    knownName: '한국어',
+    ui: 'de',
+    flag: 'de',
+    numberChallenge: false,
+    articleChallenge: true,
+    trainer: false,
+    a2: true,
+  },
 }
 
 export const DEFAULT_PROFILE = 'ko'

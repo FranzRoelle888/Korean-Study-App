@@ -347,7 +347,8 @@ Deno.serve(async (req) => {
     const body = await req.json()
     const { action, profile, mode, scenario, messages } = body
 
-    if (profile !== 'ko' && profile !== 'de') return json({ error: 'bad-profile' }, 400)
+    /* sb = Franz' Sandbox (Testkopie der de-Seite, eigene Daten) */
+    if (profile !== 'ko' && profile !== 'de' && profile !== 'sb') return json({ error: 'bad-profile' }, 400)
     /* extract und uebung haben keinen Verlauf — die Prüfung gilt
        nur für chat und summary */
     if (

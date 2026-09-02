@@ -72,5 +72,6 @@ for (const e of [...germanPool, ...goetheA1.map(alsPoolEintrag), ...goetheA2.map
 }
 
 export function poolFor(profile) {
-  return profile === 'de' ? deutschKomplett : koreanPool
+  /* sb = Sandbox (Testkopie der de-Seite) */
+  return profile === 'de' || profile === 'sb' ? deutschKomplett : koreanPool
 }

@@ -31,6 +31,8 @@ const MIN_EASE = 1.3
 const TAGES_ZAHLEN = {
   ko: { neueProTag: 3, deckel: 50 },
   de: { neueProTag: 5, deckel: 80 },
+  /* Sandbox verhält sich wie die de-Seite */
+  sb: { neueProTag: 5, deckel: 80 },
 }
 const dailyNew = () => (TAGES_ZAHLEN[activeProfile] ?? TAGES_ZAHLEN.ko).neueProTag
 const reviewCap = () => (TAGES_ZAHLEN[activeProfile] ?? TAGES_ZAHLEN.ko).deckel
@@ -1204,6 +1206,8 @@ export function computeStreak(logRows) {
 const WEEKDAY_LABELS = {
   ko: ['일', '월', '화', '수', '목', '금', '토'],
   de: ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'],
+  /* Sandbox = Testkopie der de-Seite */
+  sb: ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'],
 }
 
 // 7 Tage rund um heute: heute steht immer an 3. Stelle (2 Tage davor,
