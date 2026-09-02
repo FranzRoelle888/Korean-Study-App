@@ -5299,6 +5299,98 @@ textarea {
   padding: 8px 14px;
 }
 
+/* ---------- Monolog (Sprechen Teil 2) ---------- */
+.mn-karte {
+  max-width: 380px;
+}
+
+.mn-thema {
+  padding: 16px 16px 4px;
+  font-size: 20px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.mn-stichworte {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding: 12px 14px 16px;
+}
+
+.mn-stichwort {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 8px;
+  font-size: 14px;
+  font-weight: 700;
+  text-align: center;
+  background: var(--surface);
+}
+
+/* der Punkt, der im Lernmodus gerade dran ist */
+.mn-aktiv {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+
+.mn-stufe {
+  width: 100%;
+  max-width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: center;
+  padding: 13px 16px;
+  border-radius: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.mn-check {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mn-checkzeile {
+  margin: 0;
+  font-size: 14.5px;
+  font-weight: 700;
+}
+
+.mn-fehlerliste {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mn-fehlerzeile {
+  margin: 0;
+  font-size: 14.5px;
+}
+
+.mn-falsch {
+  color: var(--accent);
+  text-decoration: line-through;
+  text-decoration-thickness: 1.5px;
+}
+
+.mn-zusatzfrage {
+  margin: 0;
+  font-size: 14.5px;
+  font-weight: 700;
+}
+
+.mn-muster {
+  width: 100%;
+  max-width: 380px;
+}
+
 /* ---------- Fragen-Ecke im A2-Reiter ---------- */
 .a2-fragen {
   width: 100%;
@@ -5514,6 +5606,8 @@ textarea {
   /* A2-Übungen: Karten und Boxen dürfen mitwachsen */
   .fs-karte,
   .fs-intro,
+  .mn-karte,
+  .mn-muster,
   .fs-partner-text,
   .rd-paket,
   .rd-karte,

@@ -67,6 +67,12 @@ Franz ist Coding-Einsteiger und entwickelt alles im Dialog mit Claude
   PowerShell `>>` (UTF-8-Doppelkodierung!), sondern per node fs.
   Groß-/Kleinschreibung kollidiert: nie zwei Dateien, die sich nur darin
   unterscheiden (deshalb heißt der API-Client `trainerApi.js`).
+- **Musterlösungen einfach halten** (Franz, 04.09.): Jedes Vorbild
+  (Muster-Text, Muster-Antwort, Korrektur-Vorschlag) nutzt nur
+  A1/A2-Grammatik und Alltagswörter — einfach, aber gut und passend.
+  Ein perfekter, wortgewandter Text, den die Lernerin nicht versteht,
+  lehrt nichts. Im Trainer über den Prompt-Baustein `MUSTER_EINFACH`
+  verankert — bei jeder neuen Aktion mit Mustern anhängen.
 - **KI-generierte Lerninhalte:** Deutsch ist unkritisch; Koreanisch mit
   kurzen gängigen Mustern, fester Sprechebene (해요체) und kuratierten
   Banken für alles Dauerhafte. Was dauerhaft gespeichert wird, bekommt

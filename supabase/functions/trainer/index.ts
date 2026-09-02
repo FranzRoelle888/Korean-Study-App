@@ -312,7 +312,7 @@ async function overLimit(profile: string) {
   /* Nur die eigenen Aktionen zählen — die speech-Funktion führt
      ihr eigenes Limit in speech_usage */
   const rows = await dbGet(
-    `trainer_usage?profile=eq.${profile}&action=in.(chat,summary,extract,uebung,satz,schreiben,studio_erklaerung,studio_aufgaben,studio_antwort,studio_bilanz,nachfrage,a2frage,a2schreiben,a2hoeren,a2sprechen1)&created_at=gt.${oneHourAgo}&select=id`
+    `trainer_usage?profile=eq.${profile}&action=in.(chat,summary,extract,uebung,satz,schreiben,studio_erklaerung,studio_aufgaben,studio_antwort,studio_bilanz,nachfrage,a2frage,a2schreiben,a2hoeren,a2sprechen1,a2sprechen2)&created_at=gt.${oneHourAgo}&select=id`
   )
   return rows.length >= MAX_CALLS_PER_HOUR
 }
@@ -359,6 +359,7 @@ Deno.serve(async (req) => {
       action !== 'a2schreiben' &&
       action !== 'a2hoeren' &&
       action !== 'a2sprechen1' &&
+      action !== 'a2sprechen2' &&
       action !== 'uebersetzung' &&
       !String(action).startsWith('studio_') &&
       (!Array.isArray(messages) || messages.length > 60)
@@ -913,6 +914,13 @@ Deno.serve(async (req) => {
        Die Wortzahl-Nullregel prüft die APP vorher deterministisch.
        Geeicht mit den Original-Leistungsbeispielen aus dem
        Übungssatz (echte, BESTANDENE Lernertexte mit Fehlern). */
+    /* Musterlösungs-Grundsatz (Franz 04.09., gilt app-weit):
+       Vorbilder müssen für eine A2-Lernerin ERREICHBAR sein.
+       Ein perfekter, wortgewandter Text, den sie nicht versteht,
+       lehrt nichts — einfach, aber gut und passend. */
+    const MUSTER_EINFACH =
+      'IMPORTANT for every model text/answer you produce: keep it SIMPLE and reachable for an A2 learner — only A1/A2 grammar (present tense, simple perfect, main clauses, at most weil/dass), common everyday words, short sentences. Plain but natural and task-appropriate — NOT eloquent, NOT native-polished. A model she cannot understand teaches nothing.'
+
     if (action === 'a2schreiben') {
       const text = typeof body.text === 'string' ? body.text.trim().slice(0, 900) : ''
       const teil = body.teil === 2 ? 2 : 1
@@ -937,7 +945,7 @@ Deno.serve(async (req) => {
           '3. "aufgabenerfuellung" A-E per official table: A = all 3 points fully addressed AND register fits · B = 2 full or 1 full + 2 partial · C = 1 full + 1 partial, or all partial · D = only 1 point addressed at all, or register clearly wrong · E = topic missed.',
           '4. "sprache" A-E: A = occasional slips, never blocking understanding · B = several slips, understanding intact · C = errors partly block understanding · D = errors severely block understanding · E = incomprehensible. Judge at A2 level — leniently!',
           `5. "feedback": 2-4 KOREAN sentences: what was good, what to fix first (with the correct German form). Warm, concrete.`,
-          `6. "muster": a natural model answer in German (${teil === 1 ? '20-30' : '30-40'} words, correct greeting/closing) covering all 3 points.`,
+          `6. "muster": a model answer in German (${teil === 1 ? '20-30' : '30-40'} words, correct greeting/closing) covering all 3 points. ${MUSTER_EINFACH}`,
           '',
           'Reply with ONLY this JSON:',
           '{"leitpunkte":[{"status":"voll","kommentar":""},{"status":"teil","kommentar":"..."},{"status":"fehlt","kommentar":"..."}],',
@@ -1104,6 +1112,7 @@ Deno.serve(async (req) => {
               'Be PRECISE about grammar: a wrong article, a wrong declension ending, wrong verb position or a missing word in the transcript is HER mistake — name even small ones (quote the German bit) in kommentar and show the fixed question in korrektur. Small slips still keep ok=true (exam-style: a comprehensible question scores), but the kommentar must mention them. ok=false only if the question is incomprehensible or does not fit the keyword.',
               'NEVER comment on pronunciation or accent — not a word about it. Ignore punctuation and casing. If the transcript is garbled non-German nonsense, set ok=false and ask in kommentar to try again slowly.',
               'Also: answer her question briefly and naturally (1-2 sentences, simple German, du-form) as her exam partner would.',
+              MUSTER_EINFACH,
               'Reply ONLY JSON: {"ok":true,"fragetyp":"w|janein","kommentar":"<1 short Korean sentence; empty ONLY if the German is flawless>","korrektur":"<the corrected or model question, always>","partnerAntwort":"<your 1-2 sentence answer in German>"}',
             ].join('\n')
           : [
@@ -1111,6 +1120,7 @@ Deno.serve(async (req) => {
               'Judge: does the answer fit the question? A short sentence is enough at A2; single words are "teilweise" (ok=false).',
               'Be PRECISE about grammar: wrong articles, declension endings or verb position in the transcript are HER mistakes — name even small ones (quote the German bit) in kommentar and show the fixed answer in korrektur. Small slips still keep ok=true, but the kommentar must mention them.',
               'NEVER comment on pronunciation or accent. Ignore punctuation and casing. If the transcript is garbled nonsense, set ok=false and ask in kommentar to try again slowly.',
+              MUSTER_EINFACH,
               'Reply ONLY JSON: {"ok":true,"kommentar":"<1 short Korean sentence; empty ONLY if the German is flawless>","korrektur":"<the corrected or model answer in German, always>"}',
             ].join('\n'),
         [{ role: 'user', content: transkript }],
@@ -1136,6 +1146,62 @@ Deno.serve(async (req) => {
         output_tokens: out.outputTokens,
       })
       return json(erg)
+    }
+
+    /* ---------- A2-Sprechen Teil 2: Monolog ----------
+       Bewertet den eingesprochenen Monolog zu einer Themenkarte
+       mit 4 Stichwörtern: Abdeckungs-Checkliste, präzise
+       Grammatik-Hinweise (NIE Aussprache), 2 personalisierte
+       Prüfer-Zusatzfragen und ein EINFACHES Muster. */
+    if (action === 'a2sprechen2') {
+      const thema = typeof body.thema === 'string' ? body.thema.slice(0, 120) : ''
+      const stichworte = (Array.isArray(body.stichworte) ? body.stichworte : [])
+        .slice(0, 4)
+        .map((s: unknown) => String(s).slice(0, 60))
+      const transkript = typeof body.transkript === 'string' ? body.transkript.trim().slice(0, 1500) : ''
+      if (!transkript || !thema || stichworte.length !== 4) return json({ error: 'empty' }, 400)
+
+      const out = await callModel(
+        [
+          `Goethe A2 Sprechen Teil 2: the learner spoke a short monologue about the topic card "${thema}" with the four keywords: ${stichworte.map((s, i) => `${i + 1}. ${s}`).join(' · ')}. You see the verbatim speech-to-text transcript.`,
+          'Evaluate:',
+          '1. "abgedeckt": for EACH keyword in card order, did she say something about it? true/false.',
+          '2. "fehler": grammar, PRECISELY — wrong articles, declension endings, verb position or verb forms in the transcript are HER mistakes. List up to 4 as {"falsch":"<her words>","richtig":"<fixed>"}, most instructive first; empty array if flawless. NEVER comment on pronunciation or accent. Ignore punctuation/casing. If the transcript is garbled non-German nonsense, set all abgedeckt to false and ask in kommentar to try again slowly.',
+          '3. "kommentar": 1-2 warm Korean sentences — what was good, what to improve first.',
+          '4. "zusatzfragen": exactly 2 short follow-up questions a friendly examiner would now ask, in simple German, each referring to something SHE ACTUALLY SAID (or gently to a missed keyword).',
+          `5. "muster": a first-person model monologue (40-60 words) covering all four keywords. ${MUSTER_EINFACH}`,
+          'Reply ONLY JSON: {"abgedeckt":[true,false,true,true],"fehler":[{"falsch":"...","richtig":"..."}],"kommentar":"...","zusatzfragen":["...","..."],"muster":"..."}',
+        ].join('\n'),
+        [{ role: 'user', content: transkript }],
+        1600
+      )
+      let erg2: Record<string, unknown>
+      try {
+        const j = JSON.parse(out.text.replace(/^```(?:json)?/m, '').replace(/```\s*$/m, '').trim())
+        erg2 = {
+          abgedeckt: (Array.isArray(j.abgedeckt) ? j.abgedeckt : []).slice(0, 4).map((x: unknown) => !!x),
+          fehler: (Array.isArray(j.fehler) ? j.fehler : []).slice(0, 4).map(
+            (f: { falsch?: unknown; richtig?: unknown }) => ({
+              falsch: typeof f.falsch === 'string' ? f.falsch.slice(0, 140) : '',
+              richtig: typeof f.richtig === 'string' ? f.richtig.slice(0, 140) : '',
+            })
+          ),
+          kommentar: typeof j.kommentar === 'string' ? j.kommentar.slice(0, 300) : '',
+          zusatzfragen: (Array.isArray(j.zusatzfragen) ? j.zusatzfragen : [])
+            .slice(0, 2)
+            .map((z: unknown) => String(z).slice(0, 160)),
+          muster: typeof j.muster === 'string' ? j.muster.slice(0, 600) : '',
+        }
+      } catch {
+        return json({ error: 'parse' }, 502)
+      }
+      await dbInsert('trainer_usage', {
+        profile,
+        action: 'a2sprechen2',
+        input_tokens: out.inputTokens,
+        output_tokens: out.outputTokens,
+      })
+      return json(erg2)
     }
 
     /* ---------- A2-Fragen-Ecke (Wunsch Franz 02.09.) ----------

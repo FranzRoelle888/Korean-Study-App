@@ -5,6 +5,7 @@ import RedemittelDrill from './RedemittelDrill'
 import HoerTraining from './HoerTraining'
 import ZahlenDiktat from './ZahlenDiktat'
 import FragenSpiel from './FragenSpiel'
+import Monolog from './Monolog'
 import Shadowing from './Shadowing'
 import { trainerA2Frage } from '../trainer/trainerApi'
 
@@ -67,8 +68,7 @@ const MODULE = [
     ],
     aufgaben: [
       { id: 'fragen', titel: 'Fragen-Spiel', ko: '질문 게임', aktiv: true },
-      { id: 'monolog', titel: 'Erzählen', ko: '혼자 말하기', aktiv: false },
-      { id: 'partner', titel: 'Zusammen planen', ko: '함께 계획하기', aktiv: false },
+      { id: 'monolog', titel: 'Erzählen', ko: '혼자 말하기', aktiv: true },
       { id: 'aussprache', titel: 'Aussprache', ko: '발음 따라 하기', aktiv: true },
     ],
   },
@@ -240,6 +240,10 @@ function A2Training({ profile, t }) {
 
   if (uebung === 'fragen') {
     return <FragenSpiel profile={profile} t={t} onExit={() => setUebung(null)} />
+  }
+
+  if (uebung === 'monolog') {
+    return <Monolog profile={profile} t={t} onExit={() => setUebung(null)} />
   }
 
   if (uebung === 'aussprache') {

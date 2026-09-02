@@ -104,6 +104,13 @@ export function trainerA2Sprechen1({ profile, modus, stichwort, frage, transkrip
   return call({ action: 'a2sprechen1', profile, modus, stichwort, frage, transkript })
 }
 
+/* A2-Sprechen Teil 2 (Monolog): Themenkarte + Transkript bewerten
+   -> { abgedeckt[4], fehler[{falsch,richtig}], kommentar,
+        zusatzfragen[2], muster } */
+export function trainerA2Sprechen2({ profile, thema, stichworte, transkript }) {
+  return call({ action: 'a2sprechen2', profile, thema, stichworte, transkript })
+}
+
 /* A2-Fragen-Ecke: der Prüfungs-Assistent kennt Haeins Lernstand,
    alle Goethe-A2-Fakten und die Funktionen der App -> { text } */
 export function trainerA2Frage({ profile, messages }) {

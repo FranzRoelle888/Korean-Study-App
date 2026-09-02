@@ -94,7 +94,8 @@ Detail um (Zahl, Person, Zeitpunkt).
       Aussagen.
 - [ ] Schreibaufgaben-Bank: 2 Muster nachrüsten („unterwegs, zu spät" /
       „halb offizielle Mail an bekannte Person, z. B. Chef-Einladung").
-- [ ] Sprechen Teil 3 (Phase 3): Kalender-Abgleich als zweite Spielart
-      neben der Mindmap-Planung.
+- ~~Sprechen Teil 3~~ — entfällt (Entscheidung Franz 04.09.: Partner-
+      gespräch wird nicht gebaut; Aushandeln mit Aufnahme-Latenz wird
+      nicht clean).
 - [ ] Phase 5: Interaktiven Modellsatz + Audios als offizielle
       Generalproben verlinken (echte Bild-Aufgaben inklusive).

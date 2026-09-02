@@ -51,10 +51,11 @@ Quelle Prüfungsformat: A2_Uebungssatz_Erwachsene.pdf (goethe.de/a2).
 - [x] **Aufnahme-UI + STT-Anbindung** (speech-Function kann es schon)
 - [x] **Fragen-Spiel** (T1): Stichwortkarte → Frage einsprechen; Start 20 s,
       Prüfungstempo-Stufe 10 s; Fragetyp-Vielfalt wird getrackt
-- [ ] **Monolog-Training** (T2): Themenkarte + 4 Stichworte, ~1 min sprechen,
+- [x] **Monolog-Training** (T2): Themenkarte + 4 Stichworte, ~1 min sprechen,
       Transkript + Kriterien-Feedback + Zusatzfrage
-- [ ] **Partnergespräch** (T3): Sprach-Dialog mit Chatbot-Partner (spielt auch
-      wortkarge/dominante Partner), Pflicht-Redemittel, Einigung als Ziel
+- ~~**Partnergespräch** (Sprechen T3)~~ — ENTFÄLLT (Entscheidung Franz
+  04.09.): echtes Aushandeln wird mit Aufnahme-Latenz nicht clean —
+  lieber weglassen als halbgar.
 - [x] **Aussprache-Shadowing**: TTS-Satz → nachsprechen → Vergleich anhören
       (ehrliche Grenze: keine KI-Note auf Aussprache; Franz hört gegen)
 

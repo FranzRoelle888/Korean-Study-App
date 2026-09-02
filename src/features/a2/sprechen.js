@@ -1,6 +1,10 @@
 /* ============================================================
-   SPRECH-BÄNKE — Teil-1-Karten + Shadowing-Sätze
-   (A2-Sprint Phase 3, Etappe 1)
+   SPRECH-BÄNKE — Teil-1-Karten + Monolog-Themen + Shadowing-Sätze
+   (A2-Sprint Phase 3)
+
+   MONOLOG_THEMEN: Themenkarten für Sprechen Teil 2 im Muster der
+   beiden offiziellen Sätze (Frage als Thema + 4 Stichwörter);
+   die ersten vier sind die belegten Original-Themen.
 
    KARTEN: die Stichwörter aus BEIDEN offiziellen Prüfungssätzen
    plus gleichartige. musterfrage = was der KI-Partner fragt,
@@ -11,6 +15,32 @@
    (ö/ü, r/l, f/pf, z/s, ch) + Prüfungs-Formeln — hören,
    nachsprechen, vergleichen.
    ============================================================ */
+
+
+/* Themenkarten Sprechen Teil 2 — Thema als Frage + 4 Stichwörter.
+   Die ersten vier sind die belegten Themen der Original-Sätze. */
+export const MONOLOG_THEMEN = [
+  { thema: 'Was machen Sie mit Ihrem Geld?', stichworte: ['Kleidung', 'Lebensmittel & Miete', 'Sparen', 'Reisen'] },
+  { thema: 'Was machen Sie mit Ihrer Familie?', stichworte: ['Essen', 'Ausflüge', 'Spiele', 'Hausarbeit'] },
+  { thema: 'Was machen Sie oft am Wochenende?', stichworte: ['Sport', 'Freunde', 'Einkaufen', 'Ausruhen'] },
+  { thema: 'Was machen Sie, wenn Sie am Abend ausgehen?', stichworte: ['Restaurant', 'Kino', 'Freunde treffen', 'nach Hause kommen'] },
+  { thema: 'Was essen Sie gern?', stichworte: ['Frühstück', 'Mittagessen', 'Lieblingsessen', 'Restaurant'] },
+  { thema: 'Wie fahren Sie zur Arbeit?', stichworte: ['Verkehrsmittel', 'Zeit', 'Kosten', 'Wetter'] },
+  { thema: 'Was machen Sie im Urlaub?', stichworte: ['Land', 'Hotel', 'Strand oder Stadt', 'Essen'] },
+  { thema: 'Wie feiern Sie Ihren Geburtstag?', stichworte: ['Gäste', 'Essen', 'Geschenke', 'Musik'] },
+  { thema: 'Was machen Sie mit Ihrem Handy?', stichworte: ['Nachrichten', 'Fotos', 'Musik', 'Spiele'] },
+  { thema: 'Wie ist Ihr Arbeitstag?', stichworte: ['Anfang', 'Mittagspause', 'Kollegen', 'Feierabend'] },
+  { thema: 'Wie wohnen Sie?', stichworte: ['Wohnung', 'Lieblingszimmer', 'Nachbarn', 'Umgebung'] },
+  { thema: 'Was machen Sie im Winter?', stichworte: ['Wetter', 'Kleidung', 'Sport', 'zu Hause'] },
+  { thema: 'Wie lernen Sie Deutsch?', stichworte: ['Kurs oder App', 'Wörter', 'Hören', 'Sprechen'] },
+  { thema: 'Wie kaufen Sie ein?', stichworte: ['Supermarkt', 'Obst & Gemüse', 'Preise', 'Einkaufszettel'] },
+  { thema: 'Was machen Sie am Morgen?', stichworte: ['Aufstehen', 'Frühstück', 'Bad', 'Weg zur Arbeit'] },
+  { thema: 'Welchen Sport machen Sie?', stichworte: ['Lieblingssport', 'wie oft', 'allein oder im Verein', 'Kleidung'] },
+  { thema: 'Was machen Sie mit Ihren Freunden?', stichworte: ['Treffen', 'Essen gehen', 'Reden', 'Pläne'] },
+  { thema: 'Wie ist das Wetter in Ihrem Land?', stichworte: ['Sommer', 'Winter', 'Regen', 'Lieblingsjahreszeit'] },
+  { thema: 'Was sehen Sie gern im Fernsehen?', stichworte: ['Filme', 'Serien', 'Nachrichten', 'wie lange'] },
+  { thema: 'Was machen Sie in der Natur?', stichworte: ['Park', 'Berge', 'Meer', 'Picknick'] },
+]
 
 export const SPRECHEN_KARTEN = [
   { wort: 'Geburtstag?', musterfrage: 'Wann hast du Geburtstag?' },
