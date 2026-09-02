@@ -106,6 +106,17 @@ async function sammleTexte(profil) {
     nimm(e.ex)
   }
 
+  /* Redemittel-Bank (Formel + Beispielsatz) — nur de-Seite */
+  if (profil !== 'ko') {
+    const pakete = lesePool('src/features/a2/redemittel.js', 'REDEMITTEL_PAKETE')
+    for (const p of pakete) {
+      for (const f of p.formeln ?? []) {
+        nimm(f.de)
+        nimm(f.beispiel)
+      }
+    }
+  }
+
   /* große Inventare (Wort-Ideen der Schreibwerkstatt) */
   if (profil === 'ko') {
     const inv = JSON.parse(readFileSync('src/core/inventare/topik1-woerter.json', 'utf8'))

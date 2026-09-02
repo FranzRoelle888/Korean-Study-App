@@ -4856,6 +4856,190 @@ textarea {
 
 .st-teil1-kopf { margin-bottom: 4px !important; }
 
+/* ---------- Redemittel-Drill ---------- */
+.rd-paket {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.rd-paket-kopf {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border: none;
+  background: none;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 15px;
+}
+
+.rd-status {
+  flex: none;
+}
+
+.rd-paket-titel {
+  flex: 1;
+  text-align: left;
+  font-weight: 700;
+}
+
+.rd-paket-aktionen {
+  display: flex;
+  gap: 8px;
+  padding: 0 14px 12px;
+}
+
+.rd-paket-aktionen button {
+  flex: 1;
+  padding: 7px 6px;
+  border-radius: 10px;
+  border: 1px dashed var(--border);
+  background: var(--surface);
+  color: var(--text-soft);
+  font-family: inherit;
+  font-size: 13px;
+}
+
+.rd-karte {
+  width: 100%;
+  max-width: 360px;
+  padding: 22px 20px;
+  border-radius: 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-align: left;
+}
+
+.rd-formel {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.rd-formel-klein {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.rd-ko {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-soft);
+}
+
+.rd-wann {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.rd-beispiel {
+  margin: 0;
+  padding: 8px 10px;
+  border-left: 3px solid var(--accent);
+  background: var(--surface-2);
+  border-radius: 0 8px 8px 0;
+  font-size: 14px;
+}
+
+.rd-bibliothek {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.rd-karte-klein {
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: left;
+}
+
+.rd-situation {
+  margin: 0;
+  width: 100%;
+  max-width: 420px;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.rd-optionen {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  max-width: 420px;
+}
+
+.rd-option {
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 15px;
+  text-align: left;
+}
+
+.rd-option-richtig {
+  border-color: #2e7d4f;
+  background: color-mix(in srgb, #2e7d4f 10%, var(--surface));
+  font-weight: 700;
+}
+
+.rd-option-blass {
+  opacity: 0.45;
+}
+
+.rd-aufloesung {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+}
+
+.rd-gut { margin: 0; color: #2e7d4f; font-weight: 800; }
+.rd-schlecht { margin: 0; color: var(--accent); font-weight: 800; }
+
+.rd-lueckensatz {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 700;
+  text-align: center;
+  max-width: 420px;
+}
+
+.rd-eingabe {
+  max-width: 260px;
+}
+
+.rd-timer {
+  position: static;
+  width: 100%;
+  max-width: 420px;
+  display: block;
+}
+
 /* ---------- Fragen-Ecke im A2-Reiter ---------- */
 .a2-fragen {
   width: 100%;

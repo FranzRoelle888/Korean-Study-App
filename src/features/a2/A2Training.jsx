@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import ArtikelSwipe from '../ueben/ArtikelSwipe'
 import SchreibTraining from './SchreibTraining'
+import RedemittelDrill from './RedemittelDrill'
 import { trainerA2Frage } from '../trainer/trainerApi'
 
 /* ============================================================
@@ -111,7 +112,7 @@ const MODULE = [
 const GRUNDLAGEN = [
   { id: 'artikel', emoji: '🃏', titel: 'Artikel-Spiel', ko: '관사 게임', aktiv: true },
   { id: 'satzbau', emoji: '🧱', titel: 'Satz-Baukasten', ko: '문장 조립', aktiv: false },
-  { id: 'redemittel', emoji: '💬', titel: 'Redemittel', ko: '표현 카드', aktiv: false },
+  { id: 'redemittel', emoji: '💬', titel: 'Redemittel', ko: '표현 카드', aktiv: true },
 ]
 
 /* Ausklappbare, schön formatierte Prüfungs-Infobox (Koreanisch) */
@@ -219,6 +220,10 @@ function A2Training({ profile, t }) {
 
   if (uebung === 'smsmail') {
     return <SchreibTraining profile={profile} t={t} onExit={() => setUebung(null)} />
+  }
+
+  if (uebung === 'redemittel') {
+    return <RedemittelDrill profile={profile} t={t} onExit={() => setUebung(null)} />
   }
 
   /* ---------- Modul-Seite ---------- */

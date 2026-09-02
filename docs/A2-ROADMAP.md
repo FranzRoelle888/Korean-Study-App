@@ -34,7 +34,8 @@ Quelle Prüfungsformat: A2_Uebungssatz_Erwachsene.pdf (goethe.de/a2).
       Stufen: Hilfe-Chips → frei → mit Uhr. (Konzept-Runde vor Bau!)
 - [x] Lernblatt „Schreiben": Anrede/Gruß-Formeln, Leitpunkt-Checkliste,
       typische A2-Fehler, die Goethe verzeiht vs. bestraft
-- [ ] **Redemittel-Drill**: Formel-Chunks (Anrede, Vorschläge, Reagieren)
+- [x] **Redemittel-Drill**: 7 Pakete à 7 Formeln — Kennenlern-Runde →
+      Situations-Blitz → Lücken-Stufe; Paket-Bibliothek zum Nachschlagen
 
 ## Phase 2 — Hören (Woche 2–3, härtestes Modul)
 
@@ -72,8 +73,10 @@ Quelle Prüfungsformat: A2_Uebungssatz_Erwachsene.pdf (goethe.de/a2).
       Sprechen komplett) mit echter Punktzahl
 - [ ] **Schwächen-Radar + Prognose** auf ihrer Startseite: …/25 je Modul,
       Tages-Empfehlung = schwächster Teil zuerst
-- [ ] **Pensum 30–45 min**: Vokabeln (gedeckelt ~15 min) + 2–3 Radar-gesteuerte
-      A2-Aufgaben; alles zusätzlich freiwillig über den A2-Reiter
+- [ ] **Zwei-Schichten-Modell umsetzen** (Beschluss 03.09.): Pensum bleibt
+      ≤ 15 min und offline-fest (Vokabeln + Tages-Mini); der A2-Reiter
+      bekommt Prüfungs-Countdown + Radar-Tagesempfehlung als sichtbare,
+      aber freiwillige zweite Schicht (Session-Richtwert 20–40 min)
 
 ## Bewusst verschoben
 
@@ -88,3 +91,9 @@ Quelle Prüfungsformat: A2_Uebungssatz_Erwachsene.pdf (goethe.de/a2).
   Wertung; Chatbot-Partner trainiert Gespräch-Tragen.
 - 02.09.: Bewertung strikt nach Goethe-Rastern (A–E, Leitpunkte, Register,
   Wortzahl-Nullregel) — keine hausgemachten Maßstäbe.
+- 03.09.: Zwei-Schichten-Modell: Das tägliche Pensum bleibt klein, heilig
+  und offline-fest (Streak hängt NUR daran); A2-Training ist eine
+  eigenständige, freiwillige Session-Schicht, gesteuert über Radar +
+  Prüfungs-Countdown. A2-Übungen kommen NICHT ins Pflicht-Pensum.
+- 03.09.: Sandbox-Profil ?lang=sb für folgenfreie Tests (Franz testet nie
+  mehr auf Haeins echtem Konto).
