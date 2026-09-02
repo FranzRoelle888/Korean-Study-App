@@ -24,11 +24,16 @@ import { PROFILES, DEFAULT_PROFILE } from './profiles'
 
 const START_EASE = 2.5
 const MIN_EASE = 1.3
-/* Neue Vokabeln pro Tag (Entscheidung Franz, 28.08.2026: von 2 auf
-   3 erhöht — passt ins 10-15-Minuten-Budget, s. docs/TAGESAUFGABEN.md;
-   einstellbar 2-5 kommt mit der Einstellungen-Seite) */
-const DAILY_NEW = 3
-const REVIEW_CAP = 50 // max. Nachhol-Karten pro Tag
+/* Tages-Zahlen PRO SEITE (A2-Sprint, Phase 0, 02.09.2026):
+   해인 bereitet sich auf die Goethe-A2-Pruefung vor — mehr neue
+   Woerter, hoeherer Wiederhol-Deckel. Franz bleibt beim alten
+   10-15-Minuten-Budget. */
+const TAGES_ZAHLEN = {
+  ko: { neueProTag: 3, deckel: 50 },
+  de: { neueProTag: 5, deckel: 80 },
+}
+const dailyNew = () => (TAGES_ZAHLEN[activeProfile] ?? TAGES_ZAHLEN.ko).neueProTag
+const reviewCap = () => (TAGES_ZAHLEN[activeProfile] ?? TAGES_ZAHLEN.ko).deckel
 
 /* ============================================================
    TRENNUNG DER BEIDEN LERNENDEN
@@ -635,7 +640,7 @@ function spaceOutPairs(list) {
    Der Stapel besteht aus drei Gruppen:
 
    1) WIEDERHOLUNGEN (reps > 0) – die regulär wieder dran sind.
-      Auf REVIEW_CAP pro Tag gedeckelt; ausgewählt werden die
+      Auf den Tages-Deckel (reviewCap) gedeckelt; ausgewählt werden die
       überfälligsten zuerst, damit nichts liegen bleibt.
    2) NOCHMAL-KARTEN (reps 0, aber schon mal gesehen) – bei denen
       "Nochmal" gedrückt wurde. Die gehören zum heutigen Pensum und
@@ -691,7 +696,7 @@ export function dueCards(words, cards) {
      reps 1 — die duerfen den Deckel nicht anfressen, sonst
      wuerden die 3 Tages-Woerter vom 50er-Pensum abgezogen. */
   const heuteErledigt = cards.filter((c) => c.lastReviewed === t && c.reps >= 2).length
-  const restDeckel = Math.max(0, REVIEW_CAP - heuteErledigt)
+  const restDeckel = Math.max(0, reviewCap() - heuteErledigt)
   const review = all
     .filter((c) => c.reps > 0)
     .sort((a, b) => (a.due < b.due ? -1 : a.due > b.due ? 1 : 0))
@@ -734,7 +739,7 @@ export function dueCards(words, cards) {
   const bonus = fresh
     .filter((c) => ausPool(c))
     .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
-    .slice(0, Math.max(0, DAILY_NEW * 2 - poolHeuteGelernt))
+    .slice(0, Math.max(0, dailyNew() * 2 - poolHeuteGelernt))
   const bonusIds = new Set(bonus.map((c) => c.id))
 
   /* Alles uebrige Neue rueckt nur in freie Deckel-Plaetze nach —
@@ -787,7 +792,7 @@ function nextFromPool(words, count) {
 // Was steht heute an? left = wie viele heute noch, candidates = Einträge.
 export function dailyStatus(words) {
   const introduced = getDailyProgress().introduced
-  const left = Math.max(0, DAILY_NEW - introduced)
+  const left = Math.max(0, dailyNew() - introduced)
   const candidates = nextFromPool(words, left)
   return {
     left,
@@ -820,6 +825,86 @@ export function makeIntroducedWord(poolEntry) {
 
 export function countIntroductionToday() {
   bumpDailyProgress()
+}
+
+/* ---------- A2-Belege (Migration 012) ----------
+   Jede A2-Übung meldet nach Abschluss ihr Ergebnis: Modul
+   (lesen/hoeren/schreiben/sprechen/wortschatz), Teil, Punkte.
+   Grundlage für Stärken-Radar und Bestehens-Prognose.
+   Feuer-und-vergessen: fehlt die Tabelle noch, passiert still
+   nichts — eine Übung scheitert nie am Beleg. */
+export function schreibeA2Beleg({ modul, teil, punkte, max, details }) {
+  try {
+    supabase
+      .from('a2_belege')
+      .insert(
+        stamp({
+          modul,
+          teil: teil ?? null,
+          punkte,
+          max,
+          details: details ?? null,
+        })
+      )
+      .then(() => {})
+  } catch {
+    /* still */
+  }
+}
+
+/* ---------- "Kenn ich schon" (A2-Sprint, Phase 0) ----------
+   해인 kennt aus ihrer Deutschland-Zeit viele Woerter des
+   Nachziehstapels. Ein Tipp bucht das Wort als ANGELERNT statt
+   neu: Wiedersehen in ~1 Woche als ehrlicher Kontrolltermin,
+   danach normale FSRS-Leiter. Zaehlt NICHT auf die 5 neuen des
+   Tages — dafuer zieht die App sofort einen Ersatz-Kandidaten
+   nach, damit taeglich wirklich 5 Unbekannte gelernt werden.
+
+   Wichtig: lastReviewed bleibt leer (wie bei den Anki-Importen) —
+   so zaehlt die Buchung weder als heutige Wiederholung gegen den
+   Deckel noch als "heute gelernt" gegen die Nachrueck-Plaetze. */
+export function makeKnownWord(poolEntry) {
+  const word = {
+    id: crypto.randomUUID(),
+    en: poolEntry.en,
+    ko: poolEntry.ko,
+    pos: poolEntry.pos || null,
+    plural: poolEntry.plural || null,
+    pluralNote: poolEntry.pluralNote || null,
+    conj: poolEntry.conj || null,
+    ex: poolEntry.ex || null,
+    exTr: poolEntry.exEn || null,
+    extrasAuto: false,
+    createdAt: Date.now(),
+  }
+  const karte = (front) => ({
+    id: crypto.randomUUID(),
+    wordId: word.id,
+    front,
+    ease: START_EASE,
+    intervalDays: 7,
+    reps: 2,
+    lapses: 0,
+    due: addDays(todayStr(), 7),
+    lastReviewed: null,
+    /* FSRS-Startwerte: Stabilitaet ~1 Woche, mittlere Schwierigkeit */
+    stab: 7,
+    diff: 5,
+  })
+  return { word, c1: karte('en'), c2: karte('ko') }
+}
+
+/* Ersatz-Kandidat fuer den "Kenn ich schon"-Fluss: der naechste
+   Pool-Eintrag, der weder in der Bibliothek noch in der uebergebenen
+   Ausschlussliste (die aktuelle Tages-Warteschlange) steht. */
+export function ersatzKandidat(words, ausgeschlossen) {
+  const have = new Set(words.map((w) => w.ko.trim()))
+  const tabu = new Set((ausgeschlossen ?? []).map((k) => String(k).trim()))
+  for (const e of poolFor(activeProfile)) {
+    const k = e.ko.trim()
+    if (!have.has(k) && !tabu.has(k)) return e
+  }
+  return null
 }
 
 /* ============================================================

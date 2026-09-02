@@ -13,6 +13,8 @@ import {
   dueCards,
   dailyStatus,
   makeIntroducedWord,
+  makeKnownWord,
+  ersatzKandidat,
   countIntroductionToday,
   getNumberChallenge,
   getArticleChallenge,
@@ -59,6 +61,7 @@ import Login from './Login'
 import Kalibrierung from '../features/kalibrierung/Kalibrierung'
 import Studio from '../features/ueben/Studio'
 import ArtikelSwipe from '../features/ueben/ArtikelSwipe'
+import A2Training from '../features/a2/A2Training'
 import { kalibrierungErledigt } from '../core/kalibrierung'
 
 function App() {
@@ -312,6 +315,26 @@ function App() {
     })
   }
 
+  /* "Kenn ich schon" (A2-Sprint): Wort als angelernt buchen —
+     zaehlt NICHT als heutige Neu-Einfuehrung (kein countIntroduction),
+     und die App liefert sofort den naechsten Pool-Kandidaten. */
+  function handleKennIch(poolEntry, warteschlangeKos) {
+    const ersatz = ersatzKandidat(words, warteschlangeKos)
+    const { word, c1, c2 } = makeKnownWord(poolEntry)
+    const newWords = [word, ...words]
+    const newCards = [c1, c2, ...cards]
+    setWords(newWords)
+    setCards(newCards)
+    writeWordsCache(newWords)
+    writeCardsCache(newCards)
+    persistNewWord(word, c1, c2).catch((err) => {
+      queueFailed({ t: 'new', word, c1, c2 })
+      setOffline(true)
+      console.warn('Cloud save (kenn ich schon) failed:', err?.message || err)
+    })
+    return ersatz
+  }
+
   function handleCompleteNumber() {
     completeNumberChallenge()
     setNumberState((s) => ({ ...s, done: true }))
@@ -492,10 +515,8 @@ function App() {
             onKalibrierung={() => setView('kalibrierung')}
             kalOffen={!kalibrierungErledigt(profileId)}
             /* Studio-Test nur auf Franz' ko-Seite; das Artikel-
-               Spiel ist seit Franz' Abnahme (01.09.) regulär auf
-               der de-Seite sichtbar */
+               Spiel wohnt seit Phase 0 im A2-Reiter */
             onStudioTest={profileId === 'ko' ? () => setView('studio') : undefined}
-            onArtikelTest={profileId === 'de' ? () => setView('artikeltest') : undefined}
             profile={profile}
             t={t}
             tt={tt}
@@ -514,6 +535,7 @@ function App() {
           <DailyWord
             candidates={daily.candidates}
             onIntroduce={handleIntroduce}
+            onKennIch={handleKennIch}
             onExit={() => setView('home')}
             profile={profile}
             t={t}
@@ -594,6 +616,9 @@ function App() {
         {view === 'trainer' && profile.trainer && (
           <Trainer profile={profile} t={t} onChatActive={setChatOffen} onAddWord={handleAdd} />
         )}
+        {view === 'a2' && profile.a2 && (
+          <A2Training profile={profile} t={t} />
+        )}
         {view === 'sets' &&
           (openSet ? (
             (profile.id === 'de' ? (
@@ -606,7 +631,7 @@ function App() {
           ))}
       </div>
 
-      {!chatOffen && (view === 'home' || view === 'library' || view === 'sets' || view === 'trainer') && (
+      {!chatOffen && (view === 'home' || view === 'library' || view === 'sets' || view === 'trainer' || view === 'a2') && (
         <nav className="tabbar">
           <button
             className={view === 'sets' ? 'tab tab-active' : 'tab'}
@@ -632,6 +657,16 @@ function App() {
             >
               <ChatIcon />
               <span>{t.tabTrainer}</span>
+            </button>
+          )}
+          {/* A2-Trainings-Reiter — der Prüfungs-Steuerstand (nur de) */}
+          {profile.a2 && (
+            <button
+              className={view === 'a2' ? 'tab tab-active' : 'tab'}
+              onClick={() => setView('a2')}
+            >
+              <ChatIcon />
+              <span>{t.tabA2}</span>
             </button>
           )}
           <button

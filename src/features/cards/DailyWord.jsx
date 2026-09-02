@@ -14,8 +14,8 @@ import { SpeakButton, prewarmSpeech } from '../../shared/tts'
 
 const NEEDED = 3
 
-function DailyWord({ candidates, onIntroduce, onExit, profile, t, tt }) {
-  const [queue] = useState(candidates)
+function DailyWord({ candidates, onIntroduce, onKennIch, onExit, profile, t, tt }) {
+  const [queue, setQueue] = useState(candidates)
   const [index, setIndex] = useState(0)
   const [typed, setTyped] = useState(0)
   const [input, setInput] = useState('')
@@ -84,11 +84,28 @@ function DailyWord({ candidates, onIntroduce, onExit, profile, t, tt }) {
     }
   }
 
+  /* "Kenn ich schon" (A2-Sprint): Wort als angelernt buchen
+     (Wiedersehen ~1 Woche), zaehlt nicht auf die 5 des Tages —
+     der Eltern-Handler liefert sofort einen Ersatz-Kandidaten,
+     der an dieselbe Stelle der Warteschlange rutscht. */
+  function kennIchSchon() {
+    if (!onKennIch) return
+    const ersatz = onKennIch(entry, queue.map((q) => q.ko))
+    setTyped(0)
+    setInput('')
+    if (ersatz) {
+      setQueue(queue.map((q, i) => (i === index ? ersatz : q)))
+    } else {
+      /* Pool leer — dann eben ein Wort weniger heute */
+      setQueue(queue.filter((_, i) => i !== index))
+    }
+  }
+
   const flashClass = flash === 'ok' ? 'flash-ok' : flash === 'bad' ? 'flash-bad' : ''
 
   return (
     <div className="daily">
-      <DailyHeader t={t} onExit={onExit} label={`New word ${index + 1}/${queue.length}`} />
+      <DailyHeader t={t} onExit={onExit} label={`${t.newWord} ${index + 1}/${queue.length}`} />
 
       <div className="daily-body">
         <div className={`daily-card ${flashClass}`}>
@@ -127,6 +144,11 @@ function DailyWord({ candidates, onIntroduce, onExit, profile, t, tt }) {
           <button type="submit" className="check-btn">
             {t.confirm}
           </button>
+          {onKennIch && (
+            <button type="button" className="daily-kennich" onClick={kennIchSchon}>
+              ✓ {t.kennIchSchon}
+            </button>
+          )}
         </form>
       </div>
     </div>

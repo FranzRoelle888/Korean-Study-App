@@ -4516,6 +4516,175 @@ textarea {
   font-size: 16px;
 }
 
+/* ---------- A2-Training (Prüfungs-Reiter) ---------- */
+.a2-radar {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: var(--surface-2);
+  text-align: left;
+  margin-bottom: 4px;
+}
+
+.a2-radar-titel {
+  margin: 0 0 4px;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.a2-radar-leer {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-soft);
+  line-height: 1.5;
+}
+
+.a2-bald {
+  opacity: 0.45;
+}
+
+/* "Kenn ich schon" unter dem Bestätigen-Knopf — bewusst leise */
+.daily-kennich {
+  margin-top: 2px;
+  padding: 8px 14px;
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  background: transparent;
+  color: var(--text-soft);
+  font-size: 13px;
+  font-family: inherit;
+}
+
+/* ---------- Lernblatt (ⓘ-Wissensblatt je Aufgabentyp) ---------- */
+.lb-info {
+  border: none;
+  background: none;
+  color: var(--text-soft);
+  font-size: 20px;
+  padding: 4px 8px;
+}
+
+.lb-schleier {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 60;
+}
+
+.lb-blatt {
+  width: 100%;
+  max-width: 560px;
+  max-height: 86vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border-radius: 20px 20px 0 0;
+  padding: 14px 18px calc(16px + env(safe-area-inset-bottom));
+}
+
+.lb-kopf {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.lb-titel {
+  font-weight: 800;
+  font-size: 16px;
+}
+
+.lb-zu {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-soft);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+}
+
+.lb-inhalt {
+  overflow-y: auto;
+  text-align: left;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.lb-inhalt h3 {
+  margin: 14px 0 4px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-soft);
+}
+
+.lb-inhalt p {
+  margin: 0 0 6px;
+}
+
+.lb-beispiel {
+  padding: 6px 10px;
+  border-left: 3px solid var(--accent);
+  background: var(--surface-2);
+  border-radius: 0 8px 8px 0;
+}
+
+/* ---------- Tablet (iPad Air u. ä., Hoch + Quer) ----------
+   Die App ist iPhone-schmal entworfen. Auf dem Tablet wird der
+   Inhalt als zentrierte Spalte mit mehr Luft dargestellt, die
+   Kachel-Gitter bekommen drei Spalten. Das hart erkämpfte
+   Tastatur-Handling bleibt unangetastet. */
+@media (min-width: 744px) {
+  .app {
+    max-width: 640px;
+    margin: 0 auto;
+  }
+
+  .screen,
+  .library,
+  .daily {
+    max-width: 640px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .mode-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .tabbar {
+    max-width: 640px;
+    margin: 0 auto;
+    border-radius: 18px 18px 0 0;
+  }
+
+  /* Übungsflächen dürfen breiter atmen */
+  .lt2-scroll .lt-satz-block,
+  .sw-auftrag,
+  .sw-feld,
+  .sw-eigener,
+  .sw-bilanz,
+  .sw-vorbild,
+  .lt-kurzbox,
+  .studio-karte,
+  .studio-drills,
+  .nf-box {
+    max-width: 520px;
+  }
+
+  .as-stapelplatz {
+    width: min(46vw, 320px);
+    height: min(50vh, 400px);
+  }
+
+  .as-nomen {
+    font-size: 38px;
+  }
+}
+
 /* ---------- Bedeutungs-Vorschlag im Eintrags-Formular ---------- */
 .lib-vorschlag {
   margin: -4px 0 0;

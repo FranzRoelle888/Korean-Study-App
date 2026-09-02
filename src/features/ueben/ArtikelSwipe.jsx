@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { supabase } from '../../core/supabaseClient'
+import { schreibeA2Beleg } from '../../core/storage'
 
 /* ============================================================
    ARTIKEL-SWIPE — Tinder für der/die/das (Idee Franz, 01.09.,
@@ -123,6 +124,8 @@ function ArtikelSwipe({ profile, t, onExit }) {
   /* Auflösung zeigen (Entscheidung Franz), dann neuer Stapel —
      gilt für Fehlwisch UND abgelaufenen Timer */
   function fehlgeschlagen() {
+    /* Runden-Ergebnis als A2-Beleg (Bestanden-Schwelle: 8) */
+    schreibeA2Beleg({ modul: 'wortschatz', teil: 'artikel', punkte: serie, max: 8 })
     setPhase('fail')
     setZug(null)
     start.current = null
@@ -167,8 +170,12 @@ function ArtikelSwipe({ profile, t, onExit }) {
       setTimeout(() => {
         setFlug(null)
         setZug(null)
-        if (idx + 1 >= stapel.length) setPhase('fertig')
-        else setIdx(idx + 1)
+        if (idx + 1 >= stapel.length) {
+          schreibeA2Beleg({ modul: 'wortschatz', teil: 'artikel', punkte: neu, max: 8 })
+          setPhase('fertig')
+        } else {
+          setIdx(idx + 1)
+        }
       }, 180)
     } else {
       fehlgeschlagen()

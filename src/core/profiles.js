@@ -49,12 +49,16 @@ export const PROFILES = {
     targetName: 'Deutsch',
     knownLang: 'ko',
     knownName: '한국어',
-    ui: 'ko',
+    /* A2-Sprint (02.09.2026): Menü komplett auf Deutsch —
+       die Alltagsbegriffe lernt sie beim Benutzen passiv mit */
+    ui: 'de',
     flag: 'de',
     numberChallenge: false,
     /* Statt der Zahl: der/die/das — der eigentliche Brocken */
     articleChallenge: true,
     trainer: false,
+    /* Der A2-Trainings-Reiter (Goethe-Prüfung) */
+    a2: true,
   },
 }
 

@@ -55,6 +55,14 @@ const en = {
   addedOk: (w) => `"${w}" added ✓`,
   deleteWord: (w) => `Delete "${w}"?`,
   no: 'No',
+  kennIchSchon: 'I already know this',
+  tabA2: 'A2',
+  a2Titel: 'A2 training',
+  a2Sub: 'Targeted practice for the Goethe exam',
+  a2Folgt: 'coming soon',
+  a2RadarTitel: 'Your strengths radar',
+  a2RadarLeer: 'The radar fills up once you do the first exercises.',
+  a2Lernblatt: 'Study sheet',
 
   /* --- Bibliothek --- */
   library: 'Library',
@@ -310,6 +318,14 @@ const ko = {
   addedOk: (w) => `"${w}" 추가됨 ✓`,
   deleteWord: (w) => `"${w}" 을(를) 삭제할까요?`,
   no: '아니요',
+  kennIchSchon: '이미 알아요',
+  tabA2: 'A2',
+  a2Titel: 'A2 트레이닝',
+  a2Sub: '괴테 시험 대비 집중 연습',
+  a2Folgt: '준비 중',
+  a2RadarTitel: '강점 레이더',
+  a2RadarLeer: '첫 연습을 하면 레이더가 채워져요.',
+  a2Lernblatt: '학습지',
 
   /* --- Bibliothek --- */
   library: '단어장',
@@ -525,7 +541,193 @@ const ko = {
   trainerRateLimit: '이번 시간엔 충분히 연습했어요 😊 조금 있다가 다시 해요.',
 }
 
-const PACKS = { en, ko }
+/* ============================================================
+   DEUTSCH — 해인s Menü im A2-Sprint (Entscheidung Franz 02.09.):
+   Die komplette Oberfläche in der ZIELsprache, damit sie die
+   Alltagsbegriffe passiv mitlernt. Bewusst einfaches A2-Deutsch.
+   Der en-Spread darunter ist ein Sicherheitsnetz: Ein vergessener
+   Schlüssel fällt auf Englisch zurück statt die App zu brechen.
+   ============================================================ */
+const de = {
+  ...en,
+
+  /* --- Startseite --- */
+  ready: 'Bereit für heute?',
+  dayStreak: 'Tage in Folge',
+  wordOfDay: 'Wort des Tages',
+  review: 'Wiederholen',
+  numberOfDay: 'Zahl des Tages',
+  wordsInLibrary: (n) => `${n} Wörter im Wörterbuch`,
+  switchLanguage: 'Zur koreanischen Seite',
+
+  /* --- Untere Leiste --- */
+  tabSets: 'Themen',
+  tabHome: 'Start',
+  tabLibrary: 'Wörter',
+  tabTrainer: 'Trainer',
+  tabA2: 'A2',
+
+  /* --- Wiederholen --- */
+  again: 'Nochmal',
+  hard: 'Schwer',
+  good: 'Gut',
+  easy: 'Leicht',
+  clearedAll: 'Alle Karten für heute geschafft!',
+  nothingToReview: 'Nichts zu wiederholen',
+  stackEmpty: 'Dein Stapel ist für heute schon leer.',
+  correct: 'Richtig ✓',
+  wrong: 'Das war leider nicht richtig',
+  back: 'Zurück',
+  check: 'Prüfen',
+  showAnswer: 'Antwort zeigen',
+
+  /* --- Vokabel des Tages --- */
+  newWord: 'Neues Wort',
+  doneForToday: 'Fertig für heute',
+  comeBackTomorrow: 'Morgen gibt es neue Wörter.',
+  nowInLibrary: 'Die Wörter sind jetzt im Wörterbuch und im Stapel.',
+  confirm: 'Bestätigen',
+  newLearned: (n) => `${n} neue gelernt!`,
+  addedOk: (w) => `„${w}" hinzugefügt ✓`,
+  deleteWord: (w) => `„${w}" löschen?`,
+  no: 'Nein',
+  kennIchSchon: 'Kenne ich schon',
+
+  /* --- Bibliothek --- */
+  library: 'Wörterbuch',
+  wordsCount: (n) => `${n} Wörter`,
+  add: 'Hinzufügen',
+  search: 'Suchen…',
+  sort: 'Sortieren:',
+  newest: 'Neueste',
+  alpha: 'A–Z',
+  noWords: 'Noch keine Wörter – füge oben dein erstes hinzu.',
+  nothingFound: 'Nichts gefunden.',
+  edit: 'Bearbeiten',
+  delete: 'Löschen',
+  cancel: 'Abbrechen',
+  save: 'Speichern',
+  reallyDelete: 'Dieses Wort löschen?',
+
+  /* --- Kalender --- */
+  learningDays: 'Deine Lerntage',
+  daysThisMonth: (n) => `${n} ${n === 1 ? 'Tag' : 'Tage'} in diesem Monat`,
+  prevMonth: 'Voriger Monat',
+  nextMonth: 'Nächster Monat',
+
+  /* --- Sets --- */
+  setsTitle: 'Themen',
+  setsSub: 'Themenblätter zum Nachschlagen',
+
+  /* --- Zustände --- */
+  loading: 'Deine Wörter werden geladen…',
+  offline: 'Offline – alles wird lokal gespeichert.',
+
+  /* --- Meldungen --- */
+  fillBoth: 'Bitte beide Felder ausfüllen.',
+  duplicate: (w) => `„${w}" ist schon im Wörterbuch.`,
+
+  /* --- Wortarten --- */
+  posAll: 'Alle',
+  pos: { noun: 'Nomen', verb: 'Verb', adj: 'Adjektiv', adv: 'Adverb', phrase: 'Ausdruck', other: 'Andere' },
+  posShort: { noun: 'N', verb: 'V', adj: 'ADJ', adv: 'ADV', phrase: 'AUS', other: '·' },
+  wordClass: 'Wortart',
+
+  /* --- Aufgaben des Tages --- */
+  typeTheNumber: 'Schreib die Zahl',
+  almostFixRed: 'Fast! Korrigiere das rote Feld und versuch es nochmal.',
+  notQuite: 'Nicht ganz – versuch es nochmal.',
+  articleOfDay: 'Artikel des Tages',
+  whichArticle: 'Welcher Artikel passt?',
+  articleWrong: (a) => `Nicht ganz — es heißt „${a}".`,
+  articleNeedNouns: 'Füge zuerst ein paar Nomen ins Wörterbuch ein.',
+  pluralOfDay: 'Plural des Tages',
+  whichPlural: 'Wie heißt der Plural?',
+  pluralWrong: 'Nicht ganz — hier ist der Plural.',
+  conjOfDay: 'Verb des Tages',
+  whichConj: 'Wie heißt die Präsens-Form?',
+  conjWrong: 'Nicht ganz — hier ist die Form.',
+
+  /* --- Zusatzinfos --- */
+  info: 'Details',
+  pluralLabel: 'Plural',
+  conjLabel: 'Präsens',
+  noExtras: 'Für dieses Wort gibt es noch keine Details.',
+  autoFilled: 'automatisch ergänzt — bitte kurz prüfen',
+
+  /* --- Partner --- */
+  partnerDoneToday: (name) => `🔥 ${name} hat heute schon gelernt!`,
+  undo: 'Rückgängig',
+  exampleLabel: 'Beispiel',
+  exportCsv: 'Sicherung exportieren (CSV)',
+  tricky: 'Schwierig',
+
+  /* --- Artikel-Swipe --- */
+  modeArtikel: 'Artikel-Spiel',
+  modeArtikelSub: 'Jedes Nomen zu der, die oder das wischen',
+  artikelZuWenig: 'Noch zu wenige Nomen mit Artikel im Wörterbuch — füge Wörter wie „der Tisch" hinzu.',
+  artikelFantastisch: 'Fantastisch — du kannst alle Artikel! 🎉',
+  artikelNochmal: 'Nochmal spielen',
+
+  /* --- Vorschläge beim Eintragen --- */
+  libVorschlagLaedt: 'Übersetzung wird vorgeschlagen…',
+  libVorschlagNehmen: 'Vorschlag übernehmen',
+  libVorschlagLimit: '⏳ Vorschlags-Limit erreicht — in einer Stunde geht es weiter.',
+  libVorschlagFehler: 'Gerade kein Vorschlag möglich (Trainer nicht erreichbar).',
+  libKorrektur: 'Bessere Form',
+
+  /* --- A2-Training --- */
+  a2Titel: 'A2-Training',
+  a2Sub: 'Gezielt üben für die Goethe-Prüfung',
+  a2Folgt: 'kommt bald',
+  a2RadarTitel: 'Dein Stärken-Radar',
+  a2RadarLeer: 'Das Radar füllt sich, sobald du die ersten Übungen machst — dann siehst du hier, wo du stehst.',
+  a2Lernblatt: 'Lernblatt',
+
+  /* --- Kalibrierung --- */
+  kalTitle: 'Einstufung',
+  kalIntroTitle: 'Sag der App, was du schon kannst',
+  kalIntroText: 'Einmalig (5–10 Minuten): kurze Selbsteinschätzung, dann Wörter wischen, dann ein paar Grammatik-Beispiele. Was du schon kannst, wird dir nicht nochmal beigebracht. Im Zweifel lieber „nicht sicher" wählen.',
+  kalStart: 'Los geht’s',
+  kalJa: 'Ja',
+  kalHalb: 'So halb',
+  kalNein: 'Nein',
+  kalWischenHint: 'Kennst du dieses Wort? Wischen oder tippen.',
+  kalKenne: 'Kenne ich',
+  kalKenneNicht: 'Nicht sicher',
+  kalGrammatikFrage: 'Könntest du so einen Satz selbst bilden?',
+  kalFertigTitle: 'Fertig!',
+  kalFertigText: (n) => `Super — ${n} Wörter als bekannt markiert. Die App kennt jetzt dein Niveau viel besser.`,
+  kalFehler: 'Konnte nicht speichern — bitte Verbindung prüfen und nochmal versuchen.',
+  kalNochmal: 'Nochmal versuchen',
+  kalBannerTitle: 'Neu: Sag der App, was du kannst',
+  kalBannerSub: 'Einmal, 5–10 Minuten — nichts doppelt lernen',
+  kalGramFertig: 'Grammatik-Check gespeichert.',
+  weekLearned: (n) => (n === 0 ? 'Neue Woche — frischer Start!' : `Diese Woche ${n}× gelernt`),
+  fortschrittTitle: 'Dein Niveau-Fortschritt',
+  fortschrittGrammatik: 'Grammatik',
+  fortschrittWortschatz: 'Wortschatz',
+  fortschrittLegende: 'kräftig = geübt & bestätigt · hell = selbst eingeschätzt',
+  candoFragen: () => [
+    'Ich kann auf Deutsch grüßen und mich vorstellen.',
+    'Ich kann Zahlen, Preise und Uhrzeiten auf Deutsch sagen.',
+    'Ich kann auf Deutsch Essen und Getränke bestellen.',
+    'Ich kann beim Einkaufen einfache Fragen stellen.',
+    'Ich kann meinen Tag in einfachen Sätzen beschreiben.',
+    'Ich kann über gestern sprechen (Vergangenheit).',
+    'Ich kann über meine Pläne sprechen.',
+    'Ich kann auf eine einfache unerwartete Frage antworten.',
+  ],
+
+  /* --- Verschiedenes --- */
+  updateDa: 'Update verfügbar ⟳',
+  typeMessage: 'Nachricht…',
+  send: 'Senden',
+  trainerOffline: 'Der Trainer ist gerade nicht erreichbar. Bitte versuch es gleich nochmal.',
+  trainerRateLimit: 'Das reicht für diese Stunde 😊 Versuch es später nochmal.',
+}
+
+const PACKS = { en, ko, de }
 
 export function textFor(uiLang) {
   return PACKS[uiLang] || PACKS.en
