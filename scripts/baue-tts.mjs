@@ -122,6 +122,13 @@ async function sammleTexte(profil) {
     for (const z of lesePool('src/features/a2/zahlen.js', 'ZAHLEN_SCHWER')) {
       nimm(z.satz)
     }
+    /* Sprechen: Partner-Musterfragen + Shadowing-Sätze */
+    for (const k of lesePool('src/features/a2/sprechen.js', 'SPRECHEN_KARTEN')) {
+      nimm(k.musterfrage)
+    }
+    for (const s of lesePool('src/features/a2/sprechen.js', 'SHADOWING_SAETZE')) {
+      nimm(s.satz)
+    }
   }
 
   /* große Inventare (Wort-Ideen der Schreibwerkstatt) */

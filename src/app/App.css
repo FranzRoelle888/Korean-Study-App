@@ -5168,6 +5168,108 @@ textarea {
   margin: 0 0 8px;
 }
 
+/* ---------- Aufnahme (Sprech-Werkbank) ---------- */
+.auf-bereich {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.auf-knopf {
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  font-size: 32px;
+  font-family: inherit;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+}
+
+.auf-laeuft {
+  animation: auf-puls 1.2s ease-in-out infinite;
+}
+
+@keyframes auf-puls {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+
+/* ---------- Fragen-Spiel / Shadowing ---------- */
+.fs-karte {
+  width: 100%;
+  max-width: 320px;
+  border: 2px solid var(--text);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.fs-karte-kopf {
+  background: var(--surface-2);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 6px 10px;
+  text-align: left;
+  color: var(--text-soft);
+}
+
+.fs-karte-wort {
+  padding: 34px 16px;
+  font-size: 30px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.fs-partner {
+  width: 58px;
+  height: 58px;
+  font-size: 22px;
+}
+
+.fs-transkript {
+  margin: 0;
+  font-size: 15px;
+  font-style: italic;
+  text-align: center;
+}
+
+.fs-partner-text {
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: var(--surface-2);
+  font-size: 14.5px;
+  max-width: 420px;
+  text-align: left;
+}
+
+.sh-karte {
+  max-width: 460px;
+}
+
+.sh-satz {
+  padding: 22px 16px;
+  font-size: 20px;
+  font-weight: 700;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.sh-vergleich {
+  display: flex;
+  gap: 8px;
+}
+
+.sh-vergleich .st-stufe {
+  flex: none;
+  padding: 8px 14px;
+}
+
 /* ---------- Fragen-Ecke im A2-Reiter ---------- */
 .a2-fragen {
   width: 100%;

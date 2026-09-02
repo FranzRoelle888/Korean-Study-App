@@ -48,14 +48,14 @@ Quelle Prüfungsformat: A2_Uebungssatz_Erwachsene.pdf (goethe.de/a2).
 
 ## Phase 3 — Sprechen (Woche 3–4, K.o.-Hürde)
 
-- [ ] **Aufnahme-UI + STT-Anbindung** (speech-Function kann es schon)
-- [ ] **Fragen-Spiel** (T1): Stichwortkarte → Frage einsprechen; Start 20 s,
+- [x] **Aufnahme-UI + STT-Anbindung** (speech-Function kann es schon)
+- [x] **Fragen-Spiel** (T1): Stichwortkarte → Frage einsprechen; Start 20 s,
       Prüfungstempo-Stufe 10 s; Fragetyp-Vielfalt wird getrackt
 - [ ] **Monolog-Training** (T2): Themenkarte + 4 Stichworte, ~1 min sprechen,
       Transkript + Kriterien-Feedback + Zusatzfrage
 - [ ] **Partnergespräch** (T3): Sprach-Dialog mit Chatbot-Partner (spielt auch
       wortkarge/dominante Partner), Pflicht-Redemittel, Einigung als Ziel
-- [ ] **Aussprache-Shadowing**: TTS-Satz → nachsprechen → Vergleich anhören
+- [x] **Aussprache-Shadowing**: TTS-Satz → nachsprechen → Vergleich anhören
       (ehrliche Grenze: keine KI-Note auf Aussprache; Franz hört gegen)
 
 ## Phase 4 — Lesen & Baukasten (Woche 4–5)

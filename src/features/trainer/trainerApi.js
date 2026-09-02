@@ -97,6 +97,13 @@ export function trainerA2Hoeren({ profile, teil }) {
   return call({ action: 'a2hoeren', profile, teil })
 }
 
+/* A2-Sprechen Teil 1 (Fragen-Spiel): eingesprochene Frage bzw.
+   Antwort bewerten -> { ok, fragetyp, kommentar, korrektur,
+   partnerAntwort } */
+export function trainerA2Sprechen1({ profile, modus, stichwort, frage, transkript }) {
+  return call({ action: 'a2sprechen1', profile, modus, stichwort, frage, transkript })
+}
+
 /* A2-Fragen-Ecke: der Prüfungs-Assistent kennt Haeins Lernstand,
    alle Goethe-A2-Fakten und die Funktionen der App -> { text } */
 export function trainerA2Frage({ profile, messages }) {

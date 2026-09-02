@@ -86,11 +86,11 @@ Detail um (Zahl, Person, Zeitpunkt).
 ## 5. Konsequenzen für unsere Generierung (To-do fürs nächste
    Function-Bundle)
 
-- [ ] a2hoeren Teil 1: Gattungs-Palette + Pflicht „mehrere Zahlen/Orte,
+- [x] a2hoeren Teil 1: Gattungs-Palette + Pflicht „mehrere Zahlen/Orte,
       Optionen wörtlich im Audio" in den Prompt.
-- [ ] a2hoeren Teil 2: Ablehnungs-Falle („vorgeschlagen, aber verworfen")
+- [x] a2hoeren Teil 2: Ablehnungs-Falle („vorgeschlagen, aber verworfen")
       als Pflicht-Distraktor; Umgangston-Marker.
-- [ ] a2hoeren Teil 4: Chronologie-Struktur + Paraphrasen-Regel für die
+- [x] a2hoeren Teil 4: Chronologie-Struktur + Paraphrasen-Regel für die
       Aussagen.
 - [ ] Schreibaufgaben-Bank: 2 Muster nachrüsten („unterwegs, zu spät" /
       „halb offizielle Mail an bekannte Person, z. B. Chef-Einladung").

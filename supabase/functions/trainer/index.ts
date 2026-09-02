@@ -312,7 +312,7 @@ async function overLimit(profile: string) {
   /* Nur die eigenen Aktionen zählen — die speech-Funktion führt
      ihr eigenes Limit in speech_usage */
   const rows = await dbGet(
-    `trainer_usage?profile=eq.${profile}&action=in.(chat,summary,extract,uebung,satz,schreiben,studio_erklaerung,studio_aufgaben,studio_antwort,studio_bilanz,nachfrage,a2frage,a2schreiben,a2hoeren)&created_at=gt.${oneHourAgo}&select=id`
+    `trainer_usage?profile=eq.${profile}&action=in.(chat,summary,extract,uebung,satz,schreiben,studio_erklaerung,studio_aufgaben,studio_antwort,studio_bilanz,nachfrage,a2frage,a2schreiben,a2hoeren,a2sprechen1)&created_at=gt.${oneHourAgo}&select=id`
   )
   return rows.length >= MAX_CALLS_PER_HOUR
 }
@@ -358,6 +358,7 @@ Deno.serve(async (req) => {
       action !== 'schreiben' &&
       action !== 'a2schreiben' &&
       action !== 'a2hoeren' &&
+      action !== 'a2sprechen1' &&
       action !== 'uebersetzung' &&
       !String(action).startsWith('studio_') &&
       (!Array.isArray(messages) || messages.length > 60)
@@ -994,24 +995,30 @@ Deno.serve(async (req) => {
     if (action === 'a2hoeren') {
       const teil = [1, 2, 3, 4].includes(body.teil) ? body.teil : 1
       const spezifikation =
+        /* Stil-Vorgaben verschärft nach Analyse BEIDER offizieller
+           Prüfungssätze (docs/GOETHE-A2-REFERENZ.md, 03.09.) */
         teil === 1
           ? [
-              'TEIL 1: five short announcement texts (radio traffic/weather, voicemail, station/store announcements). Each 25-45 words, ONE speaker.',
-              'Reply: {"teil":1,"texte":[{"stil":"durchsage|anrufbeantworter|radio","skript":"...","frage":"...","optionen":["...","...","..."],"loesung":0}] } — exactly 5 items, frage+optionen in German, loesung = index 0-2. Distractor rule like the real exam: wrong options mention words that DO occur in the audio.',
+              'TEIL 1: five short monologue texts, 40-70 words each, ONE speaker. Use this genre palette (one each, order shuffled): event/parking announcement · private voicemail reminding of 2-3 things · business voicemail changing an appointment (place+time) · weather report with a REGION contrast (north/south) or day contrast · radio game/traffic notice.',
+              'CRUCIAL exam trap: each text mentions SEVERAL numbers/places/times; only one fits the question. All three answer options quote words that literally occur in the audio.',
+              'Reply: {"teil":1,"texte":[{"stil":"durchsage|anrufbeantworter|radio","skript":"...","frage":"...","optionen":["...","...","..."],"loesung":0}] } — exactly 5 items, frage+optionen in German, loesung = index 0-2.',
             ]
           : teil === 2
             ? [
-                'TEIL 2: ONE longer dialog (friends telling about a week, 10-14 turns, speakers A and B, each turn 1-2 sentences). B asks short questions, A tells what happened each day.',
-                'Reply: {"teil":2,"dialog":[{"s":"A","text":"..."}],"tage":["Samstag","Sonntag","Montag","Dienstag","Mittwoch"],"optionen":["ins Kino gehen","..."],"loesungen":[0,3,1,5,2]} — 8 short activity options (3 are distractors never done), loesungen = option index per day, all different.',
+                'TEIL 2: ONE longer dialog: a couple/two friends PLAN or retell their week (10-14 turns, speakers A and B, casual spoken German with markers like "Sag mal", "Klar", "Mhh"). Each day ends with exactly ONE agreed activity.',
+                'CRUCIAL exam trap: on 2-3 days an activity is PROPOSED but REJECTED ("Schwimmen? Das mache ich nicht gerne — lieber Rad fahren") — the rejected activities must appear among the options as distractors.',
+                'Reply: {"teil":2,"dialog":[{"s":"A","text":"..."}],"tage":["Samstag","Sonntag","Montag","Dienstag","Mittwoch"],"optionen":["ins Kino gehen","..."],"loesungen":[0,3,1,5,2]} — 8 short activity options (3 distractors = the rejected ones), loesungen = option index per day, all different.',
               ]
             : teil === 3
               ? [
-                  'TEIL 3: five short everyday dialogs (2-4 turns each, speakers A and B). Each has one question about a detail (what is bought, how someone travels, when they meet …).',
-                  'Reply: {"teil":3,"gespraeche":[{"dialog":[{"s":"A","text":"..."}],"frage":"...","optionen":["...","...","..."],"loesung":0}] } — exactly 5, optionen are SHORT noun phrases (2-4 words). Distractors must be mentioned in the dialog but rejected/changed.',
+                  'TEIL 3: five short everyday dialogs (2-4 turns each, speakers A and B): buying something (size/colour not available -> alternative), club/course registration (what is still missing?), repairs (what is STILL broken?), appointment arrangements, choosing food/transport.',
+                  'CRUCIAL exam trap: two options are explicitly mentioned in the dialog and rejected/changed; the remaining one is correct — or the first offer wins and the alternatives are rejected.',
+                  'Reply: {"teil":3,"gespraeche":[{"dialog":[{"s":"A","text":"..."}],"frage":"...","optionen":["...","...","..."],"loesung":0}] } — exactly 5, optionen are SHORT noun phrases (2-4 words).',
                 ]
               : [
-                  'TEIL 4: ONE radio interview (moderator M, guest G, 10-14 turns; the guest has an interesting everyday topic: job, hobby, travel).',
-                  'Reply: {"teil":4,"dialog":[{"s":"M","text":"..."}],"aussagen":[{"text":"...","wahr":true}] } — exactly 5 statements about the interview, mixed true/false, in German.',
+                  'TEIL 4: ONE radio interview (moderator M, guest G, 10-14 turns; guest has an interesting everyday story: unusual job, sport, move to Germany). CHRONOLOGICAL build-up: origin/beginning -> development -> today -> future plans. Guest answers 20-40 words with ONE fact per turn.',
+                  'The 5 statements must PARAPHRASE the audio (never quote verbatim); false statements twist exactly one detail (a number, person, or time).',
+                  'Reply: {"teil":4,"dialog":[{"s":"M","text":"..."}],"aussagen":[{"text":"...","wahr":true}] } — exactly 5 statements, mixed true/false, in German.',
                 ]
 
       const out = await callModel(
@@ -1072,6 +1079,56 @@ Deno.serve(async (req) => {
         output_tokens: out.outputTokens,
       })
       return json({ teil, daten })
+    }
+
+    /* ---------- A2-Sprechen Teil 1: Fragen-Spiel ----------
+       Bewertet eine EINGESPROCHENE Frage (zu einer Stichwortkarte)
+       oder Antwort (auf die Partnerfrage). Das Transkript kommt
+       vom Whisper-Nachfolger — Transkriptionsfehler sind daher
+       möglich; im Zweifel zugunsten der Lernenden werten. */
+    if (action === 'a2sprechen1') {
+      const modus = body.modus === 'antwort' ? 'antwort' : 'frage'
+      const transkript = typeof body.transkript === 'string' ? body.transkript.trim().slice(0, 300) : ''
+      const stichwort = typeof body.stichwort === 'string' ? body.stichwort.slice(0, 60) : ''
+      const partnerFrage = typeof body.frage === 'string' ? body.frage.slice(0, 160) : ''
+      if (!transkript) return json({ error: 'empty' }, 400)
+
+      const out = await callModel(
+        modus === 'frage'
+          ? [
+              `Goethe A2 Sprechen Teil 1: the learner drew the keyword card "${stichwort}" and had to ASK a question about it (spoken; you see the speech-to-text transcript, so ignore punctuation/casing and be lenient about small transcription artifacts).`,
+              'Judge: is it a comprehensible, grammatically acceptable A2 question that fits the keyword? Slight word-order slips are fine if it clearly works as a question.',
+              'Also: answer her question briefly and naturally (1-2 sentences, simple German, du-form) as her exam partner would.',
+              'Reply ONLY JSON: {"ok":true,"fragetyp":"w|janein","kommentar":"<1 short Korean sentence, empty if ok>","korrektur":"<a natural model question, always>","partnerAntwort":"<your 1-2 sentence answer in German>"}',
+            ].join('\n')
+          : [
+              `Goethe A2 Sprechen Teil 1: the exam partner asked: "${partnerFrage}". The learner ANSWERED (speech-to-text transcript; be lenient about transcription artifacts).`,
+              'Judge: is it a comprehensible answer that fits the question (a short sentence is enough at A2; single words are "teilweise")?',
+              'Reply ONLY JSON: {"ok":true,"kommentar":"<1 short Korean sentence, empty if ok>","korrektur":"<a natural model answer in German, always>"}',
+            ].join('\n'),
+        [{ role: 'user', content: transkript }],
+        900
+      )
+      let erg: Record<string, unknown> = { ok: false, kommentar: '', korrektur: '', partnerAntwort: '', fragetyp: null }
+      try {
+        const j = JSON.parse(out.text.replace(/^```(?:json)?/m, '').replace(/```\s*$/m, '').trim())
+        erg = {
+          ok: !!j.ok,
+          fragetyp: j.fragetyp === 'w' || j.fragetyp === 'janein' ? j.fragetyp : null,
+          kommentar: typeof j.kommentar === 'string' ? j.kommentar.slice(0, 200) : '',
+          korrektur: typeof j.korrektur === 'string' ? j.korrektur.slice(0, 200) : '',
+          partnerAntwort: typeof j.partnerAntwort === 'string' ? j.partnerAntwort.slice(0, 300) : '',
+        }
+      } catch {
+        return json({ error: 'parse' }, 502)
+      }
+      await dbInsert('trainer_usage', {
+        profile,
+        action: 'a2sprechen1',
+        input_tokens: out.inputTokens,
+        output_tokens: out.outputTokens,
+      })
+      return json(erg)
     }
 
     /* ---------- A2-Fragen-Ecke (Wunsch Franz 02.09.) ----------

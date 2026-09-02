@@ -101,7 +101,8 @@ Deno.serve(async (req) => {
 
     const body = await req.json()
     const { action, profile } = body
-    if (profile !== 'ko' && profile !== 'de') return json({ error: 'bad-profile' }, 400)
+    /* sb = Franz' Sandbox (Testkopie der de-Seite) */
+    if (profile !== 'ko' && profile !== 'de' && profile !== 'sb') return json({ error: 'bad-profile' }, 400)
 
     /* ---------- Text -> Stimme ---------- */
     if (action === 'tts') {
