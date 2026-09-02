@@ -63,6 +63,12 @@ const en = {
   a2RadarTitel: 'Your strengths radar',
   a2RadarLeer: 'The radar fills up once you do the first exercises.',
   a2Lernblatt: 'Study sheet',
+  tabProfil: 'Profile',
+  profilTitel: 'Profile',
+  profilSub: 'Your area: settings & tools',
+  profilEinstufung: 'Redo placement check',
+  profilEinstufungSub: 'Word swiping + grammar examples',
+  profilExportSub: 'All words & progress as a CSV file',
 
   /* --- Bibliothek --- */
   library: 'Library',
@@ -326,6 +332,12 @@ const ko = {
   a2RadarTitel: '강점 레이더',
   a2RadarLeer: '첫 연습을 하면 레이더가 채워져요.',
   a2Lernblatt: '학습지',
+  tabProfil: '프로필',
+  profilTitel: '프로필',
+  profilSub: '내 공간: 설정과 도구',
+  profilEinstufung: '수준 진단 다시 하기',
+  profilEinstufungSub: '단어 스와이프 + 문법 예문',
+  profilExportSub: '모든 단어와 진도를 CSV 파일로',
 
   /* --- Bibliothek --- */
   library: '단어장',
@@ -683,6 +695,14 @@ const de = {
   a2RadarTitel: 'Dein Stärken-Radar',
   a2RadarLeer: 'Das Radar füllt sich, sobald du die ersten Übungen machst — dann siehst du hier, wo du stehst.',
   a2Lernblatt: 'Lernblatt',
+  tabProfil: 'Profil',
+  profilTitel: 'Profil',
+  profilSub: 'Dein Bereich: Einstellungen & Werkzeuge',
+  skillsTitle: 'Grammatik mitteilen',
+  skillsEntrySub: 'Sag der App, was du schon gelernt hast',
+  profilEinstufung: 'Einstufung wiederholen',
+  profilEinstufungSub: 'Wörter wischen + Grammatik-Beispiele',
+  profilExportSub: 'Alle Wörter & Fortschritt als CSV-Datei',
 
   /* --- Kalibrierung --- */
   kalTitle: 'Einstufung',

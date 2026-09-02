@@ -141,6 +141,15 @@ export function CheckIcon() {
   )
 }
 
+export function PersonIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="12" cy="8" r="4" />
+      <path d="M4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5" />
+    </svg>
+  )
+}
+
 export function MoonIcon() {
   return (
     <svg width="88" height="88" viewBox="0 0 88 88" fill="none" aria-hidden="true">

@@ -1,12 +1,9 @@
 import { useEffect, useState } from 'react'
 import TrainerChat, { readActiveChat } from './TrainerChat'
-import Skills from './Skills'
-import Kalibrierung from '../kalibrierung/Kalibrierung'
 import Lueckentext from '../ueben/Lueckentext'
 import GrammatikModus from '../ueben/GrammatikModus'
 import Schreibwerkstatt from '../ueben/Schreibwerkstatt'
 import ArtikelSwipe from '../ueben/ArtikelSwipe'
-import { ChevronIcon } from '../../shared/icons'
 
 /* ============================================================
    TRAINER — Startbildschirm
@@ -45,9 +42,6 @@ function Trainer({ profile, t, onChatActive, onAddWord }) {
      Läuft noch ein Gespräch (Tab-Wechsel mittendrin), landet man
      direkt wieder darin statt im Menü. */
   const [aktiv, setAktiv] = useState(() => readActiveChat(profile.id))
-  const [zeigeSkills, setZeigeSkills] = useState(false)
-  /* Grammatik-Check nachholen/wiederholen (aus der Skills-Seite) */
-  const [zeigeGramCheck, setZeigeGramCheck] = useState(false)
   /* Lückentext-Übung (aus der Aufgaben-Bank) */
   const [zeigeLueckentext, setZeigeLueckentext] = useState(false)
   const [zeigeGrammatik, setZeigeGrammatik] = useState(false)
@@ -96,31 +90,6 @@ function Trainer({ profile, t, onChatActive, onAddWord }) {
 
   if (zeigeArtikel) {
     return <ArtikelSwipe profile={profile} t={t} onExit={() => setZeigeArtikel(false)} />
-  }
-
-  if (zeigeGramCheck) {
-    return (
-      <Kalibrierung
-        profile={profile}
-        t={t}
-        nurGrammatik
-        onExit={() => setZeigeGramCheck(false)}
-      />
-    )
-  }
-
-  if (zeigeSkills) {
-    return (
-      <Skills
-        profile={profile}
-        t={t}
-        onBack={() => setZeigeSkills(false)}
-        onGramCheck={() => {
-          setZeigeSkills(false)
-          setZeigeGramCheck(true)
-        }}
-      />
-    )
   }
 
   return (
@@ -177,14 +146,7 @@ function Trainer({ profile, t, onChatActive, onAddWord }) {
           )}
         </div>
 
-        <button className="skills-entry" onClick={() => setZeigeSkills(true)}>
-          <span className="skills-entry-emoji">📚</span>
-          <div className="action-text">
-            <span className="action-title">{t.skillsTitle}</span>
-            <span className="action-sub">{t.skillsEntrySub}</span>
-          </div>
-          <ChevronIcon />
-        </button>
+        {/* "Grammatik mitteilen" wohnt seit 02.09. im Profil-Tab */}
       </main>
     </div>
   )

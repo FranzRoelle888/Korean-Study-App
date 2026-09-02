@@ -52,7 +52,7 @@ import Trainer from '../features/trainer/Trainer'
 import Sets from '../features/sets/Sets'
 import SetSheet from '../features/sets/SetSheet'
 import SetSheetDe from '../features/sets/SetSheetDe'
-import { HomeIcon, BookIcon, GridIcon, DomIcon, ChatIcon } from '../shared/icons'
+import { HomeIcon, BookIcon, GridIcon, DomIcon, ChatIcon, PersonIcon } from '../shared/icons'
 import { PROFILES, readProfile, writeProfile, otherProfile } from '../core/profiles'
 import { textFor, targetTextFor } from '../shared/i18n'
 import { setActiveProfile } from '../core/storage'
@@ -62,7 +62,8 @@ import Kalibrierung from '../features/kalibrierung/Kalibrierung'
 import Studio from '../features/ueben/Studio'
 import ArtikelSwipe from '../features/ueben/ArtikelSwipe'
 import A2Training from '../features/a2/A2Training'
-import { kalibrierungErledigt } from '../core/kalibrierung'
+import { kalibrierungErledigt, kalibrierungErledigtDB } from '../core/kalibrierung'
+import Profil from '../features/profil/Profil'
 
 function App() {
   /* Welche Seite der App: 'ko' (Franz) oder 'de' (seine Freundin).
@@ -245,6 +246,20 @@ function App() {
       vv.removeEventListener('scroll', planen)
     }
   }, [])
+
+  /* Kompass-Banner: Erledigt-Stand kommt jetzt aus der DATENBANK
+     (geräteübergreifend) — der lokale Haken ist nur der Schnellstart */
+  const [kalOffen, setKalOffen] = useState(() => !kalibrierungErledigt(profileId))
+  useEffect(() => {
+    let weg = false
+    setKalOffen(!kalibrierungErledigt(profileId))
+    kalibrierungErledigtDB(profileId).then((done) => {
+      if (!weg && done) setKalOffen(false)
+    })
+    return () => {
+      weg = true
+    }
+  }, [profileId])
 
   const due = dueCards(words, cards)
   const daily = dailyStatus(words)
@@ -513,7 +528,7 @@ function App() {
             onCalendar={() => setView('calendar')}
             onSwitchProfile={switchProfile}
             onKalibrierung={() => setView('kalibrierung')}
-            kalOffen={!kalibrierungErledigt(profileId)}
+            kalOffen={kalOffen}
             /* Studio-Test nur auf Franz' ko-Seite; das Artikel-
                Spiel wohnt seit Phase 0 im A2-Reiter */
             onStudioTest={profileId === 'ko' ? () => setView('studio') : undefined}
@@ -619,6 +634,9 @@ function App() {
         {view === 'a2' && profile.a2 && (
           <A2Training profile={profile} t={t} />
         )}
+        {view === 'profil' && (
+          <Profil profile={profile} t={t} words={words} cards={cards} />
+        )}
         {view === 'sets' &&
           (openSet ? (
             (profile.id === 'de' ? (
@@ -631,7 +649,7 @@ function App() {
           ))}
       </div>
 
-      {!chatOffen && (view === 'home' || view === 'library' || view === 'sets' || view === 'trainer' || view === 'a2') && (
+      {!chatOffen && (view === 'home' || view === 'library' || view === 'sets' || view === 'trainer' || view === 'a2' || view === 'profil') && (
         <nav className="tabbar">
           <button
             className={view === 'sets' ? 'tab tab-active' : 'tab'}
@@ -675,6 +693,14 @@ function App() {
           >
             <BookIcon />
             <span>{t.tabLibrary}</span>
+          </button>
+          {/* Persönlicher Bereich + Einstellungen (Wunsch Franz 02.09.) */}
+          <button
+            className={view === 'profil' ? 'tab tab-active' : 'tab'}
+            onClick={() => setView('profil')}
+          >
+            <PersonIcon />
+            <span>{t.tabProfil}</span>
           </button>
         </nav>
       )}

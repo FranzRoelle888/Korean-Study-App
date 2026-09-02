@@ -87,7 +87,7 @@ function WordExtras({ vocab, t, lang }) {
    Zeile pro Karte, mit Wort, Zusatzinfos und Lernstand.
    BOM vorweg, damit Excel Umlaute und Hangul richtig liest.
    ============================================================ */
-function exportCsv(vocab, cards, profileId) {
+export function exportCsv(vocab, cards, profileId) {
   const q = (v) => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"'
   const kopf = [
     'wort', 'bedeutung', 'wortart', 'plural', 'konjugation', 'beispiel',

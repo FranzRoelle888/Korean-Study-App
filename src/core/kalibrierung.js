@@ -134,3 +134,28 @@ export function merkeKalibrierungErledigt(profileId) {
     /* egal */
   }
 }
+
+/* Geräteübergreifende Wahrheit (Fix 02.09., gemeldet von Franz:
+   das Kompass-Banner blieb auf ANDEREN Geräten ewig stehen, weil
+   der Erledigt-Haken nur im lokalen Browser-Speicher lag).
+   Jetzt fragt die App die Datenbank: Liegen dort Kalibrier-
+   Ergebnisse (Wort-Urteile), war die Einstufung erledigt — egal
+   auf welchem Gerät. Das Ergebnis wird lokal gemerkt, damit es
+   offline erhalten bleibt. */
+export async function kalibrierungErledigtDB(profileId) {
+  if (kalibrierungErledigt(profileId)) return true
+  try {
+    const { count, error } = await supabase
+      .from('inventory_status')
+      .select('id', { count: 'exact', head: true })
+      .eq('profile', profileId)
+      .eq('kind', 'wort')
+    if (!error && (count ?? 0) >= 20) {
+      merkeKalibrierungErledigt(profileId)
+      return true
+    }
+  } catch {
+    /* offline — dann zählt der lokale Stand */
+  }
+  return false
+}
