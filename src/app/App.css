@@ -5391,6 +5391,99 @@ textarea {
   max-width: 380px;
 }
 
+.mn-fehlerblock {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* kurze Regel-Erklärung unter jeder Korrektur */
+.mn-warum {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--text-soft);
+  padding-left: 12px;
+  border-left: 2px solid var(--border);
+}
+
+.mn-feedback {
+  text-align: left;
+  line-height: 1.65;
+}
+
+/* ---------- Prüfungs-Coach ---------- */
+.a2-coach {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 18px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  text-align: left;
+  background: linear-gradient(120deg, var(--primary-soft) 0%, var(--surface) 100%);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+}
+
+.a2-coach-emoji {
+  font-size: 26px;
+}
+
+.a2-coach-texte {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.a2-coach-titel {
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.coach-scroll {
+  align-items: stretch;
+}
+
+/* im Chat darf die Intro-Box die volle Breite nutzen */
+.coach-scroll .fs-intro {
+  max-width: none;
+}
+
+.coach-intro-text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.coach-chips {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.coach-chip {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: 999px;
+  padding: 10px 16px;
+  font-size: 14px;
+  text-align: left;
+  box-shadow: var(--shadow-sm);
+}
+
+.coach-verlauf {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.coach-eingabe {
+  margin-top: auto;
+  padding-top: 8px;
+}
+
 /* ---------- Fragen-Ecke im A2-Reiter ---------- */
 .a2-fragen {
   width: 100%;

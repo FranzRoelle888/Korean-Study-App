@@ -4,6 +4,7 @@ import { AufnahmeKnopf } from '../../shared/aufnahme'
 import { playSequence, prewarmSequence, SpeakButton } from '../../shared/tts'
 import { trainerA2Sprechen1 } from '../trainer/trainerApi'
 import { schreibeA2Beleg } from '../../core/storage'
+import Nachfrage from '../ueben/Nachfrage'
 import Auftrag from '../../shared/Auftrag'
 
 /* ============================================================
@@ -266,6 +267,15 @@ function FragenSpiel({ profile, t, onExit }) {
             {sieFragt && ergebnis.partnerAntwort && (
               <p className="fs-partner-text" lang="de">🧑 {ergebnis.partnerAntwort}</p>
             )}
+            <Nachfrage
+              profile={profile}
+              t={t}
+              kontext={
+                `Goethe A2 Sprechen Teil 1 (question game). Keyword card: ${karte.wort}. ` +
+                (sieFragt ? 'She had to ASK a question.' : `The partner asked: ${karte.musterfrage} — she answered.`) +
+                `\nHer words (STT): ${transkript}\nFeedback: ${JSON.stringify(ergebnis)}`
+              }
+            />
             <button className="done-btn" onClick={weiter} disabled={partnerSpricht} lang="de">
               {partnerSpricht ? '🔊 …' : 'Weiter'}
             </button>

@@ -1166,27 +1166,28 @@ Deno.serve(async (req) => {
           `Goethe A2 Sprechen Teil 2: the learner spoke a short monologue about the topic card "${thema}" with the four keywords: ${stichworte.map((s, i) => `${i + 1}. ${s}`).join(' · ')}. You see the verbatim speech-to-text transcript.`,
           'Evaluate:',
           '1. "abgedeckt": for EACH keyword in card order, did she say something about it? true/false.',
-          '2. "fehler": grammar, PRECISELY — wrong articles, declension endings, verb position or verb forms in the transcript are HER mistakes. List up to 4 as {"falsch":"<her words>","richtig":"<fixed>"}, most instructive first; empty array if flawless. NEVER comment on pronunciation or accent. Ignore punctuation/casing. If the transcript is garbled non-German nonsense, set all abgedeckt to false and ask in kommentar to try again slowly.',
-          '3. "kommentar": 1-2 warm Korean sentences — what was good, what to improve first.',
+          '2. "fehler": grammar, PRECISELY — wrong articles, declension endings, verb position or verb forms in the transcript are HER mistakes. List up to 5 as {"falsch":"<her words>","richtig":"<fixed>","warum":"<ONE short Korean clause naming the rule, e.g. 여성 명사 + mit → 3격: meiner>"}, most instructive first; empty array if flawless. NEVER comment on pronunciation or accent. Ignore punctuation/casing. If the transcript is garbled non-German nonsense, set all abgedeckt to false and ask in kommentar to try again slowly.',
+          '3. "kommentar": she invested real effort in this monologue — give SUBSTANTIAL feedback, 3-5 Korean sentences: (a) name concretely what she did WELL, quoting her own German words, (b) the ONE most valuable improvement with a short explanation WHY and a ready-to-use example sentence she could say next time. Warm, specific, never generic.',
           '4. "zusatzfragen": exactly 2 short follow-up questions a friendly examiner would now ask, in simple German, each referring to something SHE ACTUALLY SAID (or gently to a missed keyword).',
           `5. "muster": a first-person model monologue (40-60 words) covering all four keywords. ${MUSTER_EINFACH}`,
-          'Reply ONLY JSON: {"abgedeckt":[true,false,true,true],"fehler":[{"falsch":"...","richtig":"..."}],"kommentar":"...","zusatzfragen":["...","..."],"muster":"..."}',
+          'Reply ONLY JSON: {"abgedeckt":[true,false,true,true],"fehler":[{"falsch":"...","richtig":"...","warum":"..."}],"kommentar":"...","zusatzfragen":["...","..."],"muster":"..."}',
         ].join('\n'),
         [{ role: 'user', content: transkript }],
-        1600
+        2200
       )
       let erg2: Record<string, unknown>
       try {
         const j = JSON.parse(out.text.replace(/^```(?:json)?/m, '').replace(/```\s*$/m, '').trim())
         erg2 = {
           abgedeckt: (Array.isArray(j.abgedeckt) ? j.abgedeckt : []).slice(0, 4).map((x: unknown) => !!x),
-          fehler: (Array.isArray(j.fehler) ? j.fehler : []).slice(0, 4).map(
-            (f: { falsch?: unknown; richtig?: unknown }) => ({
+          fehler: (Array.isArray(j.fehler) ? j.fehler : []).slice(0, 5).map(
+            (f: { falsch?: unknown; richtig?: unknown; warum?: unknown }) => ({
               falsch: typeof f.falsch === 'string' ? f.falsch.slice(0, 140) : '',
               richtig: typeof f.richtig === 'string' ? f.richtig.slice(0, 140) : '',
+              warum: typeof f.warum === 'string' ? f.warum.slice(0, 160) : '',
             })
           ),
-          kommentar: typeof j.kommentar === 'string' ? j.kommentar.slice(0, 300) : '',
+          kommentar: typeof j.kommentar === 'string' ? j.kommentar.slice(0, 800) : '',
           zusatzfragen: (Array.isArray(j.zusatzfragen) ? j.zusatzfragen : [])
             .slice(0, 2)
             .map((z: unknown) => String(z).slice(0, 160)),

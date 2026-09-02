@@ -4,6 +4,7 @@ import { AufnahmeKnopf } from '../../shared/aufnahme'
 import { playSequence, SpeakButton } from '../../shared/tts'
 import { trainerA2Sprechen1, trainerA2Sprechen2 } from '../trainer/trainerApi'
 import { schreibeA2Beleg } from '../../core/storage'
+import Nachfrage from '../ueben/Nachfrage'
 import Auftrag from '../../shared/Auftrag'
 
 /* ============================================================
@@ -220,13 +221,27 @@ function Monolog({ profile, t, onExit }) {
   const fehlerListe = bewertung?.fehler?.length > 0 && (
     <div className="mn-fehlerliste">
       {bewertung.fehler.filter((f) => f.falsch && f.richtig).map((f) => (
-        <p key={f.falsch} className="mn-fehlerzeile" lang="de">
-          <span className="mn-falsch">{f.falsch}</span> → <b>{f.richtig}</b>
-          <SpeakButton text={f.richtig} lang="de" className="speak-inline" />
-        </p>
+        <div key={f.falsch} className="mn-fehlerblock">
+          <p className="mn-fehlerzeile" lang="de">
+            <span className="mn-falsch">{f.falsch}</span> → <b>{f.richtig}</b>
+            <SpeakButton text={f.richtig} lang="de" className="speak-inline" />
+          </p>
+          {f.warum && <p className="mn-warum" lang="ko">{f.warum}</p>}
+        </div>
       ))}
     </div>
   )
+
+  /* Übungs-Kontext für den Nachfrage-Dialog — der Trainer weiß
+     dann genau, worüber gesprochen wird */
+  const nachfrageKontext =
+    `Goethe A2 Sprechen Teil 2 (monologue). Topic card: ${karte.thema} — keywords: ${karte.stichworte.join(', ')}.\n` +
+    (transkripte.current.length ? `Her spoken sentences (STT): ${transkripte.current.join(' ')}\n` : '') +
+    (transkript ? `Latest transcript: ${transkript}\n` : '') +
+    (bewertung
+      ? `Coverage: ${JSON.stringify(bewertung.abgedeckt)}. Corrections: ${JSON.stringify(bewertung.fehler)}. Feedback: ${bewertung.kommentar}\nModel: ${bewertung.muster}`
+      : '') +
+    (ergebnis ? `\nLast single-answer feedback: ${JSON.stringify(ergebnis)}` : '')
 
   /* ---------- Intro: Stufe wählen ---------- */
   if (!stufe) {
@@ -277,10 +292,13 @@ function Monolog({ profile, t, onExit }) {
             </div>
           )}
           {phase === 'abschluss' && (
-            <div className="lt2-ende">
-              <button className="done-btn" onClick={() => zuruecksetzen(true)} lang="de">Neue Karte</button>
-              <button className="done-btn lt2-fertigknopf" onClick={onExit}>{t.back}</button>
-            </div>
+            <>
+              <Nachfrage profile={profile} t={t} kontext={nachfrageKontext} />
+              <div className="lt2-ende">
+                <button className="done-btn" onClick={() => zuruecksetzen(true)} lang="de">Neue Karte</button>
+                <button className="done-btn lt2-fertigknopf" onClick={onExit}>{t.back}</button>
+              </div>
+            </>
           )}
         </div>
       </div>
@@ -334,6 +352,14 @@ function Monolog({ profile, t, onExit }) {
                 <SpeakButton text={ergebnis.korrektur} lang="de" className="speak-inline" />
               </p>
             )}
+            <Nachfrage
+              profile={profile}
+              t={t}
+              kontext={
+                `Goethe A2 Sprechen Teil 2 (guided step). Topic: ${karte.thema}, keyword: ${stichwort}.\n` +
+                `Her spoken answer (STT): ${transkript}\nFeedback: ${JSON.stringify(ergebnis)}`
+              }
+            />
             <button
               className="done-btn"
               onClick={() => {
@@ -366,7 +392,8 @@ function Monolog({ profile, t, onExit }) {
               ))}
             </div>
             {fehlerListe}
-            {bewertung.kommentar && <p className="a2-radar-leer" lang="ko">{bewertung.kommentar}</p>}
+            {bewertung.kommentar && <p className="a2-radar-leer mn-feedback" lang="ko">{bewertung.kommentar}</p>}
+            <Nachfrage profile={profile} t={t} kontext={nachfrageKontext} />
             <button className="done-btn" onClick={zusatzStarten} lang="de">
               Weiter — der Prüfer hat noch Fragen
             </button>
@@ -407,6 +434,14 @@ function Monolog({ profile, t, onExit }) {
                 <SpeakButton text={ergebnis.korrektur} lang="de" className="speak-inline" />
               </p>
             )}
+            <Nachfrage
+              profile={profile}
+              t={t}
+              kontext={
+                `Goethe A2 Sprechen Teil 2, examiner follow-up question: ${bewertung.zusatzfragen[zusatzIndex]}\n` +
+                `Her spoken answer (STT): ${transkript}\nFeedback: ${JSON.stringify(ergebnis)}`
+              }
+            />
             <button
               className="done-btn"
               onClick={() => {

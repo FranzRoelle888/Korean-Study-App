@@ -152,15 +152,24 @@ function Infobox({ modul }) {
   )
 }
 
-/* Fragen-Ecke: Dialog mit dem Prüfungs-Assistenten */
-function FragenEcke({ profile, t }) {
-  const [verlauf, setVerlauf] = useState([])
+/* ---------- Prüfungs-Coach: eigener Chat-Bildschirm ----------
+   (Umbau 04.09., Wunsch Franz: der Chat soll SCHÖN eingebunden
+   sein statt unten eingequetscht.) Der Verlauf lebt beim Eltern-
+   Bildschirm — wer kurz in eine Übung geht und zurückkommt,
+   findet sein Gespräch wieder. */
+const COACH_BEISPIELE = [
+  '시험은 몇 점이면 합격이에요?',
+  '지금 나한테 제일 좋은 연습이 뭐예요?',
+  'Perfekt는 언제 써요?',
+]
+
+function CoachChat({ profile, t, verlauf, setVerlauf, onExit }) {
   const [eingabe, setEingabe] = useState('')
   const [laedt, setLaedt] = useState(false)
   const [fehler, setFehler] = useState(false)
 
-  async function senden() {
-    const frage = eingabe.trim()
+  async function senden(direkt) {
+    const frage = (direkt ?? eingabe).trim()
     if (!frage || laedt) return
     const neu = [...verlauf, { role: 'user', text: frage }]
     setVerlauf(neu)
@@ -178,18 +187,46 @@ function FragenEcke({ profile, t }) {
   }
 
   return (
-    <div className="a2-fragen">
-      <p className="a2-fragen-titel">💬 {t.a2FrageTitel}</p>
-      <p className="a2-radar-leer" lang="ko">{t.a2FrageSub}</p>
-      <div className="nf-box">
-        {verlauf.map((m, i) => (
-          <p key={i} className={m.role === 'user' ? 'nf-frage' : 'nf-antwort'}>
-            {m.text}
-          </p>
-        ))}
-        {laedt && <p className="nf-antwort nf-laedt">…</p>}
-        {fehler && <p className="nf-fehler">{t.nfFehler}</p>}
-        <div className="nf-eingabe">
+    <div className="screen">
+      <div className="review-header">
+        <button className="back-btn" onClick={onExit} aria-label={t.back}>
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="m15 6-6 6 6 6" />
+          </svg>
+        </button>
+        <span className="daily-label" lang="de">🎓 Prüfungs-Coach</span>
+      </div>
+      <div className="lt2-scroll coach-scroll">
+        {verlauf.length === 0 && (
+          <>
+            <div className="fs-intro">
+              <p className="fs-intro-titel" lang="de">🎓 Dein Prüfungs-Coach</p>
+              <p className="coach-intro-text" lang="ko">
+                시험, 문법, 공부 방법 — 뭐든 물어보세요. 코치는 <b>내 학습 상황</b>과
+                Goethe A2 시험, 이 앱의 모든 연습을 알고 있어요.
+              </p>
+            </div>
+            <div className="coach-chips">
+              {COACH_BEISPIELE.map((b) => (
+                <button key={b} type="button" className="coach-chip" onClick={() => senden(b)} lang="ko">
+                  {b}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
+
+        <div className="coach-verlauf">
+          {verlauf.map((m, i) => (
+            <p key={i} className={m.role === 'user' ? 'nf-frage' : 'nf-antwort'}>
+              {m.text}
+            </p>
+          ))}
+          {laedt && <p className="nf-antwort nf-laedt">…</p>}
+          {fehler && <p className="nf-fehler">{t.nfFehler}</p>}
+        </div>
+
+        <div className="nf-eingabe coach-eingabe">
           <input
             className="nf-feld"
             value={eingabe}
@@ -202,7 +239,7 @@ function FragenEcke({ profile, t }) {
           <button
             type="button"
             className="studio-check"
-            onClick={senden}
+            onClick={() => senden()}
             disabled={!eingabe.trim() || laedt}
             aria-label={t.send}
           >
@@ -217,6 +254,20 @@ function FragenEcke({ profile, t }) {
 function A2Training({ profile, t }) {
   const [modul, setModul] = useState(null)
   const [uebung, setUebung] = useState(null)
+  /* Coach-Verlauf überlebt Übungs-Ausflüge innerhalb des Tabs */
+  const [coachVerlauf, setCoachVerlauf] = useState([])
+
+  if (uebung === 'coach') {
+    return (
+      <CoachChat
+        profile={profile}
+        t={t}
+        verlauf={coachVerlauf}
+        setVerlauf={setCoachVerlauf}
+        onExit={() => setUebung(null)}
+      />
+    )
+  }
 
   if (uebung === 'artikel') {
     return <ArtikelSwipe profile={profile} t={t} onExit={() => setUebung(null)} />
@@ -331,7 +382,15 @@ function A2Training({ profile, t }) {
           ))}
         </div>
 
-        <FragenEcke profile={profile} t={t} />
+        {/* Der Coach als eigene, schöne Karte — öffnet den Chat */}
+        <button type="button" className="a2-coach" onClick={() => setUebung('coach')}>
+          <span className="a2-coach-emoji">🎓</span>
+          <span className="a2-coach-texte">
+            <span className="a2-coach-titel" lang="de">Prüfungs-Coach</span>
+            <span className="a2-ko-klein" lang="ko">시험, 문법, 공부 방법 — 뭐든 물어보세요</span>
+          </span>
+          <span className="a2-infobox-pfeil">›</span>
+        </button>
       </main>
     </div>
   )
