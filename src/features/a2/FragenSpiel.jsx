@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import { SPRECHEN_KARTEN } from './sprechen'
 import { AufnahmeKnopf } from '../../shared/aufnahme'
-import { playSequence, SpeakButton } from '../../shared/tts'
+import { playSequence, prewarmSequence, SpeakButton } from '../../shared/tts'
 import { trainerA2Sprechen1 } from '../trainer/trainerApi'
 import { schreibeA2Beleg } from '../../core/storage'
 import Auftrag from '../../shared/Auftrag'
@@ -34,13 +34,28 @@ function mische(liste) {
 function FragenSpiel({ profile, t, onExit }) {
   const [karten, setKarten] = useState(() => mische(SPRECHEN_KARTEN).slice(0, 4))
   const [schritt, setSchritt] = useState(0) /* 0..3: Karte; gerade = sie fragt, ungerade = sie antwortet */
-  const [phase, setPhase] = useState('aufnahme') /* aufnahme | denkt | ergebnis | fertig */
+  const [phase, setPhase] = useState('intro') /* intro | aufnahme | denkt | ergebnis | fertig */
   const [ergebnis, setErgebnis] = useState(null)
   const [transkript, setTranskript] = useState('')
   const [audioUrl, setAudioUrl] = useState(null)
   const [punkte, setPunkte] = useState(0)
   const [fehler, setFehler] = useState(null)
+  /* Solange der Partner noch SPRICHT, ist „Weiter" gesperrt —
+     erst hören, dann weiter (Wunsch Franz 04.09.) */
+  const [partnerSpricht, setPartnerSpricht] = useState(false)
   const fragetypen = useRef([])
+
+  /* Sicherheitsnetz: falls Audio klemmt, nach 20 s trotzdem freigeben */
+  const sprichtBis = useRef(null)
+  function sprechenBeginnt() {
+    setPartnerSpricht(true)
+    clearTimeout(sprichtBis.current)
+    sprichtBis.current = setTimeout(() => setPartnerSpricht(false), 20000)
+  }
+  function sprechenFertig() {
+    clearTimeout(sprichtBis.current)
+    setPartnerSpricht(false)
+  }
 
   const karte = karten[schritt]
   const sieFragt = schritt % 2 === 0
@@ -67,9 +82,11 @@ function FragenSpiel({ profile, t, onExit }) {
       if (res.fragetyp) fragetypen.current.push(res.fragetyp)
       setErgebnis(res)
       setPhase('ergebnis')
-      /* Partner-Antwort vorlesen — das Gespräch lebt */
+      /* Partner-Antwort vorlesen — das Gespräch lebt. Bis er
+         fertig gesprochen hat, bleibt „Weiter" gesperrt. */
       if (sieFragt && res.partnerAntwort) {
-        playSequence([{ text: res.partnerAntwort, voice: 'echo' }], 'de', {})
+        sprechenBeginnt()
+        playSequence([{ text: res.partnerAntwort, voice: 'echo' }], 'de', { onEnde: sprechenFertig })
       }
     } catch (e) {
       setPhase('aufnahme')
@@ -79,11 +96,18 @@ function FragenSpiel({ profile, t, onExit }) {
 
   function weiter() {
     if (schritt + 1 < karten.length) {
-      setSchritt(schritt + 1)
+      const naechste = schritt + 1
+      setSchritt(naechste)
       setPhase('aufnahme')
       setErgebnis(null)
       setTranskript('')
       setAudioUrl(null)
+      /* Partner-Schritt? Dann stellt er seine Frage SOFORT —
+         direkt im Tipp gestartet (iOS-Audio-Regel). Der ▶-Knopf
+         bleibt zum Nochmal-Hören. */
+      if (naechste % 2 === 1) {
+        playSequence([{ text: karten[naechste].musterfrage, voice: 'echo' }], 'de', {})
+      }
     } else {
       schreibeA2Beleg({
         modul: 'sprechen',
@@ -107,6 +131,39 @@ function FragenSpiel({ profile, t, onExit }) {
     </div>
   )
 
+  /* Erst der Ablauf in Ruhe — dann geht's los (Wunsch Franz
+     04.09.: der Ablauf war beim Reinklicken nicht klar) */
+  if (phase === 'intro') {
+    return (
+      <div className="screen">
+        {kopf}
+        <div className="kal-mitte">
+          <div className="fs-intro">
+            <p className="fs-intro-titel" lang="de">🎤 So funktioniert das Fragen-Spiel</p>
+            <ol className="fs-intro-liste" lang="ko">
+              <li><b>카드 4장</b>이 나와요 — 시험 Teil 1처럼 번갈아 해요.</li>
+              <li>🎙 <b>내 차례:</b> 카드 단어로 질문을 만들어 <b>말해요</b>. 파트너가 대답해 줘요.</li>
+              <li>❓ <b>파트너 차례:</b> 파트너가 먼저 물어봐요 — 듣고 <b>대답해요</b>.</li>
+              <li>✅ 매번 바로 피드백이 나와요 — 작은 문법 실수도 알려줘요.</li>
+            </ol>
+          </div>
+          <button
+            className="done-btn"
+            onClick={() => {
+              /* Partnerfragen vorwärmen — beim Zug des Partners
+                 kommt seine Frage dann ohne Wartezeit */
+              prewarmSequence(karten.map((k) => ({ text: k.musterfrage, voice: 'echo' })), 'de')
+              setPhase('aufnahme')
+            }}
+            lang="de"
+          >
+            Los geht's!
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   if (phase === 'fertig') {
     const wTypen = fragetypen.current.filter((x) => x === 'w').length
     const jnTypen = fragetypen.current.filter((x) => x === 'janein').length
@@ -125,7 +182,9 @@ function FragenSpiel({ profile, t, onExit }) {
           <button
             className="done-btn"
             onClick={() => {
-              setKarten(mische(SPRECHEN_KARTEN).slice(0, 4))
+              const neu = mische(SPRECHEN_KARTEN).slice(0, 4)
+              prewarmSequence(neu.map((k) => ({ text: k.musterfrage, voice: 'echo' })), 'de')
+              setKarten(neu)
               setSchritt(0)
               setPhase('aufnahme')
               setErgebnis(null)
@@ -207,7 +266,9 @@ function FragenSpiel({ profile, t, onExit }) {
             {sieFragt && ergebnis.partnerAntwort && (
               <p className="fs-partner-text" lang="de">🧑 {ergebnis.partnerAntwort}</p>
             )}
-            <button className="done-btn" onClick={weiter} lang="de">Weiter</button>
+            <button className="done-btn" onClick={weiter} disabled={partnerSpricht} lang="de">
+              {partnerSpricht ? '🔊 …' : 'Weiter'}
+            </button>
           </div>
         )}
       </div>

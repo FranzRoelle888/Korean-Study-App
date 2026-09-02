@@ -85,6 +85,25 @@ body {
   flex-direction: column;
 }
 
+/* ---------- Tablet (iPad) ----------
+   Die Handy-Spalte darf wachsen und wird als gerahmte „Karte"
+   auf leicht abgesetztem Grund gezeigt — so wirkt sie gewollt
+   statt gestreckt. WICHTIG: nur Breite/Optik — position:fixed
+   und die Höhen-Variablen (Tastatur-Handling!) bleiben unberührt. */
+@media (min-width: 744px) {
+  body {
+    background: var(--surface-2);
+  }
+
+  #root {
+    max-width: 700px;
+    background: var(--bg);
+    border-left: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    box-shadow: var(--shadow-md);
+  }
+}
+
 button {
   font-family: inherit;
   cursor: pointer;

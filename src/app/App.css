@@ -5231,6 +5231,35 @@ textarea {
   font-size: 22px;
 }
 
+/* Intro: der Ablauf in Ruhe erklärt, bevor es losgeht */
+.fs-intro {
+  width: 100%;
+  max-width: 380px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px 18px;
+  box-shadow: var(--shadow-sm);
+  text-align: left;
+}
+
+.fs-intro-titel {
+  margin: 0 0 10px;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.fs-intro-liste {
+  margin: 0;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--text);
+}
+
 .fs-transkript {
   margin: 0;
   font-size: 15px;
@@ -5422,6 +5451,10 @@ textarea {
    Tastatur-Handling bleibt unangetastet. */
 @media (min-width: 744px) {
   .app {
+    /* width:100% ist Pflicht: margin auto allein schaltet in der
+       Flex-Spalte das Breiten-Strecken ab (Element schrumpft auf
+       Inhaltsbreite) — genau der „Handy-Streifen"-Fehler */
+    width: 100%;
     max-width: 640px;
     margin: 0 auto;
   }
@@ -5429,6 +5462,7 @@ textarea {
   .screen,
   .library,
   .daily {
+    width: 100%;
     max-width: 640px;
     margin-left: auto;
     margin-right: auto;
@@ -5439,6 +5473,7 @@ textarea {
   }
 
   .tabbar {
+    width: 100%;
     max-width: 640px;
     margin: 0 auto;
     border-radius: 18px 18px 0 0;
@@ -5465,6 +5500,43 @@ textarea {
 
   .as-nomen {
     font-size: 38px;
+  }
+
+  /* A2-Reiter: die ganze Menü-Spalte mittig deckeln — Kacheln,
+     Infoboxen und Fragen-Ecke bleiben als Block beieinander */
+  .trainer-menu {
+    max-width: 560px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+  }
+
+  /* A2-Übungen: Karten und Boxen dürfen mitwachsen */
+  .fs-karte,
+  .fs-intro,
+  .fs-partner-text,
+  .rd-paket,
+  .rd-karte,
+  .rd-karte-klein,
+  .rd-bibliothek,
+  .rd-aufloesung,
+  .rd-lueckensatz,
+  .auftrag,
+  .hv-aussage,
+  .hv-aufloesung,
+  .hv-skript,
+  .hv-tage,
+  .hv-wahl {
+    max-width: 520px;
+  }
+
+  .sh-karte {
+    max-width: 560px;
+  }
+
+  .fs-karte-wort {
+    padding: 44px 16px;
+    font-size: 34px;
   }
 }
 

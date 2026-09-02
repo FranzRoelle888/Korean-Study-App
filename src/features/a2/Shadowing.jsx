@@ -1,8 +1,13 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { SHADOWING_SAETZE } from './sprechen'
 import { AufnahmeKnopf } from '../../shared/aufnahme'
-import { playSequence } from '../../shared/tts'
+import { playSequence, prewarmSequence } from '../../shared/tts'
 import Auftrag from '../../shared/Auftrag'
+
+/* Haein spricht einer FRAU nach (Wunsch Franz 04.09.) — 'coral'
+   ist die weibliche deutsche Vorbild-Stimme. Nicht die Standard-
+   stimme der App ('echo', männlich) — eigener Cache-Pfad. */
+const VORBILD_STIMME = 'coral'
 
 /* ============================================================
    AUSSPRACHE-SHADOWING (Sprechen · Aussprache = 5 Punkte)
@@ -33,6 +38,11 @@ function Shadowing({ profile, t, onExit }) {
 
   const satz = saetze[index]
 
+  /* Alle Sätze der Runde vorwärmen — beim Tipp ist alles schon da */
+  useEffect(() => {
+    prewarmSequence(saetze.map((s) => ({ text: s.satz, voice: VORBILD_STIMME })), 'de')
+  }, [saetze])
+
   const kopf = (
     <div className="review-header">
       <button className="back-btn" onClick={onExit} aria-label={t.back}>
@@ -62,7 +72,7 @@ function Shadowing({ profile, t, onExit }) {
         <div className="sh-vergleich">
           <button
             className="st-stufe"
-            onClick={() => playSequence([{ text: satz.satz }], 'de', {})}
+            onClick={() => playSequence([{ text: satz.satz, voice: VORBILD_STIMME }], 'de', {})}
             lang="ko"
           >
             ▶ 원본 듣기

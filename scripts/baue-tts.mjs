@@ -80,6 +80,9 @@ function lesePool(pfad, exportName) {
 async function sammleTexte(profil) {
   const lang = profil /* ko-Profil lernt Koreanisch, de Deutsch */
   const texte = new Set()
+  /* Texte, die NICHT die Standardstimme brauchen (z. B. Shadowing:
+     weibliches Vorbild 'coral') — eigener Cache-Pfad je Stimme */
+  const extraStimmen = []
   const nimm = (t) => {
     const s = (t ?? '').trim()
     if (s && s.length <= 300) texte.add(s)
@@ -127,7 +130,9 @@ async function sammleTexte(profil) {
       nimm(k.musterfrage)
     }
     for (const s of lesePool('src/features/a2/sprechen.js', 'SHADOWING_SAETZE')) {
-      nimm(s.satz)
+      /* Shadowing spricht einer FRAU nach -> Stimme 'coral',
+         muss zu VORBILD_STIMME in Shadowing.jsx passen */
+      extraStimmen.push({ text: s.satz, voice: 'coral' })
     }
   }
 
@@ -140,7 +145,7 @@ async function sammleTexte(profil) {
     for (const e of inv) nimm(e.artikel ? `${e.artikel} ${e.de}` : e.de)
   }
 
-  return { lang, texte: [...texte] }
+  return { lang, texte: [...texte], extraStimmen }
 }
 
 /* ---------- ein Text -> Cache ---------- */
@@ -149,8 +154,7 @@ let uebersprungen = 0
 let fehler = 0
 let zeichen = 0
 
-async function baueEinen(text, lang) {
-  const voice = VOICES[lang]
+async function baueEinen(text, lang, voice = VOICES[lang]) {
   const pfad = `${CACHE_VERSION}/${lang}/${voice}/${await sha256Hex(text)}.mp3`
   const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/tts-cache/${pfad}`
 
@@ -192,19 +196,24 @@ async function baueEinen(text, lang) {
 /* ---------- Hauptlauf ---------- */
 const profile = PROFIL_WAHL === 'beide' ? ['ko', 'de'] : [PROFIL_WAHL]
 for (const profil of profile) {
-  const { lang, texte } = await sammleTexte(profil)
-  console.log(`\n=== Profil ${profil}: ${texte.length} Texte (${lang}, Stimme ${VOICES[lang]}) ===`)
-  for (let von = 0; von < texte.length; von += GLEICHZEITIG) {
+  const { lang, texte, extraStimmen } = await sammleTexte(profil)
+  /* Standardstimme + Sonderstimmen in EINER Arbeitsliste */
+  const auftraege = [
+    ...texte.map((text) => ({ text, voice: undefined })),
+    ...extraStimmen,
+  ]
+  console.log(`\n=== Profil ${profil}: ${auftraege.length} Texte (${lang}, Standardstimme ${VOICES[lang]}) ===`)
+  for (let von = 0; von < auftraege.length; von += GLEICHZEITIG) {
     await Promise.all(
-      texte.slice(von, von + GLEICHZEITIG).map((t) =>
-        baueEinen(t, lang).catch((e) => {
+      auftraege.slice(von, von + GLEICHZEITIG).map((a) =>
+        baueEinen(a.text, lang, a.voice ?? VOICES[lang]).catch((e) => {
           fehler++
-          if (fehler <= 10) console.warn(`Fehler bei "${t.slice(0, 30)}": ${e.message}`)
+          if (fehler <= 10) console.warn(`Fehler bei "${a.text.slice(0, 30)}": ${e.message}`)
         })
       )
     )
     if ((von / GLEICHZEITIG) % 25 === 0 && von > 0) {
-      console.log(`  … ${von}/${texte.length} (neu: ${erzeugt}, im Cache: ${uebersprungen})`)
+      console.log(`  … ${von}/${auftraege.length} (neu: ${erzeugt}, im Cache: ${uebersprungen})`)
     }
   }
 }
