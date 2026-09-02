@@ -661,13 +661,8 @@ function App() {
             <GridIcon />
             <span>{t.tabSets}</span>
           </button>
-          <button
-            className={view === 'home' ? 'tab tab-active' : 'tab'}
-            onClick={() => setView('home')}
-          >
-            {profile.id === 'de' ? <DomIcon /> : <HomeIcon />}
-            <span>{t.tabHome}</span>
-          </button>
+          {/* Start gehört in die MITTE (Wunsch Franz 02.09.) —
+              links davon Trainer bzw. A2-Bereich */}
           {profile.trainer && (
             <button
               className={view === 'trainer' ? 'tab tab-active' : 'tab'}
@@ -677,7 +672,6 @@ function App() {
               <span>{t.tabTrainer}</span>
             </button>
           )}
-          {/* A2-Trainings-Reiter — der Prüfungs-Steuerstand (nur de) */}
           {profile.a2 && (
             <button
               className={view === 'a2' ? 'tab tab-active' : 'tab'}
@@ -687,6 +681,13 @@ function App() {
               <span>{t.tabA2}</span>
             </button>
           )}
+          <button
+            className={view === 'home' ? 'tab tab-active' : 'tab'}
+            onClick={() => setView('home')}
+          >
+            {profile.id === 'de' ? <DomIcon /> : <HomeIcon />}
+            <span>{t.tabHome}</span>
+          </button>
           <button
             className={view === 'library' ? 'tab tab-active' : 'tab'}
             onClick={() => setView('library')}

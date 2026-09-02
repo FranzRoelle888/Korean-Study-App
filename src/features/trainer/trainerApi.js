@@ -84,6 +84,12 @@ export function trainerNachfrage({ profile, kontext, messages }) {
   return call({ action: 'nachfrage', profile, kontext, messages })
 }
 
+/* A2-Fragen-Ecke: der Prüfungs-Assistent kennt Haeins Lernstand,
+   alle Goethe-A2-Fakten und die Funktionen der App -> { text } */
+export function trainerA2Frage({ profile, messages }) {
+  return call({ action: 'a2frage', profile, messages })
+}
+
 /* Bedeutungs-Vorschlag beim Vokabel-Eintragen -> { vorschlag } */
 export function trainerUebersetzung({ profile, wort }) {
   return call({ action: 'uebersetzung', profile, wort })

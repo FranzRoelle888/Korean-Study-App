@@ -4556,12 +4556,151 @@ textarea {
   font-weight: 500;
 }
 
-/* Grundlagen-Reihe: schmaler als die Modul-Kacheln */
+/* Grundlagen-Reihe: mit deutlich Luft von den Modul-Kacheln
+   abgesetzt und eigener Abschnitts-Überschrift */
 .a2-grundlagen {
   display: flex;
   flex-direction: column;
   gap: 8px;
   width: 100%;
+  margin-top: 22px;
+}
+
+.a2-abschnitt {
+  margin: 0 0 2px;
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-soft);
+  text-align: left;
+}
+
+/* ---------- Ausklappbare Prüfungs-Infobox („Das Auge isst mit") ---------- */
+.a2-infobox {
+  width: 100%;
+  border-radius: 16px;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+
+.a2-infobox-kopf {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  border: none;
+  background: none;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 14px;
+}
+
+.a2-infobox-titel {
+  font-weight: 800;
+}
+
+.a2-infobox-kurz {
+  flex: 1;
+  text-align: left;
+  color: var(--text-soft);
+  font-size: 12.5px;
+}
+
+.a2-infobox-pfeil {
+  color: var(--text-soft);
+}
+
+.a2-infobox-inhalt {
+  padding: 0 16px 14px;
+  text-align: left;
+  font-size: 13.5px;
+  line-height: 1.65;
+}
+
+.a2-infobox-inhalt h4 {
+  margin: 12px 0 6px;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-soft);
+}
+
+.a2-infobox-inhalt ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: teil;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.a2-infobox-inhalt ol li {
+  counter-increment: teil;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.a2-infobox-inhalt ol li::before {
+  content: counter(teil);
+  flex: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translateY(3px);
+}
+
+.a2-infobox-inhalt ol li strong {
+  display: block;
+}
+
+.a2-infobox-inhalt ol li span {
+  display: block;
+  color: var(--text-soft);
+  font-size: 12.5px;
+}
+
+.a2-infobox-inhalt ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.a2-infobox-inhalt ul li {
+  padding: 8px 10px;
+  border-left: 3px solid var(--accent);
+  background: var(--surface);
+  border-radius: 0 10px 10px 0;
+}
+
+/* ---------- Fragen-Ecke im A2-Reiter ---------- */
+.a2-fragen {
+  width: 100%;
+  margin-top: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+}
+
+.a2-fragen-titel {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 800;
 }
 
 .a2-werkzeug {

@@ -312,7 +312,7 @@ async function overLimit(profile: string) {
   /* Nur die eigenen Aktionen zählen — die speech-Funktion führt
      ihr eigenes Limit in speech_usage */
   const rows = await dbGet(
-    `trainer_usage?profile=eq.${profile}&action=in.(chat,summary,extract,uebung,satz,schreiben,studio_erklaerung,studio_aufgaben,studio_antwort,studio_bilanz,nachfrage)&created_at=gt.${oneHourAgo}&select=id`
+    `trainer_usage?profile=eq.${profile}&action=in.(chat,summary,extract,uebung,satz,schreiben,studio_erklaerung,studio_aufgaben,studio_antwort,studio_bilanz,nachfrage,a2frage)&created_at=gt.${oneHourAgo}&select=id`
   )
   return rows.length >= MAX_CALLS_PER_HOUR
 }
@@ -899,6 +899,63 @@ Deno.serve(async (req) => {
         output_tokens: out.outputTokens,
       })
       return json({ vorschlag, korrektur })
+    }
+
+    /* ---------- A2-Fragen-Ecke (Wunsch Franz 02.09.) ----------
+       Der Prüfungs-Assistent im A2-Reiter: kennt 해인s kompletten
+       Lernstand (buildProfile), alle Fakten zum Goethe-Zertifikat
+       A2 und die Funktionen der App — und verweist bei Fragen zu
+       Aufgabentypen auf die passende Übung. Antwortet auf
+       Koreanisch (Sprachregel: Verstehen-müssen-Texte). */
+    if (action === 'a2frage') {
+      const verlauf = (Array.isArray(messages) ? messages : [])
+        .slice(-24)
+        .filter((m: { role?: unknown; text?: unknown }) =>
+          (m.role === 'user' || m.role === 'assistant') && typeof m.text === 'string')
+        .map((m: { role: string; text: string }) => ({
+          role: m.role,
+          content: String(m.text).slice(0, 600),
+        }))
+      if (!verlauf.length || verlauf[verlauf.length - 1].role !== 'user')
+        return json({ error: 'empty' }, 400)
+
+      const p = await buildProfile(profile)
+      const out = await callModel(
+        [
+          'You are 해인\'s personal exam coach for the Goethe-Zertifikat A2 (German, exam in Seoul in ~8 weeks). Warm, concrete, honest. She is Korean, level ~A2, preparing intensively with this app.',
+          '',
+          '## Exam facts (authoritative — from the official Übungssatz)',
+          '- 100 points total, 25 per module. Pass: 60/100 overall AND written (Lesen+Hören+Schreiben) >= 45/75 AND Sprechen >= 15/25. Below 15 in Sprechen = whole exam failed.',
+          '- LESEN 30 min, 4 parts/20 items: newspaper article (MC), info boards ("Wohin gehen Sie?"), personal e-mail (MC), matching 5 people to ads incl. one X (no match). Trap: all options quote words from the text — the MEANING decides.',
+          '- HÖREN 30 min, 4 parts/20 items: 5 short announcements/voicemails (heard 2x, MC), one long conversation (heard ONCE, picture matching), 5 short dialogs (heard ONCE, MC with pictures), interview (2x, yes/no).',
+          '- SCHREIBEN 30 min: SMS to a friend (20-30 words, du) + semi-formal e-mail (30-40 words, Sie), each with 3 required content points. Under 50% of the word count or off-topic = 0 points for that task. Small A2-level grammar slips are forgiven; missing content points and wrong register are not.',
+          '- SPRECHEN ~15 min in pairs: asking/answering with question cards (4 P), monologue from a topic card with 4 keywords (8 P), planning something together (8 P), pronunciation (5 P). Partner is usually another candidate; scoring is individual.',
+          '',
+          '## App features she can use (this app, A2 tab)',
+          '- ACTIVE NOW: Artikel-Spiel (article swipe game, under "Grundlagen") · daily words (5/day from the official Goethe word list) · review stack · article/plural/verb of the day on the start page · "Grammatik mitteilen" and placement check in the Profil tab.',
+          '- COMING SOON (built step by step): SMS & E-Mail training (Schreiben), Hörverstehen + Zahlen-Diktat (Hören), Fragen-Spiel/Erzählen/Zusammen planen/Aussprache (Sprechen), Leseverstehen + Anzeigen-Detektiv (Lesen), Satz-Baukasten, Redemittel.',
+          'When her question relates to a task type, point her to the matching exercise — honestly marked as active or coming soon.',
+          '',
+          '## Her current state',
+          `Words in her deck: secure ${p.secure.length}, still fresh ${p.fresh.length}, shaky: ${p.shaky.slice(0, 15).join(', ') || '(none)'}`,
+          `Grammar she knows: ${p.skills.slice(0, 40).join('; ') || '(little recorded yet)'}`,
+          p.journal.length ? `Recent sessions:\n${p.journal.join('\n')}` : '',
+          '',
+          '## How to answer',
+          '- Answer in KOREAN (her mother tongue — these are understand-first texts), with German example words/sentences where helpful.',
+          '- Be concise: 2-6 sentences for simple questions. Use short bullet lists for structured answers. No walls of text.',
+          '- Be honest about difficulty and priorities (Sprechen is the knockout hurdle; Schreiben is the cheapest points).',
+        ].join('\n'),
+        verlauf,
+        1600
+      )
+      await dbInsert('trainer_usage', {
+        profile,
+        action: 'a2frage',
+        input_tokens: out.inputTokens,
+        output_tokens: out.outputTokens,
+      })
+      return json({ text: out.text })
     }
 
     /* ---------- Nachfrage aufs Feedback (Idee Franz 31.08.) ----------

@@ -35,7 +35,11 @@ Franz ist Coding-Einsteiger und entwickelt alles im Dialog mit Claude
    live nur das Gespräch; TTS-Audio cachen (Hash → Storage, nie doppelt).
 5. **Keine XP, Ranglisten, Schuld-Nachrichten** — siehe Anti-Ziele im
    Zielbild. Fortschritt zeigt Können, nicht Aktivität.
-6. **iPhone-first:** Entwerfen und verifizieren bei 390×844; 16-px-Schrift in
+6. **„Das Auge isst mit"** (Motto Franz, 02.09.): Info- und
+   Erklärtexte immer schön formatiert — fette Überschriften,
+   Nummern/Listen untereinander, lange Texte ausklappbar statt
+   bildschirmfüllend.
+7. **iPhone-first:** Entwerfen und verifizieren bei 390×844; 16-px-Schrift in
    Eingaben (iOS-Zoom); Safe-Areas beachten; Tastatur-Handling in
    src (fixierte Seite + visualViewport) nicht anfassen, es ist hart erkämpft.
 

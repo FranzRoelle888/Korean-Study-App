@@ -69,6 +69,9 @@ const en = {
   profilEinstufung: 'Redo placement check',
   profilEinstufungSub: 'Word swiping + grammar examples',
   profilExportSub: 'All words & progress as a CSV file',
+  a2FrageTitel: 'Questions about the exam?',
+  a2FrageSub: 'Ask anything about the exam, grammar or how to prepare.',
+  a2FragePlatzhalter: 'Type your question…',
 
   /* --- Bibliothek --- */
   library: 'Library',
@@ -338,6 +341,9 @@ const ko = {
   profilEinstufung: '수준 진단 다시 하기',
   profilEinstufungSub: '단어 스와이프 + 문법 예문',
   profilExportSub: '모든 단어와 진도를 CSV 파일로',
+  a2FrageTitel: '시험에 대해 궁금한 게 있나요?',
+  a2FrageSub: '시험, 문법, 준비 방법 — 무엇이든 물어보세요.',
+  a2FragePlatzhalter: '질문을 써 보세요…',
 
   /* --- Bibliothek --- */
   library: '단어장',
@@ -703,6 +709,9 @@ const de = {
   profilEinstufung: 'Einstufung wiederholen',
   profilEinstufungSub: 'Wörter wischen + Grammatik-Beispiele',
   profilExportSub: 'Alle Wörter & Fortschritt als CSV-Datei',
+  a2FrageTitel: 'Fragen zur Prüfung?',
+  a2FrageSub: '시험, 문법, 준비 방법 — 무엇이든 물어보세요. 앱의 어떤 연습이 도움이 되는지도 알려줘요.',
+  a2FragePlatzhalter: '질문을 써 보세요…',
 
   /* --- Kalibrierung --- */
   kalTitle: 'Einstufung',
