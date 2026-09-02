@@ -14,7 +14,7 @@ Quelle Prüfungsformat: A2_Uebungssatz_Erwachsene.pdf (goethe.de/a2).
 - [x] **Franz:** Migration `011-fsrs.sql` im Dashboard ausführen (FSRS + review_log)
 - [x] **Franz:** Function-Deploy-Check (Strg+F `MISSPELLING` im trainer-Editor)
 - [x] Vokabel-Zahlen nur für de-Profil: 5 neue/Tag, Wiederhol-Deckel 80
-- [ ] **„Kenn ich schon"-Knopf** bei neuen Vokabeln: bucht als angelernt
+- [x] **„Kenn ich schon"-Knopf** bei neuen Vokabeln: bucht als angelernt
       (Wiedersehen ~1 Woche), zählt nicht auf die 5, zieht sofort nach
 - [x] Nachziehstapel de: priorisiert aus der **Goethe-A2-Wortliste** ziehen
 - [x] **Menü der de-Seite komplett auf Deutsch** (passives Mitlernen)
