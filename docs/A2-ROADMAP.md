@@ -11,20 +11,20 @@ Quelle Prüfungsformat: A2_Uebungssatz_Erwachsene.pdf (goethe.de/a2).
 
 ## Phase 0 — Fundament (Woche 1)
 
-- [ ] **Franz:** Migration `011-fsrs.sql` im Dashboard ausführen (FSRS + review_log)
-- [ ] **Franz:** Function-Deploy-Check (Strg+F `MISSPELLING` im trainer-Editor)
-- [ ] Vokabel-Zahlen nur für de-Profil: 5 neue/Tag, Wiederhol-Deckel 80
+- [x] **Franz:** Migration `011-fsrs.sql` im Dashboard ausführen (FSRS + review_log)
+- [x] **Franz:** Function-Deploy-Check (Strg+F `MISSPELLING` im trainer-Editor)
+- [x] Vokabel-Zahlen nur für de-Profil: 5 neue/Tag, Wiederhol-Deckel 80
 - [ ] **„Kenn ich schon"-Knopf** bei neuen Vokabeln: bucht als angelernt
       (Wiedersehen ~1 Woche), zählt nicht auf die 5, zieht sofort nach
-- [ ] Nachziehstapel de: priorisiert aus der **Goethe-A2-Wortliste** ziehen
-- [ ] **Menü der de-Seite komplett auf Deutsch** (passives Mitlernen)
-- [ ] **iPad Air 4 + iPhone 14**: Tablet-Breakpoint, beide Orientierungen,
+- [x] Nachziehstapel de: priorisiert aus der **Goethe-A2-Wortliste** ziehen
+- [x] **Menü der de-Seite komplett auf Deutsch** (passives Mitlernen)
+- [x] **iPad Air 4 + iPhone 14**: Tablet-Breakpoint, beide Orientierungen,
       Preview-Verifikation 390×844 / 820×1180 / 1180×820
-- [ ] **A2-Reiter** (neuer Tab, nur de): Gitter aller Aufgabentypen, oben der
+- [x] **A2-Reiter** (neuer Tab, nur de): Gitter aller Aufgabentypen, oben der
       Schwächen-Radar; Artikel-Swipe zieht hier ein
-- [ ] **Lernblatt-Infrastruktur**: ⓘ-Knopf-Rahmen + Blatt-Format (Repo-Dateien
+- [x] **Lernblatt-Infrastruktur**: ⓘ-Knopf-Rahmen + Blatt-Format (Repo-Dateien
       wie Lektionen; beim ersten Öffnen automatisch)
-- [ ] **Beleg-Schema Prüfungsteile** (exam-Belege je Modul/Teil in der DB) —
+- [x] **Beleg-Schema Prüfungsteile** (exam-Belege je Modul/Teil in der DB) —
       Grundlage für Radar & Empfehlungen
 
 ## Phase 1 — Die billigsten Punkte (Woche 1–2)
