@@ -1,7 +1,9 @@
 # Das tägliche Pensum V2 — „Der Lernpfad" (Konzept, 05.09.)
 
-Status: **ENTWURF — nichts davon ist gebaut.** Franz entscheidet die
-offenen Fragen in §11, dann wird in Etappen umgesetzt (§12).
+Status: **ZURÜCKGESTELLT (Entscheidung Franz, 05.09.):** Der
+Grammatik-Lernpfad ist erstmal zu kompliziert. Die App bleibt
+vorerst Vokabel-Lernwerkzeug + A2-Prüfungsvorbereitung. Dieses
+Dokument bleibt als Ideenspeicher liegen.
 
 ## 1. Auftrag & Leitplanken (Franz, 05.09.)
 

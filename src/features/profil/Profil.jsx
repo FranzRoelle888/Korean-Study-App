@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import Statistik from './Statistik'
 import Skills from '../trainer/Skills'
 import Kalibrierung from '../kalibrierung/Kalibrierung'
 import { exportCsv } from '../cards/Library'
@@ -19,8 +20,12 @@ import { ChevronIcon } from '../../shared/icons'
    ============================================================ */
 
 function Profil({ profile, t, words, cards }) {
-  /* null = Menü | 'skills' | 'gramcheck' | 'kalibrierung' */
+  /* null = Menü | 'statistik' | 'skills' | 'gramcheck' | 'kalibrierung' */
   const [offen, setOffen] = useState(null)
+
+  if (offen === 'statistik') {
+    return <Statistik profile={profile} t={t} words={words} onExit={() => setOffen(null)} />
+  }
 
   if (offen === 'skills') {
     return (
@@ -51,6 +56,15 @@ function Profil({ profile, t, words, cards }) {
       </header>
 
       <main className="trainer-menu">
+        <button className="skills-entry" onClick={() => setOffen('statistik')}>
+          <span className="skills-entry-emoji">📊</span>
+          <div className="action-text">
+            <span className="action-title">{t.statsTitle}</span>
+            <span className="action-sub">{t.statsSub}</span>
+          </div>
+          <ChevronIcon />
+        </button>
+
         <button className="skills-entry" onClick={() => setOffen('skills')}>
           <span className="skills-entry-emoji">📚</span>
           <div className="action-text">

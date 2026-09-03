@@ -92,6 +92,12 @@ const en = {
   /* --- Kalender --- */
   learningDays: 'Your learning days',
   daysThisMonth: (n) => `${n} ${n === 1 ? 'day' : 'days'} completed this month`,
+  statsTitle: 'Statistics',
+  statsSub: 'Streak, words and your shared learning days',
+  statsStreak: 'day streak',
+  statsWords: 'words in deck',
+  statsDays: 'learning days',
+  statsMonthDays: (n) => `${n}d`,
   prevMonth: 'Previous month',
   nextMonth: 'Next month',
 
@@ -364,6 +370,12 @@ const ko = {
   /* --- Kalender --- */
   learningDays: '학습한 날',
   daysThisMonth: (n) => `이번 달 ${n}일 완료`,
+  statsTitle: '통계',
+  statsSub: '스트릭, 단어, 함께한 학습 날들',
+  statsStreak: '연속 학습',
+  statsWords: '내 단어',
+  statsDays: '총 학습일',
+  statsMonthDays: (n) => `${n}일`,
   prevMonth: '이전 달',
   nextMonth: '다음 달',
 
@@ -630,6 +642,12 @@ const de = {
   /* --- Kalender --- */
   learningDays: 'Deine Lerntage',
   daysThisMonth: (n) => `${n} ${n === 1 ? 'Tag' : 'Tage'} in diesem Monat`,
+  statsTitle: 'Statistik',
+  statsSub: 'Streak, Wörter und eure gemeinsamen Lerntage',
+  statsStreak: 'Tage-Serie',
+  statsWords: 'Wörter im Stapel',
+  statsDays: 'Lerntage gesamt',
+  statsMonthDays: (n) => `${n} ${n === 1 ? 'Tag' : 'Tage'}`,
   prevMonth: 'Voriger Monat',
   nextMonth: 'Nächster Monat',
 
