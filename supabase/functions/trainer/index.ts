@@ -317,6 +317,29 @@ async function overLimit(profile: string) {
   return rows.length >= MAX_CALLS_PER_HOUR
 }
 
+/* ---------- Vokabelstand der Lernerin (Wunsch Franz 04.09.) ----------
+   Zieht eine Zufalls-Stichprobe ihrer GELERNTEN Wörter (words-
+   Tabelle, mind. 1x wiederholt) und baut daraus eine weiche
+   Prompt-Vorgabe: Übungen und Muster BEVORZUGEN bekannte Wörter,
+   erzwingen sie aber nie (Natürlichkeit geht vor). Unter 30
+   gelernten Wörtern (z. B. frische Sandbox) bleibt sie leer. */
+async function vokabelVorgabe(profile: string): Promise<string> {
+  try {
+    const rows = await dbGet(`words?profile=eq.${profile}&reps=gte.1&select=ko&limit=400`)
+    const woerter = rows
+      .map((r: { ko?: unknown }) => String(r.ko ?? '').trim())
+      .filter((w: string) => w && w.length <= 40)
+    if (woerter.length < 30) return ''
+    for (let i = woerter.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1))
+      ;[woerter[i], woerter[j]] = [woerter[j], woerter[i]]
+    }
+    return `Where natural, PREFER words the learner already knows: ${woerter.slice(0, 50).join(', ')}. Natural phrasing and required grammar words always take priority — never force these words in.`
+  } catch {
+    return ''
+  }
+}
+
 /* ---------- Handler ---------- */
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS })
@@ -932,6 +955,7 @@ Deno.serve(async (req) => {
       if (!text || leitpunkte.length !== 3) return json({ error: 'empty' }, 400)
 
       const register = teil === 1 ? 'informal (du), SMS to a friend' : 'semi-formal (Sie), e-mail'
+      const vokabeln = await vokabelVorgabe(profile)
       const out = await callModel(
         [
           `You are a certified Goethe-Zertifikat A2 examiner grading SCHREIBEN Teil ${teil} (${register}). Grade EXACTLY like the official criteria — and remember: at A2, examiners are LENIENT about grammar. Real passing examples from the official Übungssatz contain errors like "dass ich kann nicht am Freitag anreisen", "Ich will dir am Samstagabend einladen", "ein neuen Preisangebot" — such texts still score well when content and register are right.`,
@@ -947,6 +971,7 @@ Deno.serve(async (req) => {
           '4. "sprache" A-E: A = occasional slips, never blocking understanding · B = several slips, understanding intact · C = errors partly block understanding · D = errors severely block understanding · E = incomprehensible. Judge at A2 level — leniently!',
           `5. "feedback": 2-4 KOREAN sentences: what was good, what to fix first (with the correct German form). Warm, concrete.`,
           `6. "muster": a model answer in German (${teil === 1 ? '20-30' : '30-40'} words, correct greeting/closing) covering all 3 points. ${MUSTER_EINFACH}`,
+          ...(vokabeln ? [`For the "muster" only: ${vokabeln}`] : []),
           '',
           'Reply with ONLY this JSON:',
           '{"leitpunkte":[{"status":"voll","kommentar":""},{"status":"teil","kommentar":"..."},{"status":"fehlt","kommentar":"..."}],',
@@ -1030,9 +1055,11 @@ Deno.serve(async (req) => {
                   'Reply: {"teil":4,"dialog":[{"s":"M","text":"..."}],"aussagen":[{"text":"...","wahr":true}] } — exactly 5 statements, mixed true/false, in German.',
                 ]
 
+      const vokabeln = await vokabelVorgabe(profile)
       const out = await callModel(
         [
           'You create a listening exercise for the Goethe-Zertifikat A2 exam (German, level A2). Natural spoken German, 해요체-equivalent politeness (normal Sie/du), ONLY common A2 vocabulary, numbers/times/prices welcome.',
+          ...(vokabeln ? [vokabeln] : []),
           ...spezifikation,
           'No markdown, ONLY the JSON object.',
         ].join('\n'),
@@ -1122,9 +1149,11 @@ Deno.serve(async (req) => {
                   'Reply: {"teil":4,"situationen":[{"name":"Sarah","text":"..."}],"anzeigen":[{"id":"a","titel":"www.…","text":"..."}],"loesungen":["c","x","a","f","b"],"warum":["<short Korean explanation per situation>"]} — exactly 5 situationen, 6 anzeigen, loesungen aligned with situationen.',
                 ]
 
+      const vokabeln = await vokabelVorgabe(profile)
       const out = await callModel(
         [
           'You create a READING exercise for the Goethe-Zertifikat A2 exam (German, level A2). ONLY common A2 vocabulary, natural written German, numbers/times/prices welcome.',
+          ...(vokabeln ? [vokabeln] : []),
           ...spezifikation,
           'No markdown, ONLY the JSON object.',
         ].join('\n'),
@@ -1247,6 +1276,7 @@ Deno.serve(async (req) => {
       const transkript = typeof body.transkript === 'string' ? body.transkript.trim().slice(0, 1500) : ''
       if (!transkript || !thema || stichworte.length !== 4) return json({ error: 'empty' }, 400)
 
+      const vokabeln = await vokabelVorgabe(profile)
       const out = await callModel(
         [
           `Goethe A2 Sprechen Teil 2: the learner spoke a short monologue about the topic card "${thema}" with the four keywords: ${stichworte.map((s, i) => `${i + 1}. ${s}`).join(' · ')}. You see the verbatim speech-to-text transcript.`,
@@ -1256,6 +1286,7 @@ Deno.serve(async (req) => {
           '3. "kommentar": she invested real effort in this monologue — give SUBSTANTIAL feedback, 3-5 Korean sentences: (a) name concretely what she did WELL, quoting her own German words, (b) the ONE most valuable improvement with a short explanation WHY and a ready-to-use example sentence she could say next time. Warm, specific, never generic.',
           '4. "zusatzfragen": exactly 2 short follow-up questions a friendly examiner would now ask, in simple German, each referring to something SHE ACTUALLY SAID (or gently to a missed keyword).',
           `5. "muster": a first-person model monologue (40-60 words) covering all four keywords. ${MUSTER_EINFACH}`,
+          ...(vokabeln ? [`For "zusatzfragen" and "muster": ${vokabeln}`] : []),
           'Reply ONLY JSON: {"abgedeckt":[true,false,true,true],"fehler":[{"falsch":"...","richtig":"...","warum":"..."}],"kommentar":"...","zusatzfragen":["...","..."],"muster":"..."}',
         ].join('\n'),
         [{ role: 'user', content: transkript }],

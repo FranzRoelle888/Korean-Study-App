@@ -6,9 +6,13 @@ import Auftrag from '../../shared/Auftrag'
 /* ============================================================
    SATZ-BAUKASTEN — die Verbstellungs-Leiter (Phase 4, 04.09.)
 
-   Wort-Bausteine in die richtige Reihenfolge tippen. Der erste
-   Baustein ist vorgelegt (nimmt Mehrdeutigkeit raus), der Rest
-   ist gemischt. Feste Leiter: Hauptsatz -> Inversion ->
+   Wort-Bausteine in die richtige Reihenfolge tippen. Die
+   koreanische Übersetzung steht SCHON VOR dem Bauen da (Feedback
+   Haein 04.09.: sie soll wissen, was sie sagt — gelernt wird nur
+   die Anordnung). Der erste Baustein ist vorgelegt (nimmt
+   Mehrdeutigkeit raus), der Rest ist gemischt; Punkt/Fragezeichen
+   werden von den Kacheln entfernt — sie würden die Position
+   verraten. Feste Leiter: Hauptsatz -> Inversion ->
    Modalverb-Klammer -> Perfekt-Klammer -> weil/dass.
    Aufstieg: 3 richtige Sätze IN FOLGE schalten die nächste
    Stufe frei (gespeichert in localStorage). Komplett offline —
@@ -26,6 +30,12 @@ function mische(liste) {
 }
 
 const SAETZE_PRO_RUNDE = 8
+
+/* Satzzeichen am Baustein-Ende verraten die Position — in der
+   Übung weglassen, in Auflösung und Vorlesen bleiben sie drin */
+function ohneZeichen(baustein) {
+  return baustein.replace(/[.?!]+$/, '')
+}
 
 function liesZahl(key, standard) {
   try {
@@ -62,7 +72,7 @@ function SatzBaukasten({ t, onExit }) {
 
   /* Kacheln beim Satzwechsel neu mischen (alle außer Baustein 0) */
   if (satz && kacheln.length === 0 && gelegt.length === 0 && status === 'baut' && !fertig) {
-    setKacheln(mische(satz.map((_, i) => i).slice(1)))
+    setKacheln(mische(satz.teile.map((_, i) => i).slice(1)))
   }
 
   function stufeWechseln(id) {
@@ -92,12 +102,13 @@ function SatzBaukasten({ t, onExit }) {
   }
 
   function pruefen() {
-    const gebaut = [0, ...gelegt].map((i) => satz[i]).join(' ')
-    const soll = satz.join(' ')
+    /* Vergleich ohne Satzzeichen — die Kacheln zeigen sie ja auch nicht */
+    const gebaut = [0, ...gelegt].map((i) => ohneZeichen(satz.teile[i])).join(' ')
+    const soll = satz.teile.map(ohneZeichen).join(' ')
     if (gebaut === soll) {
       setStatus('richtig')
       setPunkte((p) => p + 1)
-      speak(soll, 'de')
+      speak(satz.teile.join(' '), 'de')
       const neueSerie = serie + 1
       /* Aufstieg: 3 in Folge auf der HÖCHSTEN freien Stufe */
       if (neueSerie >= 3 && stufeId === frei && frei < SATZBAU_STUFEN.length) {
@@ -199,9 +210,13 @@ function SatzBaukasten({ t, onExit }) {
         />
         <p className="a2-ko-klein sb-tipp" lang="ko">💡 {stufe.tipp}</p>
 
+        {/* Die Bedeutung ZUERST — sie weiß, was sie sagt, und
+            lernt wirklich nur die Anordnung */}
+        <p className="sb-ko" lang="ko">{satz.ko}</p>
+
         {/* Der Bau-Bereich: erster Baustein vorgelegt */}
         <div className="sb-satzfeld">
-          <span className="sb-baustein sb-fest" lang="de">{satz[0]}</span>
+          <span className="sb-baustein sb-fest" lang="de">{ohneZeichen(satz.teile[0])}</span>
           {gelegt.map((kachelIndex, pos) => (
             <button
               key={pos}
@@ -209,10 +224,10 @@ function SatzBaukasten({ t, onExit }) {
               onClick={() => status === 'baut' && zurücknehmen(pos)}
               lang="de"
             >
-              {satz[kachelIndex]}
+              {ohneZeichen(satz.teile[kachelIndex])}
             </button>
           ))}
-          {gelegt.length < satz.length - 1 && <span className="sb-luecke" />}
+          {gelegt.length < satz.teile.length - 1 && <span className="sb-luecke" />}
         </div>
 
         {/* Die Vorrats-Kacheln */}
@@ -220,14 +235,14 @@ function SatzBaukasten({ t, onExit }) {
           <div className="sb-kacheln">
             {kacheln.map((kachelIndex) => (
               <button key={kachelIndex} className="sb-baustein sb-vorrat" onClick={() => legen(kachelIndex)} lang="de">
-                {satz[kachelIndex]}
+                {ohneZeichen(satz.teile[kachelIndex])}
               </button>
             ))}
           </div>
         )}
 
         {status === 'baut' && (
-          <button className="done-btn lt2-pruefen" disabled={gelegt.length !== satz.length - 1} onClick={pruefen}>
+          <button className="done-btn lt2-pruefen" disabled={gelegt.length !== satz.teile.length - 1} onClick={pruefen}>
             {t.check}
           </button>
         )}
@@ -236,9 +251,10 @@ function SatzBaukasten({ t, onExit }) {
           <div className="rd-aufloesung">
             <p className="rd-gut">✓ 좋아요!</p>
             <p className="rd-beispiel" lang="de">
-              {satz.join(' ')}
-              <SpeakButton text={satz.join(' ')} lang="de" className="speak-inline" />
+              {satz.teile.join(' ')}
+              <SpeakButton text={satz.teile.join(' ')} lang="de" className="speak-inline" />
             </p>
+            <p className="a2-ko-klein" lang="ko">{satz.ko}</p>
             {aufgestiegen && (
               <p className="st-aufstieg" lang="ko">🎉 3문장 연속 성공 — 다음 단계가 열렸어요!</p>
             )}
@@ -250,9 +266,10 @@ function SatzBaukasten({ t, onExit }) {
           <div className="rd-aufloesung">
             <p className="rd-schlecht">✗ 아직이에요</p>
             <p className="rd-beispiel" lang="de">
-              {satz.join(' ')}
-              <SpeakButton text={satz.join(' ')} lang="de" className="speak-inline" />
+              {satz.teile.join(' ')}
+              <SpeakButton text={satz.teile.join(' ')} lang="de" className="speak-inline" />
             </p>
+            <p className="a2-ko-klein" lang="ko">{satz.ko}</p>
             <p className="a2-ko-klein" lang="ko">💡 {stufe.tipp}</p>
             <button className="done-btn" onClick={weiter} lang="de">Weiter</button>
           </div>

@@ -5544,6 +5544,19 @@ textarea {
   max-width: 380px;
 }
 
+/* die Bedeutung des Satzes — steht schon vor dem Bauen da */
+.sb-ko {
+  margin: 0;
+  width: 100%;
+  max-width: 460px;
+  background: var(--primary-soft);
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 15.5px;
+  font-weight: 700;
+  text-align: center;
+}
+
 .sb-satzfeld {
   width: 100%;
   max-width: 460px;
