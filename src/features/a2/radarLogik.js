@@ -1,16 +1,40 @@
 /* ============================================================
    RADAR-LOGIK — Stärken, Prognose, Countdown, Tages-Empfehlung
-   (Phase 5, Konzept mit Franz 04.09.)
+   (Phase 5; Sicherheits-Modell nach Kritik Franz 05.09.:
+   „100 % nur bei fast absoluter Bestehens-Sicherheit")
 
-   Regeln (von Franz entschieden):
-   - Je Teil zählt der gleitende Schnitt der LETZTEN 5 Belege.
-   - Prüfungsnahe Runden zählen DOPPELT (⏱-Modus, Monolog-
-     Prüfung, Schreib-Stufe 3, Fragen-Spiel), Lernmodus einfach.
-   - Prognose auf der echten Punkteskala: Lesen/Hören/Schreiben
-     ×25, Sprechen ×20 — die 5 Aussprache-Punkte bewertet nur
-     ein Mensch, deshalb ehrlich „+ 최대 5" statt geraten.
-   - Bestehensgrenze: 60 von 100.
+   Zwei Zutaten je Teil, die MULTIPLIZIERT werden:
+
+   1. LEISTUNG: gewichteter Schnitt der letzten 12 Belege
+      (prüfungsnahe Läufe zählen doppelt: ⏱-Modus, Generalprobe,
+      Monolog-Prüfung, Schreib-Stufe 3, Fragen-Spiel).
+
+   2. FESTIGUNG (0..1): wie belastbar der Wert ist. Drei
+      Zutaten, das SCHWÄCHSTE bremst (min):
+      - Menge:        mind. 12 gewichtete Läufe für volle Wirkung
+      - Tage:         Erfolge über mind. 4 VERSCHIEDENE Tage —
+                      ein Abend Dauerüben festigt nichts
+      - Prüfungsnähe: mind. 6 prüfungsnahe Gewichte (= 3 echte
+                      ⏱-Läufe) — Lernmodus allein reicht nie
+
+   ANZEIGE = 50 % + (Leistung − 50 %) × (0,3 + 0,7 × Festigung).
+   Folgen: zwei perfekte Runden an einem Abend ≈ 65 %, nicht
+   100 %. Nur Lernmodus deckelt bei ~65 %. 100 % gibt es erst
+   bei perfekter Leistung UND voller Festigung — mehrfach, über
+   Tage verteilt, unter Prüfungsbedingungen. Die Dämpfung wirkt
+   in beide Richtungen (frühe Ausrutscher drücken auch nicht
+   sofort auf 0). Prognose/Bestehenslinie nutzen dieselben
+   vorsichtigen Werte.
+
+   Sichtbar als Pflanze je Teil: 🌱 frisch · 🌿 wächst · 🌳 fest.
+   Skala: Lesen/Hören/Schreiben ×25, Sprechen ×20 (+ „Aussprache
+   max 5" — bewertet nur ein Mensch). Bestehensgrenze 60/100.
    ============================================================ */
+
+const FENSTER = 12 /* letzte Belege je Teil */
+const MENGE_VOLL = 12 /* gewichtete Läufe für volle Menge */
+const TAGE_VOLL = 4 /* verschiedene Übungstage */
+const PRUEF_VOLL = 6 /* prüfungsnahe Gewichte (= 3 ⏱-Läufe) */
 
 export const PRUEFUNGS_DATUM = new Date(2026, 9, 29) /* 29.10.2026 */
 
@@ -81,16 +105,34 @@ export function werteAus(belege) {
     const teile = m.teile.map((t) => {
       const letzte = belege
         .filter((b) => b.modul === m.id && b.teil === t.id && b.max > 0)
-        .slice(0, 5)
-      if (!letzte.length) return { ...t, quote: null, anzahl: 0 }
+        .slice(0, FENSTER)
+      if (!letzte.length) return { ...t, quote: null, festigung: 0, anzahl: 0 }
+
+      /* Zutat 1: Leistung (gewichteter Schnitt) */
       let summe = 0
       let gewichte = 0
+      let pruefGewichte = 0
+      const tage = new Set()
       for (const b of letzte) {
         const g = gewicht(m.id, b.details)
         summe += (b.punkte / b.max) * g
         gewichte += g
+        if (g === 2) pruefGewichte += g
+        tage.add(String(b.created_at ?? '').slice(0, 10))
       }
-      return { ...t, quote: summe / gewichte, anzahl: letzte.length }
+      const leistung = summe / gewichte
+
+      /* Zutat 2: Festigung — das Schwächste bremst */
+      const festigung = Math.min(
+        gewichte / MENGE_VOLL,
+        tage.size / TAGE_VOLL,
+        pruefGewichte / PRUEF_VOLL,
+        1
+      )
+
+      /* Vorsichtige Anzeige: zur 50%-Mitte hin gedämpft */
+      const quote = Math.min(1, Math.max(0, 0.5 + (leistung - 0.5) * (0.3 + 0.7 * festigung)))
+      return { ...t, quote, festigung, anzahl: letzte.length }
     })
     const mitDaten = teile.filter((t) => t.quote !== null)
     const quote = mitDaten.length

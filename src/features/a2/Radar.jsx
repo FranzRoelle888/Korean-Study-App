@@ -126,7 +126,14 @@ function Radar({ profile, t, starte }) {
               <div className="ra-teile">
                 {m.teile.map((teil) => (
                   <p key={teil.id} className="ra-teil" lang="ko">
-                    <span>{teil.ko}</span>
+                    <span>
+                      {teil.quote !== null && (
+                        <span className="ra-pflanze" aria-hidden="true">
+                          {teil.festigung >= 0.9 ? '🌳' : teil.festigung >= 0.34 ? '🌿' : '🌱'}
+                        </span>
+                      )}
+                      {teil.ko}
+                    </span>
                     <Prozent quote={teil.quote} />
                   </p>
                 ))}
@@ -142,6 +149,11 @@ function Radar({ profile, t, starte }) {
           {tipp.grund === 'neu' ? ' (아직 안 해봤어요)' : ''} →
         </button>
       )}
+
+      {/* Das Sicherheits-Prinzip in einem Satz (Modell 05.09.) */}
+      <p className="ra-hinweis" lang="ko">
+        🌱→🌳 여러 날에 걸쳐, ⏱ 시험 모드로 연습할수록 숫자가 확실해져요.
+      </p>
     </div>
   )
 }
