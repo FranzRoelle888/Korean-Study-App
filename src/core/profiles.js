@@ -128,7 +128,7 @@ export function otherProfile(id) {
    Liste — mehr braucht der Rollout nicht. Der Schalter setzt in
    App.jsx data-theme='notizbuch' und steuert die kleinen
    Markup-Extras (Gruß, Wochenzeilen-Tiere, Sticker). */
-const NOTIZBUCH_PROFILE = ['sb']
+const NOTIZBUCH_PROFILE = ['sb', 'de'] /* Freigabe Franz 05.09. */
 
 export function istNotizbuch(id) {
   return NOTIZBUCH_PROFILE.includes(id)
