@@ -5411,6 +5411,31 @@ textarea {
   line-height: 1.65;
 }
 
+/* ---------- Generalprobe (AP3) ---------- */
+.sim-teilzeile {
+  width: 100%;
+  text-align: left;
+  padding: 6px 0;
+}
+
+.sim-abgeben {
+  margin-left: auto;
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.sim-modellsatz {
+  max-width: 420px;
+}
+
+.sim-link {
+  display: inline-block;
+  margin-top: 6px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--primary);
+}
+
 /* ---------- Fehler-Heft „실수 노트" (AP2) ---------- */
 .fh-zahl {
   min-width: 22px;

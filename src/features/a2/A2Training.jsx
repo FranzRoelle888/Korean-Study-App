@@ -11,6 +11,7 @@ import Shadowing from './Shadowing'
 import LeseTraining from './LeseTraining'
 import SatzBaukasten from './SatzBaukasten'
 import FehlerHeft from './FehlerHeft'
+import Simulation from './Simulation'
 import Radar from './Radar'
 import { trainerA2Frage } from '../trainer/trainerApi'
 
@@ -53,6 +54,7 @@ const MODULE = [
     aufgaben: [
       { id: 'hv', titel: 'Hörverstehen', ko: '듣기 연습', aktiv: true },
       { id: 'zahlen', titel: 'Zahlen-Diktat', ko: '숫자 받아쓰기', aktiv: true },
+      { id: 'hsim', titel: '🎯 Generalprobe', ko: '실전 모의고사', aktiv: true },
     ],
   },
   {
@@ -115,6 +117,7 @@ const MODULE = [
       /* Anzeigen-Detektiv wohnt als Teil 4 IM Lese-Training
          (Entscheidung Franz 04.09. — keine Dopplung im Menü) */
       { id: 'lv', titel: 'Leseverstehen', ko: '읽기 연습', aktiv: true },
+      { id: 'lsim', titel: '🎯 Generalprobe', ko: '실전 모의고사', aktiv: true },
     ],
   },
 ]
@@ -323,6 +326,17 @@ function A2Training({ profile, t }) {
 
   if (uebung === 'fehlerheft') {
     return <FehlerHeft t={t} onExit={() => setUebung(null)} />
+  }
+
+  if (uebung === 'hsim' || uebung === 'lsim') {
+    return (
+      <Simulation
+        profile={profile}
+        t={t}
+        art={uebung === 'hsim' ? 'hoeren' : 'lesen'}
+        onExit={() => setUebung(null)}
+      />
+    )
   }
 
   /* ---------- Modul-Seite ---------- */

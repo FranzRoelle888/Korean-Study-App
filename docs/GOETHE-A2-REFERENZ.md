@@ -126,5 +126,5 @@ Anlass, Personenzahl), die exakt EINE Anzeige erfüllt.
 - ~~Sprechen Teil 3~~ — entfällt (Entscheidung Franz 04.09.: Partner-
       gespräch wird nicht gebaut; Aushandeln mit Aufnahme-Latenz wird
       nicht clean).
-- [ ] Phase 5: Interaktiven Modellsatz + Audios als offizielle
-      Generalproben verlinken (echte Bild-Aufgaben inklusive).
+- [x] Phase 5: Interaktiver Modellsatz ist im Endscreen der
+      Generalprobe verlinkt (echte Bild-Aufgaben inklusive).

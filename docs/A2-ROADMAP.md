@@ -70,7 +70,7 @@ Quelle Prüfungsformat: A2_Uebungssatz_Erwachsene.pdf (goethe.de/a2).
 
 ## Phase 5 — Ernstfall (ab Woche 5, wöchentlich)
 
-- [ ] **Modul-Simulation** unter Echtzeit (Lesen/Hören 30 min, Schreiben 30 min,
+- [x] **Modul-Simulation** unter Echtzeit (Lesen/Hören 30 min, Schreiben 30 min,
       Sprechen komplett) mit echter Punktzahl
 - [x] **Schwächen-Radar + Prognose** auf ihrer Startseite: …/25 je Modul,
       Tages-Empfehlung = schwächster Teil zuerst

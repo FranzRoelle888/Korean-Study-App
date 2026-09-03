@@ -68,7 +68,7 @@ export const RADAR_MODULE = [
 /* Prüfungsnah? Dann doppeltes Gewicht. */
 function gewicht(modulId, details) {
   const stufe = details?.stufe
-  if (stufe === 'pruefung') return 2
+  if (stufe === 'pruefung' || stufe === 'sim') return 2
   if (stufe === 'lern') return 1
   if (modulId === 'schreiben') return stufe === 3 ? 2 : 1
   if (modulId === 'hoeren' || modulId === 'lesen') return stufe === 2 ? 2 : 1

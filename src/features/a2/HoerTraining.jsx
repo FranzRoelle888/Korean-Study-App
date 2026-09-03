@@ -34,8 +34,9 @@ const MONO_STIMMEN = ['nova', 'echo', 'ballad', 'onyx', 'coral']
 const DIALOG_STIMME = { A: 'nova', B: 'echo', M: 'echo', G: 'nova' }
 const MAX_HOEREN = { 1: 2, 2: 1, 3: 1, 4: 2 }
 
-/* Clip-Liste für einen Übungsblock bauen */
-function clips(teil, daten, blockIndex) {
+/* Clip-Liste für einen Übungsblock bauen (export: auch die
+   Generalprobe/Simulation vertont darüber) */
+export function clips(teil, daten, blockIndex) {
   if (teil === 1) {
     const t = daten.texte[blockIndex]
     return [{ text: t.skript, voice: MONO_STIMMEN[blockIndex % MONO_STIMMEN.length] }]
@@ -47,7 +48,7 @@ function clips(teil, daten, blockIndex) {
   return daten.dialog.map((d) => ({ text: d.text, voice: DIALOG_STIMME[d.s] }))
 }
 
-function alleClips(teil, daten) {
+export function alleClips(teil, daten) {
   if (teil === 1) return daten.texte.flatMap((_, i) => clips(1, daten, i))
   if (teil === 3) return daten.gespraeche.flatMap((_, i) => clips(3, daten, i))
   return clips(teil, daten, 0)
