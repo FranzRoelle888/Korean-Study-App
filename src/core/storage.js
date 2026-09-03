@@ -854,6 +854,23 @@ export function schreibeA2Beleg({ modul, teil, punkte, max, details }) {
   }
 }
 
+/* Belege für Radar + Prognose lesen (neueste zuerst; 400 reichen
+   für die „letzte 5 je Teil"-Auswertung locker). Fehlt die
+   Tabelle oder das Netz: leere Liste — der Radar zeigt dann
+   einfach seinen Anfangs-Text. */
+export async function leseA2Belege() {
+  try {
+    const { data } = await mine(
+      supabase.from('a2_belege').select('modul,teil,punkte,max,details,created_at')
+    )
+      .order('created_at', { ascending: false })
+      .limit(400)
+    return data ?? []
+  } catch {
+    return []
+  }
+}
+
 /* ---------- "Kenn ich schon" (A2-Sprint, Phase 0) ----------
    해인 kennt aus ihrer Deutschland-Zeit viele Woerter des
    Nachziehstapels. Ein Tipp bucht das Wort als ANGELERNT statt

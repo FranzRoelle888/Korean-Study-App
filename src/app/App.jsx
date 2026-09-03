@@ -179,9 +179,10 @@ function App() {
   /* Auf die andere Seite wechseln (Flagge auf der Startseite). */
   /* Das Theme haengt am Wurzelelement: [data-profile='de'] schaltet
      in App.css das Deutsch-Theme ein, ohne die koreanische Seite
-     anzufassen. */
+     anzufassen. Die Sandbox (sb) ist 해인s Testdouble und traegt
+     deshalb IHR Theme — sonst testet Franz in der falschen Optik. */
   useEffect(() => {
-    document.documentElement.dataset.profile = profileId
+    document.documentElement.dataset.profile = profileId === 'sb' ? 'de' : profileId
   }, [profileId])
 
   function switchProfile() {

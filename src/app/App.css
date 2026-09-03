@@ -5411,6 +5411,139 @@ textarea {
   line-height: 1.65;
 }
 
+/* ---------- Stärken-Radar (Phase 5) ---------- */
+.ra-kopf {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.ra-dday {
+  font-size: 12.5px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-radius: 999px;
+  padding: 4px 10px;
+  white-space: nowrap;
+}
+
+.ra-prognose {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin: 6px 0 2px;
+}
+
+.ra-prognose-zahl {
+  font-size: 34px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--primary);
+}
+
+.ra-prognose-max {
+  font-size: 13.5px;
+  color: var(--text-soft);
+  font-weight: 600;
+}
+
+.ra-linie {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-soft);
+}
+
+.ra-linie-ok {
+  color: #2e7d4f;
+}
+
+.ra-liste {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.ra-modul {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 4px;
+  border-radius: 10px;
+  text-align: left;
+}
+
+.ra-emoji {
+  font-size: 17px;
+}
+
+.ra-name {
+  width: 52px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.ra-balken {
+  flex: 1;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+
+.ra-fuellung {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--primary);
+}
+
+.ra-wert {
+  width: 44px;
+  text-align: right;
+  font-size: 13px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.ra-leer {
+  color: var(--text-soft);
+  font-weight: 600;
+}
+
+.ra-teile {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 2px 8px 8px 33px;
+}
+
+.ra-teil {
+  margin: 0;
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--text-soft);
+}
+
+.ra-empfehlung {
+  width: 100%;
+  margin-top: 10px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-size: 14.5px;
+  font-weight: 800;
+  text-align: left;
+}
+
 /* ---------- Lese-Training ---------- */
 .ls-uhr {
   margin-left: auto;

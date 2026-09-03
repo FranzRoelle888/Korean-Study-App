@@ -72,7 +72,7 @@ Quelle Prüfungsformat: A2_Uebungssatz_Erwachsene.pdf (goethe.de/a2).
 
 - [ ] **Modul-Simulation** unter Echtzeit (Lesen/Hören 30 min, Schreiben 30 min,
       Sprechen komplett) mit echter Punktzahl
-- [ ] **Schwächen-Radar + Prognose** auf ihrer Startseite: …/25 je Modul,
+- [x] **Schwächen-Radar + Prognose** auf ihrer Startseite: …/25 je Modul,
       Tages-Empfehlung = schwächster Teil zuerst
 - [ ] **Zwei-Schichten-Modell umsetzen** (Beschluss 03.09.): Pensum bleibt
       ≤ 15 min und offline-fest (Vokabeln + Tages-Mini); der A2-Reiter

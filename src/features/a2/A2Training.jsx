@@ -9,6 +9,7 @@ import Monolog from './Monolog'
 import Shadowing from './Shadowing'
 import LeseTraining from './LeseTraining'
 import SatzBaukasten from './SatzBaukasten'
+import Radar from './Radar'
 import { trainerA2Frage } from '../trainer/trainerApi'
 
 /* ============================================================
@@ -358,10 +359,7 @@ function A2Training({ profile, t }) {
       </header>
 
       <main className="trainer-menu">
-        <div className="a2-radar">
-          <p className="a2-radar-titel">📊 {t.a2RadarTitel}</p>
-          <p className="a2-radar-leer">{t.a2RadarLeer}</p>
-        </div>
+        <Radar profile={profile} t={t} starte={(id) => setUebung(id)} />
 
         {/* Die vier Prüfungsmodule — Deutsch groß, Koreanisch klein */}
         <div className="mode-grid">

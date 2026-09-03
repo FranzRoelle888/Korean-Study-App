@@ -121,7 +121,7 @@ Anlass, Personenzahl), die exakt EINE Anzeige erfüllt.
       als Pflicht-Distraktor; Umgangston-Marker.
 - [x] a2hoeren Teil 4: Chronologie-Struktur + Paraphrasen-Regel für die
       Aussagen.
-- [ ] Schreibaufgaben-Bank: 2 Muster nachrüsten („unterwegs, zu spät" /
+- [x] Schreibaufgaben-Bank: 2 Muster nachrüsten („unterwegs, zu spät" /
       „halb offizielle Mail an bekannte Person, z. B. Chef-Einladung").
 - ~~Sprechen Teil 3~~ — entfällt (Entscheidung Franz 04.09.: Partner-
       gespräch wird nicht gebaut; Aushandeln mit Aufnahme-Latenz wird

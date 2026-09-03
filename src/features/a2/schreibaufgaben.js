@@ -14,6 +14,23 @@
 export const SCHREIB_AUFGABEN = [
   /* ---------- Teil 1: SMS (du, 20–30 Wörter) ---------- */
   {
+    /* Referenz-Muster „unterwegs/Änderung" (04.09.): zu spät
+       kommen — entschuldigen, Grund, neuer Vorschlag */
+    id: 't1-zuspaet',
+    teil: 1,
+    situation: 'Sie sind mit Ihrer Freundin Lena um 18 Uhr im Café verabredet, aber Ihr Bus hat Verspätung. Schreiben Sie ihr eine SMS.',
+    situationKo: '친구 Lena와 6시에 카페에서 만나기로 했는데 버스가 늦어요. SMS를 쓰세요.',
+    leitpunkte: [
+      'Entschuldigen Sie sich.',
+      'Schreiben Sie, warum Sie später kommen.',
+      'Machen Sie einen neuen Vorschlag (Ort oder Zeit).',
+    ],
+    leitpunkteKo: ['사과하기', '왜 늦는지 쓰기', '새 제안하기 (장소나 시간)'],
+    anrede: 'Hallo Lena,',
+    gruss: 'Bis gleich,',
+    hilfen: ['Es tut mir leid, aber …', 'Mein Bus hat …', 'Können wir uns um … treffen?'],
+  },
+  {
     id: 't1-umzug',
     teil: 1,
     situation: 'Sie sind letzte Woche umgezogen und wohnen jetzt in einer neuen Wohnung. Schreiben Sie Ihrer Freundin Mia eine SMS.',
@@ -195,6 +212,23 @@ export const SCHREIB_AUFGABEN = [
   },
 
   /* ---------- Teil 2: E-Mail (Sie, 30–40 Wörter) ---------- */
+  {
+    /* Referenz-Muster „halb offiziell an bekannte Person" (04.09.):
+       der eigene Chef! Sie-Register trotz Nähe ist Teil der Prüfung */
+    id: 't2-chef',
+    teil: 2,
+    situation: 'Ihr Chef, Herr Berg, hat Sie und Ihre Kollegen zu seinem Sommerfest eingeladen. Sie möchten kommen. Schreiben Sie Herrn Berg eine E-Mail.',
+    situationKo: '사장님 Berg 씨가 여름 파티에 초대했어요. 가고 싶어요. 이메일을 쓰세요.',
+    leitpunkte: [
+      'Bedanken Sie sich für die Einladung.',
+      'Sagen Sie zu und fragen Sie, ob Sie etwas mitbringen sollen.',
+      'Fragen Sie, wann das Fest beginnt.',
+    ],
+    leitpunkteKo: ['초대에 감사하기', '참석한다고 하고, 뭘 가져갈지 묻기', '언제 시작하는지 묻기'],
+    anrede: 'Sehr geehrter Herr Berg,',
+    gruss: 'Mit freundlichen Grüßen,',
+    hilfen: ['vielen Dank für die Einladung …', 'Ich komme gern. Soll ich …?', 'Wann beginnt das Fest?'],
+  },
   {
     id: 't2-hotel',
     teil: 2,
