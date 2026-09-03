@@ -122,3 +122,14 @@ export function writeProfile(id) {
 export function otherProfile(id) {
   return id === 'ko' ? 'de' : 'ko'
 }
+
+/* ---------- Notizbuch-Theme (Claude-Design-Spec, 05.09.) ----------
+   Erst nur die Sandbox; nach Franz' Freigabe kommt 'de' in die
+   Liste — mehr braucht der Rollout nicht. Der Schalter setzt in
+   App.jsx data-theme='notizbuch' und steuert die kleinen
+   Markup-Extras (Gruß, Wochenzeilen-Tiere, Sticker). */
+const NOTIZBUCH_PROFILE = ['sb']
+
+export function istNotizbuch(id) {
+  return NOTIZBUCH_PROFILE.includes(id)
+}

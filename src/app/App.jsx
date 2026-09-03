@@ -53,7 +53,7 @@ import Sets from '../features/sets/Sets'
 import SetSheet from '../features/sets/SetSheet'
 import SetSheetDe from '../features/sets/SetSheetDe'
 import { HomeIcon, BookIcon, GridIcon, DomIcon, ChatIcon, PersonIcon } from '../shared/icons'
-import { PROFILES, readProfile, writeProfile, otherProfile } from '../core/profiles'
+import { PROFILES, readProfile, writeProfile, otherProfile, istNotizbuch } from '../core/profiles'
 import { textFor, targetTextFor } from '../shared/i18n'
 import { setActiveProfile } from '../core/storage'
 import { readSession, onAuthChange } from '../core/auth'
@@ -183,6 +183,12 @@ function App() {
      deshalb IHR Theme — sonst testet Franz in der falschen Optik. */
   useEffect(() => {
     document.documentElement.dataset.profile = profileId === 'sb' ? 'de' : profileId
+    /* Notizbuch-Theme obendrauf (erst Sandbox, dann Freigabe) */
+    if (istNotizbuch(profileId)) {
+      document.documentElement.dataset.theme = 'notizbuch'
+    } else {
+      delete document.documentElement.dataset.theme
+    }
   }, [profileId])
 
   function switchProfile() {

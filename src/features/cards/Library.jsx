@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { PlusIcon, SearchIcon, EditIcon, TrashIcon, InfoIcon } from '../../shared/icons'
 import ClearableInput from '../../shared/ClearableInput'
+import { ArtikelWort } from '../../shared/ArtikelWort'
 import { SpeakButton, prewarmSpeech } from '../../shared/tts'
 import { trainerUebersetzung } from '../trainer/trainerApi'
 
@@ -499,7 +500,7 @@ function VocabRow({ vocab, onEdit, onDelete, tricky, profile, t }) {
     <li className={zeigeInfo ? 'vocab-row vocab-row-open' : 'vocab-row'}>
       <div className="vocab-texts">
         <span className="vocab-ko" lang={profile.targetLang}>
-          {vocab.ko}
+          <ArtikelWort text={vocab.ko} />
           <PosTag pos={vocab.pos} t={t} />
           {tricky && <span className="pos-tag tricky-tag">⚠</span>}
         </span>

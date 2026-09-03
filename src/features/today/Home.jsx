@@ -11,6 +11,8 @@ import {
   MountainBand,
   SkylineBand,
 } from '../../shared/icons'
+import { istNotizbuch } from '../../core/profiles'
+import { BaerIcon, HaseIcon, HeuteKringel, StreakHerz, GrussKringel } from '../../shared/sticker'
 import Fortschritt from './Fortschritt'
 
 /* ============================================================
@@ -49,6 +51,9 @@ function Home({
   const Flag = profile.flag === 'de' ? GermanFlag : KoreanFlag
   /* Bergkette bzw. Stadtsilhouette hinter dem Inhalt */
   const Band = profile.id === 'de' ? SkylineBand : MountainBand
+  /* Notizbuch-Theme (Design-Spec 05.09.): Gruß in Handschrift,
+     Herz statt Flamme, Bär & Hase in der Wochenzeile */
+  const notiz = istNotizbuch(profile.id)
 
   return (
     <div className="screen">
@@ -56,24 +61,45 @@ function Home({
       <header className="header">
         <div className="greeting-row">
           <div className="greeting">
-            <h1 className="greeting-hello">
-              <span className="greeting-ko" lang={profile.greetingLang}>
-                {profile.greeting}
-              </span>
-              {profile.name && <span className="greeting-name">{profile.name}</span>}
-            </h1>
-            <p className="greeting-sub">{t.ready}</p>
+            {notiz ? (
+              /* M2: Handschrift-Gruß mit Marker-Unterlegung + Kringel */
+              <>
+                <h1 className="greeting-hello notiz-gruss" lang="de">
+                  Hallo, <em>Haein</em>!{' '}
+                  <span className="margin-note" aria-hidden="true">화이팅! ♡</span>
+                </h1>
+                <GrussKringel />
+                <p className="greeting-sub">{t.ready}</p>
+              </>
+            ) : (
+              <>
+                <h1 className="greeting-hello">
+                  <span className="greeting-ko" lang={profile.greetingLang}>
+                    {profile.greeting}
+                  </span>
+                  {profile.name && <span className="greeting-name">{profile.name}</span>}
+                </h1>
+                <p className="greeting-sub">{t.ready}</p>
+              </>
+            )}
           </div>
 
-          {/* Flagge = Umschalter auf die andere Seite der App */}
-          <button className="flag-switch" onClick={onSwitchProfile} title={t.switchLanguage}>
+          {/* Flagge = Umschalter auf die andere Seite der App;
+              im Notizbuch-Theme als „angeklebter" Sticker (M6) */}
+          <button
+            className={notiz ? 'flag-switch notiz-flagge' : 'flag-switch'}
+            onClick={onSwitchProfile}
+            title={t.switchLanguage}
+          >
+            {notiz && <span className="notiz-tape" aria-hidden="true" />}
             <Flag />
           </button>
         </div>
 
         <button className="streak-card" onClick={onCalendar}>
           <div className="streak-top">
-            <FlameIcon />
+            {/* M3: im Notizbuch-Theme schlägt das Herz statt der Flamme */}
+            {notiz ? <StreakHerz aktiv={streak > 0} /> : <FlameIcon />}
             <span className="streak-count">{streak}</span>
             <span className="streak-label">{t.dayStreak}</span>
             <ChevronIcon />
@@ -83,11 +109,28 @@ function Home({
               <div key={d.day} className={d.isToday ? 'streak-day streak-day-today' : 'streak-day'}>
                 {/* Links = ich, rechts = Partner. So sieht jeder auf
                     einen Blick, ob der andere heute schon dran war. */}
-                <div
-                  className={
-                    'dot' + (d.done ? ' dot-self' : '') + (d.partnerDone ? ' dot-partner' : '')
-                  }
-                />
+                {notiz ? (
+                  /* M4: Bär & Hase als Tagesmarker (Haein = Hase,
+                     Franz = Bär) — beide gelernt: überlappend */
+                  <span
+                    className={
+                      'notiz-tag' +
+                      (d.done && d.partnerDone ? ' notiz-tag-beide' : '') +
+                      (d.done || d.partnerDone ? '' : ' notiz-tag-leer')
+                    }
+                  >
+                    {d.done && <HaseIcon size={24} />}
+                    {d.partnerDone && <BaerIcon size={24} />}
+                    {!d.done && !d.partnerDone &&
+                      (d.isToday ? <HeuteKringel size={22} /> : <span className="day-dot" />)}
+                  </span>
+                ) : (
+                  <div
+                    className={
+                      'dot' + (d.done ? ' dot-self' : '') + (d.partnerDone ? ' dot-partner' : '')
+                    }
+                  />
+                )}
                 <span className="dot-label" lang={profile.targetLang}>
                   {d.label}
                 </span>

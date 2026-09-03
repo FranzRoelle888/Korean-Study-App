@@ -3,6 +3,7 @@ import { previewInterval, formatInterval } from '../../core/storage'
 import Confetti from '../../shared/Confetti'
 import { MoonIcon, CardRidge, CardSkyline } from '../../shared/icons'
 import ClearableInput from '../../shared/ClearableInput'
+import { ArtikelWort } from '../../shared/ArtikelWort'
 import { SpeakButton, prewarmSpeech } from '../../shared/tts'
 
 /* ============================================================
@@ -168,7 +169,7 @@ function Review({ initialQueue, onRate, onUndo, onExit, profile, t, tt }) {
               {answerShown && (
                 <div className={correct ? 'card-answer ok' : 'card-answer bad'}>
                   <span lang={profile.targetLang} className="answer-ko">
-                    {card.ko}
+                    <ArtikelWort text={card.ko} />
                     <SpeakButton text={card.ko} lang={profile.targetLang} className="speak-inline" />
                   </span>
                   <span className="answer-note">
@@ -189,7 +190,7 @@ function Review({ initialQueue, onRate, onUndo, onExit, profile, t, tt }) {
           ) : (
             <>
               <div className="card-front" lang={profile.targetLang}>
-                {card.ko}
+                <ArtikelWort text={card.ko} />
               </div>
               <SpeakButton text={card.ko} lang={profile.targetLang} />
               {answerShown && (

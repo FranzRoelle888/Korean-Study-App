@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { zaehleA2Fehler } from '../../core/storage'
+import { istNotizbuch } from '../../core/profiles'
 import ArtikelSwipe from '../ueben/ArtikelSwipe'
 import SchreibTraining from './SchreibTraining'
 import RedemittelDrill from './RedemittelDrill'
@@ -410,7 +411,8 @@ function A2Training({ profile, t }) {
               onClick={() => g.aktiv && setUebung(g.id)}
               disabled={!g.aktiv}
             >
-              <span>{g.emoji}</span>
+              {/* M5 Notizbuch-Spec: Baukasten 🧱 -> Werkzeugkoffer 🧰 */}
+              <span>{istNotizbuch(profile.id) && g.id === 'satzbau' ? '🧰' : g.emoji}</span>
               <span className="a2-werkzeug-titel" lang="de">{g.titel}</span>
               <span className="a2-ko-klein" lang="ko">{g.aktiv ? g.ko : t.a2Folgt}</span>
               {g.id === 'fehlerheft' && fehlerZahl > 0 && (
