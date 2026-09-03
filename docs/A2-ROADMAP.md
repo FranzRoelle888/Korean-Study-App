@@ -87,6 +87,14 @@ Quelle Prüfungsformat: A2_Uebungssatz_Erwachsene.pdf (goethe.de/a2).
 
 ## Entscheidungs-Log (Auszug)
 
+- **05.09.** Pensum-V2/Grammatik-Lernpfad ZURÜCKGESTELLT (zu
+  kompliziert) — Fokus: Vokabel-Lernwerkzeug + A2-Vorbereitung.
+  Neu: Statistikseite im Profil mit gemeinsamem Lern-Kalender
+  (geteilte Vierecke, Partner-Log nur lesend).
+- **04.09.** Aussprache nie maschinell bewertet; Musterlösungen
+  app-weit einfach; Partnergespräch gestrichen; Radar-
+  Sicherheitsmodell (Leistung × Festigung).
+
 - 02.09.: Prüfungs-Pivot beschlossen; App-Fokus für 55 Tage = A2-Sprint für 해인.
 - 02.09.: Partner in der Prüfung = i. d. R. anderer Prüfling, individuelle
   Wertung; Chatbot-Partner trainiert Gespräch-Tragen.
