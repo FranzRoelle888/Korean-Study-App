@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { zaehleA2Fehler } from '../../core/storage'
 import ArtikelSwipe from '../ueben/ArtikelSwipe'
 import SchreibTraining from './SchreibTraining'
 import RedemittelDrill from './RedemittelDrill'
@@ -9,6 +10,7 @@ import Monolog from './Monolog'
 import Shadowing from './Shadowing'
 import LeseTraining from './LeseTraining'
 import SatzBaukasten from './SatzBaukasten'
+import FehlerHeft from './FehlerHeft'
 import Radar from './Radar'
 import { trainerA2Frage } from '../trainer/trainerApi'
 
@@ -121,6 +123,7 @@ const GRUNDLAGEN = [
   { id: 'artikel', emoji: '🃏', titel: 'Artikel-Spiel', ko: '관사 게임', aktiv: true },
   { id: 'satzbau', emoji: '🧱', titel: 'Satz-Baukasten', ko: '문장 조립', aktiv: true },
   { id: 'redemittel', emoji: '💬', titel: 'Redemittel', ko: '표현 카드', aktiv: true },
+  { id: 'fehlerheft', emoji: '📕', titel: 'Fehler-Heft', ko: '실수 노트', aktiv: true },
 ]
 
 /* Ausklappbare, schön formatierte Prüfungs-Infobox (Koreanisch) */
@@ -260,6 +263,11 @@ function A2Training({ profile, t }) {
   const [uebung, setUebung] = useState(null)
   /* Coach-Verlauf überlebt Übungs-Ausflüge innerhalb des Tabs */
   const [coachVerlauf, setCoachVerlauf] = useState([])
+  /* Zähler fürs Fehler-Heft (frischt nach jeder Übung auf) */
+  const [fehlerZahl, setFehlerZahl] = useState(0)
+  useEffect(() => {
+    if (!uebung) zaehleA2Fehler().then(setFehlerZahl)
+  }, [uebung])
 
   if (uebung === 'coach') {
     return (
@@ -311,6 +319,10 @@ function A2Training({ profile, t }) {
 
   if (uebung === 'satzbau') {
     return <SatzBaukasten t={t} onExit={() => setUebung(null)} />
+  }
+
+  if (uebung === 'fehlerheft') {
+    return <FehlerHeft t={t} onExit={() => setUebung(null)} />
   }
 
   /* ---------- Modul-Seite ---------- */
@@ -387,6 +399,9 @@ function A2Training({ profile, t }) {
               <span>{g.emoji}</span>
               <span className="a2-werkzeug-titel" lang="de">{g.titel}</span>
               <span className="a2-ko-klein" lang="ko">{g.aktiv ? g.ko : t.a2Folgt}</span>
+              {g.id === 'fehlerheft' && fehlerZahl > 0 && (
+                <span className="fh-zahl">{fehlerZahl}</span>
+              )}
             </button>
           ))}
         </div>

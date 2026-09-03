@@ -3,7 +3,7 @@ import { SPRECHEN_KARTEN } from './sprechen'
 import { AufnahmeKnopf } from '../../shared/aufnahme'
 import { playSequence, prewarmSequence, SpeakButton } from '../../shared/tts'
 import { trainerA2Sprechen1 } from '../trainer/trainerApi'
-import { schreibeA2Beleg } from '../../core/storage'
+import { schreibeA2Beleg, schreibeA2Fehler } from '../../core/storage'
 import Nachfrage from '../ueben/Nachfrage'
 import Auftrag from '../../shared/Auftrag'
 
@@ -81,6 +81,8 @@ function FragenSpiel({ profile, t, onExit }) {
       })
       if (res.ok) setPunkte((p) => p + 1)
       if (res.fragetyp) fragetypen.current.push(res.fragetyp)
+      /* Sprach-Korrekturen wandern automatisch ins Fehler-Heft */
+      for (const f of res.fehler ?? []) schreibeA2Fehler({ ...f, quelle: 'fragenspiel' })
       setErgebnis(res)
       setPhase('ergebnis')
       /* Partner-Antwort vorlesen — das Gespräch lebt. Bis er

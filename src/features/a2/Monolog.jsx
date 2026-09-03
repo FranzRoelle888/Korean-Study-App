@@ -3,7 +3,7 @@ import { MONOLOG_THEMEN } from './sprechen'
 import { AufnahmeKnopf } from '../../shared/aufnahme'
 import { playSequence, SpeakButton } from '../../shared/tts'
 import { trainerA2Sprechen1, trainerA2Sprechen2 } from '../trainer/trainerApi'
-import { schreibeA2Beleg } from '../../core/storage'
+import { schreibeA2Beleg, schreibeA2Fehler } from '../../core/storage'
 import Nachfrage from '../ueben/Nachfrage'
 import Auftrag from '../../shared/Auftrag'
 
@@ -81,6 +81,8 @@ function Monolog({ profile, t, onExit }) {
       })
       transkripte.current.push(text)
       if (res.ok) setPunktOk((p) => p + 1)
+      /* Sprach-Korrekturen wandern automatisch ins Fehler-Heft */
+      for (const f of res.fehler ?? []) schreibeA2Fehler({ ...f, quelle: 'monolog' })
       setErgebnis(res)
       setPhase('punktErgebnis')
     } catch (e) {
@@ -127,6 +129,7 @@ function Monolog({ profile, t, onExit }) {
         stichworte: karte.stichworte,
         transkript: text,
       })
+      for (const f of res.fehler ?? []) schreibeA2Fehler({ ...f, quelle: 'monolog' })
       setBewertung(res)
       setPhase('ergebnis')
     } catch (e) {
@@ -160,6 +163,7 @@ function Monolog({ profile, t, onExit }) {
         transkript: text,
       })
       if (res.ok) setZusatzOk((z) => z + 1)
+      for (const f of res.fehler ?? []) schreibeA2Fehler({ ...f, quelle: 'zusatzfrage' })
       setErgebnis(res)
       setPhase('zusatzErgebnis')
     } catch (e) {

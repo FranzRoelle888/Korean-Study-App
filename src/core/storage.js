@@ -871,6 +871,61 @@ export async function leseA2Belege() {
   }
 }
 
+/* ---------- Fehler-Heft „실수 노트" (Migration 013, AP2) ----------
+   Sprach-Korrekturen aus den Übungen sammeln sich automatisch.
+   Feuer-und-vergessen + Dubletten-Schutz über den unique-Index
+   (ignoreDuplicates): derselbe Fehler landet nie doppelt drin.
+   Schema-Toleranz: fehlt die Tabelle noch, passiert still nichts. */
+export function schreibeA2Fehler({ falsch, richtig, warum, quelle }) {
+  const f = (falsch ?? '').trim()
+  const r = (richtig ?? '').trim()
+  if (!f || !r || f === r) return
+  try {
+    supabase
+      .from('a2_fehler')
+      .upsert(stamp({ falsch: f, richtig: r, warum: warum || null, quelle: quelle || null }), {
+        onConflict: 'profile,falsch,richtig',
+        ignoreDuplicates: true,
+      })
+      .then(() => {})
+  } catch {
+    /* still */
+  }
+}
+
+export async function leseA2Fehler(status = 'offen') {
+  try {
+    const { data } = await mine(
+      supabase.from('a2_fehler').select('id,falsch,richtig,warum,quelle,created_at')
+    )
+      .eq('status', status)
+      .order('created_at', { ascending: true })
+      .limit(100)
+    return data ?? []
+  } catch {
+    return []
+  }
+}
+
+export async function zaehleA2Fehler() {
+  try {
+    const { count } = await mine(
+      supabase.from('a2_fehler').select('id', { count: 'exact', head: true })
+    ).eq('status', 'offen')
+    return count ?? 0
+  } catch {
+    return 0
+  }
+}
+
+export function hakeA2FehlerAb(id) {
+  try {
+    supabase.from('a2_fehler').update({ status: 'geschafft' }).eq('id', id).then(() => {})
+  } catch {
+    /* still */
+  }
+}
+
 /* ---------- "Kenn ich schon" (A2-Sprint, Phase 0) ----------
    해인 kennt aus ihrer Deutschland-Zeit viele Woerter des
    Nachziehstapels. Ein Tipp bucht das Wort als ANGELERNT statt
