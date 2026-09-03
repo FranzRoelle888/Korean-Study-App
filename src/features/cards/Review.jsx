@@ -156,7 +156,7 @@ function Review({ initialQueue, onRate, onUndo, onExit, profile, t, tt }) {
 
       <div className="review-body">
         <div className={`flashcard ${flashClass} ${exiting ? 'card-fly-right' : ''}`}>
-          {profile.id === 'de' ? <CardSkyline /> : <CardRidge />}
+          {profile.targetLang === 'de' ? <CardSkyline /> : <CardRidge />}
           <span className="card-tag">
             {isTyping ? tt.tagType : tt.tagFlip}
           </span>

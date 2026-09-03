@@ -646,7 +646,7 @@ function App() {
         )}
         {view === 'sets' &&
           (openSet ? (
-            (profile.id === 'de' ? (
+            (profile.targetLang === 'de' ? (
               <SetSheetDe id={openSet} onExit={() => setOpenSet(null)} />
             ) : (
               <SetSheet id={openSet} onExit={() => setOpenSet(null)} />
@@ -692,7 +692,7 @@ function App() {
             className={view === 'home' ? 'tab tab-active' : 'tab'}
             onClick={() => setView('home')}
           >
-            {profile.id === 'de' ? <DomIcon /> : <HomeIcon />}
+            {profile.targetLang === 'de' ? <DomIcon /> : <HomeIcon />}
             <span>{t.tabHome}</span>
           </button>
           <button

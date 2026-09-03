@@ -7611,3 +7611,34 @@ textarea {
 :root[data-theme='notizbuch'] .rule-der { color: var(--primary); }
 :root[data-theme='notizbuch'] .rule-die { color: var(--accent); }
 :root[data-theme='notizbuch'] .rule-das { color: var(--gold-ink); }
+
+/* ---------- Notizbuch-Feinschliff (05.09., zweite Runde) ----------
+   Playbook-Regel auf ALLE Screens angewendet: das harte
+   Erfolgs-Gruen (#2e7d4f) weicht der Mint-Tinte der Palette —
+   ueberall, wo 해인 es sieht (Uebungen, Schreibtraining, Radar,
+   Fehler-Heft, Lese-/Hoertraining, Baukasten). */
+:root[data-theme='notizbuch'] .rd-gut,
+:root[data-theme='notizbuch'] .hv-ok,
+:root[data-theme='notizbuch'] .ra-linie-ok,
+:root[data-theme='notizbuch'] .sw-b-ok,
+:root[data-theme='notizbuch'] .st-gruen,
+:root[data-theme='notizbuch'] .st-note-A,
+:root[data-theme='notizbuch'] .st-note-B,
+:root[data-theme='notizbuch'] .st-lp-voll .st-lp-zeichen {
+  color: var(--mint-ink);
+}
+
+:root[data-theme='notizbuch'] .rd-option-richtig {
+  border-color: var(--mint-ink);
+  background: var(--mint);
+}
+
+/* Teil-erfuellt-Gelb der Leitpunkte -> Gold-Tinte */
+:root[data-theme='notizbuch'] .st-lp-teil .st-lp-zeichen {
+  color: var(--gold-ink);
+}
+
+/* Aufstiegs-Jubel in Gold statt Gruen (Ertrag!) */
+:root[data-theme='notizbuch'] .st-aufstieg {
+  color: var(--gold-ink);
+}

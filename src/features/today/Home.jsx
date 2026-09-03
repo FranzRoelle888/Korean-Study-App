@@ -50,7 +50,7 @@ function Home({
 }) {
   const Flag = profile.flag === 'de' ? GermanFlag : KoreanFlag
   /* Bergkette bzw. Stadtsilhouette hinter dem Inhalt */
-  const Band = profile.id === 'de' ? SkylineBand : MountainBand
+  const Band = profile.targetLang === 'de' ? SkylineBand : MountainBand
   /* Notizbuch-Theme (Design-Spec 05.09.): Gruß in Handschrift,
      Herz statt Flamme, Bär & Hase in der Wochenzeile */
   const notiz = istNotizbuch(profile.id)
