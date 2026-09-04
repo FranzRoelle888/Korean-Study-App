@@ -144,16 +144,9 @@ function Home({
 
       {/* ---------- Tagesaufgaben ---------- */}
       <main className="actions">
-        {/* Einmalige Einladung zur Kalibrierung — verschwindet danach */}
-        {kalOffen && (
-          <button className="kal-banner" onClick={onKalibrierung}>
-            <span className="kal-banner-emoji">🧭</span>
-            <div className="action-text">
-              <span className="action-title">{t.kalBannerTitle}</span>
-              <span className="action-sub">{t.kalBannerSub}</span>
-            </div>
-          </button>
-        )}
+        {/* Das Kalibrierungs-Banner flog raus (Franz 06.09.: nervte
+            im Hauptmenü) — die Einstufung wohnt im Profil unter
+            „Meine Grammatik". */}
         {/* Vorläufiger Test-Zugang zum Grammatik-Studio — fliegt
             raus, sobald das Studio im Tagespensum/Dojo hängt */}
         {onStudioTest && (
