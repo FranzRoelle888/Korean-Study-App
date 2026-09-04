@@ -778,6 +778,9 @@ function bumpDailyProgress() {
   const p = getDailyProgress()
   const next = { date: todayStr(), introduced: p.introduced + 1 }
   localStorage.setItem(DAILY_KEY(), JSON.stringify(next))
+  /* Geräteübergreifend merken (Fix 06.09.: die Häkchen waren nur
+     lokal — auf einem zweiten Gerät wirkte alles unerledigt) */
+  schreibeTagesstand({ wort: next.introduced })
 }
 
 // Die nächsten Pool-Einträge, die noch NICHT in der Bibliothek sind.
@@ -1029,6 +1032,7 @@ export function completeNumberChallenge() {
   const c = getNumberChallenge()
   const next = { ...c, done: true }
   localStorage.setItem(NUMBER_KEY(), JSON.stringify(next))
+  schreibeTagesstand({ quiz: true })
   return next
 }
 
@@ -1203,6 +1207,7 @@ export function flipChallengeKind() {
 export function completeArticleChallenge() {
   const next = { date: todayStr(), done: true }
   localStorage.setItem(ARTICLE_KEY(), JSON.stringify(next))
+  schreibeTagesstand({ quiz: true })
   return next
 }
 
@@ -1257,6 +1262,52 @@ export async function markDayDone(logRows, day) {
       if (error) console.warn('Streak-Speichern fehlgeschlagen:', error.message)
     })
   return next
+}
+
+/* ---------- Tagesstand über Geräte hinweg (Migration 014) ----------
+   Die drei Tages-Häkchen (neue Wörter, Tages-Quiz) lebten nur in
+   localStorage — auf einem zweiten Gerät wirkte alles unerledigt
+   und die Wörter-Aufgabe bot sogar WEITERE Wörter an (Fund Franz
+   06.09.). Jetzt wandert der Stand als jsonb-Feld "stand" in die
+   daily_log-Zeile des Tages: { wort: <Anzahl>, quiz: true }.
+   Schema-Toleranz: Fehlt die Spalte noch (Migration nicht
+   ausgeführt) oder das Netz, bleibt es still beim lokalen Stand. */
+export function schreibeTagesstand(patch) {
+  const rows = readLogCache()
+  const heute = todayStr()
+  const row = rows.find((r) => r.day === heute)
+  const stand = { ...(row?.stand || {}), ...patch }
+  const next = row
+    ? rows.map((r) => (r.day === heute ? { ...r, stand } : r))
+    : [...rows, { day: heute, done: false, stand }]
+  writeLogCache(next)
+  supabase
+    .from('daily_log')
+    .upsert(stamp({ day: heute, done: row?.done ?? false, stand }))
+    .then(({ error }) => {
+      if (error) console.warn('Tagesstand-Sync fehlgeschlagen (Migration 014 schon ausgeführt?):', error.message)
+    })
+  return next
+}
+
+/* Beim Laden: Cloud-Stand in die lokalen Schlüssel übernehmen,
+   damit ein zweites Gerät dieselben Häkchen zeigt. Nimmt immer
+   das Maximum — lokal Erledigtes wird nie zurückgestuft. */
+export function uebernehmeTagesstand(logRows) {
+  const stand = (logRows || []).find((r) => r.day === todayStr())?.stand
+  if (!stand) return
+  try {
+    if (typeof stand.wort === 'number' && stand.wort > getDailyProgress().introduced) {
+      localStorage.setItem(DAILY_KEY(), JSON.stringify({ date: todayStr(), introduced: stand.wort }))
+    }
+    if (stand.quiz) {
+      const n = getNumberChallenge()
+      if (!n.done) localStorage.setItem(NUMBER_KEY(), JSON.stringify({ ...n, done: true }))
+      localStorage.setItem(ARTICLE_KEY(), JSON.stringify({ date: todayStr(), done: true }))
+    }
+  } catch {
+    /* still — dann eben nur der lokale Stand */
+  }
 }
 
 // Wie viele Tage am Stück (bis heute, sonst bis gestern) erledigt?

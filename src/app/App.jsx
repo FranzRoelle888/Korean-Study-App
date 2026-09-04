@@ -31,6 +31,7 @@ import {
   sinoKorean,
   nativeKorean,
   loadDailyLog,
+  uebernehmeTagesstand,
   markDayDone,
   computeStreak,
   last7Days,
@@ -123,6 +124,9 @@ function App() {
       setOffline(!data.online || pendingCount() > 0)
       setDailyLog(log)
       setPartnerLog(plog)
+      /* Cloud-Tagesstand VOR dem Zahlen-Refresh übernehmen —
+         so zeigt ein zweites Gerät dieselben Häkchen (Fix 06.09.) */
+      uebernehmeTagesstand(log)
       setNumberState(getNumberChallenge())
       setLoading(false)
     })
@@ -163,6 +167,7 @@ function App() {
         setOffline(!data.online || pendingCount() > 0)
         setDailyLog(log)
         setPartnerLog(plog)
+        uebernehmeTagesstand(log)
         /* Nach 4 Uhr waere die Zahl sonst noch die von gestern,
            wenn die App ueber Nacht offen blieb */
         setNumberState(getNumberChallenge())
