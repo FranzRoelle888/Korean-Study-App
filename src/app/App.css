@@ -7878,3 +7878,237 @@ textarea {
   transform: rotate(-2deg);
   width: fit-content;
 }
+
+/* ============================================================
+   BEWEGUNGS-SYSTEM (Premium-Runde, 06.09. — Konzept mit Franz)
+
+   Grundgesetz: Es animieren NUR transform und opacity (60 fps
+   auf dem iPhone), mit einem festen Token-Satz. Das heilige
+   Tastatur-Handling (--app-h/--app-top) bleibt ohne Übergänge.
+   Gilt auf BEIDEN Seiten; nur Washi-Spielereien sind Theme-Sache.
+   ============================================================ */
+
+:root {
+  --anim-schnell: 120ms;
+  --anim-mittel: 220ms;
+  --anim-lang: 350ms;
+  --kurve: cubic-bezier(0.2, 0.7, 0.3, 1);
+  --kurve-feder: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ---------- Seiten gleiten ein ---------- */
+@keyframes seiteRein {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.screen,
+.library,
+.calendar {
+  animation: seiteRein var(--anim-mittel) var(--kurve) both;
+}
+
+/* ---------- Touch-Feedback: alles Drückbare gibt nach ---------- */
+button {
+  transition: transform var(--anim-schnell) var(--kurve);
+}
+
+button:active {
+  transform: scale(0.97);
+}
+
+/* Ausnahmen: der Aufnahme-Knopf pulsiert selbst; Kacheln im
+   Baufeld sollen sich fest anfühlen */
+.auf-knopf:active {
+  transform: none;
+}
+
+/* ---------- Listen erscheinen gestaffelt ---------- */
+.vocab-list > li,
+.set-grid .set-card,
+.mode-grid .mode-card,
+.skills-entry {
+  animation: seiteRein var(--anim-mittel) var(--kurve) both;
+}
+
+.vocab-list > li:nth-child(1), .set-grid .set-card:nth-child(1), .mode-grid .mode-card:nth-child(1) { animation-delay: 0ms; }
+.vocab-list > li:nth-child(2), .set-grid .set-card:nth-child(2), .mode-grid .mode-card:nth-child(2) { animation-delay: 30ms; }
+.vocab-list > li:nth-child(3), .set-grid .set-card:nth-child(3), .mode-grid .mode-card:nth-child(3) { animation-delay: 60ms; }
+.vocab-list > li:nth-child(4), .set-grid .set-card:nth-child(4), .mode-grid .mode-card:nth-child(4) { animation-delay: 90ms; }
+.vocab-list > li:nth-child(5), .set-grid .set-card:nth-child(5), .mode-grid .mode-card:nth-child(5) { animation-delay: 120ms; }
+.vocab-list > li:nth-child(6), .set-grid .set-card:nth-child(6), .mode-grid .mode-card:nth-child(6) { animation-delay: 150ms; }
+.vocab-list > li:nth-child(7), .set-grid .set-card:nth-child(7), .mode-grid .mode-card:nth-child(7) { animation-delay: 180ms; }
+.vocab-list > li:nth-child(8), .set-grid .set-card:nth-child(8), .mode-grid .mode-card:nth-child(8) { animation-delay: 210ms; }
+
+/* ---------- Antworten & Auflösungen klappen auf (3D) ---------- */
+.flashcard {
+  perspective: 900px;
+}
+
+@keyframes aufklappen {
+  from {
+    opacity: 0;
+    transform: rotateX(-60deg);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.card-answer {
+  transform-origin: top center;
+  animation: aufklappen var(--anim-lang) var(--kurve) both;
+}
+
+/* Übungs-Auflösungen: gleiches Gefühl, dezenter */
+.rd-aufloesung,
+.hv-aufloesung {
+  animation: seiteRein var(--anim-mittel) var(--kurve) both;
+}
+
+/* ---------- Häkchen zeichnet sich ---------- */
+@keyframes hakenPop {
+  from {
+    transform: scale(0.4);
+  }
+  60% {
+    transform: scale(1.12);
+  }
+  to {
+    transform: none;
+  }
+}
+
+@keyframes hakenZeichnen {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.done-check {
+  animation: hakenPop var(--anim-lang) var(--kurve-feder) both;
+}
+
+.done-check svg path {
+  stroke-dasharray: 30;
+  stroke-dashoffset: 30;
+  animation: hakenZeichnen 280ms var(--kurve) 120ms forwards;
+}
+
+/* ---------- Radar-Balken wachsen heran ---------- */
+@keyframes balkenWachsen {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+.ra-fuellung {
+  transform-origin: left center;
+  animation: balkenWachsen 500ms var(--kurve) both;
+}
+
+/* ---------- Streak-Herz pocht beim Ankommen (Theme) ---------- */
+@keyframes pochen {
+  0%, 100% {
+    transform: scale(1);
+  }
+  30% {
+    transform: scale(1.18);
+  }
+  55% {
+    transform: scale(1);
+  }
+  75% {
+    transform: scale(1.1);
+  }
+}
+
+:root[data-theme='notizbuch'] .streak-top > svg:first-child {
+  animation: pochen 900ms var(--kurve) 350ms 1 both;
+}
+
+/* ---------- Tab-Gleiter (das wandernde Lesezeichen) ---------- */
+.tabbar {
+  position: relative;
+}
+
+.tab-gleiter {
+  position: absolute;
+  top: 4px;
+  left: 0;
+  height: 4px;
+  pointer-events: none;
+  transition: transform var(--anim-lang) var(--kurve);
+  display: flex;
+  justify-content: center;
+}
+
+.tab-gleiter::after {
+  content: '';
+  width: 30px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--primary);
+  opacity: 0.55;
+}
+
+/* Im Notizbuch-Theme ist der Gleiter ein Washi-Streifen */
+:root[data-theme='notizbuch'] .tab-gleiter::after {
+  width: 36px;
+  height: 7px;
+  border-radius: 2px;
+  background: var(--washi);
+  opacity: 0.95;
+  transform: rotate(-2deg);
+  box-shadow: 0 1px 2px rgba(74, 60, 110, 0.2);
+}
+
+/* ---------- Sticker kleben sich auf (Theme) ---------- */
+@keyframes aufkleben {
+  from {
+    opacity: 0;
+    transform: rotate(-12deg) scale(1.25);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(-5deg) scale(1);
+  }
+}
+
+:root[data-theme='notizbuch'] .margin-note {
+  animation: aufkleben var(--anim-lang) var(--kurve-feder) 250ms both;
+}
+
+/* ---------- Lade-Schimmer statt nacktem Text ---------- */
+@keyframes schimmern {
+  0%, 100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.skelett {
+  border-radius: 10px;
+  background: var(--surface-2);
+  animation: schimmern 1.2s ease-in-out infinite;
+}
+
+/* ---------- Bewegung reduzieren: alles aus ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

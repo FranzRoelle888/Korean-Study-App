@@ -38,7 +38,17 @@ export function StatistikInhalt({ profile, t, words }) {
   }, [profile.id])
 
   if (log === null) {
-    return <p className="a2-radar-leer" lang="ko">달력을 여는 중…</p>
+    /* Lade-Schimmer in der Form des Inhalts (Premium-Runde 06.09.) */
+    return (
+      <>
+        <div className="stat-reihe">
+          <div className="stat-chip skelett" style={{ height: 66 }} />
+          <div className="stat-chip skelett" style={{ height: 66 }} />
+          <div className="stat-chip skelett" style={{ height: 66 }} />
+        </div>
+        <div className="stat-kalender skelett" style={{ height: 300 }} />
+      </>
+    )
   }
 
   const partnerName = PROFILES[otherProfile(profile.id)].name

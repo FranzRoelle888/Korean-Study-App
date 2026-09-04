@@ -657,62 +657,41 @@ function App() {
           ))}
       </div>
 
-      {!chatOffen && (view === 'home' || view === 'library' || view === 'sets' || view === 'trainer' || view === 'a2' || view === 'profil') && (
-        <nav className="tabbar">
-          <button
-            className={view === 'sets' ? 'tab tab-active' : 'tab'}
-            onClick={() => {
-              setOpenSet(null)
-              setView('sets')
-            }}
-          >
-            <GridIcon />
-            <span>{t.tabSets}</span>
-          </button>
-          {/* Start gehört in die MITTE (Wunsch Franz 02.09.) —
-              links davon Trainer bzw. A2-Bereich */}
-          {profile.trainer && (
-            <button
-              className={view === 'trainer' ? 'tab tab-active' : 'tab'}
-              onClick={() => setView('trainer')}
-            >
-              <ChatIcon />
-              <span>{t.tabTrainer}</span>
-            </button>
-          )}
-          {profile.a2 && (
-            <button
-              className={view === 'a2' ? 'tab tab-active' : 'tab'}
-              onClick={() => setView('a2')}
-            >
-              <ChatIcon />
-              <span>{t.tabA2}</span>
-            </button>
-          )}
-          <button
-            className={view === 'home' ? 'tab tab-active' : 'tab'}
-            onClick={() => setView('home')}
-          >
-            {profile.targetLang === 'de' ? <DomIcon /> : <HomeIcon />}
-            <span>{t.tabHome}</span>
-          </button>
-          <button
-            className={view === 'library' ? 'tab tab-active' : 'tab'}
-            onClick={() => setView('library')}
-          >
-            <BookIcon />
-            <span>{t.tabLibrary}</span>
-          </button>
-          {/* Persönlicher Bereich + Einstellungen (Wunsch Franz 02.09.) */}
-          <button
-            className={view === 'profil' ? 'tab tab-active' : 'tab'}
-            onClick={() => setView('profil')}
-          >
-            <PersonIcon />
-            <span>{t.tabProfil}</span>
-          </button>
-        </nav>
-      )}
+      {!chatOffen && (view === 'home' || view === 'library' || view === 'sets' || view === 'trainer' || view === 'a2' || view === 'profil') && (() => {
+        /* Tabs als Liste, damit der gleitende Indikator (Premium-
+           Runde 06.09.) seine Position kennt. Start gehört in die
+           MITTE (Wunsch Franz 02.09.) — links davon Trainer/A2. */
+        const tabs = [
+          { id: 'sets', icon: <GridIcon />, label: t.tabSets, tap: () => { setOpenSet(null); setView('sets') } },
+          ...(profile.trainer ? [{ id: 'trainer', icon: <ChatIcon />, label: t.tabTrainer, tap: () => setView('trainer') }] : []),
+          ...(profile.a2 ? [{ id: 'a2', icon: <ChatIcon />, label: t.tabA2, tap: () => setView('a2') }] : []),
+          { id: 'home', icon: profile.targetLang === 'de' ? <DomIcon /> : <HomeIcon />, label: t.tabHome, tap: () => setView('home') },
+          { id: 'library', icon: <BookIcon />, label: t.tabLibrary, tap: () => setView('library') },
+          { id: 'profil', icon: <PersonIcon />, label: t.tabProfil, tap: () => setView('profil') },
+        ]
+        const aktiv = Math.max(0, tabs.findIndex((x) => x.id === view))
+        return (
+          <nav className="tabbar">
+            {/* gleitet per transform unter den aktiven Tab —
+                im Notizbuch-Theme als Washi-Streifen */}
+            <span
+              className="tab-gleiter"
+              aria-hidden="true"
+              style={{ width: `${100 / tabs.length}%`, transform: `translateX(${aktiv * 100}%)` }}
+            />
+            {tabs.map((x) => (
+              <button
+                key={x.id}
+                className={view === x.id ? 'tab tab-active' : 'tab'}
+                onClick={x.tap}
+              >
+                {x.icon}
+                <span>{x.label}</span>
+              </button>
+            ))}
+          </nav>
+        )
+      })()}
     </div>
   )
 }
