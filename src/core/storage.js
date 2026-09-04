@@ -29,13 +29,24 @@ const MIN_EASE = 1.3
    Woerter, hoeherer Wiederhol-Deckel. Franz bleibt beim alten
    10-15-Minuten-Budget. */
 const TAGES_ZAHLEN = {
-  ko: { neueProTag: 3, deckel: 50 },
-  de: { neueProTag: 5, deckel: 80 },
+  /* ko (Franz, ab 06.09., Vokabel-Konzept V2): Ziel-Behaltensquote
+     93 % statt 90 % — Koreanisch ist fuer ihn nicht ableitbar, ein
+     Aussetzer kostet das ganze Wort. Das erzeugt allein schon rund
+     ein Drittel mehr Wiederholungen, deshalb steigt der Deckel von
+     50 auf 70. Die neuen Woerter bleiben vorerst bei 3: erst wenn
+     die Produktions-Karte spaeter freigeschaltet wird (Etappe 2),
+     halbiert sich die Anfangslast und macht 5/Tag bezahlbar.
+     hartDeckel: "Barely" gibt hoechstens den halben Abstand. */
+  ko: { neueProTag: 3, deckel: 70, ziel: 0.93, hartDeckel: 0.5 },
+  /* 해인: unveraendert. 90 % ist fuer ableitbares Deutsch richtig,
+     und ihr Rhythmus wird kurz vor der Pruefung nicht angefasst. */
+  de: { neueProTag: 5, deckel: 80, ziel: 0.9, hartDeckel: null },
   /* Sandbox verhält sich wie die de-Seite */
-  sb: { neueProTag: 5, deckel: 80 },
+  sb: { neueProTag: 5, deckel: 80, ziel: 0.9, hartDeckel: null },
 }
-const dailyNew = () => (TAGES_ZAHLEN[activeProfile] ?? TAGES_ZAHLEN.ko).neueProTag
-const reviewCap = () => (TAGES_ZAHLEN[activeProfile] ?? TAGES_ZAHLEN.ko).deckel
+const tagesZahlen = () => TAGES_ZAHLEN[activeProfile] ?? TAGES_ZAHLEN.ko
+const dailyNew = () => tagesZahlen().neueProTag
+const reviewCap = () => tagesZahlen().deckel
 
 /* ============================================================
    TRENNUNG DER BEIDEN LERNENDEN
@@ -575,7 +586,8 @@ function applyRatingFsrs(card, rating) {
   }
 
   const elapsed = card.lastReviewed ? Math.max(0, tageZwischen(card.lastReviewed, heute)) : 0
-  const erg = fsrsSchritt({ stab, diff, elapsed, rating })
+  const { ziel, hartDeckel } = tagesZahlen()
+  const erg = fsrsSchritt({ stab, diff, elapsed, rating, ziel, hartDeckel })
 
   /* Buchhaltung wie gehabt — die Stapel-Logik hängt daran */
   if (rating === 'again') {

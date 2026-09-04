@@ -29,9 +29,13 @@ const W = [
 const DECAY = -0.5
 const FAKTOR = 19 / 81
 /* Ziel-Behaltensquote: 90 % ist der bewährte Standard. Höher =
-   mehr Wiederholungen, niedriger = mehr Vergessen. DER Drehknopf,
-   falls die Tageslast je justiert werden soll. */
-const ZIEL = 0.9
+   mehr Wiederholungen, niedriger = mehr Vergessen. DER Drehknopf.
+   Seit 06.09. je Profil gesetzt (storage.js): Franz lernt Koreanisch
+   ohne jede Ableitungshilfe — dort kostet ein Aussetzer das ganze
+   Wort, also 93 %. 해인s Deutsch bleibt bei 90 %.
+   Rechnerisch: Intervall ≈ Stabilität × 1,00 bei 90 % ·
+   × 0,67 bei 93 % · × 0,46 bei 95 %. */
+const ZIEL_STANDARD = 0.9
 const MAX_INTERVALL = 365
 
 const NOTE = { again: 1, hard: 2, good: 3, easy: 4 }
@@ -44,8 +48,8 @@ function abrufWkt(t, s) {
 
 /* Tage, bis die Abrufwahrscheinlichkeit aufs Ziel fällt
    (bei 90 % ist das ziemlich genau die Stabilität selbst) */
-function intervallFuer(s) {
-  const tage = (s / FAKTOR) * (Math.pow(ZIEL, 1 / DECAY) - 1)
+function intervallFuer(s, ziel) {
+  const tage = (s / FAKTOR) * (Math.pow(ziel, 1 / DECAY) - 1)
   return klemme(Math.round(tage), 1, MAX_INTERVALL)
 }
 
@@ -95,18 +99,32 @@ function vergessensStabilitaet(d, s, r) {
    FSRS-Zustand — das Schätzen aus SM-2 macht storage.js).
    "again" gibt Intervall 0 zurück: die Karte bleibt heute im
    Stapel, wie bisher. */
-export function fsrsSchritt({ stab, diff, elapsed, rating }) {
+export function fsrsSchritt({ stab, diff, elapsed, rating, ziel = ZIEL_STANDARD, hartDeckel = null }) {
   const g = NOTE[rating] ?? 3
   if (stab == null) {
     const s = initStabilitaet(g)
-    return { stab: s, diff: initSchwierigkeit(g), intervalDays: g === 1 ? 0 : intervallFuer(s) }
+    return { stab: s, diff: initSchwierigkeit(g), intervalDays: g === 1 ? 0 : intervallFuer(s, ziel) }
   }
   const d = diff ?? 5
   const r = abrufWkt(Math.max(0, elapsed), stab)
   const s2 = g === 1 ? vergessensStabilitaet(d, stab, r) : erinnerungsStabilitaet(d, stab, r, g)
+  let intervalDays = g === 1 ? 0 : intervallFuer(s2, ziel)
+
+  /* "Schwer"-Deckel (Franz 06.09.): In FSRS ist "Schwer" eine
+     BESTANDENE Antwort — das Intervall wächst also trotzdem (eine
+     15-Tage-Karte bekam 23 Tage). Wer "gerade so" gewusst hat, will
+     das Wort aber früher wiedersehen. Deshalb: höchstens der halbe
+     bisherige Abstand. Das Modell bleibt heil — die Stabilität darf
+     weiter wachsen, wir legen nur den Termin früher; beim nächsten
+     Mal ist die Erinnerung dann frischer und FSRS gibt von selbst
+     weniger Zuwachs. Selbstkorrigierend. */
+  if (g === 2 && hartDeckel && elapsed > 0) {
+    intervalDays = klemme(Math.min(intervalDays, Math.round(elapsed * hartDeckel)), 1, MAX_INTERVALL)
+  }
+
   return {
     stab: s2,
     diff: naechsteSchwierigkeit(d, g),
-    intervalDays: g === 1 ? 0 : intervallFuer(s2),
+    intervalDays,
   }
 }

@@ -224,15 +224,16 @@ besser — für rund 5–10 Minuten mehr am Tag.** Der Deckel bleibt ein
 Tagespensum (nichts staut sich auf), und die Zahl neuer Wörter wird
 ein Regler im Profil, kein fester Wert.
 
-## 11. Offene Entscheidungen (§ Rückfragen)
+## 11. Entscheidungen (Franz, 06.09.) — verbindlich
 
-1. **Deutsch-Anker** (§9): einmaliger Nacht-Batch für deutsche
-   Bedeutungen — ja?
-2. **Behaltensquote** (§5②): 93 % (empfohlen) oder direkt 95 %?
-3. **Produktion auf Stufe 2** (§4): koreanisch **tippen** (Tastatur-
-   wechsel am iPhone), **laut sagen + selbst bewerten**, oder wählbar?
-4. **Alt-Karten-Rückholung** (§5④): einmalig einsammeln oder nur die
-   neue Quote wirken lassen?
+1. **Behaltensquote: 93 %** — nur auf der `ko`-Seite. 해인s Seite
+   bleibt bei 90 %: Deutsch ist für sie ableitbar, und 53 Tage vor der
+   Prüfung wird ihr Lernrhythmus nicht angefasst.
+2. **Produktion auf Stufe 2: tippen wie bisher** (Hangul-Tastatur) —
+   der schärfste Test, Schreibung inklusive.
+3. **Alt-Karten: ja, einmalig gestreut einsammeln** (§5④).
+4. **Deutsch-Anker: ja** — einmaliger Nacht-Batch, Deutsch groß,
+   Englisch klein als Feinschliff (§9).
 
 ## 12. Umsetzungs-Etappen (nach dem Go)
 

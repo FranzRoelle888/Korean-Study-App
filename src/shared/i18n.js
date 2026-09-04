@@ -32,10 +32,13 @@ const en = {
   tabTrainer: 'Trainer',
 
   /* --- Wiederholen --- */
+  /* Geschärft 06.09.: "Hard" wurde als "war anstrengend" gelesen und
+     kaum benutzt. "Barely" sagt, was gemeint ist — knapp gerettet;
+     der Termin halbiert sich dann auch wirklich. */
   again: 'Again',
-  hard: 'Hard',
-  good: 'Good',
-  easy: 'Easy',
+  hard: 'Barely',
+  good: 'Got it',
+  easy: 'Instant',
   clearedAll: "You've cleared all your cards for today.",
   nothingToReview: 'Nothing to review',
   stackEmpty: 'Your stack is already empty for today.',
