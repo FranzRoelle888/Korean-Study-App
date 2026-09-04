@@ -628,13 +628,9 @@ function App() {
             tt={tt}
           />
         )}
-        {view === 'calendar' && <Calendar
-            log={dailyLog}
-            onExit={() => setView('home')}
-            t={t}
-            tt={tt}
-            partnerNote={partnerDoneToday ? t.partnerDoneToday(partnerName) : null}
-          />}
+        {view === 'calendar' && (
+          <Calendar profile={profile} t={t} words={words} onExit={() => setView('home')} />
+        )}
         {view === 'trainer' && profile.trainer && (
           <Trainer profile={profile} t={t} onChatActive={setChatOffen} onAddWord={handleAdd} />
         )}

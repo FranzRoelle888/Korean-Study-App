@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { loadDailyLog, loadPartnerLog, computeStreak, doneDaysSet } from '../../core/storage'
-import { PROFILES, otherProfile } from '../../core/profiles'
+import { PROFILES, otherProfile, istNotizbuch } from '../../core/profiles'
+import { BaerIcon, HaseIcon } from '../../shared/sticker'
 import { targetTextFor } from '../../shared/i18n'
 
 /* ============================================================
@@ -108,32 +109,64 @@ export function StatistikInhalt({ profile, t, words }) {
         </div>
 
         <div className="cal-grid">
-          {cells.map((c, i) =>
-            c ? (
+          {cells.map((c, i) => {
+            if (!c) return <div key={`e${i}`} className="cal-empty" />
+            /* Notizbuch (Entscheidung Franz 06.09.): an erledigten
+               Tagen verschwindet die Zahl — stattdessen schauen
+               die Tiere aus der Zelle (beide = halb/halb). */
+            const notiz = istNotizbuch(profile.id)
+            const tier = notiz && (c.ich || c.er)
+            return (
               <div
                 key={c.iso}
                 className={
                   'cal-day' +
-                  (c.ich && c.er ? ' stat-beide' : c.ich ? ' stat-ich' : c.er ? ' stat-er' : '') +
+                  (tier
+                    ? ' stat-tier'
+                    : c.ich && c.er ? ' stat-beide' : c.ich ? ' stat-ich' : c.er ? ' stat-er' : '') +
                   (c.today ? ' cal-today' : '')
                 }
               >
-                {c.d}
+                {tier ? (
+                  c.ich && c.er ? (
+                    <>
+                      <HaseIcon size={16} dreh={-4} />
+                      <BaerIcon size={16} dreh={4} />
+                    </>
+                  ) : c.ich ? (
+                    <HaseIcon size={22} dreh={-3} />
+                  ) : (
+                    <BaerIcon size={22} dreh={3} />
+                  )
+                ) : (
+                  c.d
+                )}
               </div>
-            ) : (
-              <div key={`e${i}`} className="cal-empty" />
             )
-          )}
+          })}
         </div>
 
         {/* Legende mit Monats-Zählern — sofort durchblicken */}
         <div className="stat-legende">
-          <span className="stat-legende-eintrag">
-            <span className="stat-farbe stat-farbe-ich" /> {profile.name} · {t.statsMonthDays(ichMonat)}
-          </span>
-          <span className="stat-legende-eintrag">
-            <span className="stat-farbe stat-farbe-er" /> {partnerName} · {t.statsMonthDays(erMonat)}
-          </span>
+          {istNotizbuch(profile.id) ? (
+            <>
+              <span className="stat-legende-eintrag">
+                <HaseIcon size={17} dreh={-3} /> {profile.name} · {t.statsMonthDays(ichMonat)}
+              </span>
+              <span className="stat-legende-eintrag">
+                <BaerIcon size={17} dreh={3} /> {partnerName} · {t.statsMonthDays(erMonat)}
+              </span>
+            </>
+          ) : (
+            <>
+              <span className="stat-legende-eintrag">
+                <span className="stat-farbe stat-farbe-ich" /> {profile.name} · {t.statsMonthDays(ichMonat)}
+              </span>
+              <span className="stat-legende-eintrag">
+                <span className="stat-farbe stat-farbe-er" /> {partnerName} · {t.statsMonthDays(erMonat)}
+              </span>
+            </>
+          )}
         </div>
       </div>
     </>

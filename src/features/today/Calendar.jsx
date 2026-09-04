@@ -1,39 +1,17 @@
-import { useState } from 'react'
-import { doneDaysSet } from '../../core/storage'
+import { StatistikInhalt } from '../profil/Statistik'
 import { logout } from '../../core/auth'
 
 /* ============================================================
-   CALENDAR – shows which days you completed all daily tasks.
+   KALENDER — hinter der Wochenstreak (Umbau 06.09., Franz)
+
+   Ein Tipp auf die Streak-Karte öffnet diese Seite: die drei
+   ehrlichen Zahlen + der IMMER GETEILTE Monats-Kalender (nur
+   den eigenen Fortschritt zeigen gibt es nicht mehr). Im
+   Notizbuch-Theme schauen an erledigten Tagen die Tiere aus den
+   Zellen (Hase = 해인, Bär = Franz, beide = halb/halb).
    ============================================================ */
 
-const pad = (n) => String(n).padStart(2, '0')
-
-/* Wochentage und Monat stehen in der Sprache, die gelernt wird —
-   auf der deutschen Seite also Mo–So und "August 2026". */
-function Calendar({ log, onExit, t, tt, partnerNote }) {
-  const WEEKDAYS = tt.calWeekdays
-  const done = doneDaysSet(log)
-  const [offset, setOffset] = useState(0) // 0 = current month, -1 = previous …
-
-  const base = new Date()
-  const view = new Date(base.getFullYear(), base.getMonth() + offset, 1)
-  const year = view.getFullYear()
-  const month = view.getMonth()
-  const monthName = tt.monthLabel(year, month)
-
-  const todayIso = `${base.getFullYear()}-${pad(base.getMonth() + 1)}-${pad(base.getDate())}`
-  const startWeekday = (new Date(year, month, 1).getDay() + 6) % 7 // 0 = Monday
-  const daysInMonth = new Date(year, month + 1, 0).getDate()
-
-  const cells = []
-  for (let i = 0; i < startWeekday; i++) cells.push(null)
-  for (let d = 1; d <= daysInMonth; d++) {
-    const iso = `${year}-${pad(month + 1)}-${pad(d)}`
-    cells.push({ d, iso, done: done.has(iso), today: iso === todayIso })
-  }
-
-  const doneThisMonth = cells.filter((c) => c && c.done).length
-
+function Calendar({ profile, t, words, onExit }) {
   return (
     <div className="calendar">
       <div className="review-header">
@@ -42,58 +20,15 @@ function Calendar({ log, onExit, t, tt, partnerNote }) {
             <path d="m15 6-6 6 6 6" />
           </svg>
         </button>
-        <span className="daily-label">{t.learningDays}</span>
+        <span className="daily-label" lang="ko">{t.learningDays}</span>
       </div>
 
-      <div className="cal-nav">
-        <button className="cal-arrow" onClick={() => setOffset((o) => o - 1)} aria-label={t.prevMonth}>
-          ‹
-        </button>
-        <span className="cal-month">{monthName}</span>
-        <button
-          className="cal-arrow"
-          onClick={() => setOffset((o) => Math.min(0, o + 1))}
-          disabled={offset >= 0}
-          aria-label={t.nextMonth}
-        >
-          ›
-        </button>
+      <div className="kalender-inhalt">
+        <StatistikInhalt profile={profile} t={t} words={words} />
       </div>
-
-      <div className="cal-grid cal-head">
-        {WEEKDAYS.map((w) => (
-          <span key={w} className="cal-wd">
-            {w}
-          </span>
-        ))}
-      </div>
-
-      <div className="cal-grid">
-        {cells.map((c, i) =>
-          c ? (
-            <div
-              key={c.iso}
-              className={
-                'cal-day' + (c.done ? ' cal-done' : '') + (c.today ? ' cal-today' : '')
-              }
-            >
-              {c.d}
-            </div>
-          ) : (
-            <div key={`e${i}`} className="cal-empty" />
-          )
-        )}
-      </div>
-
-      <p className="cal-summary">
-        {t.daysThisMonth(doneThisMonth)}
-      </p>
-      {/* "해인 ist heute schon fertig" — nur wenn es stimmt */}
-      {partnerNote && <p className="partner-note">{partnerNote}</p>}
 
       {/* Abmelden — bewusst unauffällig hier unten, bis es eine
-          richtige Einstellungen-Seite gibt. Danach fragt die App
-          beim nächsten Öffnen wieder nach dem Login. */}
+          richtige Einstellungen-Seite gibt. */}
       <button className="cal-logout" onClick={() => logout()}>
         Sign out · 로그아웃
       </button>

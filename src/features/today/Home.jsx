@@ -83,16 +83,14 @@ function Home({
             )}
           </div>
 
-          {/* Flagge = Umschalter auf die andere Seite der App;
-              im Notizbuch-Theme als „angeklebter" Sticker (M6) */}
-          <button
-            className={notiz ? 'flag-switch notiz-flagge' : 'flag-switch'}
-            onClick={onSwitchProfile}
-            title={t.switchLanguage}
-          >
-            {notiz && <span className="notiz-tape" aria-hidden="true" />}
+          {/* Die Flagge ist nur noch DEKO (Entscheidung Franz 06.09.:
+              kein Profil-Wechsel mehr in der App — jede Handy-
+              Verknüpfung zeigt fest ihre Seite über ?lang=…).
+              Im Notizbuch-Theme als „angeklebter" Sticker (M6). */}
+          <span className={notiz ? 'flag-switch notiz-flagge' : 'flag-switch'} aria-hidden="true">
+            {notiz && <span className="notiz-tape" />}
             <Flag />
-          </button>
+          </span>
         </div>
 
         <button className="streak-card" onClick={onCalendar}>

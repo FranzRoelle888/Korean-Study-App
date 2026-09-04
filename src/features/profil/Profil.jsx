@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { StatistikInhalt } from './Statistik'
 import Skills from '../trainer/Skills'
 import Kalibrierung from '../kalibrierung/Kalibrierung'
 import Fortschritt from '../today/Fortschritt'
@@ -90,9 +89,8 @@ function Profil({ profile, t, words, cards }) {
       </header>
 
       <main className="trainer-menu profil-menue">
-        {/* Statistik offen obenauf (Wunsch Franz 05.09.) */}
-        <StatistikInhalt profile={profile} t={t} words={words} />
-
+        {/* Die Statistik zog weiter: sie liegt jetzt hinter der
+            Wochenstreak im Hauptmenü (Entscheidung Franz 06.09.) */}
         <button className="skills-entry" onClick={() => setOffen('grammatik')}>
           <span className="skills-entry-emoji">📖</span>
           <div className="action-text">
