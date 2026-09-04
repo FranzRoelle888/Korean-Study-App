@@ -13,7 +13,6 @@ import {
 } from '../../shared/icons'
 import { istNotizbuch } from '../../core/profiles'
 import { BaerIcon, HaseIcon, HeuteKringel, StreakHerz, GrussKringel } from '../../shared/sticker'
-import Fortschritt from './Fortschritt'
 
 /* ============================================================
    STARTSEITE (Begrüßung, Streak, Tagesaufgaben)
@@ -171,7 +170,7 @@ function Home({
           </button>
         )}
         <button
-          className={dailyDone ? 'action action-secondary' : 'action action-full action-full-purple'}
+          className={dailyDone ? 'action action-secondary aktion-wort' : 'action action-full action-full-purple aktion-wort'}
           onClick={onDaily}
         >
           <div className="action-icon">
@@ -179,8 +178,10 @@ function Home({
           </div>
           <div className="action-text">
             <span className="action-title">{t.wordOfDay}</span>
-            <span className="action-sub" lang={profile.targetLang}>
-              {tt.wordOfDay}
+            {/* de-Seite: koreanischer Untertitel (Sprachregel 05.09.);
+                sonst wie gehabt die Zielsprache */}
+            <span className="action-sub" lang={t.wordOfDaySub ? 'ko' : profile.targetLang}>
+              {t.wordOfDaySub ?? tt.wordOfDay}
             </span>
           </div>
           {dailyDone ? (
@@ -193,7 +194,7 @@ function Home({
         </button>
 
         <button
-          className={dueCount > 0 ? 'action action-full action-full-orange' : 'action action-secondary'}
+          className={dueCount > 0 ? 'action action-full action-full-orange aktion-wdh' : 'action action-secondary aktion-wdh'}
           onClick={onReview}
         >
           <div className="action-icon action-icon-accent">
@@ -201,8 +202,8 @@ function Home({
           </div>
           <div className="action-text">
             <span className="action-title">{t.review}</span>
-            <span className="action-sub" lang={profile.targetLang}>
-              {tt.review}
+            <span className="action-sub" lang={t.reviewSub ? 'ko' : profile.targetLang}>
+              {t.reviewSub ?? tt.review}
             </span>
           </div>
           {dueCount > 0 ? (
@@ -243,7 +244,7 @@ function Home({
         {/* Artikel des Tages — das Gegenstueck auf der deutschen Seite */}
         {profile.articleChallenge && articleReady && (
           <button
-            className={articleDone ? 'action action-secondary' : 'action action-full action-full-gold'}
+            className={articleDone ? 'action action-secondary aktion-tages' : 'action action-full action-full-gold aktion-tages'}
             onClick={onArticle}
           >
             <div className="action-icon action-icon-number">
@@ -257,12 +258,12 @@ function Home({
                     ? t.conjOfDay
                     : t.articleOfDay}
               </span>
-              <span className="action-sub" lang={profile.targetLang}>
+              <span className="action-sub" lang={t.articleOfDaySub ? 'ko' : profile.targetLang}>
                 {articleKind === 'plural'
-                  ? tt.pluralOfDay
+                  ? (t.pluralOfDaySub ?? tt.pluralOfDay)
                   : articleKind === 'conj'
-                    ? tt.conjOfDay
-                    : tt.articleOfDay}
+                    ? (t.conjOfDaySub ?? tt.conjOfDay)
+                    : (t.articleOfDaySub ?? tt.articleOfDay)}
               </span>
             </div>
             {articleDone ? (
@@ -275,9 +276,8 @@ function Home({
           </button>
         )}
 
-        {/* Level-Stand: wie viel vom offiziellen Stoff schon sitzt */}
-        <Fortschritt profile={profile} t={t} />
-
+        {/* Der Niveau-Fortschritt zog ins Profil um („Meine
+            Grammatik", Wunsch Franz 05.09.) */}
         <p className="vocab-count-note">{t.wordsInLibrary(vocabCount)}</p>
       </main>
 

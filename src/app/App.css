@@ -7453,8 +7453,11 @@ textarea {
 :root[data-theme='notizbuch'] .action-full-orange::after { background: #c05a5a; }
 :root[data-theme='notizbuch'] .action-full-gold::after   { background: #e3bb5c; }
 
-/* Icon-Chips der 3 Buttons + Zähler-Badge als einziger Vollfarb-Punkt */
-:root[data-theme='notizbuch'] .action-full-purple .action-icon { background: var(--primary-soft); color: #4d4470; }
+/* Icon-Chips der 3 Buttons + Zähler-Badge als einziger Vollfarb-Punkt.
+   Der Funken-Chip ist SOFT-SCHWARZ (Wunsch Franz 05.09.): gleicher
+   Stil wie die anderen, aber im Ton seines Registerreiters —
+   zusammen ergeben die drei Chips Schwarz-Rot-Gold. */
+:root[data-theme='notizbuch'] .action-full-purple .action-icon { background: rgba(61, 58, 68, 0.14); color: #3d3a44; }
 :root[data-theme='notizbuch'] .action-full-orange .action-icon { background: var(--accent-soft); color: var(--accent-ink); }
 :root[data-theme='notizbuch'] .action-full-gold .action-icon   { background: var(--gold-soft); color: var(--gold-ink); }
 
@@ -7642,3 +7645,105 @@ textarea {
 :root[data-theme='notizbuch'] .st-aufstieg {
   color: var(--gold-ink);
 }
+
+/* ---------- Notizbuch, Runde 3 (Feedback Franz 05.09. abends) ---------- */
+
+/* Häkchen erledigter Buttons in der Farbe des jeweiligen
+   Registerreiters (Schwarz-Rot-Gold statt überall Gold) */
+:root[data-theme='notizbuch'] .aktion-wort .done-check {
+  background: #3d3a44;
+  color: #fffdf7;
+}
+
+:root[data-theme='notizbuch'] .aktion-wdh .done-check {
+  background: #c05a5a;
+  color: #fffdf7;
+}
+
+:root[data-theme='notizbuch'] .aktion-tages .done-check {
+  background: #e3bb5c;
+  color: var(--text);
+}
+
+/* Gruß-Kringel dichter an die Überschrift (der Kopfbereich war zu
+   hoch — unten wurde es eng) */
+:root[data-theme='notizbuch'] .notiz-gruss {
+  margin-bottom: 0;
+}
+
+:root[data-theme='notizbuch'] .notiz-gruss + svg {
+  display: block;
+  margin: -7px 0 0;
+}
+
+/* ---------- Kalender in Tierfarben (Vierecke bleiben!) ----------
+   Hase-Weiß = sie, Bär-Braun = er — die Kalenderoptik bleibt,
+   die Tiere sind nur „angedeutet" (Entscheidung Franz). */
+:root[data-theme='notizbuch'] .stat-ich {
+  background: #fffdf7;
+  border: 1.5px solid #d9cfbf;
+  color: var(--text);
+}
+
+:root[data-theme='notizbuch'] .stat-er {
+  background: #e9d4bb;
+  color: #3a3145;
+}
+
+:root[data-theme='notizbuch'] .stat-beide {
+  background: linear-gradient(135deg, #fffdf7 0 50%, #e9d4bb 50% 100%);
+  border: 1.5px solid #d9cfbf;
+  color: #3a3145;
+}
+
+:root[data-theme='notizbuch'] .stat-farbe-ich {
+  background: #fffdf7;
+  border: 1.5px solid #d9cfbf;
+}
+
+:root[data-theme='notizbuch'] .stat-farbe-er {
+  background: #e9d4bb;
+}
+
+/* Eigener Streak-Kalender: erledigte Tage als Hase-weiße Sticker */
+:root[data-theme='notizbuch'] .cal-done {
+  background: #fffdf7;
+  border: 1.5px solid #d9cfbf;
+  color: var(--text);
+  box-shadow: 0 1px 2px rgba(74, 60, 110, 0.12);
+}
+
+:root[data-theme='notizbuch'] .cal-done.cal-today {
+  color: var(--text);
+}
+
+/* ---------- Profil: Statistik liegt offen ---------- */
+.profil-menue {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.profil-menue .skills-entry {
+  width: 100%;
+}
+
+/* ---------- A2-Menü im Notizbuch-Look: Emoji-Chips ---------- */
+:root[data-theme='notizbuch'] .mode-card .mode-emoji {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  transform: rotate(-4deg);
+}
+
+:root[data-theme='notizbuch'] .mode-card:nth-child(even) .mode-emoji {
+  transform: rotate(3deg);
+}
+
+:root[data-theme='notizbuch'] .mode-grid .mode-card:nth-child(4n+1) .mode-emoji { background: var(--primary-soft); }
+:root[data-theme='notizbuch'] .mode-grid .mode-card:nth-child(4n+2) .mode-emoji { background: var(--accent-soft); }
+:root[data-theme='notizbuch'] .mode-grid .mode-card:nth-child(4n+3) .mode-emoji { background: var(--mint); }
+:root[data-theme='notizbuch'] .mode-grid .mode-card:nth-child(4n+4) .mode-emoji { background: var(--gold-soft); }
