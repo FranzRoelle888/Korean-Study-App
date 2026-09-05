@@ -7,6 +7,7 @@ import { MoonIcon, CardRidge } from '../../shared/icons'
 import ClearableInput from '../../shared/ClearableInput'
 import { SpeakButton, speak, prewarmSpeech } from '../../shared/tts'
 import { HanjaZeile, Bedeutung, JamoVergleich } from '../../shared/motorTeile'
+import { useTastaturZu } from '../../shared/tastatur'
 
 /* ============================================================
    WIEDERHOLSTAPEL — Vokabel-Motor V2 (nur Franz' Seite)
@@ -54,6 +55,13 @@ function ReviewMotor({ initialQueue, words, onRate, onUndo, onExit, profile, t, 
   const card = queue[0]
   const lang = profile.targetLang
   const art = card ? artVon(card) : null
+
+  /* Tastatur eingeklappt (iOS ohne blur) -> Karte wieder komplett zeigen */
+  useTastaturZu(() => setTippt(false))
+  function zeigen() {
+    if (document.activeElement && document.activeElement.blur) document.activeElement.blur()
+    setTippt(false)
+  }
 
   /* Stimme vorwärmen; Hör-Karte spielt von selbst */
   useEffect(() => {
@@ -175,7 +183,10 @@ function ReviewMotor({ initialQueue, words, onRate, onUndo, onExit, profile, t, 
       )}
 
       <div className="review-body">
-        <div className={`flashcard motor-karte ${flashClass} ${exiting ? 'card-fly-right' : ''} ${tippt ? 'tippt' : ''}`}>
+        <div
+          className={`flashcard motor-karte ${flashClass} ${exiting ? 'card-fly-right' : ''} ${tippt ? 'tippt' : ''}`}
+          onClick={tippt ? zeigen : undefined}
+        >
           <CardRidge />
           <span className="card-tag">{tag}</span>
 

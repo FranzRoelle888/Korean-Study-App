@@ -3,6 +3,7 @@ import { SuccessMark, MoonIcon } from '../../shared/icons'
 import ClearableInput from '../../shared/ClearableInput'
 import { SpeakButton, speak, prewarmSpeech } from '../../shared/tts'
 import { HanjaZeile, Bedeutung, JamoVergleich } from '../../shared/motorTeile'
+import { useTastaturZu } from '../../shared/tastatur'
 import { istGleich } from '../../core/hangul'
 
 /* ============================================================
@@ -13,30 +14,41 @@ import { istGleich } from '../../core/hangul'
       Bedeutung `water (Wasser·)` mit Nuance-Punkt, Beispielsatz
       prominent mit eigener Stimme und Übersetzung.
    2. Kein Raten, kein Zwischentest. Nach 10 s erscheint
-      „Jetzt schreiben" — das Wort wird einmal aus dem Kopf getippt.
-      Sobald das Feld Fokus hat, verschwindet alles außer der
-      Bedeutung (auch die Lautsprecher). Fokus weg -> alles zurück.
-   3. Richtig -> Häkchen, nächstes Wort. Falsch -> Jamo-Vergleich,
-      ein zweiter Versuch; danach geht es weiter. Das Ritual ist
-      keine FSRS-Bewertung — die Erkennen-Karte kommt heute noch
-      einmal am Ende des Stapels dran (Kurz-Wiederholung).
+      „Jetzt schreiben" — das Wort wird DREIMAL aus dem Kopf getippt
+      (Franz 06.09.). Sobald das Feld Fokus hat, verschwindet alles
+      außer der Bedeutung (auch die Lautsprecher). Feld verlassen,
+      Tastatur einklappen oder Karte antippen -> alles wieder da,
+      damit die Schreibweise nie verloren geht.
+   3. Falsch -> Jamo-Vergleich, zählt nicht; weiter bis drei
+      richtige. Das Ritual ist keine FSRS-Bewertung — die Erkennen-
+      Karte kommt heute noch einmal am Ende des Stapels dran.
+
+   Die Wortliste wird beim Start EINMAL eingefroren: die Eltern-
+   Komponente rechnet sie nach jedem Wort neu (Kandidaten rücken
+   nach), und ein laufender Index auf einer schrumpfenden Liste
+   übersprang jedes zweite Wort (Fund Franz 06.09.).
    ============================================================ */
 
 const SCHAU_SEKUNDEN = 10
+const NEEDED = 3
 
 function Einfuehrung({ candidates, onIntroduce, onExit, profile, t }) {
+  const [queue] = useState(candidates)
   const [index, setIndex] = useState(0)
   const [schreiben, setSchreiben] = useState(false) /* Eingabefeld sichtbar */
   const [bereit, setBereit] = useState(false) /* 10 s vorbei */
   const [tippt, setTippt] = useState(false) /* Feld hat Fokus */
   const [input, setInput] = useState('')
-  const [versuch, setVersuch] = useState(0)
+  const [typed, setTyped] = useState(0) /* richtige Durchgänge */
   const [diff, setDiff] = useState(null) /* letzte Fehleingabe */
   const [flash, setFlash] = useState(null)
   const [learned, setLearned] = useState(0)
   const lang = profile.targetLang
 
-  const entry = candidates[index]
+  const entry = queue[index]
+
+  /* Tastatur eingeklappt (iOS ohne blur) -> alles wieder zeigen */
+  useTastaturZu(() => setTippt(false))
 
   /* Je Wort: Stimme automatisch, Satz vorwärmen, Uhr auf 10 s */
   useEffect(() => {
@@ -45,16 +57,16 @@ function Einfuehrung({ candidates, onIntroduce, onExit, profile, t }) {
     setBereit(false)
     setTippt(false)
     setInput('')
-    setVersuch(0)
+    setTyped(0)
     setDiff(null)
     speak(entry.ko, lang)
     if (entry.ex) prewarmSpeech(entry.ex, lang)
     const id = setTimeout(() => setBereit(true), SCHAU_SEKUNDEN * 1000)
     return () => clearTimeout(id)
-  }, [entry && entry.invId, entry && entry.ko])
+  }, [index])
 
   if (!entry) {
-    const nichts = candidates.length === 0
+    const nichts = queue.length === 0
     return (
       <div className="daily">
         <div className="daily-done">
@@ -74,6 +86,11 @@ function Einfuehrung({ candidates, onIntroduce, onExit, profile, t }) {
     setTimeout(() => setFlash(null), 600)
   }
 
+  function zeigen() {
+    if (document.activeElement && document.activeElement.blur) document.activeElement.blur()
+    setTippt(false)
+  }
+
   function weiter() {
     onIntroduce(entry)
     setLearned((l) => l + 1)
@@ -84,23 +101,23 @@ function Einfuehrung({ candidates, onIntroduce, onExit, profile, t }) {
     e.preventDefault()
     if (!input.trim()) return
     if (istGleich(input, entry.ko)) {
-      flashThen('ok')
+      const n = typed + 1
       setInput('')
-      setTimeout(weiter, 350)
+      setDiff(null)
+      flashThen('ok')
+      if (n >= NEEDED) {
+        setTyped(n)
+        setTimeout(weiter, 350)
+      } else {
+        setTyped(n)
+      }
       return
     }
     flashThen('bad')
     setDiff(input)
     setInput('')
     /* Feld loslassen, damit das Wort wieder sichtbar wird */
-    if (document.activeElement && document.activeElement.blur) document.activeElement.blur()
-    setTippt(false)
-    if (versuch >= 1) {
-      /* zweiter Fehlversuch: kurz zeigen, dann weiter — ohne Bewertung */
-      setTimeout(weiter, 1800)
-    } else {
-      setVersuch(1)
-    }
+    zeigen()
   }
 
   const flashClass = flash === 'ok' ? 'flash-ok' : flash === 'bad' ? 'flash-bad' : ''
@@ -114,12 +131,13 @@ function Einfuehrung({ candidates, onIntroduce, onExit, profile, t }) {
           </svg>
         </button>
         <span className="daily-label">
-          {t.newWord} {index + 1}/{candidates.length}
+          {t.newWord} {index + 1}/{queue.length}
         </span>
       </div>
 
       <div className="daily-body">
-        <div className={`daily-card einf-karte ${flashClass} ${tippt ? 'tippt' : ''}`}>
+        {/* Antippen der Karte holt Wort + Satz zurück (Fokus-Regel aufheben) */}
+        <div className={`daily-card einf-karte ${flashClass} ${tippt ? 'tippt' : ''}`} onClick={tippt ? zeigen : undefined}>
           {/* Wort + Stimme — verschwinden beim Tippen */}
           <div className="daily-ko verbergbar" lang={lang}>
             {entry.ko}
@@ -139,6 +157,7 @@ function Einfuehrung({ candidates, onIntroduce, onExit, profile, t }) {
               <span className="daily-example-en">{entry.exTr}</span>
             </div>
           )}
+          {tippt && <span className="einf-zeigen-hinweis">{t.einfZeigen}</span>}
         </div>
 
         {!schreiben ? (
@@ -156,12 +175,15 @@ function Einfuehrung({ candidates, onIntroduce, onExit, profile, t }) {
           </div>
         ) : (
           <form className="type-area" onSubmit={submit}>
-            {diff && (
-              <>
-                <p className="einf-hinweis einf-falsch">{versuch >= 1 ? t.einfZweiter : ''}</p>
-                <JamoVergleich eingabe={diff} richtig={entry.ko} t={t} />
-              </>
-            )}
+            <div className="type-progress">
+              {Array.from({ length: NEEDED }).map((_, i) => (
+                <span key={i} className={i < typed ? 'tp-dot tp-on' : 'tp-dot'} />
+              ))}
+              <span className="type-hint">
+                {typed}/{NEEDED} · {t.einfDreimal}
+              </span>
+            </div>
+            {diff && <JamoVergleich eingabe={diff} richtig={entry.ko} t={t} />}
             <ClearableInput
               autoFocus
               value={input}

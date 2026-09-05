@@ -663,9 +663,6 @@ function App() {
             onSwitchProfile={switchProfile}
             onKalibrierung={() => setView('kalibrierung')}
             kalOffen={kalOffen}
-            /* Studio-Test nur auf Franz' ko-Seite; das Artikel-
-               Spiel wohnt seit Phase 0 im A2-Reiter */
-            onStudioTest={profileId === 'ko' ? () => setView('studio') : undefined}
             profile={profile}
             t={t}
             tt={tt}

@@ -43,7 +43,6 @@ function Home({
   onSwitchProfile,
   onKalibrierung,
   kalOffen,
-  onStudioTest,
   onArtikelTest,
   profile,
   t,
@@ -149,13 +148,8 @@ function Home({
         {/* Das Kalibrierungs-Banner flog raus (Franz 06.09.: nervte
             im Hauptmenü) — die Einstufung wohnt im Profil unter
             „Meine Grammatik". */}
-        {/* Vorläufiger Test-Zugang zum Grammatik-Studio — fliegt
-            raus, sobald das Studio im Tagespensum/Dojo hängt */}
-        {onStudioTest && (
-          <button className="studio-test" onClick={onStudioTest}>
-            🧪 {t.studioTestBtn}
-          </button>
-        )}
+        {/* Der Studio-Test-Zugang flog raus (Franz 06.09.) — der
+            Grammatik-Lernpfad ist zurückgestellt (PENSUM-KONZEPT.md) */}
         {/* Artikel-Swipe: der/die/das-Spiel (nur de-Seite) */}
         {onArtikelTest && (
           <button className="studio-test" onClick={onArtikelTest}>
