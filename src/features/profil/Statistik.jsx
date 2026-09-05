@@ -3,6 +3,7 @@ import { loadDailyLog, loadPartnerLog, computeStreak, doneDaysSet } from '../../
 import { PROFILES, otherProfile, istNotizbuch } from '../../core/profiles'
 import { BaerIcon, HaseIcon } from '../../shared/sticker'
 import { targetTextFor } from '../../shared/i18n'
+import { istMotor, stufenFuer, vorratKandidaten } from '../../core/motor'
 
 /* ============================================================
    STATISTIK — der gemeinsame Lern-Kalender (Wunsch Franz, 05.09.)
@@ -19,7 +20,20 @@ import { targetTextFor } from '../../shared/i18n'
 
 const pad = (n) => String(n).padStart(2, '0')
 
-export function StatistikInhalt({ profile, t, words }) {
+export function StatistikInhalt({ profile, t, words, cards = [], vorrat = [] }) {
+  /* Vokabel-Motor V2 (Franz): Wörter je Stufe + Vorratsstand */
+  const motor = istMotor(profile.id)
+  let stufenZahlen = null
+  if (motor) {
+    const s = stufenFuer(cards)
+    const alle = Object.values(s)
+    stufenZahlen = {
+      erkennen: alle.filter((x) => x.erkennen > 0).length,
+      produktion: alle.filter((x) => x.produktion > 0).length,
+      hoeren: alle.filter((x) => x.hoeren > 0).length,
+      vorrat: vorratKandidaten(vorrat, words, 9999).length,
+    }
+  }
   const tt = targetTextFor(profile.targetLang)
   const [log, setLog] = useState(null) /* null = lädt */
   const [partnerLog, setPartnerLog] = useState([])
@@ -92,6 +106,28 @@ export function StatistikInhalt({ profile, t, words }) {
           <span className="stat-label" lang="ko">{t.statsDays}</span>
         </div>
       </div>
+
+      {/* Vokabel-Motor V2: Wörter je Stufe + Vorrat (nur Franz) */}
+      {stufenZahlen && (
+        <div className="stat-reihe stat-stufen">
+          <div className="stat-chip">
+            <span className="stat-zahl">👀 {stufenZahlen.erkennen}</span>
+            <span className="stat-label">{t.stufeErkennen}</span>
+          </div>
+          <div className="stat-chip">
+            <span className="stat-zahl">✍️ {stufenZahlen.produktion}</span>
+            <span className="stat-label">{t.stufeProduktion}</span>
+          </div>
+          <div className="stat-chip">
+            <span className="stat-zahl">👂 {stufenZahlen.hoeren}</span>
+            <span className="stat-label">{t.stufeHoeren}</span>
+          </div>
+          <div className="stat-chip">
+            <span className="stat-zahl">📦 {stufenZahlen.vorrat}</span>
+            <span className="stat-label">{t.statsVorrat}</span>
+          </div>
+        </div>
+      )}
 
       {/* ---------- Gemeinsamer Kalender ---------- */}
       <div className="stat-kalender">

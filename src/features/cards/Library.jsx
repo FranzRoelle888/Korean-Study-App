@@ -4,6 +4,8 @@ import ClearableInput from '../../shared/ClearableInput'
 import { ArtikelWort } from '../../shared/ArtikelWort'
 import { SpeakButton, prewarmSpeech } from '../../shared/tts'
 import { trainerUebersetzung } from '../trainer/trainerApi'
+import { HanjaZeile, StufenPunkte } from '../../shared/motorTeile'
+import { istMotor, stufenFuer, bedeutung } from '../../core/motor'
 
 /* ============================================================
    LIBRARY
@@ -29,6 +31,9 @@ function WordExtras({ vocab, t, lang }) {
   const hatPlural = vocab.plural || vocab.pluralNote
   const hatKonj = vocab.conj && Object.keys(vocab.conj).length > 0
   const hatSatz = !!vocab.ex
+  /* Vokabel-Motor V2: Hanja-Bausteine und Nuance (nur ko-Wörter) */
+  const hatHanja = Array.isArray(vocab.hanja) && vocab.hanja.length > 0
+  const hatNuance = !!vocab.nuance
 
   /* Sobald das Info-Feld aufklappt, den Beispielsatz im
      Hintergrund vorwärmen — beim Tipp aufs Lautsprecher-Symbol
@@ -37,11 +42,25 @@ function WordExtras({ vocab, t, lang }) {
     if (vocab.ex) prewarmSpeech(vocab.ex, lang)
   }, [vocab.id])
 
-  if (!hatPlural && !hatKonj && !hatSatz) {
+  if (!hatPlural && !hatKonj && !hatSatz && !hatHanja && !hatNuance) {
     return <div className="extras"><p className="extras-empty">{t.noExtras}</p></div>
   }
   return (
     <div className="extras">
+      {hatHanja && (
+        <div className="extras-block">
+          <span className="extras-label">{t.hanjaLabel}</span>
+          <span className="extras-hanja">
+            <HanjaZeile hanja={vocab.hanja} ko={vocab.ko} />
+          </span>
+        </div>
+      )}
+      {hatNuance && (
+        <div className="extras-block">
+          <span className="extras-label">{t.nuanceLabel}</span>
+          <span className="extras-note">{vocab.nuance}</span>
+        </div>
+      )}
       {hatPlural && (
         <div className="extras-block">
           <span className="extras-label">{t.pluralLabel}</span>
@@ -199,11 +218,21 @@ function Library({ vocab, cards, onAdd, onEdit, onDelete, trickyIds, profile, t,
     setPos('')
   }
 
+  /* Vokabel-Motor V2 (Franz): Stufen-Punkte je Wort aus den Karten */
+  const motor = istMotor(profile.id)
+  const stufen = motor ? stufenFuer(cards || []) : null
+
   const q = query.trim().toLowerCase()
   const byTricky = trickyOnly && trickyIds ? vocab.filter((v) => trickyIds.has(v.id)) : vocab
   const byPos = posFilter ? byTricky.filter((v) => v.pos === posFilter) : byTricky
+  /* Suche: koreanisch direkt, Englisch, Deutsch (Konzept §7) */
   const filtered = q
-    ? byPos.filter((v) => v.en.toLowerCase().includes(q) || v.ko.includes(query.trim()))
+    ? byPos.filter(
+        (v) =>
+          v.en.toLowerCase().includes(q) ||
+          (v.de && v.de.toLowerCase().includes(q)) ||
+          v.ko.includes(query.trim())
+      )
     : byPos
   const shown = [...filtered].sort((a, b) =>
     sort === 'alpha'
@@ -381,6 +410,7 @@ function Library({ vocab, cards, onAdd, onEdit, onDelete, trickyIds, profile, t,
             onEdit={onEdit}
             onDelete={onDelete}
             tricky={!!trickyIds && trickyIds.has(v.id)}
+            stufe={stufen ? stufen[v.id] : null}
             profile={profile}
             t={t}
           />
@@ -401,7 +431,7 @@ function Library({ vocab, cards, onAdd, onEdit, onDelete, trickyIds, profile, t,
   )
 }
 
-function VocabRow({ vocab, onEdit, onDelete, tricky, profile, t }) {
+function VocabRow({ vocab, onEdit, onDelete, tricky, stufe, profile, t }) {
   const [mode, setMode] = useState('view') // 'view' | 'edit' | 'confirmDelete'
   const [en, setEn] = useState(vocab.en)
   const [ko, setKo] = useState(vocab.ko)
@@ -494,7 +524,13 @@ function VocabRow({ vocab, onEdit, onDelete, tricky, profile, t }) {
 
   /* Nur da, wo es ueberhaupt Zusatzinfos geben kann */
   const kannInfo =
-    vocab.pos === 'noun' || vocab.pos === 'verb' || !!vocab.ex || !!vocab.plural || !!vocab.conj
+    vocab.pos === 'noun' ||
+    vocab.pos === 'verb' ||
+    !!vocab.ex ||
+    !!vocab.plural ||
+    !!vocab.conj ||
+    !!vocab.hanja ||
+    !!vocab.nuance
 
   return (
     <li className={zeigeInfo ? 'vocab-row vocab-row-open' : 'vocab-row'}>
@@ -504,7 +540,10 @@ function VocabRow({ vocab, onEdit, onDelete, tricky, profile, t }) {
           <PosTag pos={vocab.pos} t={t} />
           {tricky && <span className="pos-tag tricky-tag">⚠</span>}
         </span>
-        <span className="vocab-en">{vocab.en}</span>
+        <span className="vocab-en">
+          {stufe ? bedeutung(vocab) : vocab.en}
+          {stufe && <StufenPunkte stufe={stufe} t={t} />}
+        </span>
       </div>
       <div className="row-actions">
         <SpeakButton text={vocab.ko} lang={profile.targetLang} className="speak-row" />

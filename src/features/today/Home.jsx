@@ -27,6 +27,8 @@ function Home({
   dueCount,
   dailyDone,
   dailyLeft,
+  neuGrund,
+  onPauseToggle,
   numberDone,
   streak,
   week,
@@ -179,10 +181,36 @@ function Home({
             <span className="done-check">
               <CheckIcon />
             </span>
+          ) : dailyLeft > 0 && onPauseToggle ? (
+            <span className="badge">{dailyLeft}</span>
           ) : (
             <ChevronIcon />
           )}
         </button>
+
+        {/* Vokabel-Motor V2 (Franz): warum heute nichts Neues kommt +
+            Schalter „Heute keine neuen Wörter" (Konzept §5.2) */}
+        {onPauseToggle && (
+          <div className="neu-zeile">
+            <span className="neu-grund">
+              {neuGrund === 'pause'
+                ? t.neuPausiert
+                : neuGrund === 'stau'
+                  ? t.neuStau
+                  : neuGrund === 'leer'
+                    ? t.neuLeer
+                    : ''}
+            </span>
+            {(neuGrund === 'pause' || (!dailyDone && neuGrund !== 'stau')) && (
+              <button
+                className={neuGrund === 'pause' ? 'pause-chip pause-chip-an' : 'pause-chip'}
+                onClick={onPauseToggle}
+              >
+                {neuGrund === 'pause' ? t.neuFortsetzen : t.neuPausieren}
+              </button>
+            )}
+          </div>
+        )}
 
         <button
           className={dueCount > 0 ? 'action action-full action-full-orange aktion-wdh' : 'action action-secondary aktion-wdh'}

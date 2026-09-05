@@ -1,0 +1,421 @@
+/* ============================================================
+   VOKABEL-MOTOR V2 — Stile (nur Franz' Seite sichtbar)
+   Konzept docs/VOKABEL-KONZEPT.md §3, §4, §7
+
+   Bewegung nur über transform/opacity (Bewegungs-System 06.09.).
+   ============================================================ */
+
+/* ---------- Fokus-Regel: beim Tippen verschwindet alles außer dem
+   Prompt. Ausgeblendet per visibility, damit die Karte nicht
+   springt (Höhe bleibt) — nur die Zeit-Leiste blendet aus. */
+.tippt .verbergbar {
+  visibility: hidden;
+}
+
+/* ---------- Hanja-Zeile ---------- */
+.hanja-zeile {
+  display: inline-flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  position: relative;
+}
+.hanja-nativ {
+  font-size: 15px;
+  color: var(--text-soft);
+  padding: 0 2px 4px;
+}
+.hanja-chip-wrap {
+  position: relative;
+  display: inline-block;
+}
+.hanja-chip {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  padding: 4px 9px 3px;
+  border-radius: 12px;
+  background: var(--surface-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  line-height: 1.1;
+  transition: transform 0.12s ease;
+}
+.hanja-chip:active {
+  transform: scale(0.95);
+}
+.hanja-chip-an {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-soft);
+}
+.hanja-zeichen {
+  font-size: 20px;
+  font-weight: 600;
+}
+.hanja-lesung {
+  font-size: 11px;
+  color: var(--text-soft);
+}
+/* auf der dunklen Einführungs-Karte */
+.einf-karte .hanja-chip {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.35);
+  color: #fff;
+}
+.einf-karte .hanja-lesung,
+.einf-karte .hanja-nativ {
+  color: rgba(255, 255, 255, 0.85);
+}
+.einf-hanja {
+  margin-top: 10px;
+}
+
+/* ---------- Sprechblase ---------- */
+.blase {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  transform: translateX(-50%);
+  min-width: 120px;
+  max-width: 240px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: var(--text);
+  color: var(--surface);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.35;
+  text-align: center;
+  box-shadow: var(--shadow-md);
+  z-index: 5;
+  white-space: normal;
+  animation: blase-auf 0.16s ease-out;
+}
+.blase::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: var(--text);
+}
+@keyframes blase-auf {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* ---------- Bedeutung mit Nuance-Punkt ---------- */
+.bedeutung {
+  position: relative;
+  display: inline-block;
+}
+.nuance-knopf {
+  font: inherit;
+  color: inherit;
+  background: none;
+  padding: 0;
+  text-decoration: underline dotted;
+  text-decoration-color: currentColor;
+  text-underline-offset: 5px;
+  position: relative;
+  padding-right: 12px;
+}
+.nuance-punkt {
+  position: absolute;
+  right: 0;
+  top: 0.15em;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--primary);
+}
+.einf-karte .nuance-punkt {
+  background: #fff;
+}
+
+/* ---------- Vorschlagsliste ---------- */
+.vorschlaege {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.vorschlag {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 17px;
+  font-weight: 600;
+  text-align: left;
+  transition: transform 0.12s ease;
+}
+.vorschlag:active {
+  transform: scale(0.98);
+}
+.vorschlag-nuance {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-soft);
+}
+.vorschlag-hinweis {
+  margin: 0;
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-soft);
+}
+.weiss-nicht {
+  align-self: center;
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--text-soft);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* ---------- Hör-Karte ---------- */
+.hoer-knopf {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  justify-content: center;
+  background: var(--primary-soft);
+  color: var(--primary);
+  transition: transform 0.12s ease;
+}
+.hoer-knopf:active {
+  transform: scale(0.94);
+}
+.hoer-knopf-text {
+  font-size: 12px;
+  font-weight: 700;
+}
+.hoer-hinweis {
+  font-size: 12.5px;
+  color: var(--text-soft);
+}
+
+/* ---------- Jamo-Vergleich ---------- */
+.jamo-vergleich {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: var(--surface-2);
+  text-align: left;
+}
+.einf-karte + .type-area .jamo-vergleich,
+.type-area .jamo-vergleich {
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+.jamo-zeile {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+.jamo-label {
+  flex: 0 0 64px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.jamo-wort {
+  display: inline-flex;
+  gap: 2px;
+  font-size: 26px;
+  font-weight: 700;
+}
+.jamo-silbe {
+  padding: 0 3px;
+  border-radius: 6px;
+}
+.jamo-falsch {
+  color: #e5484d;
+  background: rgba(229, 72, 77, 0.12);
+}
+.jamo-soll {
+  color: #2e9e6b;
+  background: rgba(46, 158, 107, 0.14);
+}
+.jamo-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  padding-top: 4px;
+  border-top: 1px dashed var(--border);
+  font-size: 14px;
+}
+.jamo-detail b {
+  font-weight: 700;
+}
+.jamo-teile {
+  margin-left: 8px;
+  color: var(--text-soft);
+  font-size: 13px;
+}
+.jamo-teil + .jamo-teil::before {
+  content: ' · ';
+}
+
+/* ---------- Bewertung: drei bzw. ein Knopf ---------- */
+.ratings-drei {
+  grid-template-columns: repeat(3, 1fr);
+}
+.ratings-eins {
+  grid-template-columns: 1fr;
+}
+
+/* ---------- Einführungsritual ---------- */
+.einf-karte .daily-en {
+  margin-top: 14px;
+  font-size: 22px;
+}
+.einf-satz {
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+.einf-schritt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.einf-hinweis {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--text-soft);
+  text-align: center;
+}
+.einf-falsch {
+  color: #e5484d;
+  font-weight: 600;
+}
+.einf-los {
+  width: 100%;
+  animation: einf-auf 0.24s ease-out;
+}
+@keyframes einf-auf {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+/* zehn Sekunden Schauen: eine Leiste, die sich langsam füllt */
+.einf-zeit {
+  width: 60%;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+.einf-zeit-balken {
+  height: 100%;
+  width: 100%;
+  border-radius: 999px;
+  background: var(--primary);
+  transform-origin: left center;
+  animation-name: einf-fuellen;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+@keyframes einf-fuellen {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* ---------- Startseite: neue Wörter pausieren ---------- */
+.neu-zeile {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: -6px 4px 4px;
+  font-size: 13px;
+  color: var(--text-soft);
+}
+.neu-grund {
+  flex: 1;
+}
+.pause-chip {
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--text-soft);
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.pause-chip-an {
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+
+/* ---------- Bibliothek: Stufen-Punkte ---------- */
+.stufen-punkte {
+  display: inline-flex;
+  gap: 4px;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+.stufe-punkt {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border);
+  background: transparent;
+}
+.stufe-aktiv {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+}
+.stufe-fest {
+  border-color: var(--primary);
+  background: var(--primary);
+}
+.extras-hanja {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+/* ---------- Statistik: Stufen-Zähler ---------- */
+.stat-stufen {
+  margin-top: 10px;
+}

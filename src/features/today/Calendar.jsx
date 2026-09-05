@@ -11,7 +11,7 @@ import { logout } from '../../core/auth'
    Zellen (Hase = 해인, Bär = Franz, beide = halb/halb).
    ============================================================ */
 
-function Calendar({ profile, t, words, onExit }) {
+function Calendar({ profile, t, words, cards, vorrat, onExit }) {
   return (
     <div className="calendar">
       <div className="review-header">
@@ -24,7 +24,7 @@ function Calendar({ profile, t, words, onExit }) {
       </div>
 
       <div className="kalender-inhalt">
-        <StatistikInhalt profile={profile} t={t} words={words} />
+        <StatistikInhalt profile={profile} t={t} words={words} cards={cards} vorrat={vorrat} />
       </div>
 
       {/* Abmelden — bewusst unauffällig hier unten, bis es eine

@@ -1,5 +1,12 @@
 import { supabase } from './supabaseClient'
 import { poolFor } from './dailyPool'
+import {
+  vorratKandidaten,
+  HOER_SCHWELLE,
+  HOER_ERSTER_TERMIN,
+  PRODUKTION_ERFOLGE,
+  PRODUKTION_INTERVALL,
+} from './motor'
 import { fsrsSchritt } from './fsrs'
 import { PROFILES, DEFAULT_PROFILE } from './profiles'
 
@@ -37,12 +44,16 @@ const TAGES_ZAHLEN = {
      die Produktions-Karte spaeter freigeschaltet wird (Etappe 2),
      halbiert sich die Anfangslast und macht 5/Tag bezahlbar.
      hartDeckel: "Barely" gibt hoechstens den halben Abstand. */
-  ko: { neueProTag: 3, deckel: 70, ziel: 0.93, hartDeckel: 0.5 },
-  /* 해인: unveraendert. 90 % ist fuer ableitbares Deutsch richtig,
-     und ihr Rhythmus wird kurz vor der Pruefung nicht angefasst. */
-  de: { neueProTag: 5, deckel: 80, ziel: 0.9, hartDeckel: null },
+  /* Vokabel-Motor V2 (Konzept §5.2, Go Franz 06.09.): 5 neue Woerter
+     aus dem Vorrat, Deckel 130, keine neuen Woerter bei > 100
+     faelligen (neuStopp). motor: schaltet Lebenslauf + Ritual frei. */
+  ko: { neueProTag: 5, deckel: 130, neuStopp: 100, ziel: 0.93, hartDeckel: 0.5, motor: true },
+  /* 해인: 90 % ist fuer ableitbares Deutsch richtig. Neue Woerter
+     auf Wunsch Franz (06.09.) vorerst 3 statt 5 — der Wiederhol-
+     stapel soll vor der Pruefung nicht weiter anwachsen. */
+  de: { neueProTag: 3, deckel: 80, ziel: 0.9, hartDeckel: null },
   /* Sandbox verhält sich wie die de-Seite */
-  sb: { neueProTag: 5, deckel: 80, ziel: 0.9, hartDeckel: null },
+  sb: { neueProTag: 3, deckel: 80, ziel: 0.9, hartDeckel: null },
 }
 const tagesZahlen = () => TAGES_ZAHLEN[activeProfile] ?? TAGES_ZAHLEN.ko
 const dailyNew = () => tagesZahlen().neueProTag
@@ -365,6 +376,8 @@ export async function flushPending() {
     try {
       if (op.t === 'new') await persistNewWord(op.word, op.c1, op.c2)
       else if (op.t === 'card') await persistCard(op.card)
+      else if (op.t === 'newcard') await persistNewCard(op.card)
+      else if (op.t === 'delcard') await deleteCardCloud(op.id)
       else if (op.t === 'edit') await updateWordCloud(op.id, op.en, op.ko, op.pos, op.clearExtras)
       else if (op.t === 'del') await deleteWordCloud(op.id)
     } catch (e) {
@@ -402,12 +415,72 @@ export async function loadInitial() {
     const cards = cRes.data.map(cardFromRow)
     writeWordsCache(words)
     writeCardsCache(cards)
-    return { words, cards, online: true }
+    const vorrat = await ladeVorrat()
+    return { words, cards, vorrat, online: true }
   } catch (e) {
     // Kein Internet oder Tabellen fehlen -> Puffer benutzen
     console.warn('Cloud-Laden fehlgeschlagen, benutze lokalen Puffer:', e?.message || e)
-    return { words: readWordsCache(), cards: readCardsCache(), online: false }
+    return { words: readWordsCache(), cards: readCardsCache(), vorrat: readVorratCache(), online: false }
   }
+}
+
+/* ---------- Vorrat (Vokabel-Motor V2, Migration 015) ----------
+   Die angereicherten, noch nicht eingefuehrten Inventarwoerter.
+   Nur auf Franz' Seite; fehlt die Tabelle noch oder ist man offline,
+   gilt der lokale Puffer (die naechsten Woerter liegen so auch
+   ohne Netz bereit — Konzept §8). */
+function vorratFromRow(r) {
+  return {
+    invId: r.inv_id,
+    ko: r.ko,
+    en: r.en,
+    de: r.de || null,
+    pos: r.pos || null,
+    rang: r.rang ?? null,
+    ex: r.ex || null,
+    exTr: r.ex_tr || null,
+    nuance: r.nuance || null,
+    hanja: Array.isArray(r.hanja) && r.hanja.length ? r.hanja : null,
+    bereit: !!r.bereit,
+    audioOk: !!r.audio_ok,
+    uebersprungen: !!r.uebersprungen,
+  }
+}
+function readVorratCache() {
+  try {
+    return JSON.parse(localStorage.getItem(cacheKey('vorrat'))) || []
+  } catch {
+    return []
+  }
+}
+async function ladeVorrat() {
+  if (!tagesZahlen().motor) return []
+  const { data, error } = await mine(
+    supabase.from('vorrat').select('*').eq('bereit', true).eq('uebersprungen', false)
+  )
+  if (error) {
+    console.warn('Vorrat nicht ladbar (Migration 015?):', error.message)
+    return readVorratCache()
+  }
+  /* nur die vordersten 40 puffern — mehr braucht kein Tag */
+  const vorrat = data.map(vorratFromRow).sort((a, b) => (a.rang ?? 99999) - (b.rang ?? 99999))
+  try {
+    localStorage.setItem(cacheKey('vorrat'), JSON.stringify(vorrat.slice(0, 40)))
+  } catch {
+    /* Speicher voll — egal */
+  }
+  return vorrat
+}
+
+/* Ein Vorratswort wurde eingefuehrt (steht jetzt in words): im
+   Vorrat als erledigt markieren, damit es nie wieder angeboten
+   wird. Feuer-und-vergessen — die Auswahl prueft ohnehin gegen die
+   Bibliothek (inv_id + Wort), ein Fehlschlag hier ist unschaedlich. */
+export function markiereVorratEingefuehrt(invId) {
+  if (!invId) return
+  mine(supabase.from('vorrat').update({ uebersprungen: true }).eq('inv_id', invId)).then(({ error }) => {
+    if (error) console.warn('Vorrat-Markierung fehlgeschlagen:', error.message)
+  })
 }
 
 /* ---------- Streuung ("Zufall mit Gedächtnis") ----------
@@ -494,8 +567,24 @@ export function validateNewWord(words, en, ko, pos) {
 export async function persistNewWord(word, c1, c2) {
   const we = await supabase.from('words').insert(stamp(wordToRow(word)))
   if (we.error) throw we.error
-  const ce = await supabase.from('cards').insert([stamp(cardToRow(c1)), stamp(cardToRow(c2))])
+  /* Vokabel-Motor: ein neues Wort startet nur mit der Erkennen-Karte
+     (c1 = null); die Produktions-Karte kommt spaeter per Warmstart */
+  const karten = [c1, c2].filter(Boolean).map((c) => stamp(cardToRow(c)))
+  if (!karten.length) return
+  const ce = await supabase.from('cards').insert(karten)
   if (ce.error) throw ce.error
+}
+
+/* Eine einzelne Karte nachtraeglich anlegen (Produktions-Warmstart) */
+export async function persistNewCard(card) {
+  const { error } = await supabase.from('cards').insert(stamp(cardToRow(card)))
+  if (error) throw error
+}
+
+/* Karte loeschen (Rueckgaengig eines Warmstarts) */
+export async function deleteCardCloud(id) {
+  const { error } = await mine(supabase.from('cards').delete().eq('id', id))
+  if (error) throw error
 }
 
 export async function persistCard(card) {
@@ -662,6 +751,78 @@ function applyRatingFsrs(card, rating) {
   }
 }
 
+/* ---------- Vokabel-Motor V2: Lebenslauf nach der Bewertung ----------
+   (Konzept §2.3 Warmstart, §2.4 Hoer-Verwandlung). Wird in App.jsx
+   NACH applyRating aufgerufen, nur auf Franz' Seite. Bekommt die
+   bewertete Karte (neu) und alle Karten des Wortes; liefert die
+   ggf. angepasste Karte und eine eventuell NEUE Produktions-Karte.
+   Reine Funktion — schreiben tut der Aufrufer. */
+export function verarbeiteBewertung(karte, rating, alleKarten) {
+  if (!tagesZahlen().motor) return { karte, neueKarte: null }
+  const erfolg = rating === 'good' || rating === 'easy'
+  const istErkennen = karte.front === 'ko' || karte.front === 'flip'
+  let k = { ...karte }
+  let neueKarte = null
+  const heute = todayStr()
+
+  if (istErkennen) {
+    /* Hoer-Karte: Fehlschlaege in Folge zaehlen (2 -> naechstes Mal
+       Text + Audio, dann wieder von null) */
+    if (k.modus === 'audio') {
+      const vorher = karte.hoerFehler || 0
+      /* Stand 2 hiess: DIESE Runde lief mit Text + Audio -> danach
+         beginnt die Zaehlung neu, egal wie es ausging */
+      k.hoerFehler = vorher >= 2 ? 0 : rating === 'again' ? vorher + 1 : 0
+    }
+
+    if (erfolg) {
+      k.erfolge = (k.erfolge || 0) + 1
+
+      /* Warmstart: Produktions-Karte anlegen, faellig MORGEN, mit
+         geerbter Schwierigkeit — nur wenn es noch keine gibt */
+      const hatProduktion = alleKarten.some(
+        (c) => c.wordId === k.wordId && (c.front === 'en' || c.front === 'type')
+      )
+      if (!hatProduktion && (k.erfolge >= PRODUKTION_ERFOLGE || k.intervalDays > PRODUKTION_INTERVALL)) {
+        neueKarte = {
+          ...newCard(k.wordId, 'en'),
+          due: addDays(heute, 1),
+          diff: k.diff ?? null,
+          modus: 'text',
+          hoerFehler: 0,
+          erfolge: 0,
+        }
+      }
+
+      /* Hoer-Verwandlung: ab Stabilitaet 21 Tage wird die Erkennen-
+         Karte zur Hoer-Karte — Stabilitaet halbiert, erster Hoer-
+         Termin binnen 7 Tagen. Lazy: nur bei einer erfolgreichen
+         Wiederholung, kein Schwall am Umstellungstag. */
+      if (k.modus !== 'audio' && (k.stab ?? 0) >= HOER_SCHWELLE) {
+        k.modus = 'audio'
+        k.hoerFehler = 0
+        k.stab = k.stab / 2
+        const spaetestens = addDays(heute, HOER_ERSTER_TERMIN)
+        if (k.due > spaetestens) {
+          k.due = spaetestens
+          k.intervalDays = HOER_ERSTER_TERMIN
+        }
+      }
+    }
+  }
+  return { karte: k, neueKarte }
+}
+
+/* Hoer-Karte im Stapel: Text zeigen statt nur Audio? Ja, wenn zwei
+   Fehlschlaege in Folge (Konzept §2.4) oder kein Netz fuer die
+   Stimme da ist — der Streak haengt nie am Audio (Regel 3). */
+export function hoerKarteMitText(karte) {
+  if (karte.modus !== 'audio') return true
+  if ((karte.hoerFehler || 0) >= 2) return true
+  if (typeof navigator !== 'undefined' && navigator.onLine === false) return true
+  return false
+}
+
 /* ---------- Reihenfolge des Tagesstapels ----------
    1) Mischen: alle heute fälligen Karten in eine zufällige Reihenfolge.
       Der Seed ist Datum + Karten-Id -> jeden Morgen neu gemischt, aber
@@ -730,6 +891,12 @@ export function dueCards(words, cards) {
       ko: byId[c.wordId].ko,
       ex: byId[c.wordId].ex || null,
       exTr: byId[c.wordId].exTr || null,
+      /* Vokabel-Motor V2: deutsche Bedeutung, Nuance, Hanja, Wortart */
+      de: byId[c.wordId].de || null,
+      nuance: byId[c.wordId].nuance || null,
+      hanja: byId[c.wordId].hanja || null,
+      pos: byId[c.wordId].pos || null,
+      invId: byId[c.wordId].invId || null,
       createdAt: byId[c.wordId].createdAt || 0,
     }))
 
@@ -780,7 +947,12 @@ export function dueCards(words, cards) {
      kuratierten Pool-Liste selbst — ein Wort, das dort steht, kam
      (sehr wahrscheinlich) uebers Nachziehen, nicht von Hand. */
   const poolListe = new Set(poolFor(activeProfile).map((e) => e.ko.trim()))
-  const ausPool = (c) => (poolListe.has((((byId[c.wordId] || {}).ko ?? c.ko) || '').trim()) ? 1 : 0)
+  /* Vokabel-Motor: Woerter aus dem Vorrat tragen eine Inventar-Id —
+     die zaehlen wie Pool-Woerter (reservierte Tages-Slots) */
+  const ausPool = (c) => {
+    const w = byId[c.wordId] || {}
+    return w.invId || poolListe.has(((w.ko ?? c.ko) || '').trim()) ? 1 : 0
+  }
 
   /* Heute ERSTMALS gelernte Karten (reps genau 1) zaehlen gegen
      ihre jeweiligen Toepfe — sonst gibt jede erledigte neue Karte
@@ -833,7 +1005,7 @@ function getDailyProgress() {
 }
 function bumpDailyProgress() {
   const p = getDailyProgress()
-  const next = { date: todayStr(), introduced: p.introduced + 1 }
+  const next = { ...p, date: todayStr(), introduced: p.introduced + 1 }
   localStorage.setItem(DAILY_KEY(), JSON.stringify(next))
   /* Geräteübergreifend merken (Fix 06.09.: die Häkchen waren nur
      lokal — auf einem zweiten Gerät wirkte alles unerledigt) */
@@ -852,17 +1024,80 @@ function nextFromPool(words, count) {
 }
 
 // Was steht heute an? left = wie viele heute noch, candidates = Einträge.
-export function dailyStatus(words) {
-  const introduced = getDailyProgress().introduced
-  const left = Math.max(0, dailyNew() - introduced)
-  const candidates = nextFromPool(words, left)
+// extra (nur Vokabel-Motor): { vorrat, faellig } — der Vorrat ersetzt
+// den Pool, faellig steuert den Neu-Stopp (Konzept §5.2).
+export function dailyStatus(words, extra = {}) {
+  const fortschritt = getDailyProgress()
+  const introduced = fortschritt.introduced
+  const tz = tagesZahlen()
+  let left = Math.max(0, dailyNew() - introduced)
+
+  if (!tz.motor) {
+    const candidates = nextFromPool(words, left)
+    return {
+      left,
+      candidates,
+      introducedToday: introduced,
+      done: left === 0 || candidates.length === 0,
+      poolEmpty: nextFromPool(words, 1).length === 0,
+    }
+  }
+
+  /* Vokabel-Motor V2: Gruende, warum heute nichts Neues kommt —
+     die Startseite sagt es so, dass man es sofort durchblickt */
+  let grund = null
+  if (fortschritt.pause) grund = 'pause'
+  else if (left > 0 && (extra.faellig ?? 0) > tz.neuStopp) grund = 'stau'
+  if (grund) left = 0
+  const candidates = vorratKandidaten(extra.vorrat || [], words, left)
+  const vorratLeer = vorratKandidaten(extra.vorrat || [], words, 1).length === 0
+  if (!grund && left > 0 && vorratLeer) grund = 'leer'
   return {
     left,
     candidates,
     introducedToday: introduced,
+    /* "erledigt" heisst: Tageszahl erreicht, pausiert oder gestaut.
+       Ein leerer Vorrat zaehlt AUCH als erledigt — der Streak darf
+       nie an fehlenden Inhalten haengen (Regel 3). */
     done: left === 0 || candidates.length === 0,
-    poolEmpty: nextFromPool(words, 1).length === 0,
+    poolEmpty: vorratLeer,
+    grund,
+    pause: !!fortschritt.pause,
   }
+}
+
+/* Schalter "Heute keine neuen Woerter" (Konzept §5.2) — gilt bis
+   Mitternacht (Lerntag), ueber daily_log.stand auf alle Geraete */
+export function setzeNeuePause(an) {
+  const p = getDailyProgress()
+  const next = { ...p, date: todayStr(), pause: !!an }
+  localStorage.setItem(DAILY_KEY(), JSON.stringify(next))
+  schreibeTagesstand({ pause: !!an })
+}
+
+/* Ein Vorratswort einfuehren (Vokabel-Motor V2, Konzept §2.2):
+   Wort mit allen Inhalten + NUR die Erkennen-Karte (front 'ko').
+   Die Produktions-Karte kommt spaeter per Warmstart. */
+export function makeVorratWord(v) {
+  const word = {
+    id: crypto.randomUUID(),
+    en: v.en,
+    ko: v.ko,
+    pos: v.pos || null,
+    plural: null,
+    pluralNote: null,
+    conj: null,
+    ex: v.ex || null,
+    exTr: v.exTr || null,
+    extrasAuto: false,
+    de: v.de || null,
+    nuance: v.nuance || null,
+    hanja: v.hanja || null,
+    invId: v.invId || null,
+    rang: v.rang ?? null,
+    createdAt: Date.now(),
+  }
+  return { word, c1: null, c2: { ...newCard(word.id, 'ko'), modus: 'text', hoerFehler: 0, erfolge: 0 } }
 }
 
 // Ein Pool-Wort einführen: Wort + zwei Karten (SOFORT fällig -> direkt
@@ -1354,8 +1589,14 @@ export function uebernehmeTagesstand(logRows) {
   const stand = (logRows || []).find((r) => r.day === todayStr())?.stand
   if (!stand) return
   try {
-    if (typeof stand.wort === 'number' && stand.wort > getDailyProgress().introduced) {
-      localStorage.setItem(DAILY_KEY(), JSON.stringify({ date: todayStr(), introduced: stand.wort }))
+    const p = getDailyProgress()
+    if (typeof stand.wort === 'number' && stand.wort > p.introduced) {
+      localStorage.setItem(DAILY_KEY(), JSON.stringify({ ...p, date: todayStr(), introduced: stand.wort }))
+    }
+    /* Pause-Schalter "Heute keine neuen Woerter" folgt dem Cloud-Stand */
+    if (typeof stand.pause === 'boolean' && stand.pause !== !!p.pause) {
+      const q = getDailyProgress()
+      localStorage.setItem(DAILY_KEY(), JSON.stringify({ ...q, date: todayStr(), pause: stand.pause }))
     }
     if (stand.quiz) {
       const n = getNumberChallenge()

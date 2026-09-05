@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import './App.css'
 import {
   loadInitial,
@@ -40,9 +40,19 @@ import {
   writeWordsCache,
   writeCardsCache,
   ergaenzeWortInhalte,
+  makeVorratWord,
+  markiereVorratEingefuehrt,
+  verarbeiteBewertung,
+  persistNewCard,
+  deleteCardCloud,
+  setzeNeuePause,
 } from '../core/storage'
 import { inventarEintrag } from '../core/inventarBezug'
+import { istMotor } from '../core/motor'
 import { trainerVokabelAnreichern } from '../features/trainer/trainerApi'
+import Einfuehrung from '../features/cards/Einfuehrung'
+import ReviewMotor from '../features/cards/ReviewMotor'
+import './motor.css'
 import Home from '../features/today/Home'
 import Library from '../features/cards/Library'
 import Review from '../features/cards/Review'
@@ -98,6 +108,13 @@ function App() {
   const [updateDa, setUpdateDa] = useState(false)
   const [dailyLog, setDailyLog] = useState([])
   const [partnerLog, setPartnerLog] = useState([])
+  /* Vokabel-Motor V2 (Franz): angereicherter Vorrat + ein Zähler, der
+     nach lokalen Schalter-Änderungen (Pause) ein Neuzeichnen anstößt */
+  const [vorrat, setVorrat] = useState([])
+  const [, setTick] = useState(0)
+  /* Rückgängig-Netz: welche Produktions-Karte hat die letzte
+     Bewertung per Warmstart erzeugt? */
+  const letzterWarmstart = useRef(null)
 
   /* Anmeldung: null = wird noch geprüft, false = nicht angemeldet,
      sonst die Supabase-Sitzung. Die Sitzung liegt im localStorage
@@ -124,6 +141,7 @@ function App() {
       if (cancelled) return
       setWords(data.words)
       setCards(data.cards)
+      setVorrat(data.vorrat || [])
       setOffline(!data.online || pendingCount() > 0)
       setDailyLog(log)
       setPartnerLog(plog)
@@ -277,7 +295,9 @@ function App() {
   }, [profileId])
 
   const due = dueCards(words, cards)
-  const daily = dailyStatus(words)
+  /* Vokabel-Motor (Franz): Vorrat statt Pool, Neu-Stopp bei > 100 fälligen */
+  const motor = istMotor(profileId)
+  const daily = dailyStatus(words, { vorrat, faellig: due.length })
 
   /* Woerter, die immer wieder vergessen werden (>= 3 Ausrutscher
      auf mindestens einer Karte). Anki nennt sie "leeches". */
@@ -330,14 +350,20 @@ function App() {
   const partnerDoneToday = partnerLog.some((r) => r.day === todayStr() && r.done)
 
   function handleIntroduce(poolEntry) {
-    const { word, c1, c2 } = makeIntroducedWord(poolEntry)
+    /* Vokabel-Motor (Franz): Vorratswort mit allen Inhalten, nur die
+       Erkennen-Karte; der Vorrat merkt sich das Wort als erledigt */
+    const { word, c1, c2 } = motor ? makeVorratWord(poolEntry) : makeIntroducedWord(poolEntry)
     const newWords = [word, ...words]
-    const newCards = [c1, c2, ...cards]
+    const newCards = [c1, c2].filter(Boolean).concat(cards)
     setWords(newWords)
     setCards(newCards)
     writeWordsCache(newWords)
     writeCardsCache(newCards)
     countIntroductionToday()
+    if (motor) {
+      markiereVorratEingefuehrt(poolEntry.invId)
+      setVorrat((v) => v.filter((x) => x.invId !== poolEntry.invId))
+    }
     persistNewWord(word, c1, c2).catch((err) => {
       queueFailed({ t: 'new', word, c1, c2 })
       setOffline(true)
@@ -505,8 +531,26 @@ function App() {
       lapses: prev.lapses,
       due: prev.due,
       lastReviewed: prev.lastReviewed,
+      /* FSRS + Vokabel-Motor: auch Stabilität, Hör-Modus und Zähler zurück */
+      stab: prev.stab ?? null,
+      diff: prev.diff ?? null,
+      modus: prev.modus || 'text',
+      hoerFehler: prev.hoerFehler || 0,
+      erfolge: prev.erfolge || 0,
     }
-    const next = cards.map((c) => (c.id === restored.id ? restored : c))
+    let next = cards.map((c) => (c.id === restored.id ? restored : c))
+    /* Hat die zurückgenommene Bewertung eine Produktions-Karte
+       erzeugt (Warmstart)? Dann verschwindet die wieder. */
+    const ws = letzterWarmstart.current
+    if (ws && ws.fuer === prev.id) {
+      next = next.filter((c) => c.id !== ws.neuId)
+      letzterWarmstart.current = null
+      deleteCardCloud(ws.neuId).catch((err) => {
+        queueFailed({ t: 'delcard', id: ws.neuId })
+        setOffline(true)
+        console.warn('Cloud delete (undo warm start) failed:', err?.message || err)
+      })
+    }
     setCards(next)
     writeCardsCache(next)
     persistCard(restored).catch((err) => {
@@ -519,11 +563,23 @@ function App() {
   function handleRate(cardId, rating) {
     const target = cards.find((c) => c.id === cardId)
     if (!target) return
-    const updatedCard = applyRating(target, rating)
+    let updatedCard = applyRating(target, rating)
     /* Antwort-Historie (Migration 011): Grundlage für die spätere
        persönliche FSRS-Eichung — nie blockierend */
     logReview(target, rating, updatedCard)
-    const next = cards.map((c) => (c.id === cardId ? updatedCard : c))
+
+    /* Vokabel-Motor (Franz): Lebenslauf — Produktions-Warmstart und
+       Hör-Verwandlung (Konzept §2.3/§2.4) */
+    let neueKarte = null
+    if (motor) {
+      const erg = verarbeiteBewertung(updatedCard, rating, cards)
+      updatedCard = erg.karte
+      neueKarte = erg.neueKarte
+    }
+    letzterWarmstart.current = neueKarte ? { fuer: cardId, neuId: neueKarte.id } : null
+
+    let next = cards.map((c) => (c.id === cardId ? updatedCard : c))
+    if (neueKarte) next = [...next, neueKarte]
     setCards(next)
     writeCardsCache(next)
     persistCard(updatedCard).catch((err) => {
@@ -531,6 +587,13 @@ function App() {
       setOffline(true)
       console.warn('Cloud save (rating) failed:', err?.message || err)
     })
+    if (neueKarte) {
+      persistNewCard(neueKarte).catch((err) => {
+        queueFailed({ t: 'newcard', card: neueKarte })
+        setOffline(true)
+        console.warn('Cloud save (warm start) failed:', err?.message || err)
+      })
+    }
   }
 
   /* Anmelde-Weiche: solange die gespeicherte Sitzung noch geprüft
@@ -576,6 +639,16 @@ function App() {
             dueCount={due.length}
             dailyDone={daily.done}
             dailyLeft={daily.left}
+            /* Vokabel-Motor (Franz): Grund für „nichts Neues" + Pause-Schalter */
+            neuGrund={motor ? daily.grund : null}
+            onPauseToggle={
+              motor
+                ? () => {
+                    setzeNeuePause(!daily.pause)
+                    setTick((n) => n + 1)
+                  }
+                : undefined
+            }
             numberDone={numberDone}
             streak={streak}
             week={week}
@@ -607,7 +680,16 @@ function App() {
         {view === 'artikeltest' && (
           <ArtikelSwipe profile={profile} t={t} onExit={() => setView('home')} />
         )}
-        {view === 'daily' && (
+        {view === 'daily' && motor && (
+          <Einfuehrung
+            candidates={daily.candidates}
+            onIntroduce={handleIntroduce}
+            onExit={() => setView('home')}
+            profile={profile}
+            t={t}
+          />
+        )}
+        {view === 'daily' && !motor && (
           <DailyWord
             candidates={daily.candidates}
             onIntroduce={handleIntroduce}
@@ -671,7 +753,19 @@ function App() {
             tt={tt}
           />
         )}
-        {view === 'review' && (
+        {view === 'review' && motor && (
+          <ReviewMotor
+            initialQueue={due}
+            words={words}
+            onRate={handleRate}
+            onUndo={handleUndoRate}
+            onExit={() => setView('home')}
+            profile={profile}
+            t={t}
+            tt={tt}
+          />
+        )}
+        {view === 'review' && !motor && (
           <Review
             initialQueue={due}
             onRate={handleRate}
@@ -683,7 +777,7 @@ function App() {
           />
         )}
         {view === 'calendar' && (
-          <Calendar profile={profile} t={t} words={words} onExit={() => setView('home')} />
+          <Calendar profile={profile} t={t} words={words} cards={cards} vorrat={vorrat} onExit={() => setView('home')} />
         )}
         {view === 'trainer' && profile.trainer && (
           <Trainer profile={profile} t={t} onChatActive={setChatOffen} onAddWord={handleAdd} />
