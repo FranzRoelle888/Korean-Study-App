@@ -1,0 +1,95 @@
+# ============================================================
+# Vokabeln anreichern (Vokabel-Motor V2, Franz' Seite)
+#
+# Von Hand starten: Actions -> "Vokabeln anreichern" -> Run workflow.
+# Was passiert (siehe docs/VOKABEL-KONZEPT.md §6):
+#   1. Bestand: fehlende Felder der vorhandenen ko-Wörter füllen
+#      (deutsche Bedeutung, Nuance, Hanja-Bausteine, Wortart,
+#      Beispielsatz nur wo keiner steht). Nur leere Felder!
+#   2. Vorrat: die nächsten N Inventarwörter angereichert in die
+#      Tabelle vorrat legen (bereit=true, wenn alles da ist).
+#   3. TTS: Wort- und Satz-Audio für Bestand + Vorrat in den Cache
+#      (baue-tts.mjs — was schon da ist, kostet nichts).
+#   4. Audio-Check: vorrat.audio_ok setzen, wenn beides im Cache liegt.
+#   5. Bericht: Wortart-Verteilung der nächsten 300 Vorratswörter.
+#
+# Voraussetzung: Migration 015 ist ausgeführt.
+# Secrets: ANTHROPIC_API_KEY, OPENAI_API_KEY, SUPABASE_SERVICE_KEY.
+# Ein zweiter Lauf ist gefahrlos: gefüllte Felder bleiben, bereite
+# Vorratswörter werden nicht erneut angefragt.
+# ============================================================
+name: Vokabeln anreichern
+
+on:
+  workflow_dispatch:
+    inputs:
+      anzahl:
+        description: 'Wie viele Vorratswörter sollen insgesamt bereit sein'
+        type: number
+        default: 300
+      probe:
+        description: 'Stichprobe: nur je 5 Wörter anfragen und anzeigen, nichts schreiben (ein paar Cent)'
+        type: boolean
+        default: false
+      dry:
+        description: 'Trockenlauf (alle Wörter anfragen, nichts schreiben, kein TTS)'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  anreichern:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Bestand + Vorrat anreichern
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          set -o pipefail
+          if [ "${{ inputs.probe }}" = "true" ]; then
+            node scripts/vokabeln-anreichern.mjs --probe 2>&1 | tee lauf.log
+          elif [ "${{ inputs.dry }}" = "true" ]; then
+            node scripts/vokabeln-anreichern.mjs --dry --anzahl "${{ inputs.anzahl }}" 2>&1 | tee lauf.log
+          else
+            node scripts/vokabeln-anreichern.mjs --anzahl "${{ inputs.anzahl }}" 2>&1 | tee lauf.log
+          fi
+
+      - name: TTS für Wörter und Sätze
+        if: ${{ inputs.dry != true && inputs.probe != true }}
+        env:
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          set -o pipefail
+          node scripts/baue-tts.mjs --profil ko 2>&1 | tee tts.log
+
+      - name: Audio-Check
+        if: ${{ inputs.dry != true && inputs.probe != true }}
+        env:
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          set -o pipefail
+          node scripts/vokabeln-anreichern.mjs --audio 2>&1 | tee -a lauf.log
+
+      - name: Protokoll anzeigen
+        if: always()
+        run: |
+          echo '## Anreicherung' >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          tail -n 80 lauf.log >> $GITHUB_STEP_SUMMARY || true
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          if [ -f tts.log ]; then
+            echo '## TTS' >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            tail -n 20 tts.log >> $GITHUB_STEP_SUMMARY || true
+            echo '```' >> $GITHUB_STEP_SUMMARY
+          fi

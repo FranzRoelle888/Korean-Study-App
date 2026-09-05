@@ -141,6 +141,13 @@ function wordFromRow(r) {
     ex: r.ex || null,
     exTr: r.ex_tr || null,
     extrasAuto: !!r.extras_auto,
+    /* Vokabel-Motor V2 (Migration 015): deutsche Bedeutung, Nuance,
+       Hanja-Bausteine [{z, les, de, i}], Inventar-Bezug */
+    de: r.de || null,
+    nuance: r.nuance || null,
+    hanja: Array.isArray(r.hanja) && r.hanja.length ? r.hanja : null,
+    invId: r.inv_id || null,
+    rang: r.rang ?? null,
     createdAt: new Date(r.created_at).getTime(),
   }
 }
@@ -165,6 +172,12 @@ function wordToRow(w) {
   if (w.ex) row.ex = w.ex
   if (w.exTr) row.ex_tr = w.exTr
   if (w.extrasAuto) row.extras_auto = true
+  /* Vokabel-Motor V2 (Migration 015) — ebenfalls nur wenn befüllt */
+  if (w.de) row.de = w.de
+  if (w.nuance) row.nuance = w.nuance
+  if (w.hanja) row.hanja = w.hanja
+  if (w.invId) row.inv_id = w.invId
+  if (w.rang != null) row.rang = w.rang
   return row
 }
 function cardFromRow(r) {
@@ -181,6 +194,11 @@ function cardFromRow(r) {
     /* FSRS-Zustand (Migration 011) — fehlt vor der Migration */
     stab: r.stab ?? null,
     diff: r.diff ?? null,
+    /* Vokabel-Motor V2 (Migration 015): Hör-Stufe der Erkennen-Karte,
+       Hör-Fehlschläge in Folge, Erfolge für die Produktions-Freigabe */
+    modus: r.modus === 'audio' ? 'audio' : 'text',
+    hoerFehler: r.hoer_fehler ?? 0,
+    erfolge: r.erfolge ?? 0,
   }
 }
 function cardToRow(c) {
@@ -199,7 +217,34 @@ function cardToRow(c) {
      sonst lehnt die Datenbank vor Migration 011 jedes Update ab */
   if (c.stab != null) row.stab = c.stab
   if (c.diff != null) row.diff = c.diff
+  /* Vokabel-Motor V2 (Migration 015) — nur mitschicken, wenn vom
+     Standard abweichend; vorher lehnt die DB unbekannte Spalten ab */
+  if (c.modus === 'audio') row.modus = 'audio'
+  if (c.hoerFehler) row.hoer_fehler = c.hoerFehler
+  if (c.erfolge) row.erfolge = c.erfolge
   return row
+}
+
+/* ---------- Vokabel-Motor V2: Zusatzinhalte nachtragen ----------
+   Deutsche Bedeutung, Nuance, Hanja, Beispielsatz, Wortart,
+   Inventar-Bezug — geschrieben wird nur, was befüllt ist. Läuft die
+   Migration 015 noch nicht, schlägt das Update fehl; der Aufrufer
+   fängt das ab, das Wort bleibt schlicht ohne Extras. */
+export async function ergaenzeWortInhalte(id, felder) {
+  const patch = {}
+  if (felder.de) patch.de = felder.de
+  if (felder.nuance) patch.nuance = felder.nuance
+  if (felder.hanja) patch.hanja = felder.hanja
+  if (felder.ex) {
+    patch.ex = felder.ex
+    patch.ex_tr = felder.exTr || null
+  }
+  if (felder.pos) patch.pos = felder.pos
+  if (felder.invId) patch.inv_id = felder.invId
+  if (felder.rang != null) patch.rang = felder.rang
+  if (!Object.keys(patch).length) return
+  const { error } = await mine(supabase.from('words').update(patch).eq('id', id))
+  if (error) throw error
 }
 
 /* ---------- Datums-Helfer (tagesgenau, lokale Zeit) ---------- */

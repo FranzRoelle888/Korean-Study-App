@@ -312,7 +312,7 @@ async function overLimit(profile: string) {
   /* Nur die eigenen Aktionen zählen — die speech-Funktion führt
      ihr eigenes Limit in speech_usage */
   const rows = await dbGet(
-    `trainer_usage?profile=eq.${profile}&action=in.(chat,summary,extract,uebung,satz,schreiben,studio_erklaerung,studio_aufgaben,studio_antwort,studio_bilanz,nachfrage,a2frage,a2schreiben,a2hoeren,a2lesen,a2sprechen1,a2sprechen2)&created_at=gt.${oneHourAgo}&select=id`
+    `trainer_usage?profile=eq.${profile}&action=in.(chat,summary,extract,uebung,satz,schreiben,studio_erklaerung,studio_aufgaben,studio_antwort,studio_bilanz,nachfrage,a2frage,a2schreiben,a2hoeren,a2lesen,a2sprechen1,a2sprechen2,vokabelAnreichern)&created_at=gt.${oneHourAgo}&select=id`
   )
   return rows.length >= MAX_CALLS_PER_HOUR
 }
@@ -385,6 +385,7 @@ Deno.serve(async (req) => {
       action !== 'a2sprechen1' &&
       action !== 'a2sprechen2' &&
       action !== 'uebersetzung' &&
+      action !== 'vokabelAnreichern' &&
       !String(action).startsWith('studio_') &&
       (!Array.isArray(messages) || messages.length > 60)
     )
@@ -928,6 +929,129 @@ Deno.serve(async (req) => {
         output_tokens: out.outputTokens,
       })
       return json({ vorschlag, korrektur })
+    }
+
+    /* ---------- Vokabel anreichern (Vokabel-Motor V2, nur Franz) ----------
+       Beim Hand-Eintrag eines koreanischen Worts: deutsche Bedeutung,
+       Nuance, Beispielsatz (nur wenn keiner da), Wortart, Hanja-
+       Lesungen + -Bedeutungen. Die Hanja-ZEICHEN kommen aus dem
+       Inventar (die App schickt sie mit) — das Modell darf keine
+       wählen. Geprüft wird wie im Skript vokabeln-anreichern.mjs:
+       jede Lesung muss eine Silbe des Wortes sein, in Reihenfolge;
+       sonst bleibt hanja leer. Lieber fehlend als falsch. */
+    if (action === 'vokabelAnreichern') {
+      if (profile !== 'ko') return json({ error: 'bad-profile' }, 400)
+      const wort = typeof body.wort === 'string' ? body.wort.normalize('NFC').trim().slice(0, 40) : ''
+      const en = typeof body.en === 'string' ? body.en.trim().slice(0, 80) : ''
+      const posGegeben = typeof body.pos === 'string' ? body.pos.trim() : ''
+      const zeichen = [...(typeof body.hanja === 'string' ? body.hanja.normalize('NFKC') : '')].filter((c) =>
+        /[㐀-鿿]/.test(c)
+      )
+      const brauchtSatz = !body.hatSatz
+      if (!wort) return json({ error: 'empty' }, 400)
+
+      const out = await callModel(
+        [
+          'You enrich ONE Korean vocabulary entry for a German learner (native German, fluent English; English is the primary gloss).',
+          'Input line: korean | english gloss (may be empty) | pos (may be empty) | hanja characters (or "-") | needsExample (yes/no).',
+          'Reply with ONLY this JSON object:',
+          '{"de":"<German gloss, 1-3 everyday words, nouns WITHOUT article>",',
+          ' "pos":"<one of noun, verb, adj, adv, pronoun, determiner, interjection, phrase; copy if given>",',
+          ' "nuance":<null in most cases; only a NEEDED usage restriction, politeness level or classic confusion, max 60 chars, German>,',
+          ' "ex":<only when needsExample is yes: ONE natural Korean sentence in polite 해요체 (ends with 요/죠/까), 4-9 words, beginner grammar, contains the word (conjugated is fine); else null>,',
+          ' "ex_tr":<English translation of ex, or null>,',
+          ' "hanja":<only when characters were given: array with one object PER GIVEN CHARACTER in the same order {"z":"<character as given>","les":"<its reading as ONE Hangul syllable as it appears in this word>","de":"<meaning, 1-2 German words>"}; else null>}',
+          'Be conservative: if unsure about a field, use null. Never invent readings or add characters.',
+        ].join('\n'),
+        [{ role: 'user', content: `${wort} | ${en} | ${posGegeben} | ${zeichen.join('') || '-'} | ${brauchtSatz ? 'yes' : 'no'}` }],
+        1500
+      )
+
+      const POS_OK = ['noun', 'verb', 'adj', 'adv', 'pronoun', 'determiner', 'interjection', 'phrase']
+      const text = (s: unknown, min: number, max: number) => {
+        if (typeof s !== 'string') return null
+        const t = s.normalize('NFC').trim().replace(/\s+/g, ' ')
+        return t.length >= min && t.length <= max ? t : null
+      }
+      /* Silbe ohne Endkonsonant (덥 -> 더): unregelmäßige Verben
+         verändern die letzte Stammsilbe (덥다 -> 더워요, 듣다 -> 들어요) */
+      const ohneEnd = (c: string) => {
+        const code = c.codePointAt(0)! - 0xac00
+        return code < 0 || code > 11171 ? c : String.fromCodePoint(0xac00 + code - (code % 28))
+      }
+      const enthaeltStamm = (satz: string, stamm: string): boolean => {
+        if (!stamm) return false
+        if (satz.includes(stamm)) return true
+        const pruefe = (s: string) => {
+          const vorne = s.slice(0, -1)
+          const basis = ohneEnd(s.slice(-1))
+          for (let i = 0; i + s.length <= satz.length; i++) {
+            if (satz.startsWith(vorne, i) && ohneEnd(satz[i + vorne.length]) === basis) return true
+          }
+          return false
+        }
+        return pruefe(stamm) || (stamm.length >= 2 && pruefe(stamm.slice(0, -1)))
+      }
+
+      let de: string | null = null
+      let pos: string | null = null
+      let nuance: string | null = null
+      let ex: string | null = null
+      let exTr: string | null = null
+      let hanja: { z: string; les: string; de: string; i: number }[] | null = null
+      try {
+        const j = JSON.parse(out.text.replace(/^```(?:json)?/m, '').replace(/```\s*$/m, '').trim())
+        de = text(j.de, 1, 40)
+        pos = POS_OK.includes(j.pos) ? j.pos : POS_OK.includes(posGegeben) ? posGegeben : null
+        nuance = j.nuance == null ? null : text(j.nuance, 3, 80)
+        if (brauchtSatz) {
+          const satz = text(j.ex, 4, 90)
+          const tr = text(j.ex_tr, 3, 140)
+          if (satz && tr && /(요|죠|까)[.!?…]*$/.test(satz)) {
+            const n = satz.split(' ').length
+            let stamm = wort
+            const beugbar = pos === 'verb' || pos === 'adj'
+            if (beugbar && stamm.endsWith('다')) {
+              stamm = stamm.slice(0, -1)
+              if (stamm.endsWith('하') && stamm.length > 1) stamm = stamm.slice(0, -1)
+            }
+            const drin = beugbar ? enthaeltStamm(satz, stamm) : satz.includes(stamm)
+            if (n >= 3 && n <= 12 && drin) {
+              ex = satz
+              exTr = tr
+            }
+          }
+        }
+        if (zeichen.length && Array.isArray(j.hanja) && j.hanja.length === zeichen.length) {
+          const silben = [...wort].filter((c) => /[가-힣]/.test(c))
+          const raus: { z: string; les: string; de: string; i: number }[] = []
+          let ab = 0
+          let ok = true
+          for (let k = 0; k < zeichen.length; k++) {
+            const e = j.hanja[k] ?? {}
+            const z = String(e.z ?? '').normalize('NFKC')
+            const les = text(e.les, 1, 1)
+            const bed = text(e.de, 1, 30)
+            const i = les ? silben.indexOf(les, ab) : -1
+            if (z !== zeichen[k] || !les || !/^[가-힣]$/.test(les) || !bed || i === -1) {
+              ok = false
+              break
+            }
+            ab = i + 1
+            raus.push({ z, les, de: bed, i })
+          }
+          if (ok) hanja = raus
+        }
+      } catch {
+        /* unbrauchbare Antwort -> alles bleibt leer, Wort ist trotzdem lernbar */
+      }
+      await dbInsert('trainer_usage', {
+        profile,
+        action: 'vokabelAnreichern',
+        input_tokens: out.inputTokens,
+        output_tokens: out.outputTokens,
+      })
+      return json({ de, pos, nuance, ex, exTr, hanja })
     }
 
     /* ---------- A2-Schreib-Training: Bewertung nach Goethe-Raster ----------

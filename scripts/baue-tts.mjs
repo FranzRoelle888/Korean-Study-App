@@ -109,6 +109,23 @@ async function sammleTexte(profil) {
     nimm(e.ex)
   }
 
+  /* Vorrat des Vokabel-Motors (Migration 015): angereicherte
+     Inventarwörter mit Beispielsatz — Wort UND Satz brauchen Audio,
+     sonst darf die App das Wort nicht einführen (audio_ok). Fehlt
+     die Tabelle noch, läuft der Lauf ohne sie weiter. */
+  if (profil === 'ko') {
+    const v = await fetch(
+      `${SUPABASE_URL}/rest/v1/vorrat?profile=eq.ko&bereit=is.true&select=ko,ex`,
+      { headers: dbKopf }
+    )
+    if (v.ok) {
+      for (const w of await v.json()) {
+        nimm(w.ko)
+        nimm(w.ex)
+      }
+    }
+  }
+
   /* Redemittel-Bank (Formel + Beispielsatz) — nur de-Seite */
   if (profil !== 'ko') {
     const pakete = lesePool('src/features/a2/redemittel.js', 'REDEMITTEL_PAKETE')

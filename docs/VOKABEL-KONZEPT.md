@@ -337,8 +337,13 @@ Keine Anti-Verwechslung, kein Wortfamilien-Bonus, keine Rotation.
   (Audio fehlt → Text). Die Einführung braucht **einmal** den Vorrat
   online — die nächsten 20 bereiten Wörter werden lokal gepuffert
   (`cacheKey`), dann geht auch das offline.
-- Keine Test-Schreibvorgänge gegen Franz' Live-Daten: alle Etappen
-  werden in der Sandbox `sb` mit eigenem Vorrat (`profile='sb'`) geprüft.
+- Test-Schreibvorgänge: Die Sandbox `sb` ist eine Kopie der
+  **deutschen** Seite — der Motor greift dort nicht. Geprüft wird
+  deshalb so: Logik (FSRS, Auswahl, Prüfregeln) in Skript-Tests ohne
+  Datenbank; die Oberfläche im Vorschau-Browser mit `?lang=ko` **nur
+  lesend** (Karten anschauen, nichts bewerten, nichts einführen).
+  Was der Anreicherungs-Lauf schreibt, ist keine Testausgabe, sondern
+  die gewünschten Inhalte — mit `probe` vorher als Stichprobe.
   Migration 015 und den Action-Lauf startet Franz selbst mit Anleitung.
 
 ---

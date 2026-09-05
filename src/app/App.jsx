@@ -39,7 +39,10 @@ import {
   todayStr,
   writeWordsCache,
   writeCardsCache,
+  ergaenzeWortInhalte,
 } from '../core/storage'
+import { inventarEintrag } from '../core/inventarBezug'
+import { trainerVokabelAnreichern } from '../features/trainer/trainerApi'
 import Home from '../features/today/Home'
 import Library from '../features/cards/Library'
 import Review from '../features/cards/Review'
@@ -381,7 +384,53 @@ function App() {
       setOffline(true)
       console.warn('Cloud save (new word) failed:', err?.message || err)
     })
+    if (profile.targetLang === 'ko') reichereNeuesWortAn(res.word)
     return { word: res.word }
+  }
+
+  /* Vokabel-Motor V2: Ein von Hand eingetragenes koreanisches Wort
+     bekommt im Hintergrund seine Zusatzinhalte (deutsche Bedeutung,
+     Nuance, Beispielsatz, Hanja-Bedeutungen, Wortart). Hanja-ZEICHEN
+     kommen aus dem Inventar — das Modell darf keine wählen. Scheitert
+     etwas (offline, Limit, Migration fehlt), bleibt das Wort schlicht
+     ohne Extras; der Anreicherungs-Lauf holt sie später nach. Das Wort
+     ist in jedem Fall sofort lernbar. */
+  async function reichereNeuesWortAn(word) {
+    const inv = await inventarEintrag(word.ko).catch(() => null)
+    const bezug = inv
+      ? { invId: inv.id, rang: inv.rang != null && inv.rang < 99999 ? inv.rang : null, pos: word.pos || inv.pos || null }
+      : {}
+    trainerVokabelAnreichern({
+      profile: profileId,
+      wort: word.ko,
+      en: word.en,
+      pos: bezug.pos || word.pos || '',
+      hanja: inv?.hanja || '',
+      hatSatz: !!word.ex,
+    })
+      .catch(() => ({}))
+      .then((res) => {
+        const felder = {}
+        if (bezug.invId) felder.invId = bezug.invId
+        if (bezug.rang != null) felder.rang = bezug.rang
+        if (!word.pos && (res.pos || bezug.pos)) felder.pos = res.pos || bezug.pos
+        if (res.de) felder.de = res.de
+        if (res.nuance) felder.nuance = res.nuance
+        if (res.hanja) felder.hanja = res.hanja
+        if (!word.ex && res.ex) {
+          felder.ex = res.ex
+          felder.exTr = res.exTr || null
+        }
+        if (!Object.keys(felder).length) return
+        setWords((ws) => {
+          const neu = ws.map((w) => (w.id === word.id ? { ...w, ...felder } : w))
+          writeWordsCache(neu)
+          return neu
+        })
+        ergaenzeWortInhalte(word.id, felder).catch((err) =>
+          console.warn('Anreicherung nicht gespeichert:', err?.message || err)
+        )
+      })
   }
 
   function handleEditWord(id, en, ko, pos) {

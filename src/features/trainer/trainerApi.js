@@ -128,6 +128,14 @@ export function trainerUebersetzung({ profile, wort }) {
   return call({ action: 'uebersetzung', profile, wort })
 }
 
+/* Vokabel-Motor V2 (nur ko): Zusatzinhalte für EIN von Hand
+   eingetragenes Wort -> { de, pos, nuance, ex, exTr, hanja }.
+   hanja = Zeichenvorgabe aus dem Inventar ('' wenn keine) — das
+   Modell liefert dazu nur Lesung + Bedeutung, nie eigene Zeichen. */
+export function trainerVokabelAnreichern({ profile, wort, en, pos, hanja, hatSatz }) {
+  return call({ action: 'vokabelAnreichern', profile, wort, en, pos, hanja, hatSatz })
+}
+
 /* Grammatik-Erklärung (Text und/oder Foto) -> Vorschlagsliste.
    image: { media_type: 'image/jpeg', data: '<base64>' } oder null.
    Gespeichert wird erst nach Bestätigung in der App. */
