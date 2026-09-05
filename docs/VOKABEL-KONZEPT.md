@@ -1,246 +1,378 @@
-# Vokabel-Motor V2 — „Mehr Wörter, die auch bleiben" (Konzept, 06.09.)
+# Vokabel-Motor V2 — verbindliches Konzept (Franz' Seite, `ko`)
 
-Status: **ENTWURF — nichts davon ist gebaut.** Für Franz' Seite (`ko`);
-was sich bewährt, kann später auf 해인s Seite wandern.
+Stand 06.09. Ersetzt den Entwurf. Enthält alle Entscheidungen aus den
+Konzeptrunden. **Gilt nur für das Profil `ko`.** 해인s Seite (`de`) und ihr
+Lernrhythmus bleiben bis zur Prüfung am 29.10. unangetastet — jede Änderung
+ist hinter `targetLang === 'ko'` bzw. `TAGES_ZAHLEN.ko` verriegelt.
 
-## 1. Auftrag (Franz, 06.09.)
+Etappe 1 (FSRS-Ziel 93 %, „Barely"-Deckel ½, neue Bewertungslabels,
+Tagesdeckel) ist gebaut (Commit 0eab1c6). Dieses Dokument beschreibt den
+Rest. **Status: wartet auf Franz' Go.**
 
-- Mehr Vokabeln lernen — aber sie müssen **im Kopf bleiben**.
-- Frage: Deutsch UND Englisch auf den Karten?
-- Idee: neue Wörter zuerst nur **erkennen**, erst nach 2–3 Erfolgen
-  selbst **produzieren**.
-- Problem: Intervalle zu lang — „gerade so gewusst" + „Schwer" führt
-  trotzdem zu 25 Tagen Pause.
-- Wunsch: dritte Stufe **nur hören → Bedeutung tippen**, mit
-  toleranter Antwort-Prüfung.
-- Wunsch: **jederzeit wiederholen können**, ohne auf morgen zu warten.
+---
 
-## 2. Diagnose des Ist-Zustands (im Code nachgerechnet)
+## 1. Was der Motor leisten soll
 
-Vier konkrete Befunde — alle erklären genau das, was Franz spürt:
+1. **Mehr Wörter, die wirklich sitzen.** Neue Wörter kommen aus dem
+   TOPIK-I-Häufigkeitsinventar in Rang-Reihenfolge, nicht mehr aus der
+   Datei-Reihenfolge von `koreanPool.js` (die „20 Verben am Stück" erzeugte).
+2. **Drei Stufen je Wort**, die nacheinander frei werden:
+   Erkennen → Produktion → Hören. Jede Stufe hat eine eigene FSRS-Kette.
+3. **Ehrliche Prüfung.** Antworten werden getippt, nicht geraten. Bei
+   Erkennen/Hören über eine Vorschlagsliste aus der eigenen Bibliothek
+   (nur der richtige Eintrag zählt), bei Produktion durch exaktes Tippen
+   des koreanischen Wortes.
+4. **Ein Einführungsritual (~25 s)**, das Wortbild, Klang, Beispielsatz,
+   Hanja-Bausteine und Nuance in einem Zug verankert und mit einmaligem
+   Abschreiben endet.
+5. **Inhalte vorab.** Kein Wort wird eingeführt, dessen Beispielsatz,
+   deutsche Bedeutung, Hanja-Zeile und Audio nicht schon liegen. Der
+   Streak hängt nie an KI oder TTS.
 
-**① Neue Wörter „graduieren" viel zu schnell.**
-`initStabilitaet` gibt einem neuen Wort bei „Gut" sofort **3,7 Tage**,
-bei „Leicht" sogar **13,8 Tage**. Ein koreanisches Wort, das man einmal
-gesehen hat, kommt also erst in vier Tagen wieder — die entscheidende
-erste Festigungsphase (Minuten bis 24 h) wird komplett übersprungen.
-Es gibt **keine Lernschritte innerhalb der Sitzung**.
+**Nicht in dieser Umsetzung** (bewusst zurückgestellt): Abend-Check,
+Sitzungs-Leiter, Extra-Runde/Vorziehen/Wackel-Liste, Anti-Verwechslung,
+Wortfamilien-Bonus, Wortart-Tagesrotation (kommt nach dem
+Prozent-Bericht, §5.4), Alt-Karten-Fälligkeits-Spreizung (separates Go).
 
-**② „Schwer" verlängert das Intervall — immer.**
-In FSRS ist „Schwer" eine BESTANDENE Antwort; die Stabilität wächst,
-nur gedämpft. Nachgerechnet mit den echten Gewichten: eine Karte mit
-15 Tagen Abstand, mit „Schwer" bewertet, bekommt **23 Tage** (mit
-Streuung bis 26). Bei 20 Tagen Abstand werden es **30**. Genau Franz'
-Beobachtung. Das ist kein Bug, sondern die Modell-Semantik: „Schwer" =
-„mit Mühe erinnert", nicht „fast danebengelegen".
+---
 
-**③ Die Ziel-Behaltensquote steht auf 90 %.**
-`ZIEL = 0.9` heißt: das Intervall wird so gelegt, dass **jede zehnte
-Abfrage misslingt** — das ist der Effizienz-Optimalpunkt für Sprachen
-mit Ableitungshilfe. Für Koreanisch ohne Verwandtschaft zum Deutschen
-ist ein Aussetzer aber teuer: das Wort ist dann komplett weg, nicht
-nur unscharf. Mathematisch: Intervall ≈ Stabilität × 1,0 bei 90 % ·
-× 0,67 bei 93 % · × 0,46 bei 95 %.
+## 2. Karten und ihr Lebenslauf
 
-**④ Geerbte Intervalle aus SM-2 waren nie „verdient".**
-Bei der Umstellung wurde `stab = intervalDays` gesetzt — alte
-SM-2-Intervalle wurden zu Stabilität erklärt, ohne dass ein einziger
-Abruf sie unter FSRS bestätigt hätte. Wo SM-2 zu großzügig war,
-rechnet FSRS seitdem auf einer zu hohen Basis weiter.
+### 2.1 Die drei Stufen
 
-**⑤ Beide Richtungen ab Tag 1.**
-Jedes neue Wort erzeugt sofort ZWEI Karten: Erkennen (KO → Bedeutung)
-und Produzieren (Bedeutung → KO getippt). Produktion ist die mit
-Abstand schwerste Form und trifft das Wort in dem Moment, in dem es am
-schwächsten ist. Das kostet doppelte Tageslast bei halber Erfolgsquote.
+| Stufe | Karte | Vorderseite | Antwort | Freischaltung |
+|---|---|---|---|---|
+| **Erkennen** | `front='ko'`, `modus='text'` | koreanisches Wort (+ Hanja-Zeile, Audio-Knopf) | Bedeutung antippen aus Vorschlagsliste (Englisch oder Deutsch) | am Einführungstag |
+| **Produktion** | `front='en'` | Bedeutung `water (Wasser·)` | koreanisches Wort exakt tippen | nach 2 erfolgreichen Erkennen-Wiederholungen **oder** wenn Erkennen-Intervall > 14 Tage |
+| **Hören** | dieselbe Erkennen-Karte, `modus='audio'` | nur Audio (Wort), kein Text | wie Erkennen: Bedeutung antippen | wenn Erkennen-Stabilität ≥ 21 Tage |
 
-## 3. Was die Lernforschung stützt (und was nicht)
+Bestehende Wörter (231) haben beide Karten schon — die bleiben genau so.
+Für sie greift nur die Hör-Verwandlung (§2.4).
 
-- **Abruf schlägt Wiedersehen** (Testing-Effekt, Roediger & Karpicke):
-  aktives Erinnern festigt weit stärker als erneutes Anschauen. ✓ haben wir.
-- **Successive Relearning** (Rawson & Dunlosky): mehrfacher *korrekter*
-  Abruf **innerhalb** einer Sitzung + Wiederholung **über** Sitzungen
-  hinweg ist eine der bestbelegten Kombinationen überhaupt. → uns fehlt
-  die erste Hälfte (Befund ①).
-- **Wünschenswerte Schwierigkeiten** (Bjork): Schwierigkeit hilft — aber
-  nur, solange der Abruf noch **gelingt**. Zu früh zu schwer ist
-  verschwendete Zeit. → stützt Franz' Stufen-Idee direkt.
-- **Rezeptiv vor produktiv** (Nation): Erkennen wird früher und
-  billiger erworben als Produzieren; produktives Wissen baut auf
-  rezeptivem auf. → stützt die Idee ebenfalls.
-- **Mehrere Zugangswege** (Form–Bedeutung über Auge, Ohr, Hand)
-  erzeugen mehr Abrufpfade — deshalb ist die Hör-Stufe kein Luxus.
-- **Kontext schlägt Wortpaare**: ein Wort im Beispielsatz sitzt besser
-  als isoliert. Unsere `ex`-Felder liegen ungenutzt auf der Rückseite.
-- **Schlüsselwort-Mnemonik** (Atkinson) wirkt nachweislich bei
-  hartnäckigen Einzelwörtern — der richtige Griff für „Dauer-Aussetzer".
-- **Ehrliche Einschränkung:** Die FSRS-Standardgewichte stammen aus
-  hunderten Millionen Anki-Wiederholungen — großartige Datenbasis, aber
-  eben ein Durchschnitt über alle Fächer und Sprachen. Persönliche
-  Eichung wird erst mit genug eigenen `review_log`-Zeilen möglich.
+### 2.2 Einführungstag
 
-## 4. Das Konzept: drei Stufen pro Wort — ohne mehr Karten
+- Nach dem Ritual (§4) wird **nur die Erkennen-Karte** angelegt
+  (`stab=null`, fällig heute).
+- **Kurz-Wiederholung ohne Warten:** Die Karte kommt noch in derselben
+  Sitzung einmal dran — frühestens nach 5 anderen Karten oder 3 Minuten,
+  spätestens am Sitzungsende. Das ist die erste echte FSRS-Bewertung
+  (Wiedersehen nach Minuten = die wertvollste Wiederholung überhaupt).
+- Sitzung vorher abgebrochen → Karte bleibt fällig heute und ist beim
+  nächsten Öffnen als Erstes dran.
 
-Kernidee: Ein Wort hat weiterhin **zwei Karten**, aber die Schwierigkeit
-**wächst mit dem Wort mit**, statt am ersten Tag voll zuzuschlagen.
+### 2.3 Produktions-Freischaltung („Warmstart")
 
-| Stufe | Was passiert | Wann |
+- Prüfung **nach jeder erfolgreichen Erkennen-Wiederholung** („Got it"
+  oder „Instant" zählt als Erfolg, „Barely" nicht):
+  `erfolge ≥ 2` **oder** neues `intervalDays > 14`.
+- Dann Produktions-Karte anlegen: `front='en'`, `stab=null`,
+  `diff` = Schwierigkeit der Erkennen-Karte (geerbt), **fällig morgen**.
+  Ab dort eigene FSRS-Kette ab 1 Tag.
+- Ohne Erkennen-Erfolg entsteht nie eine Produktions-Karte — ein Wort,
+  das im Erkennen dauernd fällt, wird nicht zusätzlich belastet.
+
+### 2.4 Hör-Verwandlung
+
+- Prüfung **nach jeder erfolgreichen Erkennen-Wiederholung** — also erst,
+  wenn die Karte ohnehin dran ist. Kein Schwall am Umstellungstag, die
+  bestehenden Karten wandeln sich nach und nach. Bedingung: neue
+  Stabilität ≥ 21 Tage → `modus='audio'`.
+- Beim Wechsel: **Stabilität halbiert**, Termin = `min(FSRS-Termin,
+  heute + 7 Tage)`. Die Karte kommt binnen einer Woche als Hör-Karte
+  wieder. **Kein Tageslimit** für Verwandlungen.
+- **Hör-Karte im Stapel:** Audio spielt automatisch beim Erscheinen,
+  Wiederholen-Knopf sichtbar, Text des Wortes nicht. Antwort per
+  Vorschlagsliste wie Erkennen.
+- **Zwei Fehlschläge in Folge** (`hoer_fehler ≥ 2`) → die nächste
+  Wiederholung zeigt **Text + Audio** gemeinsam (einmal), Zähler auf 0,
+  Modus bleibt `audio`. Jeder Erfolg setzt den Zähler auf 0.
+- **Offline / Audio fehlt / Autoplay blockiert:** Karte erscheint als
+  Text-Karte, Modus bleibt `audio`. Der Streak leidet nie am Audio.
+- **Kein Rückweg** von `audio` nach `text` — Hören ist die Endstufe.
+
+### 2.5 Datenmodell (Migration 015, additiv)
+
+```sql
+-- Wörter: neue Inhaltsfelder
+alter table words add column if not exists de      text;     -- deutsche Bedeutung
+alter table words add column if not exists nuance  text;     -- Kurzhinweis, optional
+alter table words add column if not exists hanja   jsonb;    -- [{z:'水', les:'수', de:'Wasser'}]
+alter table words add column if not exists inv_id  text;     -- TOPIK-Inventar-Id (t-123)
+alter table words add column if not exists rang    integer;  -- Häufigkeitsrang
+-- Karten: Hör-Stufe + Warmstart-Zähler
+alter table cards add column if not exists modus       text not null default 'text'
+  check (modus in ('text','audio'));
+alter table cards add column if not exists hoer_fehler integer not null default 0;
+alter table cards add column if not exists erfolge     integer not null default 0;
+-- Vorrat: angereicherte, noch nicht eingeführte Wörter
+create table if not exists vorrat (
+  inv_id  text not null,
+  profile text not null default 'ko',
+  ko text not null, en text not null, de text, pos text, rang integer,
+  ex text, ex_tr text, nuance text, hanja jsonb,
+  bereit   boolean not null default false,  -- Text-Inhalte komplett + geprüft
+  audio_ok boolean not null default false,  -- TTS Wort + Satz im Cache
+  uebersprungen boolean not null default false,
+  created_at timestamptz default now(),
+  primary key (profile, inv_id)
+);
+```
+
+Vorhandene Spalten werden weiterverwendet: `words.pos`, `words.ex`,
+`words.ex_tr`, `cards.stab/diff`. Die App bleibt schema-tolerant
+(fehlende Spalten → Feature still aus). Der Vorrat ist eine eigene
+Tabelle, damit die Bibliothek nur enthält, was Franz wirklich lernt.
+
+---
+
+## 3. Antwort-Prüfung
+
+### 3.1 Erkennen und Hören: Vorschlagsliste
+
+- Ein Eingabefeld unter der Karte. **Ab dem 2. Zeichen** erscheint eine
+  Liste mit **höchstens 5 Treffern** aus der **eigenen Bibliothek**
+  (Feld `en` **und** `de` jedes Wortes), Präfix-Treffer zuerst, dann
+  „enthält". Kein Fuzzy, kein Alias, keine Toleranz.
+- **Nur das Antippen des richtigen Eintrags zählt als richtig.** Falscher
+  Eintrag = falsch. Enter ohne Antippen tut nichts.
+- Knopf **„Weiß nicht"** = falsch.
+- Richtig → drei Knöpfe **Barely / Got it / Instant** (Selbstbewertung
+  der Sicherheit, wie bisher im Tipp-Modus). Falsch → automatisch
+  **Again**, richtige Bedeutung wird gezeigt, Karte bleibt heute im Stapel.
+- Die Liste zeigt nur Bedeutungen (`water (Wasser)`), nie das koreanische
+  Wort — sonst verriete sie bei der Hör-Karte die Antwort.
+- Zwei verschiedene Wörter mit identischer Bedeutung (z. B. zweimal
+  „to go"): beide stehen in der Liste, mit `nuance` als Zusatz, falls
+  vorhanden; richtig ist nur der Eintrag der aktuellen Karte.
+
+### 3.2 Produktion: exaktes Tippen
+
+- Eingabe koreanisch, **keine Vorschläge**, keine Toleranz. Vergleich
+  nach Normalisierung (NFC, Leerzeichen getrimmt, innen ein Leerzeichen).
+- Falsch → **eigene Eingabe neben richtigem Wort**, Abweichungen auf
+  **Jamo-Ebene** markiert (Silbe zerlegt: 학 vs 항 → ㄱ/ㅇ rot),
+  automatisch **Again**. Richtig → Barely / Got it / Instant.
+- Tastatur wechselt Franz **selbst** (Sprach-Globus). Keine Sperre,
+  keine eigene Tastatur, kein Hinweis.
+
+### 3.3 Fokus-Regel (alle Tipp-Durchläufe)
+
+- Sobald das Eingabefeld Fokus hat: **alles verschwindet außer der
+  Übersetzung bzw. dem Prompt** — koreanisches Wort, Hanja-Zeile,
+  Beispielsatz, Nuance-Blase, **auch der Audio-Knopf**.
+- Fokus raus / Tastatur zu → alles wieder sichtbar.
+- Gilt für Produktion, Erkennen, Hören und das Ritual-Abschreiben.
+
+---
+
+## 4. Einführungsritual (~25 s je Wort)
+
+1. **Wort groß** in Hangul, Audio spielt **automatisch** (Wiederholen-
+   Knopf daneben). Darunter die **Hanja-Zeile**, falls sino-koreanisch:
+   je Silbe ein Chip `水 수`; Antippen öffnet eine Blase mit der
+   Bedeutung des Zeichens („Wasser").
+2. **Bedeutung** `water (Wasser·)` — Englisch bleibt Hauptanker, Deutsch
+   in Klammern. Der **Punkt** (plus gepunktete Unterstreichung) markiert
+   eine vorhandene Nuance; Antippen öffnet die Sprechblase (z. B. „nur
+   Trinkwasser, nicht Gewässer"). Ohne Nuance kein Punkt.
+3. **Beispielsatz prominent** (größer als bisher, eigener Audio-Knopf,
+   Übersetzung darunter, Zielwort im Satz fett).
+4. **Kein Raten, kein Zwischentest.** Nach **10 s** erscheint der Knopf
+   **„Jetzt schreiben"**. Franz tippt das Wort aus dem Kopf; Fokus-Regel
+   §3.3 greift. Richtig → Häkchen, nächstes Wort. Falsch → Jamo-Diff,
+   Wort wieder sichtbar, ein zweiter Versuch. Danach weiter, ohne
+   Bewertung (das Ritual ist keine FSRS-Wiederholung).
+5. Erkennen-Karte anlegen (§2.2), Kurz-Wiederholung einplanen.
+
+Fünf Wörter ≈ 2–2,5 Minuten Ritual. Danach beginnt der Wiederholstapel.
+
+---
+
+## 5. Wortauswahl und Mengensteuerung
+
+### 5.1 Quelle
+
+- `src/core/inventare/topik1-woerter.json` (1791 Einträge, davon **1754
+  ohne Zahlwörter**; 155 ohne Rang stehen ganz hinten).
+- Reihenfolge: **`rang` aufsteigend**, `pos = 'number'` **ausgeschlossen**.
+- **Pflichtprüfung „schon in der Bibliothek?"** vor jeder Einführung,
+  zweifach: über `inv_id` **und** über das normalisierte koreanische Wort
+  (NFC, getrimmt) gegen alle `words` des Profils. Treffer → Wort wird
+  übersprungen und im Vorrat als `uebersprungen` markiert (nie wieder
+  angeboten). Dieselbe Prüfung läuft schon beim Befüllen des Vorrats
+  (§6.3), also doppelt abgesichert. Das ist die einzige Form von
+  „Bekanntes überspringen"; Franz' Vorwissen wird nicht abgefragt — was
+  er kennt, läuft über „Instant" schnell aus dem Stapel.
+- **Nur `bereit = true` und `audio_ok = true`** Wörter dürfen eingeführt
+  werden. Vorrat leer oder nicht bereit → Hinweis „Neue Wörter werden
+  gerade vorbereitet", Wiederholstapel läuft normal, Streak unberührt.
+- `koreanPool.js` wird für die Auswahl **nicht mehr** genutzt und in E6
+  entfernt.
+
+### 5.2 Tageszahlen (`TAGES_ZAHLEN.ko`)
+
+| Größe | Wert | Bedeutung |
 |---|---|---|
-| **1 · Erkennen** | KO steht da (+ 🔊 hörbar) → Bedeutung, aufdecken & selbst bewerten | ab der ersten Begegnung |
-| **2 · Produzieren** | Bedeutung → koreanisches Wort selbst erzeugen | **freigeschaltet nach 2 gelungenen Abrufen** auf Stufe 1 (und ≥ 1 Tag Abstand) |
-| **3 · Hören** | **nur Audio**, kein Text → Bedeutung tippen | wenn die Erkennen-Karte **reif** ist (Stabilität ≥ 21 Tage) — sie *verwandelt* sich, es kommt keine dritte Karte dazu |
+| `neueProTag` | **5** | Einführungen pro Tag |
+| `deckel` | **130** | max. Wiederholungen, die der Tag anbietet |
+| `neuStopp` | **100** | sind heute > 100 Karten fällig → keine neuen Wörter |
+| Schalter | „Heute keine neuen Wörter" | manuell im Heute-Bereich, gilt bis Mitternacht, über `daily_log.stand` gesynct |
 
-Warum das aufgeht:
-- **Frühe Last sinkt um die Hälfte** (Produktion schläft noch) → Platz
-  für mehr neue Wörter bei gleicher Zeit.
-- **Späte Last steigt nicht**, weil Stufe 3 die Stufe-1-Karte *ersetzt*
-  statt zu ergänzen. Reife Wörter werden schwerer geprüft, nicht öfter.
-- Jede Stufe ist der jeweils schwerste Test, den das Wort gerade
-  **bestehen kann** — genau die „wünschenswerte Schwierigkeit".
+Erwartete Dauerlast bei 5 Wörtern/Tag und 93 %: ~110–125 Wiederholungen
+pro Tag (≈ 25–30 min) nach Einlaufen. Der Stopp bei 100 bremst
+automatisch, wenn es sich staut.
 
-## 5. Vier Eingriffe in den Algorithmus
+### 5.3 Auswahlalgorithmus (bewusst simpel)
 
-**① Lernschritte innerhalb der Sitzung (der größte Hebel).**
-Ein neues Wort (und jedes „Nochmal") muss **zweimal korrekt** in
-derselben Sitzung abgerufen werden, mit wachsendem Abstand: nach ~3
-weiteren Karten, dann nach ~10. Erst danach geht es an den
-Tages-Scheduler — mit **1 Tag** als erstem Intervall statt 4.
+```
+kandidaten = vorrat
+  .filter(bereit && audio_ok && !uebersprungen && pos != 'number')
+  .sortBy(rang)
+für jeden Kandidaten (bis neueProTag erreicht):
+  wenn inv_id oder ko schon in words → uebersprungen = true, weiter
+  sonst → einführen
+```
 
-**② Ziel-Behaltensquote hoch: 90 % → 93 %.**
-Ein Drehknopf, eine Zeile. Alle Intervalle werden auf ~⅔ gekürzt,
-auch die geerbten aus Befund ④. Ehrlicher Preis: **rund ein Drittel
-mehr Wiederholungen pro Tag** im Dauerbetrieb. (95 % wären ~doppelt
-so viele — meine Empfehlung ist 93 % als Startwert, nachjustierbar.)
+Keine Anti-Verwechslung, kein Wortfamilien-Bonus, keine Rotation.
 
-**③ „Schwer" bekommt eine Obergrenze.**
-Neue Hausregel: *„Schwer" heißt künftig ungefähr der halbe bisherige
-Abstand — nie mehr.* Aus 15 Tagen werden ~9 statt 23. Das Modell
-bleibt intakt (die Stabilität darf weiter wachsen), wir legen den
-Termin nur früher; FSRS rechnet frühe Abfragen korrekt und dämpft den
-Zuwachs beim nächsten Mal von selbst. Zusätzlich werden die vier
-Knöpfe sprachlich geschärft, damit „Schwer" auch wirklich benutzt wird:
-**Nochmal · Gerade so · Gewusst · Sofort da**.
+### 5.4 Wortarten-Einstufung (Vorbereitung der Rotation)
 
-**④ Einmalige Ehrlichkeits-Korrektur der Alt-Karten.**
-Alle Karten mit Intervall > 21 Tagen, deren Stabilität nur aus SM-2
-geschätzt wurde, bekommen ihren Termin einmalig auf die nächsten
-2–3 Wochen verteilt (gestreut, damit kein Berg entsteht). Danach
-läuft alles auf verdienten Werten weiter. Rein additiv, nichts wird
-gelöscht — und optional, siehe §11.
+- **Vorrat:** `pos` kommt fertig aus dem Inventar.
+- **Bestehende 231 Wörter:** Wo das Wort im Inventar steht (201 Fälle),
+  wird `pos` übernommen. Die **30 Rest-Wörter** (z. B. 말하다, 공부하다 —
+  im Inventar nur als Stamm) bekommen `pos` in der Anreicherung von der KI
+  (feste Liste: noun, verb, adj, adv, pronoun, determiner, interjection,
+  phrase).
+- **Bericht nach der Anreicherung:** Prozentverteilung der Wortarten über
+  die **nächsten 300** Vorratswörter. Daraus legt Franz die Tagesrotation
+  fest — **nächste Iteration, nicht diese.**
 
-## 6. Die Antwort-Prüfung („das Vorschlagssystem")
+---
 
-Für Stufe 3 (und Stufe 2) muss das Tippen tolerant sein. Fünf
-Schichten, alle **offline und kostenlos**, in dieser Reihenfolge:
+## 6. Inhalte-Pipeline (Anreicherung)
 
-1. **Normalisieren:** Kleinschreibung, Satzzeichen weg, Klammern weg,
-   führendes „to " / „der/die/das " / „the " weg, Umlaute beidseitig
-   (ä ↔ ae), Mehrfach-Leerzeichen zusammen.
-2. **Varianten spalten:** Die Bedeutung wird an `,` `/` `;` zerlegt —
-   jede Teilbedeutung gilt als richtig. („to be (이다, 있다)" → „to be")
-3. **Tippfehler-Toleranz:** Levenshtein-Abstand ≤ 1 (kurze Wörter) bzw.
-   ≤ 2 (ab 7 Zeichen) → gilt als richtig, die saubere Form wird gezeigt.
-4. **Kern-Treffer:** Enthält die Eingabe das Hauptwort der Bedeutung
-   (oder umgekehrt), zählt es.
-5. **Selbst-Freigabe, die dazulernt:** Bleibt es dabei „nicht erkannt",
-   erscheint neben der Lösung der Knopf **„Hatte ich richtig"** — und
-   die getippte Formulierung wird als **Alias** zum Wort gespeichert.
-   Ab dann gilt sie für immer. Das System lernt so Franz' eigene
-   Ausdrucksweise, ganz ohne KI-Aufruf.
+### 6.1 Was je Wort entsteht
 
-## 7. Wiederholen, wann immer man will
-
-Zwei klar getrennte Knöpfe (Verwechslung wäre fatal fürs Vertrauen):
-
-- **🔁 Extra-Runde — zählt nicht:** freies Üben auf frei gewählter
-  Auswahl (die 10 wackeligsten · die von heute nochmal · ein Thema ·
-  alle Aussetzer). Der Terminplan wird **nicht** angefasst. Für
-  „ich will jetzt lernen" ohne Nebenwirkungen.
-- **⏩ Vorziehen — zählt:** holt die nächsten N Karten, die ohnehin bald
-  dran wären. Bewertungen zählen normal; FSRS behandelt frühe Abfragen
-  korrekt (weniger Zuwachs, weil die Erinnerung noch frisch ist).
-
-Dazu die **Wackel-Liste**: die Wörter mit der gerade niedrigsten
-Abrufwahrscheinlichkeit — berechenbar aus `stab` und dem letzten
-Termin, ohne neue Daten. Das ist die ehrliche Antwort auf „welche
-Wörter kann ich gerade *nicht*?".
-
-## 8. Zwei koreanisch-spezifische Hebel
-
-**① Sino-koreanische Bausteine (한자어).** Ein sehr großer Teil des
-koreanischen Wortschatzes ist sino-koreanisch und damit **zerlegbar**:
-wer weiß, dass 학 = „lernen" trägt, bekommt 학생 · 학교 · 학년 · 대학 ·
-유학 · 학기 fast geschenkt. Genau die Ableitungshilfe, die Franz nach
-eigener Aussage fehlt — sie existiert, sie ist nur unsichtbar.
-Umsetzung: pro Wort einmalig eine Zerlegung + „Wortfamilie aus deinem
-Stapel" erzeugen (Nacht-Batch, danach für immer gespeichert), gezeigt
-auf der **Rückseite** als Merkhilfe. Nie als Abfrage — es soll
-entlasten, nicht prüfen.
-
-**② Merkhilfe für Dauer-Aussetzer.** Ein Wort mit ≥ 3 Aussetzern wird
-markiert; auf Knopfdruck erzeugt der Trainer **einmalig** eine
-Schlüsselwort-Brücke (Klangähnlichkeit + Bild) und speichert sie an der
-Karte. Kostet einen Aufruf pro Problemwort, nicht pro Wiederholung.
-
-Ergänzend, ohne KI: **Beispielsatz als Kontext** nach dem Aufdecken
-(haben wir), und neue Wörter eines Tages bewusst **thematisch
-gestreut** einführen — semantisch benachbarte Neuwörter am selben Tag
-(rot/blau/grün) behindern sich gegenseitig.
-
-## 9. Deutsch UND Englisch auf den Karten?
-
-**Ja — aber mit klarer Rollentrennung, nicht gleichberechtigt.**
-
-- **Deutsch groß** als Hauptbedeutung: die Muttersprache ist der
-  schnellste und stabilste Bedeutungsanker. Der Umweg
-  Koreanisch → Englisch → Bedeutung kostet Tempo und erzeugt unscharfe
-  Einträge.
-- **Englisch klein darunter** als Feinschliff: Es schärft dort, wo
-  Deutsch mehrdeutig ist — und umgekehrt. Genau diese
-  Doppel-Perspektive verhindert den häufigsten Fehlertyp
-  („ich weiß die Bedeutung, aber welches der drei Wörter war es?").
-- **Auf der Frageseite von Stufe 2 gilt: nur Deutsch.** Zwei Sprachen
-  als Hinweis würden den Abruf zu leicht machen.
-
-Kosten, ehrlich: Der `ko`-Stapel hat heute nur `en`. Deutsche
-Bedeutungen müssten einmalig ergänzt werden (Nacht-Batch über den
-vorhandenen `uebersetzung`-Weg, ~1 Aufruf pro Wort, danach nie wieder)
-plus eine additive Spalte. Machbar an einem Abend.
-
-## 10. Die Last-Rechnung (ohne Schönfärberei)
-
-Faustwert: Jede Karte erzeugt im ersten Jahr grob 8–10 Wiederholungen.
-
-| | heute | nach Umbau |
+| Feld | Quelle | Regel |
 |---|---|---|
-| Neue Wörter/Tag | 3 | **5** |
-| Karten pro neuem Wort **am Anfang** | 2 | **1** (Produktion schläft) |
-| Ziel-Behaltensquote | 90 % | 93 % (+ ⅓ Wiederholungen) |
-| Wiederholungen/Tag im Dauerbetrieb | ~50 | **~65–75** |
-| Zeit/Tag | ~15 min | **~20–25 min** |
+| `en` | Inventar / bestehend | Hauptanker; Inventar-Glossen auf 1–3 Wörter gekürzt („A thing or an object" → „thing") |
+| `de` | KI | 1–3 Wörter, Alltagsdeutsch |
+| `ex`, `ex_tr` | KI | ein Satz, 해요체, nur A1/A2-Grammatik (MUSTER_EINFACH), 5–9 Wörter, enthält das Zielwort unverändert oder in gängiger Konjugation; Übersetzung Englisch. Bestehende Wörter **ohne** Satz bekommen einen, vorhandene Sätze bleiben |
+| `nuance` | KI | nur wenn nötig (Gebrauchseinschränkung, Sprechebene, typische Fehlerquelle), ≤ 60 Zeichen, sonst `null` |
+| `hanja` | Inventar + KI | §6.2 |
+| `pos` | Inventar / KI | §5.4 |
+| Audio | TTS | Wort **und** Satz über `baue-tts.mjs` in den Cache `v1/ko/<voice>/<sha256>.mp3` — dieselbe Stimme wie die App, damit der Cache trifft |
 
-Heißt: **Franz lernt 60 % mehr neue Wörter und behält sie deutlich
-besser — für rund 5–10 Minuten mehr am Tag.** Der Deckel bleibt ein
-Tagespensum (nichts staut sich auf), und die Zahl neuer Wörter wird
-ein Regler im Profil, kein fester Wert.
+### 6.2 Hanja — Schutz vor Fehlzuordnung
 
-## 11. Entscheidungen (Franz, 06.09.) — verbindlich
+- **Torwächter ist das Inventar:** Nur Wörter mit `hanja`-Feld in
+  `topik1-woerter.json` (688 Stück) bekommen eine Hanja-Zeile. Die KI
+  **wählt die Zeichen nicht** — sie bekommt sie vorgegeben und liefert je
+  Zeichen nur deutsche Bedeutung und koreanische Lesung.
+- **Plausibilitätsprüfung im Skript:** Zeichenanzahl = Silbenanzahl des
+  sino-koreanischen Teils; die gelieferte Lesung muss silbenweise mit dem
+  Wort übereinstimmen (학교 = 學校 → 학/교). Stimmt etwas nicht →
+  `hanja = null`, Wort landet in `hanja_pruefen.json` für Franz.
+- Wörter **ohne** Inventar-Hanja (auch native Homographen wie 배, 눈, 말)
+  bekommen **nie** eine Hanja-Zeile. Lieber fehlend als falsch.
+- Später erweiterbar auf die 30 Pool-Wörter außerhalb des Inventars
+  (Stammabgleich 공부하다 → 공부 = 工夫) — nicht in dieser Umsetzung.
 
-1. **Behaltensquote: 93 %** — nur auf der `ko`-Seite. 해인s Seite
-   bleibt bei 90 %: Deutsch ist für sie ableitbar, und 53 Tage vor der
-   Prüfung wird ihr Lernrhythmus nicht angefasst.
-2. **Produktion auf Stufe 2: tippen wie bisher** (Hangul-Tastatur) —
-   der schärfste Test, Schreibung inklusive.
-3. **Alt-Karten: ja, einmalig gestreut einsammeln** (§5④).
-4. **Deutsch-Anker: ja** — einmaliger Nacht-Batch, Deutsch groß,
-   Englisch klein als Feinschliff (§9).
+### 6.3 Ausführung
 
-## 12. Umsetzungs-Etappen (nach dem Go)
+- **GitHub Action `vokabeln-anreichern.yml`**, manuell startbar
+  (`workflow_dispatch`); Secrets ANTHROPIC_API_KEY, OPENAI_API_KEY,
+  Supabase-URL + Service-Key **nur dort** (wie die Nacht-Workflows).
+- Schritt 1: bestehende `ko`-Wörter — fehlende Felder (`de`, `nuance`,
+  `hanja`, `pos`, ggf. `ex`, `inv_id`, `rang`) ergänzen, per Update
+  einzelner Spalten (nie `en`/`ko` überschreiben; Sicherung
+  `words_backup_v2` vorab).
+- Schritt 2: **nächste 300** Inventarwörter (Rang-Reihenfolge, ohne
+  Zahlen, ohne bereits vorhandene per `inv_id` und `ko`) → in `vorrat`
+  einfügen, anreichern, `bereit = true`.
+- Schritt 3: TTS für alle Wörter + Sätze aus 1 und 2 → `audio_ok = true`.
+- Batches von 25 Wörtern je KI-Aufruf, JSON-Ausgabe, Validierung
+  (Zielwort im Satz, Länge, Hanja-Prüfung); fehlgeschlagene Wörter
+  bleiben `bereit = false` und stehen im Lauf-Protokoll.
+- **Kosten (einmalig, geschätzt):** KI ≈ 1–2 € (≈ 530 Wörter),
+  TTS ≈ 0,50 € (≈ 1 060 Clips). Danach Nachfüllen, wenn der Vorrat unter
+  60 fällt (Action erneut starten; Hinweis in der App).
+- **Sandbox:** Die Action kennt einen Parameter `profil` (`ko` oder
+  `sb`); für den Test läuft sie zuerst mit `sb` und wenigen Wörtern.
+- **Manuell hinzugefügtes Wort** (Bibliothek „+"): beim Speichern ruft die
+  App die Trainer-Aktion `vokabelAnreichern` (ein Wort) — bei Erfolg
+  sofort komplett, offline bleibt es ohne Extras und wird vom nächsten
+  Action-Lauf nachgezogen. Manuelle Wörter sind sofort lernbar; die
+  Anreicherung ist bei ihnen Schmuck, keine Voraussetzung.
 
-1. **E1 — Algorithmus:** Lernschritte in der Sitzung, Behaltensquote,
-   „Schwer"-Deckel, geschärfte Knopf-Beschriftungen. *(Sofort spürbar,
-   kein neues UI.)*
-2. **E2 — Stufen:** Produktion gated, Reifeprüfung per Audio,
-   Antwort-Prüfung mit Alias-Lernen.
-3. **E3 — Extra-Runden** + Wackel-Liste.
-4. **E4 — Deutsch-Anker** + sino-koreanische Bausteine + Merkhilfen.
+---
+
+## 7. Oberfläche
+
+- **Review Erkennen:** Wort groß, Hanja-Chips, Audio-Knopf, Eingabefeld +
+  Vorschlagsliste. Nach Antwort: Bedeutung mit Nuance-Punkt, Beispielsatz
+  mit Audio, Bewertungsknöpfe.
+- **Review Produktion:** `water (Wasser·)` groß, Eingabefeld koreanisch.
+  Nach Antwort: Wort + Hanja + Satz + Audio.
+- **Review Hören:** Lautsprecher-Symbol groß, Wiederholen-Knopf,
+  Eingabefeld + Vorschlagsliste. Nach Antwort: wie Erkennen.
+- **Heute:** Zeile „Neue Wörter 0/5" mit Schalter „Heute keine neuen
+  Wörter"; Hinweis, wenn der Vorrat nicht bereit ist.
+- **Bibliothek:** Suche wie gewohnt (koreanisch direkt, Englisch, Deutsch,
+  Präfix zuerst, tippfehlertolerant — Suche darf tolerant sein, Prüfung
+  nicht). Je Wort drei kleine Stufen-Punkte (Erkennen · Produktion ·
+  Hören: leer / aktiv / gefestigt) und die Hanja-Zeile im Detail.
+- **Statistik:** Zähler je Stufe (Wörter im Erkennen / mit Produktion /
+  im Hören), Vorratsstand.
+- Alles im bestehenden Bewegungs-System (transform/opacity), Bär & Hase
+  unbewegt, iPhone 390×844 zuerst.
+
+---
+
+## 8. Sicherheit, Offline, Kosten
+
+- Kein Secret im Frontend; Anreicherung nur in Action/Edge Function.
+- Alle Tagesfunktionen laufen offline: Review, Vorschlagsliste
+  (Bibliothek liegt lokal), Diff, Ritual mit lokal gecachtem Audio
+  (Audio fehlt → Text). Die Einführung braucht **einmal** den Vorrat
+  online — die nächsten 20 bereiten Wörter werden lokal gepuffert
+  (`cacheKey`), dann geht auch das offline.
+- Keine Test-Schreibvorgänge gegen Franz' Live-Daten: alle Etappen
+  werden in der Sandbox `sb` mit eigenem Vorrat (`profile='sb'`) geprüft.
+  Migration 015 und den Action-Lauf startet Franz selbst mit Anleitung.
+
+---
+
+## 9. Etappen (Reihenfolge: meine Wahl)
+
+| # | Inhalt | Warum hier | Franz' Handgriff |
+|---|---|---|---|
+| **E2 Fundament + Pipeline** | Migration 015; `baue-tts.mjs` für Wort + Satz; Action `vokabeln-anreichern.yml` (Schritte 1–3, Hanja-Prüfung, Protokoll, Profil-Parameter); Trainer-Aktion `vokabelAnreichern`; Wortarten-Bericht der nächsten 300 | Inhalte brauchen Laufzeit und Franz' Start — laufen, während ich E3/E4 baue. Ohne bereite Wörter kann nichts eingeführt werden | Migration ausführen, Action starten (erst `sb`, dann `ko`), Trainer deployen |
+| **E3 Auswahl + Ritual** | Vorrat-Auswahl (§5.3) mit Doppel-Prüfung statt `nextFromPool`; Tageszahlen 5/130/100; Schalter; Einführungsritual (§4) mit Fokus-Regel, Hanja-Chips, Nuance-Blase; Kurz-Wiederholung | Erste sichtbare Frucht: neue Wörter kommen richtig | keiner |
+| **E4 Prüfung** | Vorschlagsliste Erkennen; exaktes Tippen + Jamo-Diff Produktion; Fokus-Regel im Review; Hanja/Nuance auf allen Karten | Baut auf den Feldern aus E2 auf | keiner |
+| **E5 Lebenslauf** | Produktions-Warmstart (§2.3); Hör-Verwandlung (§2.4) mit Audio-Karte, Fehlerzähler, Fallbacks | Braucht E4 für die Hör-Karte | keiner |
+| **E6 Bibliothek + Statistik** | Stufen-Punkte, Detail mit Hanja, Zähler, Vorratsstand-Hinweis; `koreanPool.js` entfernen | Abschluss, Sichtbarkeit | keiner |
+
+Jede Etappe: Sandbox-Prüfung (`?lang=sb`), Build, Commit + Push, kurzer
+Bericht mit Strg+F-Selbstchecks für die Handgriffe.
+
+---
+
+## 10. Entscheidungs-Log (Kurzform)
+
+- 93 % Ziel und Barely-Deckel nur `ko`.
+- Englisch bleibt Hauptanker, Deutsch in Klammern; Nuance als tippbarer Punkt.
+- Vorschlagsliste: nur eigene Bibliothek, en + de, ab 2. Zeichen, ≤ 5,
+  **nur richtiges Antippen zählt**, kein Fuzzy/Alias.
+- Produktion: exakt, Jamo-Diff, Tastatur manuell.
+- Fokus-Regel: beim Tippen alles weg außer Übersetzung, auch Audio.
+- Hör-Verwandlung: ab stab ≥ 21, Stabilität halbiert, erster Hör-Termin
+  ≤ 7 Tage, **kein Tageslimit**, Prüfung lazy bei der Wiederholung.
+- Quelle TOPIK-Inventar nach Rang, **ohne Zahlwörter**, Pflicht-Doppel-
+  prüfung gegen Bibliothek; keine Anti-Verwechslung, kein Familien-Bonus;
+  Rotation nach Prozent-Bericht (nächste Iteration).
+- Hanja nur mit Inventar-Torwächter + Lesungsprüfung.
+- Ritual: kein Raten, 10 s bis „Jetzt schreiben", Beispielsatz prominent,
+  Inhalte vorab für alle bestehenden + nächste 300 inkl. TTS.
+- Mengen 5 / 130 / 100 + manueller Schalter.
+- Abend-Check und Sitzungs-Leiter: noch nicht.
