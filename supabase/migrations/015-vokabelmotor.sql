@@ -24,6 +24,11 @@
 create table if not exists words_backup_v2 as
   select id, ko, en, pos, ex, ex_tr, now() as gesichert_am
   from words where profile = 'ko';
+-- Sicherungen sind nur fürs SQL-Fenster gedacht: Zugriff dicht
+-- (RLS an, keine Regel = nur der Service-Schlüssel kommt heran).
+-- Ohne diese Zeile warnt Supabase "RLS Disabled in Public".
+alter table words_backup_v2 enable row level security;
+alter table words_backup_wordclass enable row level security;
 
 -- ---------- 1. Wörter ----------
 alter table words add column if not exists de      text;     -- deutsche Bedeutung (in Klammern auf der Karte)
