@@ -60,9 +60,10 @@ export function HanjaZeile({ hanja, ko, className = '' }) {
               className={offen === i ? 'hanja-chip hanja-chip-an' : 'hanja-chip'}
               onPointerDown={(e) => e.stopPropagation()}
               onClick={() => setOffen(offen === i ? null : i)}
-              aria-label={`${h.z} ${h.les}: ${h.de}`}
+              aria-label={`${h.les}: ${h.de}`}
             >
-              <span className="hanja-zeichen">{h.z}</span>
+              {/* Nur die koreanische Silbe (Franz 06.09.: chinesische
+                  Zeichen braucht er nie) — die Bedeutung per Tipp */}
               <span className="hanja-lesung">{h.les}</span>
             </button>
             {offen === i && <Blase text={h.de} onClose={() => setOffen(null)} />}

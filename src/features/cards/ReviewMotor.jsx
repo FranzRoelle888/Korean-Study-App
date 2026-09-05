@@ -287,17 +287,9 @@ function ReviewMotor({ initialQueue, words, onRate, onUndo, onExit, profile, t, 
 
         {!checked && art !== 'produktion' && (
           <div className="type-area">
-            <ClearableInput
-              autoFocus
-              value={typed}
-              onChange={(e) => setTyped(e.target.value)}
-              onClear={() => setTyped('')}
-              onFocus={() => setTippt(true)}
-              onBlur={() => setTippt(false)}
-              placeholder={t.bedeutungPlatzhalter}
-              lang={profile.knownLang}
-              autoComplete="off"
-            />
+            {/* Vorschläge ÜBER dem Feld: so bleiben sie bei offener
+                Tastatur sichtbar (Franz 06.09.), die Karte schrumpft
+                derweil (.motor-karte.tippt) */}
             {liste.length > 0 ? (
               <ul className="vorschlaege">
                 {liste.map((v) => (
@@ -312,6 +304,17 @@ function ReviewMotor({ initialQueue, words, onRate, onUndo, onExit, profile, t, 
             ) : (
               <p className="vorschlag-hinweis">{typed.trim().length >= 2 ? t.keinTreffer : t.vorschlagHinweis}</p>
             )}
+            <ClearableInput
+              autoFocus
+              value={typed}
+              onChange={(e) => setTyped(e.target.value)}
+              onClear={() => setTyped('')}
+              onFocus={() => setTippt(true)}
+              onBlur={() => setTippt(false)}
+              placeholder={t.bedeutungPlatzhalter}
+              lang={profile.knownLang}
+              autoComplete="off"
+            />
             <button type="button" className="weiss-nicht" onClick={() => urteil(false)}>
               {t.weissNicht}
             </button>
@@ -330,11 +333,18 @@ function ReviewMotor({ initialQueue, words, onRate, onUndo, onExit, profile, t, 
           ))}
         </div>
       )}
+      {/* Falsch: rot = wirklich vertan (Again), grün = nur verklickt
+          (Franz 06.09.) — die Karte bleibt unverändert und kommt
+          heute später noch einmal, ohne Bewertung */}
       {checked && !correct && (
-        <div className="ratings ratings-eins">
+        <div className="ratings ratings-zwei">
           <button className="rate rate-again" onClick={() => rate('again')}>
-            <span className="rate-label">{t.weiter}</span>
-            <span className="rate-when">{t.again}</span>
+            <span className="rate-label">{t.again}</span>
+            <span className="rate-when">{t.wirklichVertan}</span>
+          </button>
+          <button className="rate rate-good" onClick={() => nextCard(true)}>
+            <span className="rate-label">{t.verklickt}</span>
+            <span className="rate-when">{t.verklicktSub}</span>
           </button>
         </div>
       )}
