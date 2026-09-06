@@ -132,8 +132,8 @@ export function trainerUebersetzung({ profile, wort }) {
    eingetragenes Wort -> { de, pos, nuance, ex, exTr, hanja }.
    hanja = Zeichenvorgabe aus dem Inventar ('' wenn keine) — das
    Modell liefert dazu nur Lesung + Bedeutung, nie eigene Zeichen. */
-export function trainerVokabelAnreichern({ profile, wort, en, pos, hanja, hatSatz }) {
-  return call({ action: 'vokabelAnreichern', profile, wort, en, pos, hanja, hatSatz })
+export function trainerVokabelAnreichern({ profile, wort, en, pos, hanja, hatSatz, hinweis }) {
+  return call({ action: 'vokabelAnreichern', profile, wort, en, pos, hanja, hatSatz, hinweis: hinweis || undefined })
 }
 
 /* Vokabel-Motor V2 (nur ko): gleichbedeutende Wörter unterscheidbar

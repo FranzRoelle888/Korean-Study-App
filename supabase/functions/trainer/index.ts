@@ -942,34 +942,70 @@ Deno.serve(async (req) => {
        jede Lesung muss eine Silbe des Wortes sein, in Reihenfolge;
        sonst bleibt hanja leer. Lieber fehlend als falsch. */
     if (action === 'vokabelAnreichern') {
-      if (profile !== 'ko') return json({ error: 'bad-profile' }, 400)
+      const lerntKoreanisch = profile === 'ko'
       const wort = typeof body.wort === 'string' ? body.wort.normalize('NFC').trim().slice(0, 40) : ''
       const en = typeof body.en === 'string' ? body.en.trim().slice(0, 80) : ''
       const posGegeben = typeof body.pos === 'string' ? body.pos.trim() : ''
-      const zeichen = [...(typeof body.hanja === 'string' ? body.hanja.normalize('NFKC') : '')].filter((c) =>
-        /[㐀-鿿]/.test(c)
-      )
+      const zeichen = lerntKoreanisch
+        ? [...(typeof body.hanja === 'string' ? body.hanja.normalize('NFKC') : '')].filter((c) => /[㐀-鿿]/.test(c))
+        : []
       const brauchtSatz = !body.hatSatz
+      /* Notizfeld (Franz 06.09.): die vom Lerner gewuenschte Nuance —
+         Richtung, nicht Wortlaut. Das Modell formuliert sie schoener
+         und ersetzt sie nur bei klarem Irrtum. */
+      const hinweis = typeof body.hinweis === 'string' ? body.hinweis.trim().slice(0, 120) : ''
       if (!wort) return json({ error: 'empty' }, 400)
 
+      const hinweisRegel = hinweis
+        ? `The learner added their own note about the intended meaning/usage: "${hinweis}". Treat it as the DIRECTION for "nuance": rephrase it concisely in the target note language, keep its intent. Only if the note is clearly wrong, write the correct nuance instead. Do not change the given gloss because of it.`
+        : ''
       const out = await callModel(
-        [
-          'You enrich ONE Korean vocabulary entry for a German learner (native German, fluent English; English is the primary gloss).',
-          'Input line: korean | english gloss (may be empty) | pos (may be empty) | hanja characters (or "-") | needsExample (yes/no).',
-          'Reply with ONLY this JSON object:',
-          '{"de":"<German gloss, 1-3 everyday words, nouns WITHOUT article>",',
-          ' "pos":"<one of noun, verb, adj, adv, pronoun, determiner, interjection, phrase; copy if given>",',
-          ' "nuance":<null in most cases; only a NEEDED usage restriction, politeness level or classic confusion, max 60 chars, German>,',
-          ' "ex":<only when needsExample is yes: ONE natural Korean sentence in polite 해요체 (ends with 요/죠/까), 4-9 words, beginner grammar, contains the word (conjugated is fine); else null>,',
-          ' "ex_tr":<English translation of ex, or null>,',
-          ' "hanja":<only when characters were given: array with one object PER GIVEN CHARACTER in the same order {"z":"<character as given>","les":"<its reading as ONE Hangul syllable as it appears in this word>","de":"<meaning, 1-2 German words>"}; else null>}',
-          'Be conservative: if unsure about a field, use null. Never invent readings or add characters.',
-        ].join('\n'),
+        lerntKoreanisch
+          ? [
+              'You enrich ONE Korean vocabulary entry for a German learner (native German, fluent English; English is the primary gloss).',
+              'Input line: korean | english gloss (may be empty) | pos (may be empty) | hanja characters (or "-") | needsExample (yes/no).',
+              'Reply with ONLY this JSON object:',
+              '{"de":"<German gloss, 1-3 everyday words, nouns WITHOUT article>",',
+              ' "pos":"<one of noun, verb, adj, adv, pronoun, determiner, interjection, phrase; copy if given>",',
+              ' "nuance":<null in most cases; only a NEEDED usage restriction, politeness level or classic confusion, max 60 chars, German>,',
+              ' "ex":<only when needsExample is yes: ONE natural Korean sentence in polite 해요체 (ends with 요/죠/까), 4-9 words, beginner grammar, contains the word (conjugated is fine); else null>,',
+              ' "ex_tr":<English translation of ex, or null>,',
+              ' "hanja":<only when characters were given: array with one object PER GIVEN CHARACTER in the same order {"z":"<character as given>","les":"<its reading as ONE Hangul syllable as it appears in this word>","de":"<meaning, 1-2 German words>"}; else null>}',
+              'Be conservative: if unsure about a field, use null. Never invent readings or add characters.',
+              hinweisRegel,
+            ].join('\n')
+          : [
+              'You enrich ONE German vocabulary entry for a Korean learner at A1/A2 level. Her card shows the German word (nouns WITH article) and a meaning line "English (한국어)".',
+              'Input line: german | meaning line (may be empty) | pos (may be empty) | - | needsExample (yes/no).',
+              'Reply with ONLY this JSON object:',
+              '{"de":null,',
+              ' "pos":"<one of noun, verb, adj, adv, phrase, other; copy if given; noun if the word carries der/die/das>",',
+              ' "nuance":<null in most cases; only a NEEDED usage restriction, register, or classic confusion with a similar German word, max 60 chars, written in KOREAN>,',
+              ' "ex":<only when needsExample is yes: ONE natural German sentence, A1/A2 grammar only (present tense or simple perfect, main clause), 4-9 words, everyday situation, contains the word; else null>,',
+              ' "ex_tr":<Korean translation of ex, or null>,',
+              ' "hanja":null}',
+              'Keep the example SIMPLE and reachable for an A2 learner: A1/A2 grammar, common everyday words, short sentence — plain but natural.',
+              'Be conservative: if unsure about a field, use null.',
+              hinweisRegel,
+            ].join('\n'),
         [{ role: 'user', content: `${wort} | ${en} | ${posGegeben} | ${zeichen.join('') || '-'} | ${brauchtSatz ? 'yes' : 'no'}` }],
         1500
       )
 
-      const POS_OK = ['noun', 'verb', 'adj', 'adv', 'pronoun', 'determiner', 'interjection', 'phrase']
+      const POS_OK = ['noun', 'verb', 'adj', 'adv', 'pronoun', 'determiner', 'interjection', 'phrase', 'other']
+      /* Deutsch: Satz muss das Wort (ohne Artikel) enthalten — bei
+         Verben reicht der Stamm (anrufen -> "rufe … an" faellt durch,
+         "anrufen/anruft" trifft; gut genug, sonst bleibt ex leer) */
+      const deutschDrin = (satz: string, w: string, p: string | null) => {
+        const kern = w.replace(/^(der|die|das)\s+/i, '').toLowerCase()
+        const s = satz.toLowerCase()
+        if (s.includes(kern)) return true
+        if (p === 'verb') {
+          const stamm = kern.replace(/e?n$/, '')
+          return stamm.length >= 3 && s.includes(stamm)
+        }
+        return false
+      }
       const text = (s: unknown, min: number, max: number) => {
         if (typeof s !== 'string') return null
         const t = s.normalize('NFC').trim().replace(/\s+/g, ' ')
@@ -1006,7 +1042,15 @@ Deno.serve(async (req) => {
         de = text(j.de, 1, 40)
         pos = POS_OK.includes(j.pos) ? j.pos : POS_OK.includes(posGegeben) ? posGegeben : null
         nuance = j.nuance == null ? null : text(j.nuance, 3, 80)
-        if (brauchtSatz) {
+        if (brauchtSatz && !lerntKoreanisch) {
+          const satz = text(j.ex, 4, 120)
+          const tr = text(j.ex_tr, 2, 140)
+          const n = satz ? satz.split(' ').length : 0
+          if (satz && tr && n >= 3 && n <= 14 && deutschDrin(satz, wort, pos)) {
+            ex = satz
+            exTr = tr
+          }
+        } else if (brauchtSatz) {
           const satz = text(j.ex, 4, 90)
           const tr = text(j.ex_tr, 3, 140)
           if (satz && tr && /(요|죠|까)[.!?…]*$/.test(satz)) {
@@ -1063,7 +1107,8 @@ Deno.serve(async (req) => {
        Die App schickt die Gruppe, zurück kommt je Wort eine
        UNTERSCHEIDENDE Nuance; die App schreibt sie in alle Mitglieder. */
     if (action === 'vokabelNuancen') {
-      if (profile !== 'ko') return json({ error: 'bad-profile' }, 400)
+      /* 해인 (de/sb): Notizen auf Koreanisch, ihre Muttersprache */
+      const notizSprache = profile === 'ko' ? 'German' : 'KOREAN'
       const gruppe = Array.isArray(body.gruppe)
         ? body.gruppe
             .slice(0, 6)
@@ -1078,8 +1123,10 @@ Deno.serve(async (req) => {
       if (gruppe.length < 2) return json({ error: 'empty' }, 400)
       const out = await callModel(
         [
-          'Several Korean words in a learner\'s deck share the SAME English/German gloss, so they look identical in the app. For EACH word write a short DISTINGUISHING note in German (max 60 characters, no full sentence needed): what makes THIS word different from the others — usage, register, nuance, typical context.',
-          'Examples: 때 -> "Zeitpunkt/Moment (als, wenn) – nicht Dauer"; 시간 -> "Zeit als Dauer oder Uhrzeit, messbar"; 물어보다 -> "höflicher/alltäglicher: mal nachfragen"; 묻다 -> "neutral fragen, auch schriftlich".',
+          `Several words in a learner's deck share the SAME gloss, so they look identical in the app. For EACH word write a short DISTINGUISHING note in ${notizSprache} (max 60 characters, no full sentence needed): what makes THIS word different from the others — usage, register, nuance, typical context.`,
+          profile === 'ko'
+            ? 'Examples: 때 -> "Zeitpunkt/Moment (als, wenn) – nicht Dauer"; 시간 -> "Zeit als Dauer oder Uhrzeit, messbar"; 물어보다 -> "höflicher/alltäglicher: mal nachfragen"; 묻다 -> "neutral fragen, auch schriftlich".'
+            : 'The words are German, the learner is Korean (A2). Examples: sehen -> "그냥 보이다, 눈에 들어옴"; schauen -> "의도적으로 바라보다, 구어체"; die Uhr -> "시계 (물건)"; die Stunde -> "60분, 시간의 길이".',
           'Input lines: korean | english | german | example sentence.',
           'Reply with ONLY a JSON array [{"ko":"...","nuance":"..."}], one object per word, notes must differ from each other. Never leave a word out.',
         ].join('\n'),

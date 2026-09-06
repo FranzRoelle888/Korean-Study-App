@@ -13,8 +13,6 @@ import {
   dueCards,
   dailyStatus,
   makeIntroducedWord,
-  makeKnownWord,
-  ersatzKandidat,
   countIntroductionToday,
   getNumberChallenge,
   getArticleChallenge,
@@ -51,12 +49,12 @@ import { inventarEintrag } from '../core/inventarBezug'
 import { istMotor, trenneBedeutung, gleichbedeutende } from '../core/motor'
 import { trainerVokabelAnreichern, trainerVokabelNuancen } from '../features/trainer/trainerApi'
 import Einfuehrung from '../features/cards/Einfuehrung'
+import { motorInfoSichtbar } from '../features/today/MotorInfo'
 import ReviewMotor from '../features/cards/ReviewMotor'
 import './motor.css'
 import Home from '../features/today/Home'
 import Library from '../features/cards/Library'
 import Review from '../features/cards/Review'
-import DailyWord from '../features/cards/DailyWord'
 import NumberChallenge from '../features/challenges/NumberChallenge'
 import ArticleChallenge from '../features/challenges/ArticleChallenge'
 import PluralChallenge from '../features/challenges/PluralChallenge'
@@ -297,7 +295,7 @@ function App() {
   const due = dueCards(words, cards)
   /* Vokabel-Motor (Franz): Vorrat statt Pool, Neu-Stopp bei > 100 fälligen */
   const motor = istMotor(profileId)
-  const daily = dailyStatus(words, { vorrat, faellig: due.length })
+  const daily = dailyStatus(words, { vorrat, faellig: due.faelligGesamt ?? due.length })
 
   /* Woerter, die immer wieder vergessen werden (>= 3 Ausrutscher
      auf mindestens einer Karte). Anki nennt sie "leeches". */
@@ -374,37 +372,25 @@ function App() {
   /* "Kenn ich schon" (A2-Sprint): Wort als angelernt buchen —
      zaehlt NICHT als heutige Neu-Einfuehrung (kein countIntroduction),
      und die App liefert sofort den naechsten Pool-Kandidaten. */
-  function handleKennIch(poolEntry, warteschlangeKos) {
-    const ersatz = ersatzKandidat(words, warteschlangeKos)
-    const { word, c1, c2 } = makeKnownWord(poolEntry)
-    const newWords = [word, ...words]
-    const newCards = [c1, c2, ...cards]
-    setWords(newWords)
-    setCards(newCards)
-    writeWordsCache(newWords)
-    writeCardsCache(newCards)
-    persistNewWord(word, c1, c2).catch((err) => {
-      queueFailed({ t: 'new', word, c1, c2 })
-      setOffline(true)
-      console.warn('Cloud save (kenn ich schon) failed:', err?.message || err)
-    })
-    return ersatz
-  }
-
   function handleCompleteNumber() {
     completeNumberChallenge()
     setNumberState((s) => ({ ...s, done: true }))
   }
 
-  function handleAdd(en, ko, pos) {
+  function handleAdd(en, ko, pos, notiz) {
     const res = validateNewWord(words, en, ko, pos)
     if (res.error) return res
-    /* Vokabel-Motor: `water (Wasser)` -> Englisch + Deutsch getrennt */
-    if (motor) {
+    /* Franz' Seite: `water (Wasser)` -> Englisch + Deutsch getrennt.
+       (해인s Bedeutung ist `English (한국어)` — die Klammer bleibt.) */
+    if (profile.targetLang === 'ko') {
       const teile = trenneBedeutung(res.word.en)
       res.word.en = teile.en
       if (teile.de) res.word.de = teile.de
     }
+    /* Notizfeld (Franz 06.09.): die gewuenschte Nuance steht sofort
+       auf der Karte und geht dem Modell als Richtung mit */
+    const hinweis = String(notiz ?? '').trim().slice(0, 120)
+    if (hinweis) res.word.nuance = hinweis
     const newWords = [res.word, ...words]
     const newCards = [res.c1, res.c2, ...cards]
     setWords(newWords)
@@ -416,7 +402,7 @@ function App() {
       setOffline(true)
       console.warn('Cloud save (new word) failed:', err?.message || err)
     })
-    if (profile.targetLang === 'ko') reichereNeuesWortAn(res.word)
+    if (motor) reichereNeuesWortAn(res.word, hinweis)
     return { word: res.word }
   }
 
@@ -427,8 +413,9 @@ function App() {
      etwas (offline, Limit, Migration fehlt), bleibt das Wort schlicht
      ohne Extras; der Anreicherungs-Lauf holt sie später nach. Das Wort
      ist in jedem Fall sofort lernbar. */
-  async function reichereNeuesWortAn(word) {
-    const inv = await inventarEintrag(word.ko).catch(() => null)
+  async function reichereNeuesWortAn(word, hinweis = '') {
+    /* Inventar-Bezug (Hanja, Rang) gibt es nur fuer Koreanisch */
+    const inv = profile.targetLang === 'ko' ? await inventarEintrag(word.ko).catch(() => null) : null
     const bezug = inv
       ? { invId: inv.id, rang: inv.rang != null && inv.rang < 99999 ? inv.rang : null, pos: word.pos || inv.pos || null }
       : {}
@@ -439,6 +426,7 @@ function App() {
       pos: bezug.pos || word.pos || '',
       hanja: inv?.hanja || '',
       hatSatz: !!word.ex,
+      hinweis,
     })
       .catch(() => ({}))
       .then((res) => {
@@ -447,6 +435,8 @@ function App() {
         if (bezug.rang != null) felder.rang = bezug.rang
         if (!word.pos && (res.pos || bezug.pos)) felder.pos = res.pos || bezug.pos
         if (res.de) felder.de = res.de
+        /* Eigener Hinweis bleibt Richtung: das Modell darf ihn nur
+           schoener formulieren (res.nuance kommt dann daraus) */
         if (res.nuance) felder.nuance = res.nuance
         if (res.hanja) felder.hanja = res.hanja
         if (!word.ex && res.ex) {
@@ -680,6 +670,7 @@ function App() {
             dailyLeft={daily.left}
             /* Vokabel-Motor (Franz): Grund für „nichts Neues" + Pause-Schalter */
             neuGrund={motor ? daily.grund : null}
+            zeigeMotorInfo={motorInfoSichtbar(profileId, todayStr())}
             onPauseToggle={
               motor
                 ? () => {
@@ -723,17 +714,6 @@ function App() {
             onExit={() => setView('home')}
             profile={profile}
             t={t}
-          />
-        )}
-        {view === 'daily' && !motor && (
-          <DailyWord
-            candidates={daily.candidates}
-            onIntroduce={handleIntroduce}
-            onKennIch={handleKennIch}
-            onExit={() => setView('home')}
-            profile={profile}
-            t={t}
-            tt={tt}
           />
         )}
         {view === 'number' && (

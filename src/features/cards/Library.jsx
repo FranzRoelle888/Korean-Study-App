@@ -149,6 +149,7 @@ function Library({ vocab, cards, onAdd, onEdit, onDelete, trickyIds, profile, t,
   const [query, setQuery] = useState('')
   const [sort, setSort] = useState('newest') // 'newest' | 'alpha'
   const [pos, setPos] = useState('') // Wortart des neuen Wortes
+  const [notiz, setNotiz] = useState('') // Hinweis fuer die KI (gewuenschte Nuance)
   const [posFilter, setPosFilter] = useState('') // '' = alle
   const [trickyOnly, setTrickyOnly] = useState(false)
 
@@ -205,12 +206,13 @@ function Library({ vocab, cards, onAdd, onEdit, onDelete, trickyIds, profile, t,
 
   function handleSubmit(e) {
     e.preventDefault()
-    const result = onAdd(en, ko, pos)
+    const result = onAdd(en, ko, pos, notiz)
     if (result.error) {
       setError(result.error === 'duplicate' ? t.duplicate(result.word) : t[result.error])
       setJustAdded('')
       return
     }
+    setNotiz('')
     setJustAdded(t.addedOk(result.word.ko))
     setError('')
     setEn('')
@@ -332,6 +334,19 @@ function Library({ vocab, cards, onAdd, onEdit, onDelete, trickyIds, profile, t,
             </button>
           ))}
         </div>
+
+        {/* Hinweis fuer die KI (Franz 06.09.): gewuenschte Nuance oder
+            Bedeutung — steht sofort auf der Karte, das Modell darf sie
+            nur schoener formulieren */}
+        <ClearableInput
+          className="notiz-feld"
+          value={notiz}
+          onChange={(e) => setNotiz(e.target.value)}
+          onClear={() => setNotiz('')}
+          placeholder={t.notizPlatzhalter}
+          autoComplete="off"
+          maxLength={120}
+        />
 
         {error && <p className="add-msg add-error">{error}</p>}
         {justAdded && <p className="add-msg add-ok">{justAdded}</p>}
@@ -539,6 +554,12 @@ function VocabRow({ vocab, onEdit, onDelete, tricky, stufe, profile, t }) {
       <div className="vocab-texts">
         <span className="vocab-ko" lang={profile.targetLang}>
           <ArtikelWort text={vocab.ko} />
+          {/* Pluralform direkt neben dem Nomen (Franz 06.09.) */}
+          {vocab.pos === 'noun' && vocab.plural && (
+            <span className="plural-neben" lang="de">
+              · {vocab.plural}
+            </span>
+          )}
           <PosTag pos={vocab.pos} t={t} />
           {tricky && <span className="pos-tag tricky-tag">⚠</span>}
         </span>

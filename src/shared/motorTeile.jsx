@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { jamoDiff } from '../core/hangul'
+import { wortDiff } from '../core/vergleich'
 import { bedeutung } from '../core/motor'
 
 /* ============================================================
@@ -151,6 +152,71 @@ export function JamoVergleich({ eingabe, richtig, t }) {
           ))}
         </div>
       )}
+    </div>
+  )
+}
+
+/* ---------- Deutsch (해인): Plural neben dem Nomen, Verb-Chip ----------
+   Statt Hanja: beim Nomen die volle Pluralform (`die Tische`), beim
+   Verb ein Chip „trennbar" oder „unregelmäßig", wenn die Konjugation
+   das verrät (rufe an / fährst). Nichts davon wird abgefragt. */
+export function DeutschZeile({ word, className = '' }) {
+  if (!word) return null
+  if (word.pos === 'noun' && word.plural) {
+    return (
+      <span className={`de-zeile ${className}`.trim()} lang="de">
+        <span className="de-plural">{word.plural}</span>
+      </span>
+    )
+  }
+  if (word.pos === 'verb') {
+    /* conj = Nachtlauf-Objekt (ich/du/er…), konj = Kurzform aus der
+       Goethe-Liste ("ruft an") bei Vorratswörtern im Ritual */
+    const konj = word.conj || word.konj
+    const formen = konj && typeof konj === 'object' ? Object.values(konj) : typeof konj === 'string' ? [konj] : []
+    const trennbar = formen.some((f) => /\s/.test(String(f)))
+    const grund = String(word.ko || '').toLowerCase().replace(/e?n$/, '')
+    const er = typeof konj === 'string' ? konj : konj && typeof konj === 'object' ? String(konj.er || '') : ''
+    const unregel = !!er && !er.toLowerCase().replace(/\s.*$/, '').startsWith(grund.slice(0, Math.max(2, grund.length - 1)))
+    if (!trennbar && !unregel) return null
+    return (
+      <span className={`de-zeile ${className}`.trim()} lang="de">
+        {trennbar && <span className="de-chip">trennbar</span>}
+        {unregel && <span className="de-chip">unregelmäßig</span>}
+        {er && <span className="de-form">er {er}</span>}
+      </span>
+    )
+  }
+  return null
+}
+
+/* Eingabe gegen Lösung, sprachabhängig: Koreanisch als Jamo-Vergleich,
+   Deutsch Buchstabe für Buchstabe mit getrennt bewertetem Artikel */
+export function WortVergleich({ eingabe, richtig, lang, t }) {
+  if (lang !== 'de') return <JamoVergleich eingabe={eingabe} richtig={richtig} t={t} />
+  const { teile, artikel } = wortDiff(eingabe, richtig, 'de')
+  const zeile = (label, wert, klasse) => (
+    <div className="jamo-zeile">
+      <span className="jamo-label">{label}</span>
+      <span className="jamo-wort jamo-wort-de">
+        {artikel && (
+          <span className={'jamo-silbe' + (artikel.ok ? '' : klasse === 'ist' ? ' jamo-falsch' : ' jamo-soll')}>
+            {(klasse === 'ist' ? artikel.ist : artikel.soll) || '·'}&nbsp;
+          </span>
+        )}
+        {teile.map((s, i) => (
+          <span key={i} className={'jamo-silbe' + (s.ok ? '' : klasse === 'ist' ? ' jamo-falsch' : ' jamo-soll')}>
+            {(klasse === 'ist' ? s.ist : s.soll) || '·'}
+          </span>
+        ))}
+      </span>
+    </div>
+  )
+  return (
+    <div className="jamo-vergleich" lang="de">
+      {zeile(t.deinWort, eingabe, 'ist')}
+      {zeile(t.richtigWort, richtig, 'soll')}
+      {artikel && !artikel.ok && <div className="jamo-details">{t.artikelFalsch}</div>}
     </div>
   )
 }

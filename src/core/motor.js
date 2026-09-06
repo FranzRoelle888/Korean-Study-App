@@ -13,7 +13,8 @@
    ============================================================ */
 import { normKo } from './hangul.js'
 
-export const istMotor = (profileId) => profileId === 'ko'
+/* Seit 06.09. auf beiden Seiten (해인 mit 3 neuen Woertern/Tag) */
+export const istMotor = (profileId) => profileId === 'ko' || profileId === 'de' || profileId === 'sb'
 
 /* Stabilität, ab der die Erkennen-Karte zur Hör-Karte wird (Tage) */
 export const HOER_SCHWELLE = 21

@@ -12,6 +12,7 @@ import {
   SkylineBand,
 } from '../../shared/icons'
 import { istNotizbuch } from '../../core/profiles'
+import MotorInfo from './MotorInfo'
 import { BaerIcon, HaseIcon, HeuteKringel, StreakHerz, GrussKringel } from '../../shared/sticker'
 
 /* ============================================================
@@ -29,6 +30,7 @@ function Home({
   dailyLeft,
   neuGrund,
   onPauseToggle,
+  zeigeMotorInfo,
   numberDone,
   streak,
   week,
@@ -156,6 +158,8 @@ function Home({
             🃏 {t.modeArtikel}
           </button>
         )}
+        {/* „Was ist neu?" — nur 해인, eine Woche lang (Franz 06.09.) */}
+        {zeigeMotorInfo && <MotorInfo />}
         <button
           className={dailyDone ? 'action action-secondary aktion-wort' : 'action action-full action-full-purple aktion-wort'}
           onClick={onDaily}

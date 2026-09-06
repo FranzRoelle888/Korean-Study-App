@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { leseA2Belege } from '../../core/storage'
-import { werteAus, empfehlung, dTage, PRUEFUNGS_DATUM } from './radarLogik'
+import { werteAus, empfehlung } from './radarLogik'
 
 /* ============================================================
    STÄRKEN-RADAR — die Steuerungs-Schicht im A2-Tab (Phase 5)
@@ -34,15 +34,9 @@ function Radar({ profile, t, starte }) {
     }
   }, [profile.id])
 
-  const tage = dTage()
-  const datumKo = `${PRUEFUNGS_DATUM.getMonth() + 1}월 ${PRUEFUNGS_DATUM.getDate()}일`
-
-  /* Countdown-Chip gibt es immer — auch ohne Daten */
-  const dChip = (
-    <span className="ra-dday" lang="ko">
-      {tage >= 0 ? `D-${tage}` : '끝!'} · {datumKo}
-    </span>
-  )
+  /* Kein Prüfungstermin mehr (Franz 06.09.): 해인 nutzt das A2-Training
+     zum Üben, der Countdown-Chip ist deshalb weg */
+  const dChip = null
 
   if (belege === null) {
     return (

@@ -2,9 +2,9 @@ import { useState, useEffect } from 'react'
 import { SuccessMark, MoonIcon } from '../../shared/icons'
 import ClearableInput from '../../shared/ClearableInput'
 import { SpeakButton, speak, prewarmSpeech } from '../../shared/tts'
-import { HanjaZeile, Bedeutung, JamoVergleich } from '../../shared/motorTeile'
+import { HanjaZeile, Bedeutung, WortVergleich, DeutschZeile } from '../../shared/motorTeile'
 import { useTastaturZu } from '../../shared/tastatur'
-import { istGleich } from '../../core/hangul'
+import { istRichtig } from '../../core/vergleich'
 
 /* ============================================================
    EINFÜHRUNGSRITUAL (Vokabel-Motor V2, Konzept §4) — nur Franz
@@ -100,7 +100,7 @@ function Einfuehrung({ candidates, onIntroduce, onExit, profile, t }) {
   function submit(e) {
     e.preventDefault()
     if (!input.trim()) return
-    if (istGleich(input, entry.ko)) {
+    if (istRichtig(input, entry.ko, lang)) {
       const n = typed + 1
       setInput('')
       setDiff(null)
@@ -143,7 +143,11 @@ function Einfuehrung({ candidates, onIntroduce, onExit, profile, t }) {
             {entry.ko}
             <SpeakButton text={entry.ko} lang={lang} className="speak-on-dark" />
           </div>
-          <HanjaZeile hanja={entry.hanja} ko={entry.ko} className="verbergbar einf-hanja" />
+          {lang === 'de' ? (
+            <DeutschZeile word={entry} className="verbergbar einf-hanja" />
+          ) : (
+            <HanjaZeile hanja={entry.hanja} ko={entry.ko} className="verbergbar einf-hanja" />
+          )}
 
           {/* Die Bedeutung bleibt immer stehen */}
           <Bedeutung word={entry} className="daily-en" />
@@ -183,7 +187,7 @@ function Einfuehrung({ candidates, onIntroduce, onExit, profile, t }) {
                 {typed}/{NEEDED} · {t.einfDreimal}
               </span>
             </div>
-            {diff && <JamoVergleich eingabe={diff} richtig={entry.ko} t={t} />}
+            {diff && <WortVergleich eingabe={diff} richtig={entry.ko} lang={lang} t={t} />}
             <ClearableInput
               autoFocus
               value={input}

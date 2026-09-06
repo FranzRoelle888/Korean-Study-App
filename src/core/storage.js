@@ -47,13 +47,14 @@ const TAGES_ZAHLEN = {
   /* Vokabel-Motor V2 (Konzept §5.2, Go Franz 06.09.): 5 neue Woerter
      aus dem Vorrat, Deckel 130, keine neuen Woerter bei > 100
      faelligen (neuStopp). motor: schaltet Lebenslauf + Ritual frei. */
-  ko: { neueProTag: 5, deckel: 130, neuStopp: 100, ziel: 0.93, hartDeckel: 0.5, motor: true },
-  /* 해인: 90 % ist fuer ableitbares Deutsch richtig. Neue Woerter
-     auf Wunsch Franz (06.09.) vorerst 3 statt 5 — der Wiederhol-
-     stapel soll vor der Pruefung nicht weiter anwachsen. */
-  de: { neueProTag: 3, deckel: 80, ziel: 0.9, hartDeckel: null },
+  ko: { neueProTag: 5, deckel: 130, neuStopp: 100, ziel: 0.93, hartDeckel: 0.5, motor: true, vorratTabelle: true },
+  /* 해인 (Franz 06.09.): derselbe Motor wie bei Franz — 3 neue Woerter
+     (sie traegt viel von Hand ein), Deckel 130, Neu-Stopp bei > 100,
+     90 % Ziel (Deutsch ist ableitbar), Barely-Deckel. Ihr Vorrat liegt
+     in Dateien (deutschVorrat.js), nicht in der Datenbank. */
+  de: { neueProTag: 3, deckel: 130, neuStopp: 100, ziel: 0.9, hartDeckel: 0.5, motor: true, vorratTabelle: false },
   /* Sandbox verhält sich wie die de-Seite */
-  sb: { neueProTag: 3, deckel: 80, ziel: 0.9, hartDeckel: null },
+  sb: { neueProTag: 3, deckel: 130, neuStopp: 100, ziel: 0.9, hartDeckel: 0.5, motor: true, vorratTabelle: false },
 }
 const tagesZahlen = () => TAGES_ZAHLEN[activeProfile] ?? TAGES_ZAHLEN.ko
 const dailyNew = () => tagesZahlen().neueProTag
@@ -454,7 +455,13 @@ function readVorratCache() {
   }
 }
 async function ladeVorrat() {
-  if (!tagesZahlen().motor) return []
+  const tz = tagesZahlen()
+  if (!tz.motor) return []
+  /* 해인: Vorrat aus Dateien (Goethe-Liste nach Haeufigkeit) */
+  if (!tz.vorratTabelle) {
+    const { deutscherVorrat } = await import('./deutschVorrat')
+    return deutscherVorrat()
+  }
   const { data, error } = await mine(
     supabase.from('vorrat').select('*').eq('bereit', true).eq('uebersprungen', false)
   )
@@ -477,7 +484,7 @@ async function ladeVorrat() {
    wird. Feuer-und-vergessen — die Auswahl prueft ohnehin gegen die
    Bibliothek (inv_id + Wort), ein Fehlschlag hier ist unschaedlich. */
 export function markiereVorratEingefuehrt(invId) {
-  if (!invId) return
+  if (!invId || !tagesZahlen().vorratTabelle) return
   mine(supabase.from('vorrat').update({ uebersprungen: true }).eq('inv_id', invId)).then(({ error }) => {
     if (error) console.warn('Vorrat-Markierung fehlgeschlagen:', error.message)
   })
@@ -900,6 +907,9 @@ export function dueCards(words, cards) {
       hanja: byId[c.wordId].hanja || null,
       pos: byId[c.wordId].pos || null,
       invId: byId[c.wordId].invId || null,
+      /* 해인: Plural neben dem Nomen, Verb-Chips aus der Konjugation */
+      plural: byId[c.wordId].plural || null,
+      conj: byId[c.wordId].conj || null,
       createdAt: byId[c.wordId].createdAt || 0,
     }))
 
@@ -931,63 +941,30 @@ export function dueCards(words, cards) {
     .sort((a, b) => (a.due < b.due ? -1 : a.due > b.due ? 1 : 0))
     .slice(0, restDeckel)
 
-  /* Prio-Regel fuer NEUE Karten (Entscheidung Franz 01.09., nach
-     해인s Buecher-Massen-Eintrag):
-     1. Regulaere Wiederholungen + heutige Nochmal-Karten haben
-        Vorrang und fuellen den 50er-Deckel.
-     2. On top kommen IMMER bis zu 6 heute erstellte Karten
-        (= die 3 Tages-Woerter mit je 2 Karten) -> Tagesmaximum 56.
-        (Die App kann Tages-Woerter nicht von handischen Eintraegen
-        unterscheiden — die NEUESTEN 6 des Tages sind an normalen
-        Tagen exakt die Tages-Woerter.)
-     3. Alle uebrigen neuen Karten (Massen-Eintraege, alter
-        Rueckstand) ruecken nur NACH, wenn unter dem Deckel Platz
-        frei ist — aelteste zuerst, Stueck fuer Stueck. Einmal
-        gelernt, sind sie normale Karten im regulaeren Rhythmus.
-     Selbst ein 150-Woerter-Bulk macht den Tag damit nie groesser
-     als 56 Karten. */
-  /* Nachzieh-Woerter (Goethe/TOPIK-Stapel) erkennt die App an der
-     kuratierten Pool-Liste selbst — ein Wort, das dort steht, kam
-     (sehr wahrscheinlich) uebers Nachziehen, nicht von Hand. */
-  const poolListe = new Set(poolFor(activeProfile).map((e) => e.ko.trim()))
-  /* Vokabel-Motor: Woerter aus dem Vorrat tragen eine Inventar-Id —
-     die zaehlen wie Pool-Woerter (reservierte Tages-Slots) */
-  const ausPool = (c) => {
-    const w = byId[c.wordId] || {}
-    return w.invId || poolListe.has(((w.ko ?? c.ko) || '').trim()) ? 1 : 0
-  }
+  /* NEUE Karten (Entscheidung Franz 06.09., Vokabel-Motor auf beiden
+     Seiten): keine reservierten Plaetze mehr. Neue Karten sind
+     ganz normale Wiederholungen und ruecken in den Deckel nach —
+     aelteste zuerst. Ein Massen-Eintrag wird so ueber Tage
+     abgearbeitet, und solange ueber neuStopp Karten faellig sind,
+     kommen keine Nachzieh-Woerter dazu (dailyStatus). Einzige
+     Ausnahme: Was HEUTE angelegt wurde (Ritual-Woerter, heutige
+     Hand-Eintraege) kommt immer in den Stapel — das sind wenige
+     Karten, und der Tag soll mit dem Neuen enden, nicht ohne. */
+  const heuteAngelegt = (c) => (c.createdAt || 0) >= learningDayStartMs()
+  const ersteHeute = cards.filter((c) => c.lastReviewed === t && c.reps === 1).length
+  const vonHeute = fresh.filter(heuteAngelegt).sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0))
+  const rueckstand = fresh.filter((c) => !heuteAngelegt(c)).sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0))
+  const slots = Math.max(0, restDeckel - review.length - again.length - ersteHeute)
+  const freshCapped = [...vonHeute, ...rueckstand.slice(0, slots)]
 
-  /* Heute ERSTMALS gelernte Karten (reps genau 1) zaehlen gegen
-     ihre jeweiligen Toepfe — sonst gibt jede erledigte neue Karte
-     ihren Platz sofort wieder frei und der naechste Schwung rueckt
-     nach, endlos (Bug-Meldung 해인, 01.09.). */
-  const ersteHeute = cards.filter((c) => c.lastReviewed === t && c.reps === 1)
-  const poolHeuteGelernt = ersteHeute.filter(ausPool).length
-  const neuHeuteGelernt = ersteHeute.length - poolHeuteGelernt
-
-  /* 6 RESERVIERTE Slots (3 Woerter x 2 Karten), die AUSSCHLIESSLICH
-     Pool-Woerter belegen koennen (Entscheidung Franz 01.09.) — die
-     Tages-Woerter landen damit garantiert sofort im Stapel, egal
-     wie gross der haendische Rueckstand ist. Haendische Eintraege
-     kommen NIE in diese Slots. */
-  const bonus = fresh
-    .filter((c) => ausPool(c))
-    .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
-    .slice(0, Math.max(0, dailyNew() * 2 - poolHeuteGelernt))
-  const bonusIds = new Set(bonus.map((c) => c.id))
-
-  /* Alles uebrige Neue rueckt nur in freie Deckel-Plaetze nach —
-     und heute schon Gelerntes haelt seinen Platz besetzt. */
-  const nachrueckPool = fresh
-    .filter((c) => !bonusIds.has(c.id))
-    .sort((a, b) => ausPool(b) - ausPool(a) || (a.createdAt || 0) - (b.createdAt || 0))
-  const slots = Math.max(0, restDeckel - review.length - again.length - neuHeuteGelernt)
-  const freshCapped = [...bonus, ...nachrueckPool.slice(0, slots)]
-
-  return [
+  const stapel = [
     ...spaceOutPairs(shuffleForToday([...again, ...review])),
     ...spaceOutPairs(freshCapped),
   ]
+  /* Wie viel WIRKLICH faellig ist (ungedeckelt) — steuert den
+     Neu-Stopp; die Zahl haengt als Eigenschaft am Stapel */
+  stapel.faelligGesamt = all.filter((c) => c.reps > 0).length + again.length + fresh.length
+  return stapel
 }
 
 /* ============================================================
@@ -1087,7 +1064,9 @@ export function makeVorratWord(v) {
     en: v.en,
     ko: v.ko,
     pos: v.pos || null,
-    plural: null,
+    /* 해인: Pluralform kommt aus der Goethe-Liste mit; Konjugation
+       traegt der Nachtlauf nach */
+    plural: v.plural || null,
     pluralNote: null,
     conj: null,
     ex: v.ex || null,

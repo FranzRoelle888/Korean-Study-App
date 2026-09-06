@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react'
 import { previewInterval, formatInterval, hoerKarteMitText } from '../../core/storage'
 import { vorschlaege } from '../../core/motor'
-import { istGleich } from '../../core/hangul'
+import { istRichtig } from '../../core/vergleich'
 import Confetti from '../../shared/Confetti'
-import { MoonIcon, CardRidge } from '../../shared/icons'
+import { MoonIcon, CardRidge, CardSkyline } from '../../shared/icons'
 import ClearableInput from '../../shared/ClearableInput'
 import { SpeakButton, speak, prewarmSpeech } from '../../shared/tts'
-import { HanjaZeile, Bedeutung, JamoVergleich } from '../../shared/motorTeile'
+import { HanjaZeile, Bedeutung, WortVergleich, DeutschZeile } from '../../shared/motorTeile'
 import { useTastaturZu } from '../../shared/tastatur'
 
 /* ============================================================
@@ -160,7 +160,7 @@ function ReviewMotor({ initialQueue, words, onRate, onUndo, onExit, profile, t, 
   function pruefeTippen(e) {
     e.preventDefault()
     if (!typed.trim()) return
-    urteil(istGleich(typed, card.ko))
+    urteil(istRichtig(typed, card.ko, lang))
   }
 
   /* Erkennen/Hören: nur das Antippen des richtigen Eintrags zählt */
@@ -187,7 +187,7 @@ function ReviewMotor({ initialQueue, words, onRate, onUndo, onExit, profile, t, 
           className={`flashcard motor-karte ${flashClass} ${exiting ? 'card-fly-right' : ''} ${tippt ? 'tippt' : ''}`}
           onClick={tippt ? zeigen : undefined}
         >
-          <CardRidge />
+          {lang === 'de' ? <CardSkyline /> : <CardRidge />}
           <span className="card-tag">{tag}</span>
 
           {/* ---------- Vorderseite ---------- */}
@@ -201,7 +201,11 @@ function ReviewMotor({ initialQueue, words, onRate, onUndo, onExit, profile, t, 
               <div className="card-front" lang={lang}>
                 {card.ko}
               </div>
-              <HanjaZeile hanja={card.hanja} ko={card.ko} className="verbergbar" />
+              {lang === 'de' ? (
+                <DeutschZeile word={card} className="verbergbar" />
+              ) : (
+                <HanjaZeile hanja={card.hanja} ko={card.ko} className="verbergbar" />
+              )}
               {card.modus === 'audio' && (
                 <span className="hoer-hinweis verbergbar">{t.hoerMitText}</span>
               )}
@@ -229,7 +233,7 @@ function ReviewMotor({ initialQueue, words, onRate, onUndo, onExit, profile, t, 
               <div className="card-front" lang={lang}>
                 {card.ko}
               </div>
-              <HanjaZeile hanja={card.hanja} ko={card.ko} />
+              {lang === 'de' ? <DeutschZeile word={card} /> : <HanjaZeile hanja={card.hanja} ko={card.ko} />}
             </>
           )}
 
@@ -243,14 +247,15 @@ function ReviewMotor({ initialQueue, words, onRate, onUndo, onExit, profile, t, 
                     <SpeakButton text={card.ko} lang={lang} className="speak-inline" />
                   </span>
                 ) : (
-                  <JamoVergleich eingabe={typed} richtig={card.ko} t={t} />
+                  <WortVergleich eingabe={typed} richtig={card.ko} lang={lang} t={t} />
                 )
               ) : (
                 <span lang={profile.knownLang} className="answer-en">
                   <Bedeutung word={card} />
                 </span>
               )}
-              {art === 'produktion' && <HanjaZeile hanja={card.hanja} ko={card.ko} />}
+              {art === 'produktion' &&
+                (lang === 'de' ? <DeutschZeile word={card} /> : <HanjaZeile hanja={card.hanja} ko={card.ko} />)}
               <span className="answer-note">{correct ? t.correct : t.wrong}</span>
               {card.ex && (
                 <span className="card-example">
