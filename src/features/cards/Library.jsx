@@ -441,7 +441,9 @@ function VocabRow({ vocab, onEdit, onDelete, tricky, stufe, profile, t }) {
   const [error, setError] = useState('')
 
   function startEdit() {
-    setEn(vocab.en)
+    /* Vokabel-Motor: `water (Wasser)` vorbelegen, damit beide Teile
+       in einem Feld bearbeitet werden (beim Speichern getrennt) */
+    setEn(vocab.de ? bedeutung(vocab) : vocab.en)
     setKo(vocab.ko)
     setPos(vocab.pos || '')
     setError('')

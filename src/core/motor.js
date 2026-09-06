@@ -71,6 +71,35 @@ export function bedeutung(word) {
   return word.de ? `${word.en} (${word.de})` : word.en || ''
 }
 
+/* Eingabe `water (Wasser)` beim Eintragen/Bearbeiten in die zwei
+   Felder trennen. Ohne Klammer bleibt de unverändert (null = nicht
+   angefasst). Klammer am Ende zählt, innere Klammern nicht. */
+export function trenneBedeutung(text) {
+  const t = String(text ?? '').trim()
+  const m = t.match(/^(.*?)\s*\(([^()]+)\)$/)
+  if (!m || !m[1].trim()) return { en: t, de: null }
+  return { en: m[1].trim(), de: m[2].trim() }
+}
+
+/* Gleichbedeutende Wörter in der Bibliothek finden (gleiche
+   englische oder deutsche Bedeutung, grob normalisiert) */
+const bedeutungsKey = (s) =>
+  String(s ?? '')
+    .toLowerCase()
+    .replace(/\(.*?\)/g, '')
+    .replace(/^to /, '')
+    .replace(/[^a-zäöüß ]/g, '')
+    .trim()
+export function gleichbedeutende(words, word) {
+  const kEn = bedeutungsKey(word.en)
+  const kDe = bedeutungsKey(word.de)
+  return words.filter(
+    (w) =>
+      w.id !== word.id &&
+      ((kEn && bedeutungsKey(w.en) === kEn) || (kDe && bedeutungsKey(w.de) === kDe))
+  )
+}
+
 /* ---------- Stufen je Wort (§7) ----------
    0 = noch nicht da · 1 = aktiv · 2 = gefestigt
    Erkennen gefestigt = Karte ist schon Hör-Karte oder stab ≥ 21;

@@ -136,6 +136,12 @@ export function trainerVokabelAnreichern({ profile, wort, en, pos, hanja, hatSat
   return call({ action: 'vokabelAnreichern', profile, wort, en, pos, hanja, hatSatz })
 }
 
+/* Vokabel-Motor V2 (nur ko): gleichbedeutende Wörter unterscheidbar
+   machen. gruppe: [{ko, en, de, ex}] -> { nuancen: [{ko, nuance}] } */
+export function trainerVokabelNuancen({ profile, gruppe }) {
+  return call({ action: 'vokabelNuancen', profile, gruppe })
+}
+
 /* Grammatik-Erklärung (Text und/oder Foto) -> Vorschlagsliste.
    image: { media_type: 'image/jpeg', data: '<base64>' } oder null.
    Gespeichert wird erst nach Bestätigung in der App. */

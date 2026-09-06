@@ -48,8 +48,8 @@ import {
   setzeNeuePause,
 } from '../core/storage'
 import { inventarEintrag } from '../core/inventarBezug'
-import { istMotor } from '../core/motor'
-import { trainerVokabelAnreichern } from '../features/trainer/trainerApi'
+import { istMotor, trenneBedeutung, gleichbedeutende } from '../core/motor'
+import { trainerVokabelAnreichern, trainerVokabelNuancen } from '../features/trainer/trainerApi'
 import Einfuehrung from '../features/cards/Einfuehrung'
 import ReviewMotor from '../features/cards/ReviewMotor'
 import './motor.css'
@@ -399,6 +399,12 @@ function App() {
   function handleAdd(en, ko, pos) {
     const res = validateNewWord(words, en, ko, pos)
     if (res.error) return res
+    /* Vokabel-Motor: `water (Wasser)` -> Englisch + Deutsch getrennt */
+    if (motor) {
+      const teile = trenneBedeutung(res.word.en)
+      res.word.en = teile.en
+      if (teile.de) res.word.de = teile.de
+    }
     const newWords = [res.word, ...words]
     const newCards = [res.c1, res.c2, ...cards]
     setWords(newWords)
@@ -447,15 +453,40 @@ function App() {
           felder.ex = res.ex
           felder.exTr = res.exTr || null
         }
-        if (!Object.keys(felder).length) return
-        setWords((ws) => {
-          const neu = ws.map((w) => (w.id === word.id ? { ...w, ...felder } : w))
-          writeWordsCache(neu)
-          return neu
-        })
-        ergaenzeWortInhalte(word.id, felder).catch((err) =>
-          console.warn('Anreicherung nicht gespeichert:', err?.message || err)
-        )
+        if (Object.keys(felder).length) {
+          setWords((ws) => {
+            const neu = ws.map((w) => (w.id === word.id ? { ...w, ...felder } : w))
+            writeWordsCache(neu)
+            return neu
+          })
+          ergaenzeWortInhalte(word.id, felder).catch((err) =>
+            console.warn('Anreicherung nicht gespeichert:', err?.message || err)
+          )
+        }
+        /* Gleiche Bedeutung wie ein Wort, das schon da ist? Dann
+           bekommen ALLE Mitglieder eine unterscheidende Nuance —
+           sonst stünden sie in der Vorschlagsliste identisch
+           (Franz 06.09.). Feuer-und-vergessen. */
+        const neuesWort = { ...word, ...felder }
+        const geschwister = gleichbedeutende(words, neuesWort).slice(0, 5)
+        if (!geschwister.length) return
+        const gruppe = [neuesWort, ...geschwister].map((w) => ({ ko: w.ko, en: w.en, de: w.de, ex: w.ex }))
+        trainerVokabelNuancen({ profile: profileId, gruppe })
+          .then((r) => {
+            const nuancen = Array.isArray(r?.nuancen) ? r.nuancen : []
+            if (!nuancen.length) return
+            const nachKo = new Map(nuancen.map((n) => [n.ko, n.nuance]))
+            setWords((ws) => {
+              const neu = ws.map((w) => (nachKo.has(w.ko) ? { ...w, nuance: nachKo.get(w.ko) } : w))
+              writeWordsCache(neu)
+              return neu
+            })
+            for (const w of [neuesWort, ...geschwister]) {
+              const n = nachKo.get(w.ko)
+              if (n) ergaenzeWortInhalte(w.id, { nuance: n }).catch(() => {})
+            }
+          })
+          .catch(() => {})
       })
   }
 
@@ -463,6 +494,14 @@ function App() {
     const res = validateEdit(words, id, en, ko, pos)
     if (res.error) return res
     const alt = words.find((w) => w.id === id)
+    /* Vokabel-Motor: `water (Wasser)` -> Englisch + Deutsch getrennt;
+       ohne Klammer bleibt die deutsche Bedeutung, wie sie war */
+    let de
+    if (motor) {
+      const teile = trenneBedeutung(res.en)
+      res.en = teile.en
+      de = teile.de
+    }
     /* Anderes Wort = andere Grammatik. Sonst zeigt die Info-Tafel
        den Plural des ALTEN Wortes. */
     const clearExtras =
@@ -470,14 +509,14 @@ function App() {
     const newWords = words.map((w) =>
       w.id === id
         ? clearExtras
-          ? { ...w, en: res.en, ko: res.ko, pos: res.pos, plural: null, pluralNote: null, conj: null, extrasAuto: false }
-          : { ...w, en: res.en, ko: res.ko, pos: res.pos }
+          ? { ...w, en: res.en, ko: res.ko, pos: res.pos, plural: null, pluralNote: null, conj: null, extrasAuto: false, ...(de ? { de } : {}) }
+          : { ...w, en: res.en, ko: res.ko, pos: res.pos, ...(de ? { de } : {}) }
         : w
     )
     setWords(newWords)
     writeWordsCache(newWords)
-    updateWordCloud(id, res.en, res.ko, res.pos, clearExtras).catch((err) => {
-      queueFailed({ t: 'edit', id, en: res.en, ko: res.ko, pos: res.pos, clearExtras })
+    updateWordCloud(id, res.en, res.ko, res.pos, clearExtras, de).catch((err) => {
+      queueFailed({ t: 'edit', id, en: res.en, ko: res.ko, pos: res.pos, clearExtras, de })
       setOffline(true)
       console.warn('Cloud save (edit) failed:', err?.message || err)
     })

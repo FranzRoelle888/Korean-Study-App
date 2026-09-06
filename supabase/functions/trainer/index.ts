@@ -312,7 +312,7 @@ async function overLimit(profile: string) {
   /* Nur die eigenen Aktionen zählen — die speech-Funktion führt
      ihr eigenes Limit in speech_usage */
   const rows = await dbGet(
-    `trainer_usage?profile=eq.${profile}&action=in.(chat,summary,extract,uebung,satz,schreiben,studio_erklaerung,studio_aufgaben,studio_antwort,studio_bilanz,nachfrage,a2frage,a2schreiben,a2hoeren,a2lesen,a2sprechen1,a2sprechen2,vokabelAnreichern)&created_at=gt.${oneHourAgo}&select=id`
+    `trainer_usage?profile=eq.${profile}&action=in.(chat,summary,extract,uebung,satz,schreiben,studio_erklaerung,studio_aufgaben,studio_antwort,studio_bilanz,nachfrage,a2frage,a2schreiben,a2hoeren,a2lesen,a2sprechen1,a2sprechen2,vokabelAnreichern,vokabelNuancen)&created_at=gt.${oneHourAgo}&select=id`
   )
   return rows.length >= MAX_CALLS_PER_HOUR
 }
@@ -386,6 +386,7 @@ Deno.serve(async (req) => {
       action !== 'a2sprechen2' &&
       action !== 'uebersetzung' &&
       action !== 'vokabelAnreichern' &&
+      action !== 'vokabelNuancen' &&
       !String(action).startsWith('studio_') &&
       (!Array.isArray(messages) || messages.length > 60)
     )
@@ -886,8 +887,9 @@ Deno.serve(async (req) => {
       const out = await callModel(
         learnsKorean
           ? [
-              'You suggest the dictionary meaning for ONE Korean word a learner is adding to their vocabulary app.',
-              'Reply with ONLY this JSON: {"vorschlag":"<concise English meaning, like a dictionary gloss: \'to meet\', \'weather\', \'spicy\'. If the word has 2 common meanings, separate with \', \'>"}',
+              'You suggest the dictionary meaning for ONE Korean word a German learner (fluent in English) is adding to their vocabulary app.',
+              'Card format (Vokabel-Motor V2): English gloss followed by the German gloss in parentheses — e.g. "to meet (treffen)", "weather (Wetter)", "spicy (scharf)". English 1-3 words; German 1-3 everyday words, nouns WITHOUT article. If the word has 2 common meanings, separate with \', \' inside each part: "time, hour (Zeit, Stunde)".',
+              'Reply with ONLY this JSON: {"vorschlag":"<English (Deutsch)> in exactly that format"}',
               'If the input is not a real Korean word (typo, gibberish), reply {"vorschlag":""}.',
             ].join('\n')
           : [
@@ -1052,6 +1054,60 @@ Deno.serve(async (req) => {
         output_tokens: out.outputTokens,
       })
       return json({ de, pos, nuance, ex, exTr, hanja })
+    }
+
+    /* ---------- Nuancen bei gleicher Bedeutung (Vokabel-Motor, nur Franz) ----------
+       Ein neues Wort hat dieselbe Bedeutung wie eines in der
+       Bibliothek (묻다 / 물어보다 „to ask"). In der Vorschlagsliste
+       wären beide identisch — das darf nie sein (Franz 06.09.).
+       Die App schickt die Gruppe, zurück kommt je Wort eine
+       UNTERSCHEIDENDE Nuance; die App schreibt sie in alle Mitglieder. */
+    if (action === 'vokabelNuancen') {
+      if (profile !== 'ko') return json({ error: 'bad-profile' }, 400)
+      const gruppe = Array.isArray(body.gruppe)
+        ? body.gruppe
+            .slice(0, 6)
+            .map((g: { ko?: unknown; en?: unknown; de?: unknown; ex?: unknown }) => ({
+              ko: typeof g.ko === 'string' ? g.ko.normalize('NFC').trim().slice(0, 40) : '',
+              en: typeof g.en === 'string' ? g.en.trim().slice(0, 80) : '',
+              de: typeof g.de === 'string' ? g.de.trim().slice(0, 80) : '',
+              ex: typeof g.ex === 'string' ? g.ex.trim().slice(0, 120) : '',
+            }))
+            .filter((g: { ko: string }) => g.ko)
+        : []
+      if (gruppe.length < 2) return json({ error: 'empty' }, 400)
+      const out = await callModel(
+        [
+          'Several Korean words in a learner\'s deck share the SAME English/German gloss, so they look identical in the app. For EACH word write a short DISTINGUISHING note in German (max 60 characters, no full sentence needed): what makes THIS word different from the others — usage, register, nuance, typical context.',
+          'Examples: 때 -> "Zeitpunkt/Moment (als, wenn) – nicht Dauer"; 시간 -> "Zeit als Dauer oder Uhrzeit, messbar"; 물어보다 -> "höflicher/alltäglicher: mal nachfragen"; 묻다 -> "neutral fragen, auch schriftlich".',
+          'Input lines: korean | english | german | example sentence.',
+          'Reply with ONLY a JSON array [{"ko":"...","nuance":"..."}], one object per word, notes must differ from each other. Never leave a word out.',
+        ].join('\n'),
+        [{ role: 'user', content: gruppe.map((g: { ko: string; en: string; de: string; ex: string }) => `${g.ko} | ${g.en} | ${g.de} | ${g.ex}`).join('\n') }],
+        1200
+      )
+      const nuancen: { ko: string; nuance: string }[] = []
+      try {
+        const j = JSON.parse(out.text.replace(/^```(?:json)?/m, '').replace(/```\s*$/m, '').trim())
+        if (Array.isArray(j)) {
+          for (const e of j) {
+            const ko = typeof e?.ko === 'string' ? e.ko.normalize('NFC').trim() : ''
+            const n = typeof e?.nuance === 'string' ? e.nuance.trim().replace(/\s+/g, ' ') : ''
+            if (ko && n.length >= 3 && n.length <= 80 && gruppe.some((g: { ko: string }) => g.ko === ko)) {
+              nuancen.push({ ko, nuance: n })
+            }
+          }
+        }
+      } catch {
+        /* unbrauchbar -> leer, die App lässt alles wie es ist */
+      }
+      await dbInsert('trainer_usage', {
+        profile,
+        action: 'vokabelNuancen',
+        input_tokens: out.inputTokens,
+        output_tokens: out.outputTokens,
+      })
+      return json({ nuancen })
     }
 
     /* ---------- A2-Schreib-Training: Bewertung nach Goethe-Raster ----------

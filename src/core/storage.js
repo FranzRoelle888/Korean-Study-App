@@ -378,7 +378,7 @@ export async function flushPending() {
       else if (op.t === 'card') await persistCard(op.card)
       else if (op.t === 'newcard') await persistNewCard(op.card)
       else if (op.t === 'delcard') await deleteCardCloud(op.id)
-      else if (op.t === 'edit') await updateWordCloud(op.id, op.en, op.ko, op.pos, op.clearExtras)
+      else if (op.t === 'edit') await updateWordCloud(op.id, op.en, op.ko, op.pos, op.clearExtras, op.de)
       else if (op.t === 'del') await deleteWordCloud(op.id)
     } catch (e) {
       /* Sonderfall: Der Eintrag ist schon in der Cloud (der erste
@@ -611,8 +611,11 @@ export function validateEdit(words, id, en, ko, pos) {
   return { en: cleanEn, ko: cleanKo, pos: pos || null }
 }
 
-export async function updateWordCloud(id, en, ko, pos, clearExtras) {
+export async function updateWordCloud(id, en, ko, pos, clearExtras, de) {
   const patch = { en, ko, pos: pos || null }
+  /* Vokabel-Motor: deutsche Bedeutung nur mitschicken, wenn sie
+     beim Bearbeiten in Klammern angegeben wurde */
+  if (de) patch.de = de
   /* Wird das ZIELsprachen-Wort selbst geaendert, stimmen Plural und
      Konjugation des alten Wortes nicht mehr — loeschen. Der
      Nachtlauf fuellt die Luecke am naechsten Tag korrekt neu. */
