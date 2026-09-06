@@ -80,19 +80,41 @@ const kopf = {
   Authorization: `Bearer ${DB_KEY}`,
   'Content-Type': 'application/json',
 }
+/* Vorübergehende Abweisungen abfangen (Fund Franz 06.09.: 401
+   „JWT issued at future" — die Server-Uhr hing kurz hinter dem
+   Schlüssel; Minuten später ging es wieder). Bis zu 4 Versuche mit
+   wachsender Pause, danach erst der echte Fehler. */
+const pause = (ms) => new Promise((r) => setTimeout(r, ms))
+async function mitWiederholung(name, aufruf) {
+  let letzter
+  for (let versuch = 1; versuch <= 4; versuch++) {
+    const r = await aufruf()
+    if (r.ok) return r
+    const text = await r.text()
+    letzter = new Error(`${name}: ${r.status} ${text.slice(0, 200)}`)
+    const voruebergehend = (r.status === 401 && text.includes('JWT')) || r.status >= 500 || r.status === 429
+    if (!voruebergehend || versuch === 4) break
+    const warte = versuch * 20_000
+    console.warn(`  ${name}: ${r.status} — neuer Versuch in ${warte / 1000} s`)
+    await pause(warte)
+  }
+  throw letzter
+}
 async function hole(pfad) {
-  const r = await fetch(`${SUPABASE_URL}/rest/v1/${pfad}`, { headers: kopf })
-  if (!r.ok) throw new Error(`GET ${pfad.slice(0, 60)}: ${r.status} ${await r.text()}`)
+  const r = await mitWiederholung(`GET ${pfad.slice(0, 60)}`, () =>
+    fetch(`${SUPABASE_URL}/rest/v1/${pfad}`, { headers: kopf })
+  )
   return r.json()
 }
 async function patche(tabelle, filter, felder) {
   if (TROCKEN) return
-  const r = await fetch(`${SUPABASE_URL}/rest/v1/${tabelle}?${filter}`, {
-    method: 'PATCH',
-    headers: { ...kopf, Prefer: 'return=minimal' },
-    body: JSON.stringify(felder),
-  })
-  if (!r.ok) throw new Error(`PATCH ${tabelle}: ${r.status} ${await r.text()}`)
+  await mitWiederholung(`PATCH ${tabelle}`, () =>
+    fetch(`${SUPABASE_URL}/rest/v1/${tabelle}?${filter}`, {
+      method: 'PATCH',
+      headers: { ...kopf, Prefer: 'return=minimal' },
+      body: JSON.stringify(felder),
+    })
+  )
 }
 async function upserteVorrat(zeilen) {
   if (TROCKEN || !zeilen.length) return
