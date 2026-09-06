@@ -21,6 +21,22 @@
 .motor-karte.tippt .card-front {
   font-size: 28px;
 }
+/* Die Bergkante liegt HINTER der Schrift — auf der geschrumpften
+   Karte verdeckte sie sonst das koreanische Wort (Franz 06.09.) */
+.motor-karte .card-ridge {
+  z-index: 0;
+  pointer-events: none;
+}
+.motor-karte > *:not(.card-ridge):not(.card-tag) {
+  position: relative;
+  z-index: 1;
+}
+.motor-karte .card-tag {
+  z-index: 1;
+}
+.motor-karte.tippt .card-ridge {
+  display: none;
+}
 
 /* ---------- Hanja-Zeile ---------- */
 .hanja-zeile {
@@ -437,4 +453,124 @@
 /* ---------- Statistik: Stufen-Zähler ---------- */
 .stat-stufen {
   margin-top: 10px;
+}
+
+/* ---------- Grammatik-Checkliste (Meine Grammatik, Franz) ---------- */
+.gl-kopf {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.gl-zahl {
+  font-size: 26px;
+  font-weight: 800;
+}
+.gl-zahl small {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-soft);
+  margin-left: 6px;
+}
+.gl-balken {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+.gl-balken > div {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--primary);
+  transform-origin: left center;
+  transition: transform 0.3s ease;
+}
+.gl-hinweis {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-soft);
+}
+.gl-stufe {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin: 18px 4px 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.gl-liste {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.gl-punkt {
+  display: grid;
+  grid-template-columns: 28px 30px 1fr;
+  gap: 10px;
+  align-items: start;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  text-align: left;
+  color: var(--text);
+  transition: transform 0.12s ease;
+}
+.gl-punkt:active {
+  transform: scale(0.99);
+}
+.gl-punkt-an {
+  background: var(--primary-soft);
+  border-color: var(--primary);
+}
+.gl-nr {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-soft);
+  padding-top: 4px;
+}
+.gl-box {
+  width: 24px;
+  height: 24px;
+  border-radius: 8px;
+  border: 2px solid var(--border);
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 800;
+}
+.gl-punkt-an .gl-box {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+.gl-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.gl-muster {
+  font-size: 17px;
+  font-weight: 700;
+}
+.gl-name {
+  font-size: 13px;
+  color: var(--text-soft);
+}
+.gl-satz {
+  font-size: 14px;
+  margin-top: 2px;
+}
+.gl-satz-tr {
+  font-size: 12.5px;
+  color: var(--text-soft);
 }

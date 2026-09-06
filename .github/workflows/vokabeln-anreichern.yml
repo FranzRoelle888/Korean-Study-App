@@ -31,6 +31,10 @@ on:
         description: 'Stichprobe: nur je 5 Wörter anfragen und anzeigen, nichts schreiben (ein paar Cent)'
         type: boolean
         default: false
+      nur_nuancen:
+        description: 'Nur Nuancen bei gleicher Bedeutung abgleichen (schnell, ohne TTS)'
+        type: boolean
+        default: false
       dry:
         description: 'Trockenlauf (alle Wörter anfragen, nichts schreiben, kein TTS)'
         type: boolean
@@ -55,7 +59,9 @@ jobs:
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: |
           set -o pipefail
-          if [ "${{ inputs.probe }}" = "true" ]; then
+          if [ "${{ inputs.nur_nuancen }}" = "true" ]; then
+            node scripts/vokabeln-anreichern.mjs --nuancen 2>&1 | tee lauf.log
+          elif [ "${{ inputs.probe }}" = "true" ]; then
             node scripts/vokabeln-anreichern.mjs --probe 2>&1 | tee lauf.log
           elif [ "${{ inputs.dry }}" = "true" ]; then
             node scripts/vokabeln-anreichern.mjs --dry --anzahl "${{ inputs.anzahl }}" 2>&1 | tee lauf.log
@@ -64,7 +70,7 @@ jobs:
           fi
 
       - name: TTS für Wörter und Sätze
-        if: ${{ inputs.dry != true && inputs.probe != true }}
+        if: ${{ inputs.dry != true && inputs.probe != true && inputs.nur_nuancen != true }}
         env:
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
@@ -73,7 +79,7 @@ jobs:
           node scripts/baue-tts.mjs --profil ko 2>&1 | tee tts.log
 
       - name: Audio-Check
-        if: ${{ inputs.dry != true && inputs.probe != true }}
+        if: ${{ inputs.dry != true && inputs.probe != true && inputs.nur_nuancen != true }}
         env:
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: |

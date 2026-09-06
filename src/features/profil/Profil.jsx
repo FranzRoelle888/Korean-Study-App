@@ -2,6 +2,7 @@ import { useState } from 'react'
 import Skills from '../trainer/Skills'
 import Kalibrierung from '../kalibrierung/Kalibrierung'
 import Fortschritt from '../today/Fortschritt'
+import GrammatikListe from './GrammatikListe'
 import { exportCsv } from '../cards/Library'
 import { ChevronIcon } from '../../shared/icons'
 
@@ -56,6 +57,8 @@ function Profil({ profile, t, words, cards }) {
         </div>
 
         <main className="trainer-menu">
+          {/* Checkliste in TOPIK-I-Reihenfolge (Franz 06.09.) — nur ko */}
+          {profile.id === 'ko' && <GrammatikListe profile={profile} t={t} />}
           <Fortschritt profile={profile} t={t} />
 
           <button className="skills-entry" onClick={() => setOffen('kalibrierung')}>

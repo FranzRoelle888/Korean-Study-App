@@ -48,6 +48,7 @@ const PROBE = process.argv.includes('--probe')
 const TROCKEN = process.argv.includes('--dry') || PROBE
 const NUR_AUDIO = process.argv.includes('--audio')
 const NUR_BERICHT = process.argv.includes('--bericht')
+const NUR_NUANCEN = process.argv.includes('--nuancen')
 const ANZAHL = Number(argWert('--anzahl') ?? 300)
 const PROFIL = argWert('--profil') ?? 'ko'
 /* Der Motor gilt nur für Franz' Seite. Ein Tippfehler im Workflow
@@ -482,14 +483,103 @@ async function bericht() {
   console.log(`  bereit: ${vorrat.filter((v) => v.bereit).length}`)
 }
 
+/* ---------- Schritt 2b: Nuancen bei gleicher Bedeutung ----------
+   (Franz 06.09.) Zwei Wörter mit identischer Bedeutung — 묻다 und
+   물어보다 „to ask", 때 und 시간 „time" — stehen in der Vorschlags-
+   liste als gleicher Eintrag. Das darf nie passieren. Hier werden
+   alle Wörter (Bibliothek + Vorrat) nach Bedeutung gruppiert; jede
+   Gruppe ab zwei Mitgliedern bekommt vom Modell je Mitglied eine
+   UNTERSCHEIDENDE Nuance, die vorhandene wird dabei ersetzt. */
+const schluessel = (s) =>
+  String(s ?? '')
+    .toLowerCase()
+    .replace(/\(.*?\)/g, '')
+    .replace(/^to /, '')
+    .replace(/[^a-zäöüß ]/g, '')
+    .trim()
+
+async function nuancenAbgleichen() {
+  console.log('\n=== Schritt 2b: Nuancen bei gleicher Bedeutung ===')
+  const [woerter, vorrat] = await Promise.all([
+    hole(`words?profile=eq.${PROFIL}&select=id,ko,en,de,pos,ex,nuance`),
+    hole(`vorrat?profile=eq.${PROFIL}&uebersprungen=is.false&select=inv_id,ko,en,de,pos,ex,nuance`),
+  ])
+  const alle = [
+    ...woerter.map((w) => ({ ...w, quelle: 'words', key: w.id })),
+    ...vorrat.map((v) => ({ ...v, quelle: 'vorrat', key: v.inv_id })),
+  ]
+  /* Gruppen über Englisch UND über Deutsch; ein Wort kann in beiden
+     stecken — dann wird es zusammengelegt */
+  const gruppen = new Map()
+  for (const feld of ['en', 'de']) {
+    const nachKey = new Map()
+    for (const w of alle) {
+      const k = schluessel(w[feld])
+      if (!k) continue
+      if (!nachKey.has(k)) nachKey.set(k, [])
+      nachKey.get(k).push(w)
+    }
+    for (const [k, mitglieder] of nachKey) {
+      if (mitglieder.length < 2) continue
+      const kos = mitglieder.map((m) => m.ko).sort().join('|')
+      if (!gruppen.has(kos)) gruppen.set(kos, { grund: `${feld}: ${k}`, mitglieder })
+    }
+  }
+  const liste = [...gruppen.values()]
+  console.log(`Gruppen mit gleicher Bedeutung: ${liste.length}`)
+  if (!liste.length) return
+
+  const SYSTEM_NUANCE = [
+    'Several Korean words in a learner\'s deck share the SAME English/German gloss. In the app they appear as identical entries, so the learner cannot tell them apart. Your job: for EACH word in a group write a short DISTINGUISHING note in German (max 60 characters, no full sentence needed) that says what makes THIS word different from the others in its group — usage, register, nuance, typical context. Examples: 때 -> "Zeitpunkt/Moment (als, wenn) – nicht Dauer"; 시간 -> "Zeit als Dauer oder Uhrzeit, messbar"; 물어보다 -> "höflicher/alltäglicher: mal nachfragen"; 묻다 -> "neutral fragen, auch schriftlich".',
+    'Input: groups, each line "groupId | korean | english | german | example sentence".',
+    'Return ONLY a JSON array: [{"groupId":"...","ko":"...","nuance":"..."}] with one object per word. Notes within a group must differ from each other. Never leave a word out.',
+  ].join('\n')
+
+  let gesetzt = 0
+  for (let von = 0; von < liste.length; von += 8) {
+    const teil = liste.slice(von, von + 8)
+    const text = teil
+      .map((g, i) => g.mitglieder.map((m) => `g${von + i} | ${m.ko} | ${m.en || ''} | ${m.de || ''} | ${m.ex || ''}`).join('\n'))
+      .join('\n')
+    let antwort
+    try {
+      antwort = await frage(SYSTEM_NUANCE, text, 4000)
+    } catch (e) {
+      console.error(`  Modellanfrage fehlgeschlagen: ${e.message}`)
+      continue
+    }
+    if (!Array.isArray(antwort)) continue
+    for (const a of antwort) {
+      const gi = Number(String(a.groupId ?? '').replace('g', ''))
+      const g = liste[gi]
+      if (!g) continue
+      const m = g.mitglieder.find((x) => norm(x.ko) === norm(a.ko))
+      const nuance = pruefeText(a.nuance, 3, 80)
+      if (!m || !nuance) continue
+      try {
+        if (m.quelle === 'words') await patche('words', `id=eq.${m.key}`, { nuance })
+        else await patche('vorrat', `profile=eq.${PROFIL}&inv_id=eq.${m.key}`, { nuance })
+        gesetzt++
+        console.log(`  ${TROCKEN ? '[trocken] ' : ''}${m.ko} (${g.grund}): ${nuance}`)
+      } catch (err) {
+        console.error(`  Schreiben fehlgeschlagen (${m.ko}): ${err.message}`)
+      }
+    }
+  }
+  console.log(`Nuancen gesetzt: ${gesetzt}`)
+}
+
 /* ---------- Hauptlauf ---------- */
 if (NUR_AUDIO) {
   await audioPruefen()
 } else if (NUR_BERICHT) {
   await bericht()
+} else if (NUR_NUANCEN) {
+  await nuancenAbgleichen()
 } else {
   await bestandAnreichern()
   await vorratFuellen()
+  await nuancenAbgleichen()
   await bericht()
   if (pruefliste.length) {
     console.log(`\n=== HANJA-PRÜFLISTE (${pruefliste.length}) — Zeile blieb leer ===`)
