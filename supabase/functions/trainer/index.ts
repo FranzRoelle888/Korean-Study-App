@@ -177,7 +177,17 @@ function chatSystem(profile: string, mode: string, scenario: string, p: Awaited<
     '## Mode',
     mode === 'scenario'
       ? `Roleplay this everyday scenario naturally: "${scenario}". Play your role (shopkeeper, driver, or — for partner scenarios — ${partner}). Corrections still speak in your trainer voice via the correction field. After 3-4 successful exchanges from the learner, set canEnd to true and keep it true.`
-      : 'Open-ended free conversation for practice. Follow the learner\'s topics, keep them talking with easy questions. canEnd is always false in this mode.',
+      : mode === 'aufgaben'
+        ? [
+            /* Aufgaben-Werkstatt (Franz 06.09.): gezielte Übungen aus dem
+               eigenen Wortschatz zu einem Thema oder Grammatikfokus */
+            `EXERCISE WORKSHOP. The learner asked for targeted exercises. Focus: "${scenario || 'the shaky and recently learned words'}".`,
+            'Run ONE ROUND of exactly 5 exercises, one per message, numbered 1/5 … 5/5. Wait for the learner\'s answer before giving the next one. Vary the types: fill-in-the-blank sentence, translate a short sentence from ' + explain + ' into ' + target + ', build a sentence from 3 given words, answer a question in ' + target + '. Keep every exercise SHORT (one line) and clearly marked as a task.',
+            'Word choice: build the exercises from the learner\'s OWN deck — prefer RECENTLY LEARNED and shaky words, fill up with secure ones. At most ONE word per exercise that is not in the deck, and then give its meaning in parentheses. Grammar: only what the learner knows (A1/A2), polite 해요체 where the target is Korean.',
+            'After each answer: if correct, say so in 2-4 words and move on; if wrong, put the fix in the correction field (with a one-line why) and then give the next exercise. Never lecture.',
+            'After exercise 5 is answered: write a 2-line summary in the message — which words or patterns wobbled — then ask if they want another round, and set canEnd to true. If the learner asks for another round, start a fresh 1/5 with different words. Exercise messages themselves may be up to 4 lines; the 1-3 sentence rule does not apply to them.',
+          ].join('\n')
+        : 'Open-ended free conversation for practice. Follow the learner\'s topics, keep them talking with easy questions. canEnd is always false in this mode.',
     '',
     '## Output contract — reply with ONLY this JSON, nothing else',
     '{"message": "<your chat message in ' + target + '>",',
@@ -1695,7 +1705,8 @@ Deno.serve(async (req) => {
 
     if (action === 'chat') {
       const p = await buildProfile(profile)
-      const system = chatSystem(profile, mode === 'scenario' ? 'scenario' : 'free', String(scenario ?? ''), p)
+      const chatModus = mode === 'scenario' || mode === 'aufgaben' ? mode : 'free'
+      const system = chatSystem(profile, chatModus, String(scenario ?? '').slice(0, 600), p)
       /* Die Anthropic-API verlangt einen Verlauf, der mit einer
          NUTZER-Nachricht beginnt. Beim Gesprächsstart ist er leer
          (der Trainer eröffnet ja), danach beginnt er mit der

@@ -4,6 +4,8 @@ import Lueckentext from '../ueben/Lueckentext'
 import GrammatikModus from '../ueben/GrammatikModus'
 import Schreibwerkstatt from '../ueben/Schreibwerkstatt'
 import ArtikelSwipe from '../ueben/ArtikelSwipe'
+import ClearableInput from '../../shared/ClearableInput'
+import { naechsteGrammatikPunkte, grammatikFokusText } from '../../core/grammatikStand'
 
 /* ============================================================
    TRAINER — Startbildschirm
@@ -47,6 +49,31 @@ function Trainer({ profile, t, onChatActive, onAddWord }) {
   const [zeigeGrammatik, setZeigeGrammatik] = useState(false)
   const [zeigeSchreiben, setZeigeSchreiben] = useState(false)
   const [zeigeArtikel, setZeigeArtikel] = useState(false)
+  /* Aufgaben-Werkstatt (Franz 06.09.): Thema tippen oder die nächsten
+     drei offenen Grammatikpunkte nehmen, dann Chat im Modus 'aufgaben' */
+  const [zeigeAufgaben, setZeigeAufgaben] = useState(false)
+  const [thema, setThema] = useState('')
+  const [laedtFokus, setLaedtFokus] = useState(false)
+
+  function starteAufgaben(fokus, titel) {
+    setZeigeAufgaben(false)
+    setThema('')
+    setAktiv({ mode: 'aufgaben', scenario: fokus, title: `🎯 ${titel || t.modeAufgaben}` })
+  }
+
+  async function starteGrammatikAufgaben() {
+    setLaedtFokus(true)
+    try {
+      const punkte = await naechsteGrammatikPunkte(profile.id, 3)
+      if (!punkte.length) {
+        starteAufgaben('', t.modeAufgaben)
+        return
+      }
+      starteAufgaben(grammatikFokusText(punkte), punkte.map((g) => g.muster).join(' · '))
+    } finally {
+      setLaedtFokus(false)
+    }
+  }
 
   /* Der App melden, ob gerade ein Chat läuft — dann versteckt sie
      die Tab-Leiste, damit nichts über der Tastatur aufflackert. */
@@ -92,6 +119,52 @@ function Trainer({ profile, t, onChatActive, onAddWord }) {
     return <ArtikelSwipe profile={profile} t={t} onExit={() => setZeigeArtikel(false)} />
   }
 
+  if (zeigeAufgaben) {
+    return (
+      <div className="screen sets-screen">
+        <div className="review-header">
+          <button className="back-btn" onClick={() => setZeigeAufgaben(false)} aria-label={t.back}>
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="m15 6-6 6 6 6" />
+            </svg>
+          </button>
+          <span className="daily-label">🎯 {t.modeAufgaben}</span>
+        </div>
+        <main className="aw">
+          <p className="aw-hinweis">{t.aufgabenHinweis}</p>
+          <form
+            className="type-area"
+            onSubmit={(e) => {
+              e.preventDefault()
+              starteAufgaben(thema.trim(), thema.trim() || t.modeAufgaben)
+            }}
+          >
+            <ClearableInput
+              autoFocus
+              value={thema}
+              onChange={(e) => setThema(e.target.value)}
+              onClear={() => setThema('')}
+              placeholder={t.aufgabenThemaPlatzhalter}
+              autoComplete="off"
+              maxLength={200}
+            />
+            <button type="submit" className="check-btn">
+              {t.aufgabenStart}
+            </button>
+          </form>
+          <p className="aw-oder">{t.aufgabenOder}</p>
+          <button className="skills-entry" onClick={starteGrammatikAufgaben} disabled={laedtFokus}>
+            <span className="skills-entry-emoji">📖</span>
+            <div className="action-text">
+              <span className="action-title">{t.aufgabenGrammatik}</span>
+              <span className="action-sub">{t.aufgabenGrammatikSub}</span>
+            </div>
+          </button>
+        </main>
+      </div>
+    )
+  }
+
   return (
     <div className="screen sets-screen">
       <header className="header">
@@ -114,6 +187,12 @@ function Trainer({ profile, t, onChatActive, onAddWord }) {
             <span className="mode-emoji">🗣️</span>
             <span className="mode-title">{t.modeFree}</span>
             <span className="mode-sub">{t.modeFreeSub}</span>
+          </button>
+          {/* Aufgaben-Werkstatt: gezielte Übungen aus dem eigenen Wortschatz */}
+          <button className="mode-card" onClick={() => setZeigeAufgaben(true)}>
+            <span className="mode-emoji">🎯</span>
+            <span className="mode-title">{t.modeAufgaben}</span>
+            <span className="mode-sub">{t.modeAufgabenSub}</span>
           </button>
 
           <button className="mode-card" onClick={() => setZeigeLueckentext(true)}>
