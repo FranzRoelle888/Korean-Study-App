@@ -392,7 +392,7 @@ function App() {
     const hinweis = String(notiz ?? '').trim().slice(0, 120)
     if (hinweis) res.word.nuance = hinweis
     const newWords = [res.word, ...words]
-    const newCards = [res.c1, res.c2, ...cards]
+    const newCards = [res.c1, res.c2].filter(Boolean).concat(cards)
     setWords(newWords)
     setCards(newCards)
     writeWordsCache(newWords)

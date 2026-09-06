@@ -47,7 +47,10 @@ const TAGES_ZAHLEN = {
   /* Vokabel-Motor V2 (Konzept §5.2, Go Franz 06.09.): 5 neue Woerter
      aus dem Vorrat, Deckel 130, keine neuen Woerter bei > 100
      faelligen (neuStopp). motor: schaltet Lebenslauf + Ritual frei. */
-  ko: { neueProTag: 5, deckel: 130, neuStopp: 100, ziel: 0.93, hartDeckel: 0.5, motor: true, vorratTabelle: true },
+  /* handEintragNurErkennen (Franz 06.09.): ein von Hand eingetragenes
+     Wort startet wie ein Ritual-Wort nur mit der Erkennen-Karte —
+     Produktion kommt per Warmstart. 해인 behaelt beide Karten. */
+  ko: { neueProTag: 5, deckel: 130, neuStopp: 100, ziel: 0.93, hartDeckel: 0.5, motor: true, vorratTabelle: true, handEintragNurErkennen: true },
   /* 해인 (Franz 06.09.): derselbe Motor wie bei Franz — 3 neue Woerter
      (sie traegt viel von Hand ein), Deckel 130, Neu-Stopp bei > 100,
      90 % Ziel (Deutsch ist ableitbar), Barely-Deckel. Ihr Vorrat liegt
@@ -566,6 +569,10 @@ export function validateNewWord(words, en, ko, pos) {
     ko: cleanKo,
     pos: pos || null,
     createdAt: Date.now(),
+  }
+  /* Franz: nur die Erkennen-Karte (c1 = null), Produktion per Warmstart */
+  if (tagesZahlen().handEintragNurErkennen) {
+    return { word, c1: null, c2: { ...newCard(word.id, 'ko'), modus: 'text', hoerFehler: 0, erfolge: 0 } }
   }
   return { word, c1: newCard(word.id, 'en'), c2: newCard(word.id, 'ko') }
 }
