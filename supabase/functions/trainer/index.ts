@@ -177,17 +177,7 @@ function chatSystem(profile: string, mode: string, scenario: string, p: Awaited<
     '## Mode',
     mode === 'scenario'
       ? `Roleplay this everyday scenario naturally: "${scenario}". Play your role (shopkeeper, driver, or — for partner scenarios — ${partner}). Corrections still speak in your trainer voice via the correction field. After 3-4 successful exchanges from the learner, set canEnd to true and keep it true.`
-      : mode === 'aufgaben'
-        ? [
-            /* Aufgaben-Werkstatt (Franz 06.09.): gezielte Übungen aus dem
-               eigenen Wortschatz zu einem Thema oder Grammatikfokus */
-            `EXERCISE WORKSHOP. The learner asked for targeted exercises. Focus: "${scenario || 'the shaky and recently learned words'}".`,
-            'Run ONE ROUND of exactly 5 exercises, one per message, numbered 1/5 … 5/5. Wait for the learner\'s answer before giving the next one. Vary the types: fill-in-the-blank sentence, translate a short sentence from ' + explain + ' into ' + target + ', build a sentence from 3 given words, answer a question in ' + target + '. Keep every exercise SHORT (one line) and clearly marked as a task.',
-            'Word choice: build the exercises from the learner\'s OWN deck — prefer RECENTLY LEARNED and shaky words, fill up with secure ones. At most ONE word per exercise that is not in the deck, and then give its meaning in parentheses. Grammar: only what the learner knows (A1/A2), polite 해요체 where the target is Korean.',
-            'After each answer: if correct, say so in 2-4 words and move on; if wrong, put the fix in the correction field (with a one-line why) and then give the next exercise. Never lecture.',
-            'After exercise 5 is answered: write a 2-line summary in the message — which words or patterns wobbled — then ask if they want another round, and set canEnd to true. If the learner asks for another round, start a fresh 1/5 with different words. Exercise messages themselves may be up to 4 lines; the 1-3 sentence rule does not apply to them.',
-          ].join('\n')
-        : 'Open-ended free conversation for practice. Follow the learner\'s topics, keep them talking with easy questions. canEnd is always false in this mode.',
+      : 'Open-ended free conversation for practice. Follow the learner\'s topics, keep them talking with easy questions. canEnd is always false in this mode.',
     '',
     '## Output contract — reply with ONLY this JSON, nothing else',
     '{"message": "<your chat message in ' + target + '>",',
@@ -199,6 +189,42 @@ function chatSystem(profile: string, mode: string, scenario: string, p: Awaited<
     '- Error in grammar the learner KNOWS (it is on the list above): prefer a PROMPT — begin your chat message with a very short, friendly nudge toward self-correction in ' + target + ' (e.g. repeat the phrase questioningly, or offer the two options), then continue the conversation. Self-repair beats being corrected. Use this at most every other turn; otherwise fall back to the quiet correction field.',
     '- Error in grammar ABOVE the learner\'s level (not on the list): do NOT correct it. Silently use the correct form in your own reply if natural, or ignore it entirely. It is not learnable yet.',
     '- Never more than ONE correction focus per learner message. Communication comes first.',
+  ]
+    .filter(Boolean)
+    .join('\n')
+}
+
+/* ---------- Tutor (Franz 06.09.) ----------
+   Freier Erklaer-Chat: Franz schreibt auf Deutsch, was er wissen
+   oder ueben will ("Wie benutzt man 못?", "Mach mir 5 Aufgaben zu
+   Vergangenheit", "Unterschied 때 / 시간"). Antworten auf DEUTSCH,
+   jedes koreanische Wort und Muster mit Uebersetzung in Klammern,
+   Beispiele bevorzugt aus seinem eigenen Wortschatz. Kein Rollenspiel,
+   keine Korrektur-Choreografie — er fuehrt, der Tutor folgt. */
+function tutorSystem(p: Awaited<ReturnType<typeof buildProfile>>) {
+  return [
+    'You are the personal Korean TUTOR of Franz, a German adult beginner (A1-A2) who learns Korean in a private vocabulary app. He writes to you in German (sometimes English). You are precise, warm, and didactically sharp.',
+    '',
+    '## His current state — use it as CONTEXT for every answer',
+    `Secure vocabulary: ${p.secure.join(', ') || '(none yet)'}`,
+    `Shaky vocabulary: ${p.shaky.join(', ') || '(none)'}`,
+    `Fresh / recently learned: ${[...p.fresh, ...p.frischGelernt].join(', ') || '(none)'}`,
+    `Grammar he has ticked as mastered: ${p.skills.join('; ') || '(nothing yet — assume bare basics)'}`,
+    p.journal.length ? `Recent trainer sessions:\n${p.journal.join('\n')}` : '',
+    p.errors.length ? `Recurring mistakes: ${p.errors.join('; ')}` : '',
+    '',
+    '## Hard rules',
+    '- Answer in GERMAN. Always.',
+    '- EVERY Korean word, phrase or grammar pattern you write gets its German meaning in parentheses right after it, e.g. 못 (nicht können), 학교에 가요 (ich gehe zur Schule), -았/었어요 (Vergangenheit). No exceptions, also inside examples and exercises.',
+    '- Build examples preferably from HIS vocabulary above; use words he does not know only when necessary, and translate them too.',
+    '- He steers. Do exactly what he asks: explain usage, compare words, translate, give exercises, quiz him, correct his sentences, summarise. If he asks for exercises, give them one at a time, wait for his answer, correct in German with a one-line why, then continue.',
+    '- Be compact and structured: short paragraphs or numbered lines, bold for the key pattern. No filler, no praise loops. A typical answer is 4-10 lines; go longer only when he asks for depth.',
+    '- Grammar explanations: rule in one sentence, then 2-3 examples at his level (polite 해요체), then the classic pitfall if there is one.',
+    '- If he is unclear, ask ONE short clarifying question in German.',
+    '',
+    '## Output contract — reply with ONLY this JSON, nothing else',
+    '{"message": "<your answer in German>", "correction": null, "canEnd": false}',
+    'Put everything into "message". Never use the correction field, never set canEnd to true.',
   ]
     .filter(Boolean)
     .join('\n')
@@ -1705,8 +1731,12 @@ Deno.serve(async (req) => {
 
     if (action === 'chat') {
       const p = await buildProfile(profile)
-      const chatModus = mode === 'scenario' || mode === 'aufgaben' ? mode : 'free'
-      const system = chatSystem(profile, chatModus, String(scenario ?? '').slice(0, 600), p)
+      /* 'tutor' (Franz 06.09.): freier Erklaer-Chat auf Deutsch mit
+         seinem Wortschatz und Grammatik-Stand als Kontext */
+      const system =
+        mode === 'tutor'
+          ? tutorSystem(p)
+          : chatSystem(profile, mode === 'scenario' ? 'scenario' : 'free', String(scenario ?? '').slice(0, 600), p)
       /* Die Anthropic-API verlangt einen Verlauf, der mit einer
          NUTZER-Nachricht beginnt. Beim Gesprächsstart ist er leer
          (der Trainer eröffnet ja), danach beginnt er mit der
