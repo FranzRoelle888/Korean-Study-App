@@ -57,7 +57,9 @@ import Home from '../features/today/Home'
 import Library from '../features/cards/Library'
 import Review from '../features/cards/Review'
 import TagesChallenge from '../features/challenges/TagesChallenge'
-import { completeSatzChallenge } from '../core/storage'
+import AbendCheck from '../features/challenges/AbendCheck'
+import { completeSatzChallenge, abendCheckErledigt, completeAbendCheck } from '../core/storage'
+import { istAbend, ladeAbendMaterial } from '../core/abendCheck'
 import ArticleChallenge from '../features/challenges/ArticleChallenge'
 import PluralChallenge from '../features/challenges/PluralChallenge'
 import ConjChallenge from '../features/challenges/ConjChallenge'
@@ -115,6 +117,9 @@ function App() {
   /* Rückgängig-Netz: welche Produktions-Karte hat die letzte
      Bewertung per Warmstart erzeugt? */
   const letzterWarmstart = useRef(null)
+  /* Abend-Check (Franz 07.09.): Material ab 18 Uhr, nur ko */
+  const [abendMaterial, setAbendMaterial] = useState([])
+  const [abendTick, setAbendTick] = useState(0)
 
   /* Anmeldung: null = wird noch geprüft, false = nicht angemeldet,
      sonst die Supabase-Sitzung. Die Sitzung liegt im localStorage
@@ -218,6 +223,27 @@ function App() {
     /* Titel, Homescreen-Icon und Manifest je Seite (Franz 07.09.) */
     setzeAppIdentitaet(profileId)
   }, [profileId])
+
+  /* Abend-Check-Material: ab 18 Uhr, nur auf Franz' Seite, neu laden,
+     wenn sich Karten aendern oder man zur Startseite zurueckkommt */
+  useEffect(() => {
+    if (profileId !== 'ko' || !angemeldet || loading || !istAbend()) {
+      setAbendMaterial([])
+      return
+    }
+    let weg = false
+    ladeAbendMaterial(words, cards).then((m) => {
+      if (!weg) setAbendMaterial(m)
+    })
+    return () => {
+      weg = true
+    }
+  }, [profileId, angemeldet, loading, view, cards.length, abendTick]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  function handleAbendFertig() {
+    completeAbendCheck()
+    setAbendTick((n) => n + 1)
+  }
 
   function switchProfile() {
     const next = otherProfile(profileId)
@@ -683,6 +709,9 @@ function App() {
             zeigeMotorInfo={motorInfoSichtbar(profileId, todayStr())}
             neuTempo={daily.tempo}
             neuFaellig={daily.faellig}
+            abendAnzahl={abendMaterial.length}
+            abendErledigt={abendCheckErledigt()}
+            onAbend={profileId === 'ko' && abendMaterial.length > 0 ? () => setView('abend') : undefined}
             onPauseToggle={
               motor
                 ? () => {
@@ -723,6 +752,15 @@ function App() {
           <Einfuehrung
             candidates={daily.candidates}
             onIntroduce={handleIntroduce}
+            onExit={() => setView('home')}
+            profile={profile}
+            t={t}
+          />
+        )}
+        {view === 'abend' && (
+          <AbendCheck
+            material={abendMaterial}
+            onDone={handleAbendFertig}
             onExit={() => setView('home')}
             profile={profile}
             t={t}

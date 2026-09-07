@@ -33,6 +33,9 @@ function Home({
   zeigeMotorInfo,
   neuTempo,
   neuFaellig,
+  abendAnzahl,
+  abendErledigt,
+  onAbend,
   numberDone,
   streak,
   week,
@@ -258,6 +261,29 @@ function Home({
               </span>
             ) : (
               <ChevronIcon />
+            )}
+          </button>
+        )}
+
+        {/* Abend-Check (Franz 07.09.): ab 18 Uhr, freiwillig, ohne Bewertung */}
+        {onAbend && (
+          <button
+            className={abendErledigt ? 'action action-secondary' : 'action action-full action-full-gold'}
+            onClick={onAbend}
+          >
+            <div className="action-icon action-icon-number">
+              <span className="action-emoji" aria-hidden="true">🌙</span>
+            </div>
+            <div className="action-text">
+              <span className="action-title">{t.abendCheck}</span>
+              <span className="action-sub">{t.abendCheckSub(abendAnzahl)}</span>
+            </div>
+            {abendErledigt ? (
+              <span className="done-check">
+                <CheckIcon />
+              </span>
+            ) : (
+              <span className="badge">{abendAnzahl}</span>
             )}
           </button>
         )}

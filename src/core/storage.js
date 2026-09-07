@@ -931,7 +931,7 @@ function spaceOutPairs(list) {
    erst dreimal eingetippt hat, nicht Sekunden später schon wieder –
    und der Rest des Tages bleibt trotzdem gut durchmischt. */
 /* Beginn des aktuellen LERNtages in Millisekunden (04:00 Uhr). */
-function learningDayStartMs() {
+export function learningDayStartMs() {
   const d = new Date()
   if (d.getHours() < 4) d.setDate(d.getDate() - 1)
   d.setHours(4, 0, 0, 0)
@@ -1389,6 +1389,17 @@ export function completeSatzChallenge() {
   return next
 }
 
+/* Abend-Check (Franz 07.09.): heute erledigt? Freiwillig, kein Streak-
+   Einfluss, kein Einfluss auf den Algorithmus — nur ein Haken. */
+export function abendCheckErledigt() {
+  return !!getDailyProgress().abend
+}
+export function completeAbendCheck() {
+  const p = getDailyProgress()
+  localStorage.setItem(DAILY_KEY(), JSON.stringify({ ...p, date: todayStr(), abend: true }))
+  schreibeTagesstand({ abend: true })
+}
+
 /* ============================================================
    ARTIKEL DES TAGES (nur deutsche Seite)
 
@@ -1667,6 +1678,10 @@ export function uebernehmeTagesstand(logRows) {
     if (stand.saetze) {
       const n = getNumberChallenge()
       if (!n.saetzeDone) localStorage.setItem(NUMBER_KEY(), JSON.stringify({ ...n, saetzeDone: true }))
+    }
+    if (stand.abend) {
+      const q = getDailyProgress()
+      if (!q.abend) localStorage.setItem(DAILY_KEY(), JSON.stringify({ ...q, date: todayStr(), abend: true }))
     }
   } catch {
     /* still — dann eben nur der lokale Stand */

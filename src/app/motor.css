@@ -680,6 +680,26 @@
   align-self: center;
 }
 
+/* ---------- Abend-Check (Franz) ---------- */
+.action-emoji {
+  font-size: 20px;
+  line-height: 1;
+}
+.ab-fehl {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 17px;
+}
+.ab-fehl-en {
+  font-size: 13.5px;
+  color: var(--text-soft);
+  margin-left: 6px;
+}
+
 /* ---------- Grammatik-Checkliste (Meine Grammatik, Franz) ---------- */
 .gl-kopf {
   background: var(--surface);
