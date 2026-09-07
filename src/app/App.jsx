@@ -850,7 +850,7 @@ function App() {
           <Calendar profile={profile} t={t} words={words} cards={cards} vorrat={vorrat} onExit={() => setView('home')} />
         )}
         {view === 'trainer' && profile.trainer && (
-          <Trainer profile={profile} t={t} onChatActive={setChatOffen} onAddWord={handleAdd} />
+          <Trainer profile={profile} t={t} onChatActive={setChatOffen} onAddWord={handleAdd} words={words} />
         )}
         {view === 'a2' && profile.a2 && (
           <A2Training profile={profile} t={t} />

@@ -222,9 +222,8 @@ function tutorSystem(p: Awaited<ReturnType<typeof buildProfile>>) {
     '- Grammar explanations: rule in one sentence, then 2-3 examples at his level (polite 해요체), then the classic pitfall if there is one.',
     '- If he is unclear, ask ONE short clarifying question in German.',
     '',
-    '## Output contract — reply with ONLY this JSON, nothing else',
-    '{"message": "<your answer in German>", "correction": null, "canEnd": false}',
-    'Put everything into "message". Never use the correction field, never set canEnd to true.',
+    '## Output format',
+    'Reply as PLAIN TEXT in German — no JSON, no code fences, no markdown headers. Use line breaks and simple numbered lists (1., 2., …) for structure; *asterisks* are fine for emphasis. Never wrap the answer in braces or quotes.',
   ]
     .filter(Boolean)
     .join('\n')
@@ -1225,13 +1224,26 @@ Deno.serve(async (req) => {
       const vermeiden = body.vermeiden && typeof body.vermeiden === 'object' ? body.vermeiden : {}
       const vermWoerter = Array.isArray(vermeiden.woerter) ? vermeiden.woerter.slice(0, 120).map(String) : []
       const vermMuster = Array.isArray(vermeiden.grammatik) ? vermeiden.grammatik.slice(0, 40).map(String) : []
+      /* Uebersetzungsspiel (Franz 07.09.): Anzahl 3/5/10, Schwierigkeit,
+         freier Wunsch — die Tages-Challenge nimmt die Standardwerte */
+      const anzahl = Math.min(10, Math.max(3, Number(body.anzahl) || 5))
+      const schwierigkeit = ['leicht', 'mittel', 'schwer'].includes(body.schwierigkeit) ? body.schwierigkeit : 'mittel'
+      const wunsch = typeof body.wunsch === 'string' ? body.wunsch.trim().slice(0, 200) : ''
+      const stufe =
+        schwierigkeit === 'leicht'
+          ? 'EASY: 4-6 words, one pattern per sentence, very common words.'
+          : schwierigkeit === 'schwer'
+            ? 'HARD: 8-11 words, combine 2-3 patterns per sentence (e.g. past tense + location particle + "but"), use the less common words of the list too, embed a time or place expression. Still only listed words and patterns.'
+            : 'MEDIUM: 6-8 words, mix two patterns where natural.'
       if (woerter.length < 15) return json({ error: 'empty' }, 400)
 
       const out = await callModel(
         [
           'You write today\'s sentence challenge for Franz, a German beginner learning Korean. He must translate German sentences into Korean.',
           'HARD CONSTRAINT: every Korean sentence may use ONLY words from the WORD LIST below (dictionary forms; conjugation, honorific/polite endings and particles are fine) and ONLY grammar from the PATTERN LIST. Proper nouns and numbers are not allowed either. If a sentence would need any other word, do not write it.',
-          'Mix the patterns freely — two patterns in one sentence is good (e.g. a location particle with a past tense). Do not always use the simplest ones. Everyday situations, natural German, 6-8 words per sentence in Korean. Polite 해요체 unless a pattern requires otherwise.',
+          'Mix the patterns freely — do not always use the simplest ones. Everyday situations, natural German. Polite 해요체 unless a pattern requires otherwise.',
+          `DIFFICULTY — ${stufe}`,
+          wunsch ? `LEARNER'S WISH for this round (follow it as far as the lists allow): "${wunsch}"` : '',
           'ROTATION: avoid these recently used words and patterns unless unavoidable.',
           `Recently used words: ${vermWoerter.join(', ') || '(none)'}`,
           `Recently used patterns: ${vermMuster.join(', ') || '(none)'}`,
@@ -1244,11 +1256,13 @@ Deno.serve(async (req) => {
             ? grammatik.map((g: { muster: string; name: string; beispiel: string }) => `${g.muster} (${g.name}) e.g. ${g.beispiel}`).join('\n')
             : '-아/어요 (polite present); N은/는; N이/가; N을/를 — plain statements only',
           '',
-          'Reply with ONLY this JSON: {"saetze":[{"de":"<German sentence>","ko":"<model Korean translation>","woerter":["<dictionary form of EVERY content word used, from the list>"],"grammatik":["<patterns used, exactly as in the list>"]}, ... 6 sentences]}',
-          'Write 6 sentences so one can serve as a spare. The "woerter" array must be complete and exact — it is checked by the app.',
-        ].join('\n'),
-        [{ role: 'user', content: 'Create today\'s six sentences.' }],
-        2500
+          `Reply with ONLY this JSON: {"saetze":[{"de":"<German sentence>","ko":"<model Korean translation>","woerter":["<dictionary form of EVERY content word used, from the list>"],"grammatik":["<patterns used, exactly as in the list>"]}, ... ${anzahl + 2} sentences]}`,
+          `Write ${anzahl + 2} sentences so some can serve as spares. The "woerter" array must be complete and exact — it is checked by the app.`,
+        ]
+          .filter(Boolean)
+          .join('\n'),
+        [{ role: 'user', content: `Create ${anzahl + 2} sentences now.` }],
+        anzahl >= 8 ? 5000 : 3000
       )
       const bib = new Set(woerter.map((w: { ko: string }) => w.ko))
       const musterSet = new Set(grammatik.map((g: { muster: string }) => g.muster))
@@ -1269,7 +1283,7 @@ Deno.serve(async (req) => {
           }
           const gOk = grammatik.length ? gs.filter((g: string) => musterSet.has(g)) : gs
           saetze.push({ de, ko, woerter: ws, grammatik: gOk })
-          if (saetze.length === 5) break
+          if (saetze.length === anzahl) break
         }
       } catch {
         /* unbrauchbar -> leer */
@@ -1884,7 +1898,8 @@ Deno.serve(async (req) => {
       .filter((m: { role: string; text: string }) => (m.role === 'user' || m.role === 'assistant') && typeof m.text === 'string')
       .map((m: { role: string; text: string }) => ({
         role: m.role,
-        content: m.text.slice(0, 600),
+        /* Tutor-Antworten sind lang und muessen im Verlauf bleiben */
+        content: m.text.slice(0, mode === 'tutor' ? 2500 : 600),
       }))
 
     if (action === 'chat') {
@@ -1904,13 +1919,20 @@ Deno.serve(async (req) => {
         history.length === 0 || history[0].role !== 'user'
           ? [{ role: 'user', content: '(Please open or continue our conversation.)' }, ...history]
           : history
-      const out = await callModel(system, forModel)
+      /* Tutor (Franz 07.09.): KEIN JSON-Umschlag, grosses Budget. Vorher
+         frass das Denken das 1600er Budget, die Antwort brach mitten im
+         JSON ab und der Chat zeigte den rohen Rest — oder gar nichts. */
+      const out = await callModel(system, forModel, mode === 'tutor' ? 6000 : 1600)
       await dbInsert('trainer_usage', {
         profile,
         action: 'chat',
         input_tokens: out.inputTokens,
         output_tokens: out.outputTokens,
       })
+      if (mode === 'tutor') {
+        const text = out.text.replace(/^```(?:json|text|markdown)?\s*/m, '').replace(/```\s*$/m, '').trim()
+        return json({ message: text || '…', correction: null, canEnd: false })
+      }
       return json(parseEnvelope(out.text))
     }
 

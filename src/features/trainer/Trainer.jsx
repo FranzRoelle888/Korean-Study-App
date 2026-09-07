@@ -4,6 +4,7 @@ import Lueckentext from '../ueben/Lueckentext'
 import GrammatikModus from '../ueben/GrammatikModus'
 import Schreibwerkstatt from '../ueben/Schreibwerkstatt'
 import ArtikelSwipe from '../ueben/ArtikelSwipe'
+import UebersetzenSpiel from './UebersetzenSpiel'
 
 /* ============================================================
    TRAINER — Startbildschirm
@@ -37,7 +38,10 @@ const SCENARIOS_KO = [
   { id: 'weekend', emoji: '🎉', title: 'Weekend plans', ko: '주말 계획' },
 ]
 
-function Trainer({ profile, t, onChatActive, onAddWord }) {
+function Trainer({ profile, t, onChatActive, onAddWord, words = [] }) {
+  /* Uebersetzungsspiel (Franz 07.09.): Saetze nur aus der eigenen
+     Bibliothek und der abgehakten Grammatik, Anzahl und Stufe waehlbar */
+  const [zeigeUebersetzen, setZeigeUebersetzen] = useState(false)
   /* null = Menü, sonst { mode, scenario, title }.
      Läuft noch ein Gespräch (Tab-Wechsel mittendrin), landet man
      direkt wieder darin statt im Menü. */
@@ -98,6 +102,10 @@ function Trainer({ profile, t, onChatActive, onAddWord }) {
     return <ArtikelSwipe profile={profile} t={t} onExit={() => setZeigeArtikel(false)} />
   }
 
+  if (zeigeUebersetzen) {
+    return <UebersetzenSpiel profile={profile} words={words} t={t} onExit={() => setZeigeUebersetzen(false)} />
+  }
+
 
   return (
     <div className="screen sets-screen">
@@ -127,6 +135,12 @@ function Trainer({ profile, t, onChatActive, onAddWord }) {
             <span className="mode-emoji">🎓</span>
             <span className="mode-title">{t.modeTutor}</span>
             <span className="mode-sub">{t.modeTutorSub}</span>
+          </button>
+          {/* Uebersetzungsspiel: deutsche Saetze aus eigenen Woertern -> Koreanisch */}
+          <button className="mode-card" onClick={() => setZeigeUebersetzen(true)}>
+            <span className="mode-emoji">🔁</span>
+            <span className="mode-title">{t.modeUebersetzen}</span>
+            <span className="mode-sub">{t.modeUebersetzenSub}</span>
           </button>
 
           <button className="mode-card" onClick={() => setZeigeLueckentext(true)}>

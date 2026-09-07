@@ -700,6 +700,50 @@
   margin-left: 6px;
 }
 
+/* ---------- Übersetzungsspiel: Auswahl ---------- */
+.us-setup {
+  gap: 16px;
+}
+.us-gruppe {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.us-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.us-chips {
+  display: flex;
+  gap: 8px;
+}
+.us-chip {
+  flex: 1;
+  padding: 12px 8px;
+  border-radius: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 700;
+  transition: transform 0.12s ease;
+}
+.us-chip:active {
+  transform: scale(0.97);
+}
+.us-chip-an {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+.us-laedt {
+  text-align: center;
+  padding: 24px 0;
+}
+
 /* ---------- Grammatik-Checkliste (Meine Grammatik, Franz) ---------- */
 .gl-kopf {
   background: var(--surface);

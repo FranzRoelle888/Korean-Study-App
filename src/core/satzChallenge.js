@@ -41,7 +41,7 @@ export function schreibePuffer(d) {
 }
 
 /* Abgehakte Grammatik aus der Checkliste (inventory_status) */
-async function abgehakteGrammatik(profile) {
+export async function abgehakteGrammatik(profile) {
   let sicher = new Set()
   try {
     const { data } = await supabase
