@@ -23,7 +23,7 @@
 const BASIS = import.meta.env.BASE_URL || '/'
 
 const IDENTITAET = {
-  ko: { titel: '한국어 · Franz', kurz: '한국어', icon: null, manifest: 'manifest-ko.json' },
+  ko: { titel: '한국어 · Franz', kurz: '한국어', icon: 'icons/baer-180.png', manifest: 'manifest-ko.json' },
   de: { titel: 'Deutsch <3', kurz: 'Deutsch <3', icon: 'icons/hase-180.png', manifest: 'manifest-de.json' },
   /* Sandbox sieht aus wie ihre Seite, heisst aber anders */
   sb: { titel: 'Sandbox 🧪', kurz: 'Sandbox', icon: 'icons/hase-180.png', manifest: 'manifest-de.json' },
