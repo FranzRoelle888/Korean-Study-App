@@ -34,23 +34,45 @@ function UebersetzenSpiel({ profile, words, onExit, t }) {
     setFehler('')
     try {
       const grammatik = await abgehakteGrammatik(profile.id)
-      const res = await trainerSatzChallengeErzeugen({
-        profile: profile.id,
-        woerter: words.map((w) => ({ ko: w.ko, en: w.en })),
-        grammatik,
-        vermeiden: { woerter: [], grammatik: [] },
-        anzahl,
-        schwierigkeit: stufe,
-        wunsch: wunsch.trim(),
-      })
-      const liste = (res?.saetze || []).slice(0, anzahl).map((s, i) => ({ nr: i + 1, ...s }))
-      if (!liste.length) throw new Error('leer')
+      const woerter = words.map((w) => ({ ko: w.ko, en: w.en }))
+      /* Safari kappt eine Anfrage nach ~60 s. Zehn schwere Saetze in
+         EINEM Aufruf dauerten laenger — deshalb in Haelften parallel
+         (Franz 07.09.). Doppelte Saetze werden danach aussortiert. */
+      const teile = anzahl > 5 ? [Math.ceil(anzahl / 2), Math.floor(anzahl / 2)] : [anzahl]
+      const antwortenTeile = await Promise.all(
+        teile.map((n) =>
+          trainerSatzChallengeErzeugen({
+            profile: profile.id,
+            woerter,
+            grammatik,
+            vermeiden: { woerter: [], grammatik: [] },
+            anzahl: n,
+            schwierigkeit: stufe,
+            wunsch: wunsch.trim(),
+          })
+        )
+      )
+      const gesehen = new Set()
+      const alle = []
+      let verworfen = 0
+      for (const res of antwortenTeile) {
+        verworfen += (res?.verworfen || []).length
+        for (const s of res?.saetze || []) {
+          if (gesehen.has(s.de)) continue
+          gesehen.add(s.de)
+          alle.push(s)
+        }
+      }
+      const liste = alle.slice(0, anzahl).map((s, i) => ({ nr: i + 1, ...s }))
+      if (!liste.length) throw new Error(verworfen ? 'verworfen' : 'leer')
       setSaetze(liste)
       setAntworten(liste.map(() => ''))
       setBewertung(null)
       setPhase('antworten')
     } catch (e) {
-      setFehler(e && e.message === 'rate-limit' ? t.challengeLimit : t.spielFehler)
+      setFehler(
+        e && e.message === 'rate-limit' ? t.challengeLimit : e && e.message === 'verworfen' ? t.spielVerworfen : t.spielFehler
+      )
       setPhase('setup')
     }
   }

@@ -1265,6 +1265,21 @@ Deno.serve(async (req) => {
         anzahl >= 8 ? 5000 : 3000
       )
       const bib = new Set(woerter.map((w: { ko: string }) => w.ko))
+      const bibListe = [...bib]
+      /* Wort bekannt? Exakt, oder als Stamm eines Bibliothekswortes
+         (공부 <- 공부하다), oder das gemeldete Wort beginnt mit dem Stamm
+         eines Bibliothekswortes (먹어요 <- 먹다). Vorher flogen schwere
+         Saetze zu oft raus, nur weil das Modell eine gebeugte Form oder
+         den Stamm gemeldet hatte (Franz 07.09.). */
+      const stamm = (w: string) => w.replace(/(하다|다)$/, '')
+      const bekannt = (w: string) => {
+        if (bib.has(w)) return true
+        if (w.length >= 2 && bibListe.some((b) => b.startsWith(w))) return true
+        return bibListe.some((b) => {
+          const s = stamm(b)
+          return s.length >= 2 && w.startsWith(s)
+        })
+      }
       const musterSet = new Set(grammatik.map((g: { muster: string }) => g.muster))
       const saetze: { de: string; ko: string; woerter: string[]; grammatik: string[] }[] = []
       const verworfen: string[] = []
@@ -1276,7 +1291,7 @@ Deno.serve(async (req) => {
           const ws = Array.isArray(s?.woerter) ? s.woerter.map((x: unknown) => String(x).normalize('NFC').trim()).filter(Boolean) : []
           const gs = Array.isArray(s?.grammatik) ? s.grammatik.map((x: unknown) => String(x).trim()).filter(Boolean) : []
           if (!de || !ko || !ws.length) continue
-          const fremd = ws.filter((w: string) => !bib.has(w))
+          const fremd = ws.filter((w: string) => !bekannt(w))
           if (fremd.length) {
             verworfen.push(`${ko} (${fremd.join(', ')})`)
             continue
