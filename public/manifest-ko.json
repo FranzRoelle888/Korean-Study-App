@@ -4,7 +4,7 @@
   "start_url": "/Korean-Study-App/?lang=ko",
   "scope": "/Korean-Study-App/",
   "display": "standalone",
-  "background_color": "#8fa0c6",
+  "background_color": "#7a8db8",
   "theme_color": "#f4eee3",
   "lang": "ko",
   "icons": [
