@@ -5,7 +5,7 @@
   "start_url": "/Korean-Study-App/?lang=de",
   "scope": "/Korean-Study-App/",
   "display": "standalone",
-  "background_color": "#ded6f2",
+  "background_color": "#cbbeee",
   "theme_color": "#f8f3ea",
   "lang": "de",
   "icons": [
