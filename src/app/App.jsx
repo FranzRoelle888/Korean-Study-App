@@ -681,6 +681,8 @@ function App() {
             /* Vokabel-Motor (Franz): Grund für „nichts Neues" + Pause-Schalter */
             neuGrund={motor ? daily.grund : null}
             zeigeMotorInfo={motorInfoSichtbar(profileId, todayStr())}
+            neuTempo={daily.tempo}
+            neuFaellig={daily.faellig}
             onPauseToggle={
               motor
                 ? () => {

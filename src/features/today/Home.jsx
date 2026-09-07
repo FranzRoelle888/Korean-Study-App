@@ -31,6 +31,8 @@ function Home({
   neuGrund,
   onPauseToggle,
   zeigeMotorInfo,
+  neuTempo,
+  neuFaellig,
   numberDone,
   streak,
   week,
@@ -197,7 +199,9 @@ function Home({
                   ? t.neuStau
                   : neuGrund === 'leer'
                     ? t.neuLeer
-                    : ''}
+                    : neuTempo != null && t.neuTempo
+                      ? t.neuTempo(neuTempo, neuFaellig ?? 0)
+                      : ''}
             </span>
             {(neuGrund === 'pause' || (!dailyDone && neuGrund !== 'stau')) && (
               <button

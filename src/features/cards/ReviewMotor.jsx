@@ -42,7 +42,10 @@ function artVon(card) {
 
 function ReviewMotor({ initialQueue, words, onRate, onUndo, onExit, profile, t, tt }) {
   const [queue, setQueue] = useState(initialQueue)
-  const [total] = useState(initialQueue.length)
+  /* erledigte Karten zaehlen statt fester Gesamtzahl — Festiger-Durchgaenge
+     kommen unterwegs dazu */
+  const [erledigt, setErledigt] = useState(0)
+  const total = erledigt + queue.length
   const [typed, setTyped] = useState('')
   const [checked, setChecked] = useState(false)
   const [correct, setCorrect] = useState(false)
@@ -51,8 +54,11 @@ function ReviewMotor({ initialQueue, words, onRate, onUndo, onExit, profile, t, 
   const [exiting, setExiting] = useState(false)
   const [last, setLast] = useState(null)
 
-  const done = total - queue.length
+  const done = erledigt
   const card = queue[0]
+  /* Neue Karte von heute (erste Begegnung heute, noch nie bewertet)?
+     Dann folgen nach der Bewertung zwei Festiger-Durchgaenge. */
+  const heuteNeu = (c) => c && c.reps === 0 && !c.lastReviewed && (c.createdAt || 0) >= Date.now() - 20 * 3600 * 1000
   const lang = profile.targetLang
   const art = card ? artVon(card) : null
 
@@ -116,12 +122,31 @@ function ReviewMotor({ initialQueue, words, onRate, onUndo, onExit, profile, t, 
     setExiting(false)
   }
 
-  function nextCard(afterRequeue) {
+  /* Festiger (Franz 07.09.): dieselbe Karte nach mindestens 8 anderen
+     noch einmal — reine Uebung, KEINE Bewertung, der Algorithmus bleibt
+     unberuehrt. n = 1 oder 2 (zwei Durchgaenge nach der ersten Begegnung). */
+  function mitFestiger(rest, k, n) {
+    if (n > 2) return rest
+    const kopie = { ...k, festiger: n }
+    const pos = Math.min(8, rest.length)
+    return [...rest.slice(0, pos), kopie, ...rest.slice(pos)]
+  }
+
+  function nextCard(afterRequeue, festigerFuer = null) {
     setQueue((q) => {
       const [first, ...rest] = q
-      return afterRequeue ? [...rest, first] : rest
+      if (afterRequeue) return [...rest, first]
+      return festigerFuer ? mitFestiger(rest, festigerFuer.karte, festigerFuer.n) : rest
     })
+    if (!afterRequeue) setErledigt((n) => n + 1)
     reset()
+  }
+
+  /* Festiger-Karte beantwortet: richtig -> naechster Durchgang (falls
+     noch einer offen); falsch -> von vorn, ohne Bewertung */
+  function festigerWeiter(ok) {
+    const n = card.festiger || 1
+    nextCard(false, ok ? { karte: card, n: n + 1 } : { karte: card, n: 1 })
   }
 
   function undo() {
@@ -136,10 +161,12 @@ function ReviewMotor({ initialQueue, words, onRate, onUndo, onExit, profile, t, 
     if (exiting) return
     setLast({ queue, card })
     if (rating !== 'again') {
+      /* erste Begegnung einer heute neuen Karte: danach zwei Festiger */
+      const festiger = heuteNeu(card) ? { karte: card, n: 1 } : null
       setExiting(true)
       setTimeout(() => {
         onRate(card.id, rating)
-        nextCard(false)
+        nextCard(false, festiger)
       }, 320)
     } else {
       onRate(card.id, rating)
@@ -170,7 +197,13 @@ function ReviewMotor({ initialQueue, words, onRate, onUndo, onExit, profile, t, 
 
   const liste = art !== 'produktion' && !checked ? vorschlaege(words, typed) : []
   const flashClass = flash === 'ok' ? 'flash-ok' : flash === 'bad' ? 'flash-bad' : ''
-  const tag = art === 'produktion' ? t.tagProduktion : art === 'hoeren' ? t.tagHoeren : t.tagErkennen
+  const tag = card.festiger
+    ? t.festigerTag(card.festiger)
+    : art === 'produktion'
+      ? t.tagProduktion
+      : art === 'hoeren'
+        ? t.tagHoeren
+        : t.tagErkennen
 
   return (
     <div className="review">
@@ -328,7 +361,16 @@ function ReviewMotor({ initialQueue, words, onRate, onUndo, onExit, profile, t, 
       </div>
 
       {/* ---------- Bewertung ---------- */}
-      {checked && correct && (
+      {/* Festiger-Durchgang: nur Weiter, keine Bewertung */}
+      {checked && card.festiger && (
+        <div className="ratings ratings-eins">
+          <button className={correct ? 'rate rate-good' : 'rate rate-again'} onClick={() => festigerWeiter(correct)}>
+            <span className="rate-label">{t.weiter}</span>
+            <span className="rate-when">{t.festigerTag(card.festiger)}</span>
+          </button>
+        </div>
+      )}
+      {checked && correct && !card.festiger && (
         <div className="ratings ratings-drei">
           {RICHTIG_KNOEPFE.map((r) => (
             <button key={r.key} className={`rate ${r.cls}`} onClick={() => rate(r.key)}>
@@ -341,7 +383,7 @@ function ReviewMotor({ initialQueue, words, onRate, onUndo, onExit, profile, t, 
       {/* Falsch: rot = wirklich vertan (Again), grün = nur verklickt
           (Franz 06.09.) — die Karte bleibt unverändert und kommt
           heute später noch einmal, ohne Bewertung */}
-      {checked && !correct && (
+      {checked && !correct && !card.festiger && (
         <div className="ratings ratings-zwei">
           <button className="rate rate-again" onClick={() => rate('again')}>
             <span className="rate-label">{t.again}</span>

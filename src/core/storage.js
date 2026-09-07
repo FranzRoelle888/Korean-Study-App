@@ -50,7 +50,10 @@ const TAGES_ZAHLEN = {
   /* handEintragNurErkennen (Franz 06.09.): ein von Hand eingetragenes
      Wort startet wie ein Ritual-Wort nur mit der Erkennen-Karte —
      Produktion kommt per Warmstart. 해인 behaelt beide Karten. */
-  ko: { neueProTag: 5, deckel: 130, neuStopp: 100, ziel: 0.93, hartDeckel: 0.5, motor: true, vorratTabelle: true, handEintragNurErkennen: true },
+  /* autoTempo (Franz 07.09.): neue Woerter je nach Lage — unter 40
+     faellig und < 10 % Again in 7 Tagen: 10, unter 70: 8, unter 100: 5,
+     darueber 0. neueProTag ist dann nur noch die Obergrenze. */
+  ko: { neueProTag: 10, deckel: 130, neuStopp: 100, ziel: 0.93, hartDeckel: 0.5, motor: true, vorratTabelle: true, handEintragNurErkennen: true, autoTempo: true },
   /* 해인 (Franz 06.09.): derselbe Motor wie bei Franz — 3 neue Woerter
      (sie traegt viel von Hand ein), Deckel 130, Neu-Stopp bei > 100,
      90 % Ziel (Deutsch ist ableitbar), Barely-Deckel. Ihr Vorrat liegt
@@ -420,12 +423,50 @@ export async function loadInitial() {
     writeWordsCache(words)
     writeCardsCache(cards)
     const vorrat = await ladeVorrat()
+    await ladeAgainQuote()
     return { words, cards, vorrat, online: true }
   } catch (e) {
     // Kein Internet oder Tabellen fehlen -> Puffer benutzen
     console.warn('Cloud-Laden fehlgeschlagen, benutze lokalen Puffer:', e?.message || e)
     return { words: readWordsCache(), cards: readCardsCache(), vorrat: readVorratCache(), online: false }
   }
+}
+
+/* ---------- Again-Quote der letzten 7 Tage (Auto-Tempo) ----------
+   Aus der Antwort-Historie (review_log). Wird beim Start geladen und
+   fuer die Tagesplanung benutzt; ohne Netz gilt der letzte Wert. */
+let againQuote = 0
+async function ladeAgainQuote() {
+  if (!tagesZahlen().autoTempo) return
+  try {
+    const seit = new Date(Date.now() - 7 * 86400000).toISOString()
+    const { data, error } = await mine(
+      supabase.from('review_log').select('rating').gte('created_at', seit).limit(3000)
+    )
+    if (error || !data) return
+    const n = data.length
+    if (n >= 20) againQuote = data.filter((r) => r.rating === 'again').length / n
+    try {
+      localStorage.setItem(cacheKey('againQuote'), String(againQuote))
+    } catch {
+      /* egal */
+    }
+  } catch {
+    try {
+      againQuote = Number(localStorage.getItem(cacheKey('againQuote'))) || 0
+    } catch {
+      /* egal */
+    }
+  }
+}
+
+/* Auto-Tempo (Franz 07.09.): wie viele neue Woerter heute? */
+function autoTempoZahl(faellig) {
+  const tz = tagesZahlen()
+  if (faellig > tz.neuStopp) return 0
+  if (faellig < 40 && againQuote < 0.1) return Math.min(10, tz.neueProTag)
+  if (faellig < 70) return Math.min(8, tz.neueProTag)
+  return Math.min(5, tz.neueProTag)
 }
 
 /* ---------- Vorrat (Vokabel-Motor V2, Migration 015) ----------
@@ -1017,7 +1058,23 @@ export function dailyStatus(words, extra = {}) {
   const fortschritt = getDailyProgress()
   const introduced = fortschritt.introduced
   const tz = tagesZahlen()
-  let left = Math.max(0, dailyNew() - introduced)
+  /* Auto-Tempo (Franz): Tageszahl aus Lage und Again-Quote statt fest.
+     Einmal am Tag festgelegt (beim ersten Blick mit bekannter
+     Faelligkeit) und dann eingefroren — sonst wuerde jedes eingefuehrte
+     Wort die Zahl fuer heute wieder druecken. */
+  let tagesZahl = dailyNew()
+  if (tz.autoTempo) {
+    if (fortschritt.tempo != null) tagesZahl = fortschritt.tempo
+    else if (extra.faellig != null) {
+      tagesZahl = autoTempoZahl(extra.faellig)
+      try {
+        localStorage.setItem(DAILY_KEY(), JSON.stringify({ ...fortschritt, date: todayStr(), tempo: tagesZahl }))
+      } catch {
+        /* egal */
+      }
+    }
+  }
+  let left = Math.max(0, tagesZahl - introduced)
 
   if (!tz.motor) {
     const candidates = nextFromPool(words, left)
@@ -1034,7 +1091,8 @@ export function dailyStatus(words, extra = {}) {
      die Startseite sagt es so, dass man es sofort durchblickt */
   let grund = null
   if (fortschritt.pause) grund = 'pause'
-  else if (left > 0 && (extra.faellig ?? 0) > tz.neuStopp) grund = 'stau'
+  else if ((left > 0 || (tz.autoTempo && tagesZahl === 0 && introduced === 0)) && (extra.faellig ?? 0) > tz.neuStopp)
+    grund = 'stau'
   if (grund) left = 0
   const candidates = vorratKandidaten(extra.vorrat || [], words, left)
   const vorratLeer = vorratKandidaten(extra.vorrat || [], words, 1).length === 0
@@ -1050,6 +1108,9 @@ export function dailyStatus(words, extra = {}) {
     poolEmpty: vorratLeer,
     grund,
     pause: !!fortschritt.pause,
+    /* Auto-Tempo: heutige Tageszahl + Faelligkeit fuer die Anzeige */
+    tempo: tz.autoTempo ? tagesZahl : null,
+    faellig: extra.faellig ?? null,
   }
 }
 
