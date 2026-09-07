@@ -1,0 +1,13 @@
+{
+  "name": "한국어 · Franz",
+  "short_name": "한국어",
+  "start_url": "/Korean-Study-App/?lang=ko",
+  "scope": "/Korean-Study-App/",
+  "display": "standalone",
+  "background_color": "#f4eee3",
+  "theme_color": "#f4eee3",
+  "lang": "ko",
+  "icons": [
+    { "src": "/Korean-Study-App/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

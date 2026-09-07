@@ -50,6 +50,7 @@ import { istMotor, trenneBedeutung, gleichbedeutende } from '../core/motor'
 import { trainerVokabelAnreichern, trainerVokabelNuancen } from '../features/trainer/trainerApi'
 import Einfuehrung from '../features/cards/Einfuehrung'
 import { motorInfoSichtbar } from '../features/today/MotorInfo'
+import { setzeAppIdentitaet } from '../core/appIdentitaet'
 import ReviewMotor from '../features/cards/ReviewMotor'
 import './motor.css'
 import Home from '../features/today/Home'
@@ -213,6 +214,8 @@ function App() {
     } else {
       delete document.documentElement.dataset.theme
     }
+    /* Titel, Homescreen-Icon und Manifest je Seite (Franz 07.09.) */
+    setzeAppIdentitaet(profileId)
   }, [profileId])
 
   function switchProfile() {
