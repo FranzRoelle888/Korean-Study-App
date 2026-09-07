@@ -142,6 +142,17 @@ export function trainerVokabelNuancen({ profile, gruppe }) {
   return call({ action: 'vokabelNuancen', profile, gruppe })
 }
 
+/* Tages-Challenge (Franz): 5 deutsche Saetze nur aus eigenen Woertern +
+   abgehakter Grammatik -> { saetze: [{de, ko, woerter, grammatik}], verworfen } */
+export function trainerSatzChallengeErzeugen({ profile, woerter, grammatik, vermeiden }) {
+  return call({ action: 'satzChallengeErzeugen', profile, woerter, grammatik, vermeiden })
+}
+
+/* Antworten bewerten -> { ergebnisse: [{nr, urteil, korrektur, hinweis}], fazit } */
+export function trainerSatzChallengeBewerten({ profile, paare }) {
+  return call({ action: 'satzChallengeBewerten', profile, paare })
+}
+
 /* Grammatik-Erklärung (Text und/oder Foto) -> Vorschlagsliste.
    image: { media_type: 'image/jpeg', data: '<base64>' } oder null.
    Gespeichert wird erst nach Bestätigung in der App. */

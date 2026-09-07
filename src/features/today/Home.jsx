@@ -243,7 +243,7 @@ function Home({
               <HashIcon />
             </div>
             <div className="action-text">
-              <span className="action-title">{t.numberOfDay}</span>
+              <span className="action-title">{t.tagesChallenge ?? t.numberOfDay}</span>
               <span className="action-sub" lang={profile.targetLang}>
                 {tt.numberOfDay}
               </span>

@@ -166,6 +166,16 @@ const en = {
   wordClass: 'Word class',
 
   /* --- Zahl des Tages --- */
+  /* --- Tages-Challenge (Franz) --- */
+  tagesChallenge: 'Daily challenge',
+  challengeSaetze: 'Five sentences',
+  challengeHinweis: 'Only words from your library and grammar you ticked. Write each in Korean, then let the trainer grade all five.',
+  challengeBewerten: 'Grade my sentences',
+  challengeBewertet: 'Grading…',
+  challengeSpaeterBewerten: 'Grade now',
+  challengeOffline: 'Grading needs a connection — your answers are saved, try again later.',
+  challengeLimit: 'The trainer is at its hourly limit — your answers are saved, try again later.',
+  challengeKeineSaetze: 'No sentences today (offline and nothing prepared) — the number alone counts.',
   typeTheNumber: 'Type the number in Korean',
   almostFixRed: 'Almost! Fix the field marked red and try again.',
   notQuite: 'Not quite – try again.',
@@ -488,6 +498,15 @@ const ko = {
   wordClass: '품사',
 
   /* --- Zahl des Tages --- */
+  tagesChallenge: '오늘의 챌린지',
+  challengeSaetze: '문장 다섯 개',
+  challengeHinweis: '내 단어와 체크한 문법만으로. 한국어로 쓴 뒤 트레이너에게 평가받아요.',
+  challengeBewerten: '평가받기',
+  challengeBewertet: '평가 중…',
+  challengeSpaeterBewerten: '지금 평가받기',
+  challengeOffline: '평가는 인터넷이 필요해요 — 답은 저장됐어요.',
+  challengeLimit: '트레이너 시간당 한도 — 답은 저장됐어요.',
+  challengeKeineSaetze: '오늘은 문장이 없어요 — 숫자만으로 충분해요.',
   typeTheNumber: '숫자를 한국어로 입력하세요',
   almostFixRed: '거의 다 됐어요! 빨간 칸을 고쳐 보세요.',
   notQuite: '아니에요 – 다시 해 보세요.',

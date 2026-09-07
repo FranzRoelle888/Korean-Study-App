@@ -56,7 +56,8 @@ import './motor.css'
 import Home from '../features/today/Home'
 import Library from '../features/cards/Library'
 import Review from '../features/cards/Review'
-import NumberChallenge from '../features/challenges/NumberChallenge'
+import TagesChallenge from '../features/challenges/TagesChallenge'
+import { completeSatzChallenge } from '../core/storage'
 import ArticleChallenge from '../features/challenges/ArticleChallenge'
 import PluralChallenge from '../features/challenges/PluralChallenge'
 import ConjChallenge from '../features/challenges/ConjChallenge'
@@ -306,7 +307,8 @@ function App() {
 
   // Sind heute alle Tagesaufgaben erledigt? Die Zahlen-Challenge
   // gibt es nur auf der koreanischen Seite und zählt sonst nicht mit.
-  const numberDone = profile.numberChallenge ? numberState.done : true
+  /* Tages-Challenge (Franz 07.09.): Zahl UND fuenf Saetze abgeschickt */
+  const numberDone = profile.numberChallenge ? numberState.done && !!numberState.saetzeDone : true
 
   /* Artikel des Tages — nur auf der deutschen Seite, und nur wenn
      ueberhaupt genug Substantive da sind. */
@@ -378,6 +380,11 @@ function App() {
   function handleCompleteNumber() {
     completeNumberChallenge()
     setNumberState((s) => ({ ...s, done: true }))
+  }
+
+  function handleCompleteSaetze() {
+    completeSatzChallenge()
+    setNumberState((s) => ({ ...s, saetzeDone: true }))
   }
 
   function handleAdd(en, ko, pos, notiz) {
@@ -720,12 +727,16 @@ function App() {
           />
         )}
         {view === 'number' && (
-          <NumberChallenge
+          <TagesChallenge
             number={numberState.number}
             sino={sinoKorean(numberState.number)}
             native={nativeKorean(numberState.number)}
-            alreadyDone={numberState.done}
-            onComplete={handleCompleteNumber}
+            numberDone={numberState.done}
+            onNumberDone={handleCompleteNumber}
+            saetzeDone={!!numberState.saetzeDone}
+            onSaetzeDone={handleCompleteSaetze}
+            words={words}
+            profile={profile}
             onExit={() => setView('home')}
             t={t}
           />

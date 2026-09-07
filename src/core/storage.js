@@ -1317,6 +1317,17 @@ export function completeNumberChallenge() {
   return next
 }
 
+/* Tages-Challenge (Franz 07.09.): die fuenf Saetze sind abgeschickt.
+   Zaehlt neben der Zahl zur Tagesaufgabe; ueber daily_log.stand
+   auf alle Geraete (stand.saetze). */
+export function completeSatzChallenge() {
+  const c = getNumberChallenge()
+  const next = { ...c, saetzeDone: true }
+  localStorage.setItem(NUMBER_KEY(), JSON.stringify(next))
+  schreibeTagesstand({ saetze: true })
+  return next
+}
+
 /* ============================================================
    ARTIKEL DES TAGES (nur deutsche Seite)
 
@@ -1591,6 +1602,10 @@ export function uebernehmeTagesstand(logRows) {
       const n = getNumberChallenge()
       if (!n.done) localStorage.setItem(NUMBER_KEY(), JSON.stringify({ ...n, done: true }))
       localStorage.setItem(ARTICLE_KEY(), JSON.stringify({ date: todayStr(), done: true }))
+    }
+    if (stand.saetze) {
+      const n = getNumberChallenge()
+      if (!n.saetzeDone) localStorage.setItem(NUMBER_KEY(), JSON.stringify({ ...n, saetzeDone: true }))
     }
   } catch {
     /* still — dann eben nur der lokale Stand */

@@ -348,7 +348,7 @@ async function overLimit(profile: string) {
   /* Nur die eigenen Aktionen zählen — die speech-Funktion führt
      ihr eigenes Limit in speech_usage */
   const rows = await dbGet(
-    `trainer_usage?profile=eq.${profile}&action=in.(chat,summary,extract,uebung,satz,schreiben,studio_erklaerung,studio_aufgaben,studio_antwort,studio_bilanz,nachfrage,a2frage,a2schreiben,a2hoeren,a2lesen,a2sprechen1,a2sprechen2,vokabelAnreichern,vokabelNuancen)&created_at=gt.${oneHourAgo}&select=id`
+    `trainer_usage?profile=eq.${profile}&action=in.(chat,summary,extract,uebung,satz,schreiben,studio_erklaerung,studio_aufgaben,studio_antwort,studio_bilanz,nachfrage,a2frage,a2schreiben,a2hoeren,a2lesen,a2sprechen1,a2sprechen2,vokabelAnreichern,vokabelNuancen,satzChallengeErzeugen,satzChallengeBewerten)&created_at=gt.${oneHourAgo}&select=id`
   )
   return rows.length >= MAX_CALLS_PER_HOUR
 }
@@ -423,6 +423,8 @@ Deno.serve(async (req) => {
       action !== 'uebersetzung' &&
       action !== 'vokabelAnreichern' &&
       action !== 'vokabelNuancen' &&
+      action !== 'satzChallengeErzeugen' &&
+      action !== 'satzChallengeBewerten' &&
       !String(action).startsWith('studio_') &&
       (!Array.isArray(messages) || messages.length > 60)
     )
@@ -1191,6 +1193,162 @@ Deno.serve(async (req) => {
         output_tokens: out.outputTokens,
       })
       return json({ nuancen })
+    }
+
+    /* ---------- Tages-Challenge: 5 Saetze erzeugen (Franz 07.09.) ----------
+       Deutsche Saetze, die AUSSCHLIESSLICH aus seinen Bibliothekswoertern
+       und den abgehakten Grammatikpunkten bestehen. Die App schickt beide
+       Listen und eine "zuletzt benutzt"-Liste fuer die Rotation. Jeder
+       Satz nennt seine Woerter (Grundform) und Muster — die Funktion
+       prueft das gegen die Listen und wirft Saetze mit Fremdwoertern raus. */
+    if (action === 'satzChallengeErzeugen') {
+      if (profile !== 'ko') return json({ error: 'bad-profile' }, 400)
+      const woerter = Array.isArray(body.woerter)
+        ? body.woerter
+            .slice(0, 600)
+            .map((w: { ko?: unknown; en?: unknown }) => ({
+              ko: typeof w.ko === 'string' ? w.ko.normalize('NFC').trim() : '',
+              en: typeof w.en === 'string' ? w.en.trim().slice(0, 60) : '',
+            }))
+            .filter((w: { ko: string }) => w.ko)
+        : []
+      const grammatik = Array.isArray(body.grammatik)
+        ? body.grammatik
+            .slice(0, 80)
+            .map((g: { muster?: unknown; name?: unknown; beispiel?: unknown }) => ({
+              muster: typeof g.muster === 'string' ? g.muster.trim() : '',
+              name: typeof g.name === 'string' ? g.name.trim() : '',
+              beispiel: typeof g.beispiel === 'string' ? g.beispiel.trim() : '',
+            }))
+            .filter((g: { muster: string }) => g.muster)
+        : []
+      const vermeiden = body.vermeiden && typeof body.vermeiden === 'object' ? body.vermeiden : {}
+      const vermWoerter = Array.isArray(vermeiden.woerter) ? vermeiden.woerter.slice(0, 120).map(String) : []
+      const vermMuster = Array.isArray(vermeiden.grammatik) ? vermeiden.grammatik.slice(0, 40).map(String) : []
+      if (woerter.length < 15) return json({ error: 'empty' }, 400)
+
+      const out = await callModel(
+        [
+          'You write today\'s sentence challenge for Franz, a German beginner learning Korean. He must translate German sentences into Korean.',
+          'HARD CONSTRAINT: every Korean sentence may use ONLY words from the WORD LIST below (dictionary forms; conjugation, honorific/polite endings and particles are fine) and ONLY grammar from the PATTERN LIST. Proper nouns and numbers are not allowed either. If a sentence would need any other word, do not write it.',
+          'Mix the patterns freely — two patterns in one sentence is good (e.g. a location particle with a past tense). Do not always use the simplest ones. Everyday situations, natural German, 6-8 words per sentence in Korean. Polite 해요체 unless a pattern requires otherwise.',
+          'ROTATION: avoid these recently used words and patterns unless unavoidable.',
+          `Recently used words: ${vermWoerter.join(', ') || '(none)'}`,
+          `Recently used patterns: ${vermMuster.join(', ') || '(none)'}`,
+          '',
+          'WORD LIST (korean = english):',
+          woerter.map((w: { ko: string; en: string }) => `${w.ko} = ${w.en}`).join('; '),
+          '',
+          'PATTERN LIST:',
+          grammatik.length
+            ? grammatik.map((g: { muster: string; name: string; beispiel: string }) => `${g.muster} (${g.name}) e.g. ${g.beispiel}`).join('\n')
+            : '-아/어요 (polite present); N은/는; N이/가; N을/를 — plain statements only',
+          '',
+          'Reply with ONLY this JSON: {"saetze":[{"de":"<German sentence>","ko":"<model Korean translation>","woerter":["<dictionary form of EVERY content word used, from the list>"],"grammatik":["<patterns used, exactly as in the list>"]}, ... 6 sentences]}',
+          'Write 6 sentences so one can serve as a spare. The "woerter" array must be complete and exact — it is checked by the app.',
+        ].join('\n'),
+        [{ role: 'user', content: 'Create today\'s six sentences.' }],
+        2500
+      )
+      const bib = new Set(woerter.map((w: { ko: string }) => w.ko))
+      const musterSet = new Set(grammatik.map((g: { muster: string }) => g.muster))
+      const saetze: { de: string; ko: string; woerter: string[]; grammatik: string[] }[] = []
+      const verworfen: string[] = []
+      try {
+        const j = JSON.parse(out.text.replace(/^```(?:json)?/m, '').replace(/```\s*$/m, '').trim())
+        for (const s of Array.isArray(j?.saetze) ? j.saetze : []) {
+          const de = typeof s?.de === 'string' ? s.de.trim() : ''
+          const ko = typeof s?.ko === 'string' ? s.ko.normalize('NFC').trim() : ''
+          const ws = Array.isArray(s?.woerter) ? s.woerter.map((x: unknown) => String(x).normalize('NFC').trim()).filter(Boolean) : []
+          const gs = Array.isArray(s?.grammatik) ? s.grammatik.map((x: unknown) => String(x).trim()).filter(Boolean) : []
+          if (!de || !ko || !ws.length) continue
+          const fremd = ws.filter((w: string) => !bib.has(w))
+          if (fremd.length) {
+            verworfen.push(`${ko} (${fremd.join(', ')})`)
+            continue
+          }
+          const gOk = grammatik.length ? gs.filter((g: string) => musterSet.has(g)) : gs
+          saetze.push({ de, ko, woerter: ws, grammatik: gOk })
+          if (saetze.length === 5) break
+        }
+      } catch {
+        /* unbrauchbar -> leer */
+      }
+      await dbInsert('trainer_usage', {
+        profile,
+        action: 'satzChallengeErzeugen',
+        input_tokens: out.inputTokens,
+        output_tokens: out.outputTokens,
+      })
+      return json({ saetze, verworfen })
+    }
+
+    /* ---------- Tages-Challenge: Antworten bewerten ----------
+       Tolerant bei Umschreibungen, streng bei echten Fehlern. Ergebnis
+       je Satz: gruen / gelb / rot mit Korrektur (+ deutsche Uebersetzung
+       in Klammern) und einem Satz Begruendung auf Deutsch. Landet als
+       Journal-Eintrag in sessions, damit der Tutor davon weiss. */
+    if (action === 'satzChallengeBewerten') {
+      if (profile !== 'ko') return json({ error: 'bad-profile' }, 400)
+      const paare = Array.isArray(body.paare)
+        ? body.paare
+            .slice(0, 6)
+            .map((p: { nr?: unknown; de?: unknown; muster?: unknown; antwort?: unknown }) => ({
+              nr: Number(p.nr) || 0,
+              de: typeof p.de === 'string' ? p.de.trim().slice(0, 200) : '',
+              muster: typeof p.muster === 'string' ? p.muster.trim().slice(0, 200) : '',
+              antwort: typeof p.antwort === 'string' ? p.antwort.normalize('NFC').trim().slice(0, 200) : '',
+            }))
+            .filter((p: { de: string }) => p.de)
+        : []
+      if (!paare.length) return json({ error: 'empty' }, 400)
+      const out = await callModel(
+        [
+          'You grade Franz\'s Korean translations of German sentences (beginner, A1-A2). For each pair you get: the German sentence, a model Korean translation, and his answer.',
+          'Verdicts: "gruen" = correct (meaning and grammar fine, even if worded differently from the model); "gelb" = acceptable but with a real remark (unnatural word order, missing but optional particle, slightly off nuance, wrong politeness that is still understandable); "rot" = a real error (wrong particle, wrong conjugation or tense, wrong word, missing required word, meaning changed). Different but correct phrasing with other known words is gruen, not rot. Do not punish spacing. Empty answer = rot.',
+          'For gelb and rot: "korrektur" = his sentence minimally fixed (keep his wording where possible), followed by the German translation in parentheses. "hinweis" = ONE short sentence in German saying what was wrong and why. For gruen: korrektur = his answer as is, hinweis = "" or a tiny optional tip.',
+          'Reply with ONLY this JSON: {"ergebnisse":[{"nr":1,"urteil":"gruen|gelb|rot","korrektur":"...","hinweis":"..."}, ...],"fazit":"<one or two German sentences: what to keep in mind next time>"}',
+        ].join('\n'),
+        [
+          {
+            role: 'user',
+            content: paare
+              .map((p: { nr: number; de: string; muster: string; antwort: string }) => `${p.nr}. DE: ${p.de}\n   Model: ${p.muster}\n   Franz: ${p.antwort || '(leer)'}`)
+              .join('\n'),
+          },
+        ],
+        2000
+      )
+      let ergebnisse: { nr: number; urteil: string; korrektur: string; hinweis: string }[] = []
+      let fazit = ''
+      try {
+        const j = JSON.parse(out.text.replace(/^```(?:json)?/m, '').replace(/```\s*$/m, '').trim())
+        ergebnisse = (Array.isArray(j?.ergebnisse) ? j.ergebnisse : []).map((e: { nr?: unknown; urteil?: unknown; korrektur?: unknown; hinweis?: unknown }) => ({
+          nr: Number(e.nr) || 0,
+          urteil: ['gruen', 'gelb', 'rot'].includes(String(e.urteil)) ? String(e.urteil) : 'gelb',
+          korrektur: typeof e.korrektur === 'string' ? e.korrektur.slice(0, 300) : '',
+          hinweis: typeof e.hinweis === 'string' ? e.hinweis.slice(0, 300) : '',
+        }))
+        fazit = typeof j?.fazit === 'string' ? j.fazit.slice(0, 400) : ''
+      } catch {
+        /* unbrauchbar -> leer */
+      }
+      const gruen = ergebnisse.filter((e) => e.urteil === 'gruen').length
+      const rot = ergebnisse.filter((e) => e.urteil === 'rot')
+      await dbInsert('sessions', {
+        profile,
+        mode: 'challenge',
+        scenario: 'Tages-Challenge',
+        summary: `Satz-Challenge: ${gruen}/${ergebnisse.length} gruen. ${fazit}`.slice(0, 600),
+        errors: rot.map((e) => e.hinweis).filter(Boolean).slice(0, 3),
+      }).catch(() => {})
+      await dbInsert('trainer_usage', {
+        profile,
+        action: 'satzChallengeBewerten',
+        input_tokens: out.inputTokens,
+        output_tokens: out.outputTokens,
+      })
+      return json({ ergebnisse, fazit })
     }
 
     /* ---------- A2-Schreib-Training: Bewertung nach Goethe-Raster ----------
