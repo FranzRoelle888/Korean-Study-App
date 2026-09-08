@@ -739,6 +739,17 @@
   border-color: var(--primary);
   color: #fff;
 }
+.us-chip:disabled {
+  opacity: 0.4;
+}
+/* Zahl unter der Zeitraum-Auswahl der Extra-Runde */
+.us-chip-zahl {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  font-weight: 600;
+  opacity: 0.75;
+}
 .us-laedt {
   text-align: center;
   padding: 24px 0;

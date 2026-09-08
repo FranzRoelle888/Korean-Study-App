@@ -33,9 +33,9 @@ function Home({
   zeigeMotorInfo,
   neuTempo,
   neuFaellig,
-  abendAnzahl,
-  abendErledigt,
-  onAbend,
+  extraAnzahl,
+  extraErledigt,
+  onExtra,
   numberDone,
   streak,
   week,
@@ -265,25 +265,27 @@ function Home({
           </button>
         )}
 
-        {/* Abend-Check (Franz 07.09.): ab 18 Uhr, freiwillig, ohne Bewertung */}
-        {onAbend && (
+        {/* Extra-Runde (Franz 08.09.): den ganzen Tag verfuegbar, sobald die
+            neuen Woerter durch sind. Der Haken sperrt nicht — man kann sie
+            beliebig oft starten, Zeitraum waehlt man beim Oeffnen. */}
+        {onExtra && (
           <button
-            className={abendErledigt ? 'action action-secondary' : 'action action-full action-full-gold'}
-            onClick={onAbend}
+            className={extraErledigt ? 'action action-secondary' : 'action action-full action-full-gold'}
+            onClick={onExtra}
           >
             <div className="action-icon action-icon-number">
-              <span className="action-emoji" aria-hidden="true">🌙</span>
+              <span className="action-emoji" aria-hidden="true">💪</span>
             </div>
             <div className="action-text">
-              <span className="action-title">{t.abendCheck}</span>
-              <span className="action-sub">{t.abendCheckSub(abendAnzahl)}</span>
+              <span className="action-title">{t.extraRunde}</span>
+              <span className="action-sub">{t.extraRundeSub}</span>
             </div>
-            {abendErledigt ? (
+            {extraErledigt ? (
               <span className="done-check">
                 <CheckIcon />
               </span>
             ) : (
-              <span className="badge">{abendAnzahl}</span>
+              <span className="badge">{extraAnzahl}</span>
             )}
           </button>
         )}

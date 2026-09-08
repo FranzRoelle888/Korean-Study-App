@@ -1389,15 +1389,16 @@ export function completeSatzChallenge() {
   return next
 }
 
-/* Abend-Check (Franz 07.09.): heute erledigt? Freiwillig, kein Streak-
-   Einfluss, kein Einfluss auf den Algorithmus — nur ein Haken. */
-export function abendCheckErledigt() {
-  return !!getDailyProgress().abend
+/* Extra-Runde (Franz 07./08.09.): heute schon gemacht? Freiwillig, kein
+   Streak-Einfluss, kein Einfluss auf den Algorithmus — nur ein Haken.
+   Der Haken sperrt nichts: die Runde laesst sich beliebig oft starten. */
+export function extraRundeErledigt() {
+  return !!getDailyProgress().extra
 }
-export function completeAbendCheck() {
+export function completeExtraRunde() {
   const p = getDailyProgress()
-  localStorage.setItem(DAILY_KEY(), JSON.stringify({ ...p, date: todayStr(), abend: true }))
-  schreibeTagesstand({ abend: true })
+  localStorage.setItem(DAILY_KEY(), JSON.stringify({ ...p, date: todayStr(), extra: true }))
+  schreibeTagesstand({ extra: true })
 }
 
 /* ============================================================
@@ -1679,9 +1680,9 @@ export function uebernehmeTagesstand(logRows) {
       const n = getNumberChallenge()
       if (!n.saetzeDone) localStorage.setItem(NUMBER_KEY(), JSON.stringify({ ...n, saetzeDone: true }))
     }
-    if (stand.abend) {
+    if (stand.extra) {
       const q = getDailyProgress()
-      if (!q.abend) localStorage.setItem(DAILY_KEY(), JSON.stringify({ ...q, date: todayStr(), abend: true }))
+      if (!q.extra) localStorage.setItem(DAILY_KEY(), JSON.stringify({ ...q, date: todayStr(), extra: true }))
     }
   } catch {
     /* still — dann eben nur der lokale Stand */

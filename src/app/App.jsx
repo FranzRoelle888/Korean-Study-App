@@ -57,9 +57,9 @@ import Home from '../features/today/Home'
 import Library from '../features/cards/Library'
 import Review from '../features/cards/Review'
 import TagesChallenge from '../features/challenges/TagesChallenge'
-import AbendCheck from '../features/challenges/AbendCheck'
-import { completeSatzChallenge, abendCheckErledigt, completeAbendCheck } from '../core/storage'
-import { istAbend, ladeAbendMaterial } from '../core/abendCheck'
+import ExtraRunde from '../features/challenges/ExtraRunde'
+import { completeSatzChallenge, extraRundeErledigt, completeExtraRunde } from '../core/storage'
+import { ladeExtraMaterial } from '../core/extraRunde'
 import ArticleChallenge from '../features/challenges/ArticleChallenge'
 import PluralChallenge from '../features/challenges/PluralChallenge'
 import ConjChallenge from '../features/challenges/ConjChallenge'
@@ -117,9 +117,9 @@ function App() {
   /* Rückgängig-Netz: welche Produktions-Karte hat die letzte
      Bewertung per Warmstart erzeugt? */
   const letzterWarmstart = useRef(null)
-  /* Abend-Check (Franz 07.09.): Material ab 18 Uhr, nur ko */
-  const [abendMaterial, setAbendMaterial] = useState([])
-  const [abendTick, setAbendTick] = useState(0)
+  /* Extra-Runde (Franz 07./08.09.): Material der letzten 5 Lerntage, nur ko */
+  const [extraMaterial, setExtraMaterial] = useState([])
+  const [extraTick, setExtraTick] = useState(0)
 
   /* Anmeldung: null = wird noch geprüft, false = nicht angemeldet,
      sonst die Supabase-Sitzung. Die Sitzung liegt im localStorage
@@ -224,25 +224,27 @@ function App() {
     setzeAppIdentitaet(profileId)
   }, [profileId])
 
-  /* Abend-Check-Material: ab 18 Uhr, nur auf Franz' Seite, neu laden,
-     wenn sich Karten aendern oder man zur Startseite zurueckkommt */
+  /* Material der Extra-Runde: nur auf Franz' Seite, neu laden, wenn sich
+     Karten aendern oder man zur Startseite zurueckkommt. Keine Uhrzeit-
+     Grenze mehr (Franz 08.09.) — die Runde steht den ganzen Tag bereit,
+     sobald die neuen Tageswoerter durch sind. */
   useEffect(() => {
-    if (profileId !== 'ko' || !angemeldet || loading || !istAbend()) {
-      setAbendMaterial([])
+    if (profileId !== 'ko' || !angemeldet || loading) {
+      setExtraMaterial([])
       return
     }
     let weg = false
-    ladeAbendMaterial(words, cards).then((m) => {
-      if (!weg) setAbendMaterial(m)
+    ladeExtraMaterial(words, cards).then((m) => {
+      if (!weg) setExtraMaterial(m)
     })
     return () => {
       weg = true
     }
-  }, [profileId, angemeldet, loading, view, cards.length, abendTick]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [profileId, angemeldet, loading, view, cards.length, extraTick]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  function handleAbendFertig() {
-    completeAbendCheck()
-    setAbendTick((n) => n + 1)
+  function handleExtraFertig() {
+    completeExtraRunde()
+    setExtraTick((n) => n + 1)
   }
 
   function switchProfile() {
@@ -709,9 +711,12 @@ function App() {
             zeigeMotorInfo={motorInfoSichtbar(profileId, todayStr())}
             neuTempo={daily.tempo}
             neuFaellig={daily.faellig}
-            abendAnzahl={abendMaterial.length}
-            abendErledigt={abendCheckErledigt()}
-            onAbend={profileId === 'ko' && abendMaterial.length > 0 ? () => setView('abend') : undefined}
+            /* Extra-Runde: erst wenn die neuen Tageswoerter durch sind */
+            extraAnzahl={extraMaterial.length}
+            extraErledigt={extraRundeErledigt()}
+            onExtra={
+              profileId === 'ko' && daily.done && extraMaterial.length > 0 ? () => setView('extra') : undefined
+            }
             onPauseToggle={
               motor
                 ? () => {
@@ -757,10 +762,10 @@ function App() {
             t={t}
           />
         )}
-        {view === 'abend' && (
-          <AbendCheck
-            material={abendMaterial}
-            onDone={handleAbendFertig}
+        {view === 'extra' && (
+          <ExtraRunde
+            material={extraMaterial}
+            onDone={handleExtraFertig}
             onExit={() => setView('home')}
             profile={profile}
             t={t}
