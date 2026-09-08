@@ -804,7 +804,8 @@ const de = {
   neuTempo: (n, f) => `Auto-Tempo: ${n} neue heute · ${f} fällig`,
   festigerTag: (n) => `Festiger ${n}/2 · ohne Bewertung`,
   extraRunde: 'Extra-Runde',
-  extraAufDaily: (n) => `Erledigt · antippen für eine Extra-Runde (${n} Wörter)`,
+  /* Untertitel stehen auf ihrer Seite auf Koreanisch (Regel 05.09.) */
+  extraAufDaily: (n) => `완료 · 눌러서 추가 연습 (${n}개)`,
   extraHinweis: 'Welche Wörter noch einmal? Hier wird nichts bewertet — kein Termin ändert sich.',
   extraZeitraum: 'Zeitraum',
   extraHeute: 'Heute',
@@ -951,7 +952,8 @@ const de = {
   profilExportSub: '모든 단어와 진도를 CSV 파일로',
   profilGrammatik: 'Meine Grammatik',
   profilGrammatikSub: '진도 · 레벨 체크 · 배운 문법 알리기',
-  wordOfDaySub: '오늘의 새 단어 5개',
+  /* ohne Zahl — die Tageszahl steht als Ziffer rechts im Knopf */
+  wordOfDaySub: '오늘의 새 단어',
   reviewSub: '복습 스택',
   articleOfDaySub: '오늘의 관사 퀴즈',
   pluralOfDaySub: '오늘의 복수형 퀴즈',

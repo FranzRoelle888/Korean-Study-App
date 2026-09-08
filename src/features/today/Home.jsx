@@ -178,7 +178,9 @@ function Home({
                 derselbe Knopf in die Extra-Runde (Franz 08.09.) — sonst
                 wie gehabt: de-Seite koreanischer Untertitel (05.09.) */}
             {dailyDone && extraOffen ? (
-              <span className="action-sub">{t.extraAufDaily(extraAnzahl)}</span>
+              <span className="action-sub" lang={t.wordOfDaySub ? 'ko' : undefined}>
+                {t.extraAufDaily(extraAnzahl)}
+              </span>
             ) : (
               <span className="action-sub" lang={t.wordOfDaySub ? 'ko' : profile.targetLang}>
                 {t.wordOfDaySub ?? tt.wordOfDay}

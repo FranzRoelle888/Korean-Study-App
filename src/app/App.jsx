@@ -224,12 +224,14 @@ function App() {
     setzeAppIdentitaet(profileId)
   }, [profileId])
 
-  /* Material der Extra-Runde: nur auf Franz' Seite, neu laden, wenn sich
-     Karten aendern oder man zur Startseite zurueckkommt. Keine Uhrzeit-
-     Grenze mehr (Franz 08.09.) — die Runde steht den ganzen Tag bereit,
-     sobald die neuen Tageswoerter durch sind. */
+  /* Material der Extra-Runde: neu laden, wenn sich Karten aendern oder
+     man zur Startseite zurueckkommt. Keine Uhrzeit-Grenze (Franz 08.09.) —
+     die Runde steht den ganzen Tag bereit, sobald die neuen Tageswoerter
+     durch sind. Seit 08.09. auf beiden Seiten.
+     (istMotor statt der Variable `motor`: die steht weiter unten und waere
+     in der Abhaengigkeitsliste noch nicht sichtbar.) */
   useEffect(() => {
-    if (profileId !== 'ko' || !angemeldet || loading) {
+    if (!istMotor(profileId) || !angemeldet || loading) {
       setExtraMaterial([])
       return
     }
@@ -330,8 +332,8 @@ function App() {
   const daily = dailyStatus(words, { vorrat, faellig: due.faelligGesamt ?? due.length })
   /* Extra-Runde (Franz 08.09.): sie hat keinen eigenen Knopf — sind die
      neuen Tageswoerter durch, fuehrt der TAGESWORT-Knopf in die Runde.
-     Vorerst nur bei Franz; 해인 folgt, wenn es sich bewaehrt hat. */
-  const extraOffen = profileId === 'ko' && daily.done && extraMaterial.length > 0
+     Seit 08.09. auf beiden Seiten. */
+  const extraOffen = motor && daily.done && extraMaterial.length > 0
 
   /* Woerter, die immer wieder vergessen werden (>= 3 Ausrutscher
      auf mindestens einer Karte). Anki nennt sie "leeches". */
