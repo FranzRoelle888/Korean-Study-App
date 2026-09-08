@@ -35,7 +35,7 @@ function Home({
   neuFaellig,
   extraAnzahl,
   extraErledigt,
-  onExtra,
+  extraOffen,
   numberDone,
   streak,
   week,
@@ -174,14 +174,19 @@ function Home({
           </div>
           <div className="action-text">
             <span className="action-title">{t.wordOfDay}</span>
-            {/* de-Seite: koreanischer Untertitel (Sprachregel 05.09.);
-                sonst wie gehabt die Zielsprache */}
-            <span className="action-sub" lang={t.wordOfDaySub ? 'ko' : profile.targetLang}>
-              {t.wordOfDaySub ?? tt.wordOfDay}
-            </span>
+            {/* Ist das Tagespensum durch und liegt Material bereit, führt
+                derselbe Knopf in die Extra-Runde (Franz 08.09.) — sonst
+                wie gehabt: de-Seite koreanischer Untertitel (05.09.) */}
+            {dailyDone && extraOffen ? (
+              <span className="action-sub">{t.extraAufDaily(extraAnzahl)}</span>
+            ) : (
+              <span className="action-sub" lang={t.wordOfDaySub ? 'ko' : profile.targetLang}>
+                {t.wordOfDaySub ?? tt.wordOfDay}
+              </span>
+            )}
           </div>
           {dailyDone ? (
-            <span className="done-check">
+            <span className={extraErledigt || !extraOffen ? 'done-check' : 'done-check done-check-extra'}>
               <CheckIcon />
             </span>
           ) : dailyLeft > 0 && onPauseToggle ? (
@@ -261,31 +266,6 @@ function Home({
               </span>
             ) : (
               <ChevronIcon />
-            )}
-          </button>
-        )}
-
-        {/* Extra-Runde (Franz 08.09.): den ganzen Tag verfuegbar, sobald die
-            neuen Woerter durch sind. Der Haken sperrt nicht — man kann sie
-            beliebig oft starten, Zeitraum waehlt man beim Oeffnen. */}
-        {onExtra && (
-          <button
-            className={extraErledigt ? 'action action-secondary' : 'action action-full action-full-gold'}
-            onClick={onExtra}
-          >
-            <div className="action-icon action-icon-number">
-              <span className="action-emoji" aria-hidden="true">💪</span>
-            </div>
-            <div className="action-text">
-              <span className="action-title">{t.extraRunde}</span>
-              <span className="action-sub">{t.extraRundeSub}</span>
-            </div>
-            {extraErledigt ? (
-              <span className="done-check">
-                <CheckIcon />
-              </span>
-            ) : (
-              <span className="badge">{extraAnzahl}</span>
             )}
           </button>
         )}

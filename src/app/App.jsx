@@ -328,6 +328,10 @@ function App() {
   /* Vokabel-Motor (Franz): Vorrat statt Pool, Neu-Stopp bei > 100 fälligen */
   const motor = istMotor(profileId)
   const daily = dailyStatus(words, { vorrat, faellig: due.faelligGesamt ?? due.length })
+  /* Extra-Runde (Franz 08.09.): sie hat keinen eigenen Knopf — sind die
+     neuen Tageswoerter durch, fuehrt der TAGESWORT-Knopf in die Runde.
+     Vorerst nur bei Franz; 해인 folgt, wenn es sich bewaehrt hat. */
+  const extraOffen = profileId === 'ko' && daily.done && extraMaterial.length > 0
 
   /* Woerter, die immer wieder vergessen werden (>= 3 Ausrutscher
      auf mindestens einer Karte). Anki nennt sie "leeches". */
@@ -711,12 +715,9 @@ function App() {
             zeigeMotorInfo={motorInfoSichtbar(profileId, todayStr())}
             neuTempo={daily.tempo}
             neuFaellig={daily.faellig}
-            /* Extra-Runde: erst wenn die neuen Tageswoerter durch sind */
             extraAnzahl={extraMaterial.length}
             extraErledigt={extraRundeErledigt()}
-            onExtra={
-              profileId === 'ko' && daily.done && extraMaterial.length > 0 ? () => setView('extra') : undefined
-            }
+            extraOffen={extraOffen}
             onPauseToggle={
               motor
                 ? () => {
@@ -729,7 +730,7 @@ function App() {
             streak={streak}
             week={week}
             onReview={() => setView('review')}
-            onDaily={() => setView('daily')}
+            onDaily={() => setView(extraOffen ? 'extra' : 'daily')}
             onNumber={() => setView('number')}
             onArticle={() => setView('article')}
             articleDone={articleDone}

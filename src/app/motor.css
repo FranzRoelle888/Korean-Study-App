@@ -700,6 +700,13 @@
   margin-left: 6px;
 }
 
+/* Erledigt, aber es geht noch was: der Haken auf dem Tageswort-Knopf
+   bekommt einen zarten Ring, wenn dahinter die Extra-Runde wartet */
+.done-check-extra {
+  box-shadow: 0 0 0 3px var(--primary-soft);
+  border-radius: 50%;
+}
+
 /* ---------- Übersetzungsspiel: Auswahl ---------- */
 .us-setup {
   gap: 16px;
