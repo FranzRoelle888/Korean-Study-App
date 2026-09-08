@@ -83,6 +83,13 @@ function SatzTeil({ profile, words, onFertig, onKeineSaetze, t }) {
                 <p className="tc-de" lang={aufgabeLang}>
                   {s.de}
                 </p>
+                {/* Zweitfassung auf Englisch (해인, 08.09.) — derselbe
+                    Satz, damit nichts zu verwechseln ist */}
+                {s.en && (
+                  <p className="tc-de-en" lang="en">
+                    {s.en}
+                  </p>
+                )}
                 {bewertet ? (
                   <>
                     <p className="tc-antwort" lang={antwortLang}>

@@ -618,6 +618,15 @@
   font-weight: 600;
   line-height: 1.4;
 }
+/* Englische Zweitfassung der Aufgabe (해인): kleiner, ruhiger */
+.tc-de-en {
+  margin: -4px 0 0;
+  font-size: 14px;
+  font-style: italic;
+  color: var(--text-soft);
+  line-height: 1.35;
+}
+
 .tc-feld {
   width: 100%;
   font-family: inherit;

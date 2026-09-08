@@ -173,6 +173,11 @@ function UebersetzenSpiel({ profile, words, onExit, t }) {
                       <p className="tc-de" lang={aufgabeLang}>
                         {s.de}
                       </p>
+                      {s.en && (
+                        <p className="tc-de-en" lang="en">
+                          {s.en}
+                        </p>
+                      )}
                       {phase === 'bewertet' ? (
                         <>
                           <p className="tc-antwort" lang={antwortLang}>

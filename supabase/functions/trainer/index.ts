@@ -1306,7 +1306,10 @@ Deno.serve(async (req) => {
               ? '-아/어요 (polite present); N은/는; N이/가; N을/를 — plain statements only'
               : 'Präsens; Akkusativ; einfache Hauptsätze — plain statements only',
           '',
-          `Reply with ONLY this JSON: {"saetze":[{"de":"<the task sentence in ${promptSprache}>","ko":"<model answer in ${zielSprache}>","woerter":["<dictionary form of EVERY content word used, from the list>"],"grammatik":["<patterns used, exactly as in the list>"]}, ... ${anzahl + 2} sentences]}`,
+          lerntKo
+            ? ''
+            : 'The learner reads Korean and English. Every task sentence therefore needs BOTH: the Korean sentence and the SAME sentence in English. They must match exactly — same meaning, same tense, same number, same politeness, same word order of the content. They are two views of ONE task; any difference would make the learner translate something else.',
+          `Reply with ONLY this JSON: {"saetze":[{"de":"<the task sentence in ${promptSprache}>",${lerntKo ? '' : '"en":"<the SAME task sentence in English>",'}"ko":"<model answer in ${zielSprache}>","woerter":["<dictionary form of EVERY content word used, from the list>"],"grammatik":["<patterns used, exactly as in the list>"]}, ... ${anzahl + 2} sentences]}`,
           `Write ${anzahl + 2} sentences so some can serve as spares. The "woerter" array must be complete and exact — it is checked by the app.`,
         ]
           .filter(Boolean)
@@ -1336,7 +1339,7 @@ Deno.serve(async (req) => {
         })
       }
       const musterSet = new Set(grammatik.map((g: { muster: string }) => g.muster))
-      type Satz = { de: string; ko: string; woerter: string[]; grammatik: string[] }
+      type Satz = { de: string; en?: string; ko: string; woerter: string[]; grammatik: string[] }
       const sauber: Satz[] = []
       const knapp: Satz[] = [] /* genau EIN unbekanntes Wort — meist ein Fehlalarm */
       const verworfen: string[] = []
@@ -1354,7 +1357,12 @@ Deno.serve(async (req) => {
           /* Funktionswoerter zaehlen nie als Fremdwort */
           const fremd = ws.filter((w: string) => !funktionswort(w) && !bekannt(w))
           const gOk = grammatik.length ? gs.filter((g: string) => musterSet.has(g)) : gs
+          /* Englische Zweitfassung derselben Aufgabe (nur bei 해인).
+             Fehlt sie, bleibt der Satz trotzdem brauchbar — dann steht
+             eben nur die koreanische Zeile da. */
+          const en = !lerntKo && typeof s?.en === 'string' ? s.en.trim().slice(0, 200) : ''
           const satz: Satz = { de, ko, woerter: ws, grammatik: gOk }
+          if (en) satz.en = en
           if (fremd.length === 0) sauber.push(satz)
           else if (fremd.length === 1) knapp.push(satz)
           if (fremd.length) verworfen.push(`${ko} (${fremd.join(', ')})`)
