@@ -57,8 +57,9 @@ function Profil({ profile, t, words, cards }) {
         </div>
 
         <main className="trainer-menu">
-          {/* Checkliste in TOPIK-I-Reihenfolge (Franz 06.09.) — nur ko */}
-          {profile.id === 'ko' && <GrammatikListe profile={profile} t={t} />}
+          {/* Checkliste in Lern-Reihenfolge: TOPIK-I bzw. Goethe A1/A2
+              (Franz 06.09., beide Seiten seit 08.09.) */}
+          <GrammatikListe profile={profile} t={t} />
           <Fortschritt profile={profile} t={t} />
 
           <button className="skills-entry" onClick={() => setOffen('kalibrierung')}>

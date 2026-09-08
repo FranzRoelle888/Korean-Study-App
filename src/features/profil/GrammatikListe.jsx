@@ -1,44 +1,54 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../core/supabaseClient'
 import { TOPIK1_GRAMMATIK } from '../../core/inventare/topik1-grammatik'
+import { GER_GRAMMATIK } from '../../core/inventare/ger-grammatik'
 
 /* ============================================================
-   GRAMMATIK-CHECKLISTE (Meine Grammatik, nur Franz) — 06.09.
+   GRAMMATIK-CHECKLISTE (Meine Grammatik) — 06.09., beide Seiten 08.09.
 
-   Der TOPIK-I-Grammatik-Kanon in Lern-Reihenfolge als Liste zum
-   Abhaken: „Das kann ich." Oben der Zähler „x von 72" mit Balken,
-   je Stufe eine Zwischensumme. Jeder Punkt zeigt Muster, Name und
-   einen Beispielsatz — so ist die Liste zugleich der Leitfaden,
-   in welcher Reihenfolge man weiterlernt.
+   Der Kanon der jeweiligen Sprache in Lern-Reihenfolge zum Abhaken:
+   „Das kann ich." Oben der Zähler mit Balken, je Stufe eine
+   Zwischensumme. Jeder Punkt zeigt Muster, Name und einen
+   Beispielsatz — die Liste ist damit zugleich der Leitfaden, in
+   welcher Reihenfolge man weiterlernt.
+
+   Franz: TOPIK-I (Stufe 1/2) · 해인: Goethe A1/A2.
 
    Gespeichert wird in inventory_status (Migration 009), dieselbe
    Tabelle, die Kalibrierung und Fortschritts-Leisten nutzen:
-   item_id 'tg-<id>', kind 'grammatik', status 'sicher' bzw.
-   'unbekannt', source 'kalibrierung' (= Selbsteinschätzung, im
-   Fortschritts-Balken deshalb blass, nicht satt). Ein Haken hier
-   erscheint also sofort auch in den Leisten. Lokaler Puffer, damit
-   die Liste offline sichtbar bleibt.
+   item_id 'tg-<id>' bzw. 'gg-<id>', kind 'grammatik', status
+   'sicher' bzw. 'unbekannt', source 'kalibrierung' (= Selbst-
+   einschätzung, im Fortschritts-Balken deshalb blass).
+
+   Die Haken sind zugleich die Grundlage, aus der der Trainer die
+   Übersetzungs-Aufgaben baut (satzChallenge.js).
    ============================================================ */
 
-const PUFFER = 'grammatik-liste-ko'
+const KANON = {
+  ko: { liste: TOPIK1_GRAMMATIK, praefix: 'tg', satz: (g) => g.beispiel.ko, lang: 'ko' },
+  de: { liste: GER_GRAMMATIK, praefix: 'gg', satz: (g) => g.beispiel.de, lang: 'de' },
+}
 
-function lesePuffer() {
+const puffend = (praefix) => `grammatik-liste-${praefix}`
+
+function lesePuffer(praefix) {
   try {
-    return new Set(JSON.parse(localStorage.getItem(PUFFER)) || [])
+    return new Set(JSON.parse(localStorage.getItem(puffend(praefix))) || [])
   } catch {
     return new Set()
   }
 }
-function schreibePuffer(set) {
+function schreibePuffer(praefix, set) {
   try {
-    localStorage.setItem(PUFFER, JSON.stringify([...set]))
+    localStorage.setItem(puffend(praefix), JSON.stringify([...set]))
   } catch {
     /* egal */
   }
 }
 
 export default function GrammatikListe({ profile, t }) {
-  const [sicher, setSicher] = useState(lesePuffer)
+  const kanon = KANON[profile.id === 'ko' ? 'ko' : 'de']
+  const [sicher, setSicher] = useState(() => lesePuffer(kanon.praefix))
 
   useEffect(() => {
     let weg = false
@@ -51,21 +61,21 @@ export default function GrammatikListe({ profile, t }) {
         if (weg || error || !data) return
         const s = new Set(data.filter((r) => r.status === 'sicher').map((r) => r.item_id))
         setSicher(s)
-        schreibePuffer(s)
+        schreibePuffer(kanon.praefix, s)
       })
     return () => {
       weg = true
     }
-  }, [profile.id])
+  }, [profile.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   function toggle(g) {
-    const id = `tg-${g.id}`
+    const id = `${kanon.praefix}-${g.id}`
     const an = !sicher.has(id)
     const next = new Set(sicher)
     if (an) next.add(id)
     else next.delete(id)
     setSicher(next)
-    schreibePuffer(next)
+    schreibePuffer(kanon.praefix, next)
     supabase
       .from('inventory_status')
       .upsert(
@@ -84,9 +94,9 @@ export default function GrammatikListe({ profile, t }) {
       })
   }
 
-  const gesamt = TOPIK1_GRAMMATIK.length
-  const anzahl = TOPIK1_GRAMMATIK.filter((g) => sicher.has(`tg-${g.id}`)).length
-  const stufen = [...new Set(TOPIK1_GRAMMATIK.map((g) => g.stufe))]
+  const gesamt = kanon.liste.length
+  const anzahl = kanon.liste.filter((g) => sicher.has(`${kanon.praefix}-${g.id}`)).length
+  const stufen = [...new Set(kanon.liste.map((g) => g.stufe))]
 
   return (
     <section className="gl">
@@ -102,8 +112,8 @@ export default function GrammatikListe({ profile, t }) {
       </div>
 
       {stufen.map((stufe) => {
-        const punkte = TOPIK1_GRAMMATIK.filter((g) => g.stufe === stufe)
-        const n = punkte.filter((g) => sicher.has(`tg-${g.id}`)).length
+        const punkte = kanon.liste.filter((g) => g.stufe === stufe)
+        const n = punkte.filter((g) => sicher.has(`${kanon.praefix}-${g.id}`)).length
         return (
           <div key={stufe}>
             <div className="gl-stufe">
@@ -114,8 +124,8 @@ export default function GrammatikListe({ profile, t }) {
             </div>
             <ul className="gl-liste">
               {punkte.map((g) => {
-                const an = sicher.has(`tg-${g.id}`)
-                const nr = TOPIK1_GRAMMATIK.indexOf(g) + 1
+                const an = sicher.has(`${kanon.praefix}-${g.id}`)
+                const nr = kanon.liste.indexOf(g) + 1
                 return (
                   <li key={g.id}>
                     <button
@@ -127,12 +137,14 @@ export default function GrammatikListe({ profile, t }) {
                       <span className="gl-nr">{nr}</span>
                       <span className="gl-box">{an ? '✓' : ''}</span>
                       <span className="gl-text">
-                        <span className="gl-muster" lang="ko">
+                        <span className="gl-muster" lang={kanon.lang}>
                           {g.muster}
                         </span>
-                        <span className="gl-name">{g.name}</span>
-                        <span className="gl-satz" lang="ko">
-                          {g.beispiel.ko}
+                        <span className="gl-name" lang={profile.id === 'ko' ? 'en' : 'ko'}>
+                          {g.name}
+                        </span>
+                        <span className="gl-satz" lang={kanon.lang}>
+                          {kanon.satz(g)}
                         </span>
                         <span className="gl-satz-tr">{g.beispiel.tr}</span>
                       </span>

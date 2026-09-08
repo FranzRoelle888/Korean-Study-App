@@ -61,6 +61,9 @@ function UebersetzenSpiel({ profile, words, onExit, t }) {
       let verworfen = 0
       for (const res of antwortenTeile) {
         verworfen += (res?.verworfen || []).length
+        if (!(res?.saetze || []).length) {
+          console.warn('Uebersetzungsspiel leer:', res?.grund || 'unbekannt', (res?.verworfen || []).slice(0, 3))
+        }
         for (const s of res?.saetze || []) {
           if (gesehen.has(s.de)) continue
           gesehen.add(s.de)
@@ -99,6 +102,9 @@ function UebersetzenSpiel({ profile, words, onExit, t }) {
 
   const alleBeantwortet = antworten.length === saetze.length && antworten.every((a) => a.trim())
   const urteilVon = (nr) => bewertung?.ergebnisse?.find((e) => e.nr === nr)
+  /* Bei Franz: deutsche Aufgabe -> koreanische Antwort. Bei 해인 umgekehrt. */
+  const aufgabeLang = profile.knownLang
+  const antwortLang = profile.targetLang
 
   return (
     <div className="number tc">
@@ -164,16 +170,16 @@ function UebersetzenSpiel({ profile, words, onExit, t }) {
                   <li key={s.nr} className={'tc-satz' + (u ? ` tc-${u.urteil}` : '')}>
                     <span className="tc-satz-nr">{s.nr}</span>
                     <div className="tc-satz-inhalt">
-                      <p className="tc-de" lang="de">
+                      <p className="tc-de" lang={aufgabeLang}>
                         {s.de}
                       </p>
                       {phase === 'bewertet' ? (
                         <>
-                          <p className="tc-antwort" lang="ko">
+                          <p className="tc-antwort" lang={antwortLang}>
                             {antworten[i] || '—'}
                           </p>
                           {u && u.urteil !== 'gruen' && (
-                            <p className="tc-korrektur" lang="ko">
+                            <p className="tc-korrektur" lang={antwortLang}>
                               {u.korrektur}
                             </p>
                           )}
@@ -182,7 +188,7 @@ function UebersetzenSpiel({ profile, words, onExit, t }) {
                       ) : (
                         <textarea
                           className="tc-feld"
-                          lang="ko"
+                          lang={antwortLang}
                           rows={2}
                           value={antworten[i] || ''}
                           placeholder={t.satzPlatzhalter}

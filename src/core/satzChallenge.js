@@ -66,7 +66,7 @@ export async function nutzbareGrammatik(profileId, mindestens = 12) {
     if (data) sicher = new Set(data.map((r) => r.item_id))
   } catch {
     try {
-      sicher = new Set(JSON.parse(localStorage.getItem('grammatik-liste-ko')) || [])
+      sicher = new Set(JSON.parse(localStorage.getItem(`grammatik-liste-${k.praefix}`)) || [])
     } catch {
       /* egal */
     }
@@ -148,7 +148,12 @@ async function erzeugeInBank(profile, words) {
     fokus: zufallsWoerter(words),
   })
   const saetze = Array.isArray(res?.saetze) ? res.saetze : []
-  if (saetze.length < 3) return null
+  if (saetze.length < 3) {
+    /* Sichtbar machen, WARUM nichts kam — sonst steht in der App nur
+       „keine Sätze" und man raet (Franz 08.09.) */
+    console.warn('Satz-Challenge leer:', res?.grund || 'unbekannt', (res?.verworfen || []).slice(0, 3))
+    return null
+  }
   const { data, error } = await supabase
     .from('exercise_bank')
     .insert({ profile, typ: TYP, payload: { saetze, verworfen: res.verworfen || [] }, status: 'neu' })

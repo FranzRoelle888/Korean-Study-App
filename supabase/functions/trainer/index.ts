@@ -1239,6 +1239,33 @@ Deno.serve(async (req) => {
          Fokus-Woerter — sonst spielt jede Runde im Restaurant */
       const szenen = Array.isArray(body.szenen) ? body.szenen.slice(0, 12).map((s: unknown) => String(s).slice(0, 60)) : []
       const fokus = Array.isArray(body.fokus) ? body.fokus.slice(0, 40).map((s: unknown) => String(s).slice(0, 40)) : []
+      /* FUNKTIONSWOERTER (Fund Franz 08.09.): 해인s Bibliothek enthaelt
+         bewusst keine Artikel, Pronomen, Praepositionen, Konjunktionen,
+         Hilfs- und Modalverben — die sind aus ihrem Nachziehstapel
+         ausgeschlossen. Ein deutscher Satz braucht sie aber IMMER.
+         Ohne diese Liste wurde jeder Satz als „Fremdwort" verworfen und
+         auf ihrer Seite kam nie eine Aufgabe zustande. Sie zaehlen als
+         Grammatik, nicht als Vokabel — und sind darum immer erlaubt. */
+      const FUNKTION_DE = new Set([
+        'der', 'die', 'das', 'den', 'dem', 'des', 'ein', 'eine', 'einen', 'einem', 'einer', 'eines',
+        'kein', 'keine', 'keinen', 'keinem', 'keiner', 'nicht', 'nein', 'ja', 'doch',
+        'ich', 'du', 'er', 'sie', 'es', 'wir', 'ihr', 'man', 'mich', 'dich', 'sich', 'uns', 'euch',
+        'mir', 'dir', 'ihm', 'ihn', 'ihnen', 'mein', 'dein', 'sein', 'unser', 'euer',
+        'und', 'oder', 'aber', 'denn', 'dass', 'weil', 'wenn', 'ob', 'als', 'sondern', 'deshalb', 'trotzdem',
+        'in', 'an', 'auf', 'aus', 'bei', 'bis', 'durch', 'für', 'gegen', 'mit', 'nach', 'ohne', 'seit',
+        'um', 'von', 'vor', 'zu', 'über', 'unter', 'hinter', 'neben', 'zwischen', 'wegen',
+        'am', 'im', 'ins', 'zum', 'zur', 'vom', 'beim',
+        'wer', 'was', 'wo', 'wann', 'warum', 'wie', 'welcher', 'welche', 'welches', 'wohin', 'woher',
+        'haben', 'sein', 'werden', 'können', 'müssen', 'wollen', 'sollen', 'dürfen', 'mögen', 'möchten',
+        'auch', 'noch', 'schon', 'nur', 'sehr', 'immer', 'nie', 'oft', 'dann', 'hier', 'da', 'dort',
+        'jetzt', 'heute', 'morgen', 'gestern', 'mal', 'gern', 'viel', 'mehr', 'alle', 'jeder', 'etwas', 'nichts',
+      ])
+      const FUNKTION_KO = new Set([
+        '이', '가', '은', '는', '을', '를', '에', '에서', '도', '와', '과', '하고', '의', '로', '으로',
+        '부터', '까지', '만', '저', '나', '우리', '너', '이거', '그거', '저거', '여기', '거기', '저기',
+        '네', '아니요', '그리고', '그래서', '하지만', '그런데', '아주', '많이', '좀', '잘', '안', '못',
+      ])
+      const funktionswort = (w: string) => (lerntKo ? FUNKTION_KO.has(w) : FUNKTION_DE.has(w.toLowerCase()))
       const stufe =
         schwierigkeit === 'leicht'
           ? 'EASY: 4-6 words, one pattern per sentence, very common words, simple statements.'
@@ -1250,7 +1277,8 @@ Deno.serve(async (req) => {
       const out = await callModel(
         [
           `You write a translation exercise for a beginner (A1-A2) learning ${zielSprache}. You give a sentence in ${promptSprache}; the learner writes it in ${zielSprache}.`,
-          `HARD CONSTRAINT: every ${zielSprache} sentence may use ONLY words from the WORD LIST below (dictionary forms; inflection, conjugation, polite endings, particles and articles are fine) and ONLY grammar from the PATTERN LIST. No proper nouns, no numbers. If a sentence would need any other word, do not write it.`,
+          `HARD CONSTRAINT: every content word of your ${zielSprache} sentences must come from the WORD LIST below (dictionary forms; inflection, conjugation, polite endings, particles and articles are fine), and the grammar only from the PATTERN LIST. No proper nouns, no numbers. If a sentence would need any other content word, do not write it.`,
+          `GRAMMATICAL FUNCTION WORDS are always allowed and are NOT content words: articles, pronouns, possessives, negation, prepositions, conjunctions, question words, auxiliary verbs (${lerntKo ? '있다/없다/이다' : 'sein, haben, werden'}) and modal verbs. Use them freely to make the sentences natural, and do NOT put them into the "woerter" array — list only real content words there.`,
           lerntKo
             ? 'Polite 해요체 unless a pattern requires otherwise.'
             : 'German nouns always with their article. Everyday spoken register.',
@@ -1308,35 +1336,43 @@ Deno.serve(async (req) => {
         })
       }
       const musterSet = new Set(grammatik.map((g: { muster: string }) => g.muster))
-      const saetze: { de: string; ko: string; woerter: string[]; grammatik: string[] }[] = []
+      type Satz = { de: string; ko: string; woerter: string[]; grammatik: string[] }
+      const sauber: Satz[] = []
+      const knapp: Satz[] = [] /* genau EIN unbekanntes Wort — meist ein Fehlalarm */
       const verworfen: string[] = []
+      let grund = 'ok'
       try {
         const j = JSON.parse(out.text.replace(/^```(?:json)?/m, '').replace(/```\s*$/m, '').trim())
-        for (const s of Array.isArray(j?.saetze) ? j.saetze : []) {
+        const roh = Array.isArray(j?.saetze) ? j.saetze : []
+        if (!roh.length) grund = 'keine-saetze'
+        for (const s of roh) {
           const de = typeof s?.de === 'string' ? s.de.trim() : ''
           const ko = typeof s?.ko === 'string' ? s.ko.normalize('NFC').trim() : ''
           const ws = Array.isArray(s?.woerter) ? s.woerter.map((x: unknown) => String(x).normalize('NFC').trim()).filter(Boolean) : []
           const gs = Array.isArray(s?.grammatik) ? s.grammatik.map((x: unknown) => String(x).trim()).filter(Boolean) : []
-          if (!de || !ko || !ws.length) continue
-          const fremd = ws.filter((w: string) => !bekannt(w))
-          if (fremd.length) {
-            verworfen.push(`${ko} (${fremd.join(', ')})`)
-            continue
-          }
+          if (!de || !ko) continue
+          /* Funktionswoerter zaehlen nie als Fremdwort */
+          const fremd = ws.filter((w: string) => !funktionswort(w) && !bekannt(w))
           const gOk = grammatik.length ? gs.filter((g: string) => musterSet.has(g)) : gs
-          saetze.push({ de, ko, woerter: ws, grammatik: gOk })
-          if (saetze.length === anzahl) break
+          const satz: Satz = { de, ko, woerter: ws, grammatik: gOk }
+          if (fremd.length === 0) sauber.push(satz)
+          else if (fremd.length === 1) knapp.push(satz)
+          if (fremd.length) verworfen.push(`${ko} (${fremd.join(', ')})`)
         }
       } catch {
-        /* unbrauchbar -> leer */
+        grund = 'kein-json'
       }
+      /* Erst die sauberen, dann zum Auffuellen die knappen — lieber ein
+         grenzwertiges Wort als gar keine Aufgabe (Franz 08.09.) */
+      const saetze = [...sauber, ...knapp].slice(0, anzahl)
+      if (!saetze.length && grund === 'ok') grund = 'alle-verworfen'
       await dbInsert('trainer_usage', {
         profile,
         action: 'satzChallengeErzeugen',
         input_tokens: out.inputTokens,
         output_tokens: out.outputTokens,
       })
-      return json({ saetze, verworfen })
+      return json({ saetze, verworfen: verworfen.slice(0, 12), grund })
     }
 
     /* ---------- Tages-Challenge: Antworten bewerten ----------
