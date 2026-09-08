@@ -1410,14 +1410,19 @@ Deno.serve(async (req) => {
         [
           `You grade a beginner's (A1-A2) ${bewZiel} translations. For each pair you get: the task sentence, a model ${bewZiel} translation, and the learner's answer.`,
           `Verdicts: "gruen" = correct (meaning and grammar fine, even if worded differently from the model); "gelb" = acceptable but with a real remark (unnatural word order, missing but optional particle, slightly off nuance, wrong register that is still understandable); "rot" = a real error (wrong particle or case, wrong conjugation or tense, wrong article, wrong word, missing required word, meaning changed). Different but correct phrasing with other known words is gruen, not rot. Do not punish spacing${bewLerntKo ? '' : ' or capitalisation'}. Empty answer = rot.`,
+          body.gesprochen
+            ? 'The answers were SPOKEN and transcribed word for word. Ignore missing punctuation, capitalisation, filler words and obvious transcription noise. Judge grammar, word choice and word order exactly as strictly as for written answers — the learner WANTS their real mistakes to show up.'
+            : '',
           `For gelb and rot: "korrektur" = the learner's sentence minimally fixed (keep their wording where possible), followed by the ${bewErklaer} translation in parentheses. "hinweis" = ONE short sentence in ${bewErklaer} saying what was wrong and why. For gruen: korrektur = the answer as is, hinweis = "" or a tiny optional tip.`,
           `Reply with ONLY this JSON: {"ergebnisse":[{"nr":1,"urteil":"gruen|gelb|rot","korrektur":"...","hinweis":"..."}, ...],"fazit":"<one or two ${bewErklaer} sentences: what to keep in mind next time>"}`,
-        ].join('\n'),
+        ]
+          .filter(Boolean)
+          .join('\n'),
         [
           {
             role: 'user',
             content: paare
-              .map((p: { nr: number; de: string; muster: string; antwort: string }) => `${p.nr}. DE: ${p.de}\n   Model: ${p.muster}\n   Franz: ${p.antwort || '(leer)'}`)
+              .map((p: { nr: number; de: string; muster: string; antwort: string }) => `${p.nr}. DE: ${p.de}\n   Model: ${p.muster}\n   Learner: ${p.antwort || '(leer)'}`)
               .join('\n'),
           },
         ],
@@ -1877,7 +1882,7 @@ Deno.serve(async (req) => {
       const p = await buildProfile(profile)
       const out = await callModel(
         [
-          'You are 해인\'s personal exam coach for the Goethe-Zertifikat A2 (German, exam in Seoul in ~8 weeks). Warm, concrete, honest. She is Korean, level ~A2, preparing intensively with this app.',
+          'You are 해인\'s personal coach for Goethe-Zertifikat A2 German. She is NOT registered for the exam any more (decision 06.09.) — she uses the A2 material to practise. Never mention an exam date or a countdown. Warm, concrete, honest. She is Korean, level ~A2.',
           '',
           '## Exam facts (authoritative — from the official Übungssatz)',
           '- 100 points total, 25 per module. Pass: 60/100 overall AND written (Lesen+Hören+Schreiben) >= 45/75 AND Sprechen >= 15/25. Below 15 in Sprechen = whole exam failed.',

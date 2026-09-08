@@ -61,7 +61,10 @@ export async function transkribiere(blob, mime, profileId, lang = 'de') {
    Transkription; onFehler(art) bei Mikrofon-/Netzproblemen.
    mitText={false}: nur aufnehmen, KEINE Transkription (z. B.
    Shadowing — reines Vergleichshören, kostet dann auch nichts). */
-export function AufnahmeKnopf({ profile, lang = 'de', maxSek = 90, mitText = true, onFertig, onFehler, label }) {
+/* texte (optional, Franz 08.09.): eigene Beschriftungen, damit der
+   Knopf auch auf der englischen Oberflaeche passt —
+   { bereit, laeuft: (sek) => '…', denkt } */
+export function AufnahmeKnopf({ profile, lang = 'de', maxSek = 90, mitText = true, onFertig, onFehler, label, texte }) {
   const [zustand, setZustand] = useState('bereit') /* bereit | läuft | denkt */
   const [sekunden, setSekunden] = useState(0)
   const rekorder = useRef(null)
@@ -135,7 +138,9 @@ export function AufnahmeKnopf({ profile, lang = 'de', maxSek = 90, mitText = tru
     return (
       <div className="auf-bereich">
         <span className="lib-kreis" aria-hidden="true" />
-        <span className="a2-ko-klein" lang="ko">알아듣는 중…</span>
+        <span className="a2-ko-klein" lang={texte ? undefined : 'ko'}>
+          {texte?.denkt ?? '알아듣는 중…'}
+        </span>
       </div>
     )
   }
@@ -151,7 +156,9 @@ export function AufnahmeKnopf({ profile, lang = 'de', maxSek = 90, mitText = tru
         {zustand === 'läuft' ? '■' : '🎙'}
       </button>
       <span className="a2-ko-klein">
-        {zustand === 'läuft' ? `● ${sekunden}s — 끝나면 ■` : label || '눌러서 말하기'}
+        {zustand === 'läuft'
+          ? (texte?.laeuft ? texte.laeuft(sekunden) : `● ${sekunden}s — 끝나면 ■`)
+          : label || texte?.bereit || '눌러서 말하기'}
       </span>
     </div>
   )

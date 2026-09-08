@@ -170,8 +170,8 @@ export function trainerSatzChallengeErzeugen({
 }
 
 /* Antworten bewerten -> { ergebnisse: [{nr, urteil, korrektur, hinweis}], fazit } */
-export function trainerSatzChallengeBewerten({ profile, paare }) {
-  return call({ action: 'satzChallengeBewerten', profile, paare })
+export function trainerSatzChallengeBewerten({ profile, paare, gesprochen }) {
+  return call({ action: 'satzChallengeBewerten', profile, paare, gesprochen: !!gesprochen })
 }
 
 /* Grammatik-Erklärung (Text und/oder Foto) -> Vorschlagsliste.

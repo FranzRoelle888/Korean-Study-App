@@ -2,6 +2,7 @@ import { useState } from 'react'
 import ClearableInput from '../../shared/ClearableInput'
 import { nutzbareGrammatik, zufallsSzenen, zufallsWoerter } from '../../core/satzChallenge'
 import { trainerSatzChallengeErzeugen, trainerSatzChallengeBewerten } from './trainerApi'
+import Sprachantwort from '../../shared/Sprachantwort'
 
 /* ============================================================
    ÜBERSETZUNGSSPIEL (Trainer, Franz 07.09.)
@@ -17,11 +18,16 @@ import { trainerSatzChallengeErzeugen, trainerSatzChallengeBewerten } from './tr
 
 const ANZAHLEN = [3, 5, 10]
 const STUFEN = ['leicht', 'mittel', 'schwer']
+/* Antworten tippen oder sprechen (Franz 08.09.) */
+const MODI = ['text', 'audio']
 
 function UebersetzenSpiel({ profile, words, onExit, t }) {
   const [anzahl, setAnzahl] = useState(5)
   const [stufe, setStufe] = useState('mittel')
   const [wunsch, setWunsch] = useState('')
+  const audioMoeglich = profile.id === 'ko'
+  const [modus, setModus] = useState('text')
+  const [audios, setAudios] = useState([]) /* je Satz { url, dauer } | null */
   const [phase, setPhase] = useState('setup') /* setup | laedt | antworten | bewertet */
   const [saetze, setSaetze] = useState([])
   const [antworten, setAntworten] = useState([])
@@ -74,6 +80,7 @@ function UebersetzenSpiel({ profile, words, onExit, t }) {
       if (!liste.length) throw new Error(verworfen ? 'verworfen' : 'leer')
       setSaetze(liste)
       setAntworten(liste.map(() => ''))
+      setAudios(liste.map(() => null))
       setBewertung(null)
       setPhase('antworten')
     } catch (e) {
@@ -90,7 +97,7 @@ function UebersetzenSpiel({ profile, words, onExit, t }) {
     setFehler('')
     try {
       const paare = saetze.map((s, i) => ({ nr: s.nr, de: s.de, muster: s.ko, antwort: antworten[i] || '' }))
-      const res = await trainerSatzChallengeBewerten({ profile: profile.id, paare })
+      const res = await trainerSatzChallengeBewerten({ profile: profile.id, paare, gesprochen: modus === 'audio' })
       setBewertung({ ergebnisse: res.ergebnisse || [], fazit: res.fazit || '' })
       setPhase('bewertet')
     } catch (e) {
@@ -141,6 +148,19 @@ function UebersetzenSpiel({ profile, words, onExit, t }) {
                 ))}
               </div>
             </div>
+            {/* Sprechen vorerst nur auf Franz' Seite (08.09.) */}
+            {audioMoeglich && (
+            <div className="us-gruppe">
+              <span className="us-label">{t.antwortModus}</span>
+              <div className="us-chips">
+                {MODI.map((m) => (
+                  <button key={m} className={m === modus ? 'us-chip us-chip-an' : 'us-chip'} onClick={() => setModus(m)}>
+                    {m === 'text' ? `⌨ ${t.antwortText}` : `🎙 ${t.antwortAudio}`}
+                  </button>
+                ))}
+              </div>
+            </div>
+            )}
             <div className="us-gruppe">
               <span className="us-label">{t.spielWunsch}</span>
               <ClearableInput
@@ -183,6 +203,19 @@ function UebersetzenSpiel({ profile, words, onExit, t }) {
                           <p className="tc-antwort" lang={antwortLang}>
                             {antworten[i] || '—'}
                           </p>
+                          {/* Aufnahme bleibt anhoerbar — so ist die
+                              Rueckmeldung nachvollziehbar */}
+                          {audios[i] && (
+                            <Sprachantwort
+                              profile={profile}
+                              lang={antwortLang}
+                              wert={antworten[i] || ''}
+                              audio={audios[i]}
+                              t={t}
+                              nurAnhoeren
+                              onFertig={() => {}}
+                            />
+                          )}
                           {u && u.urteil !== 'gruen' && (
                             <p className="tc-korrektur" lang={antwortLang}>
                               {u.korrektur}
@@ -190,6 +223,29 @@ function UebersetzenSpiel({ profile, words, onExit, t }) {
                           )}
                           {u && u.hinweis && <p className="tc-hinweis-satz">{u.hinweis}</p>}
                         </>
+                      ) : modus === 'audio' ? (
+                        <Sprachantwort
+                          profile={profile}
+                          lang={antwortLang}
+                          wert={antworten[i] || ''}
+                          audio={audios[i]}
+                          t={t}
+                          onFertig={(erg) => {
+                            const na = [...antworten]
+                            const nau = [...audios]
+                            if (!erg) {
+                              /* neu aufnehmen: alte Datei freigeben */
+                              if (nau[i]?.url) URL.revokeObjectURL(nau[i].url)
+                              na[i] = ''
+                              nau[i] = null
+                            } else {
+                              na[i] = erg.text
+                              nau[i] = { url: erg.url, dauer: erg.dauer }
+                            }
+                            setAntworten(na)
+                            setAudios(nau)
+                          }}
+                        />
                       ) : (
                         <textarea
                           className="tc-feld"
