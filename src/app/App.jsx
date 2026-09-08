@@ -57,6 +57,7 @@ import Home from '../features/today/Home'
 import Library from '../features/cards/Library'
 import Review from '../features/cards/Review'
 import TagesChallenge from '../features/challenges/TagesChallenge'
+import TagesChallengeDe from '../features/challenges/TagesChallengeDe'
 import ExtraRunde from '../features/challenges/ExtraRunde'
 import { completeSatzChallenge, extraRundeErledigt, completeExtraRunde } from '../core/storage'
 import { ladeExtraMaterial } from '../core/extraRunde'
@@ -368,7 +369,8 @@ function App() {
     }
     article = datasets[useKind]
   }
-  const articleDone = article ? article.done || !article.enough : true
+  /* Ihr Tag ist zu, wenn Quiz UND Saetze durch sind (Franz 08.09.) */
+  const articleDone = article ? (article.done || !article.enough) && !!numberState.saetzeDone : true
 
   const allDone = daily.done && numberDone && articleDone && due.length === 0
 
@@ -789,31 +791,45 @@ function App() {
             t={t}
           />
         )}
-        {view === 'article' && article && useKind === 'article' && (
+        {/* Haeins dritter Knopf: Tagesquiz + fuenf Saetze (Franz 08.09.) */}
+        {view === 'article' && article && (
+          <TagesChallengeDe
+            quizTitel={useKind === 'plural' ? t.pluralOfDay : useKind === 'conj' ? t.conjOfDay : t.articleOfDay}
+            quizDone={article.done}
+            onQuizOeffnen={() => setView('articleQuiz')}
+            saetzeDone={!!numberState.saetzeDone}
+            onSaetzeDone={handleCompleteSaetze}
+            words={words}
+            profile={profile}
+            onExit={() => setView('home')}
+            t={t}
+          />
+        )}
+        {view === 'articleQuiz' && article && useKind === 'article' && (
           <ArticleChallenge
             rounds={article.rounds}
             alreadyDone={article.done}
             onComplete={handleCompleteArticle}
-            onExit={() => setView('home')}
+            onExit={() => setView('article')}
             t={t}
           />
         )}
-        {view === 'article' && article && useKind === 'plural' && (
+        {view === 'articleQuiz' && article && useKind === 'plural' && (
           <PluralChallenge
             rounds={article.rounds}
             alreadyDone={article.done}
             onComplete={handleCompletePlural}
-            onExit={() => setView('home')}
+            onExit={() => setView('article')}
             t={t}
             tt={tt}
           />
         )}
-        {view === 'article' && article && useKind === 'conj' && (
+        {view === 'articleQuiz' && article && useKind === 'conj' && (
           <ConjChallenge
             rounds={article.rounds}
             alreadyDone={article.done}
             onComplete={handleCompleteConj}
-            onExit={() => setView('home')}
+            onExit={() => setView('article')}
             t={t}
             tt={tt}
           />
@@ -861,7 +877,7 @@ function App() {
           <Trainer profile={profile} t={t} onChatActive={setChatOffen} onAddWord={handleAdd} words={words} />
         )}
         {view === 'a2' && profile.a2 && (
-          <A2Training profile={profile} t={t} />
+          <A2Training profile={profile} t={t} words={words} />
         )}
         {view === 'profil' && (
           <Profil profile={profile} t={t} words={words} cards={cards} />

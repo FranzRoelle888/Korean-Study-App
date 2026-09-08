@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import ClearableInput from '../../shared/ClearableInput'
-import { abgehakteGrammatik } from '../../core/satzChallenge'
+import { nutzbareGrammatik, zufallsSzenen, zufallsWoerter } from '../../core/satzChallenge'
 import { trainerSatzChallengeErzeugen, trainerSatzChallengeBewerten } from './trainerApi'
 
 /* ============================================================
@@ -33,12 +33,14 @@ function UebersetzenSpiel({ profile, words, onExit, t }) {
     setPhase('laedt')
     setFehler('')
     try {
-      const grammatik = await abgehakteGrammatik(profile.id)
+      const grammatik = await nutzbareGrammatik(profile.id)
       const woerter = words.map((w) => ({ ko: w.ko, en: w.en }))
       /* Safari kappt eine Anfrage nach ~60 s. Zehn schwere Saetze in
          EINEM Aufruf dauerten laenger — deshalb in Haelften parallel
          (Franz 07.09.). Doppelte Saetze werden danach aussortiert. */
       const teile = anzahl > 5 ? [Math.ceil(anzahl / 2), Math.floor(anzahl / 2)] : [anzahl]
+      /* Jede Haelfte bekommt EIGENE Schauplaetze und Fokus-Woerter —
+         sonst schreiben beide Aufrufe dieselben Saetze (Franz 08.09.) */
       const antwortenTeile = await Promise.all(
         teile.map((n) =>
           trainerSatzChallengeErzeugen({
@@ -49,6 +51,8 @@ function UebersetzenSpiel({ profile, words, onExit, t }) {
             anzahl: n,
             schwierigkeit: stufe,
             wunsch: wunsch.trim(),
+            szenen: zufallsSzenen(n + 2),
+            fokus: zufallsWoerter(words),
           })
         )
       )
@@ -181,7 +185,7 @@ function UebersetzenSpiel({ profile, words, onExit, t }) {
                           lang="ko"
                           rows={2}
                           value={antworten[i] || ''}
-                          placeholder={t.typeKorean}
+                          placeholder={t.satzPlatzhalter}
                           onChange={(e) => {
                             const next = [...antworten]
                             next[i] = e.target.value

@@ -195,7 +195,7 @@ function Einfuehrung({ candidates, onIntroduce, onExit, profile, t }) {
               onClear={() => setInput('')}
               onFocus={() => setTippt(true)}
               onBlur={() => setTippt(false)}
-              placeholder={t.typeKorean}
+              placeholder={t.typeZielwort}
               lang={lang}
               autoComplete="off"
               className={flash === 'bad' ? 'shake' : ''}

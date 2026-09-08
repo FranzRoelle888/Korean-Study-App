@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { zaehleA2Fehler } from '../../core/storage'
 import { istNotizbuch } from '../../core/profiles'
 import ArtikelSwipe from '../ueben/ArtikelSwipe'
+import UebersetzenSpiel from '../trainer/UebersetzenSpiel'
 import SchreibTraining from './SchreibTraining'
 import RedemittelDrill from './RedemittelDrill'
 import HoerTraining from './HoerTraining'
@@ -125,6 +126,9 @@ const MODULE = [
 
 const GRUNDLAGEN = [
   { id: 'artikel', emoji: '🃏', titel: 'Artikel-Spiel', ko: '관사 게임', aktiv: true },
+  /* Uebersetzungsspiel (Franz 08.09.): koreanischer Satz -> Deutsch,
+     nur aus ihren Woertern und ihrer Grammatik */
+  { id: 'uebersetzen', emoji: '🔁', titel: 'Übersetzen', ko: '번역 게임', aktiv: true },
   { id: 'satzbau', emoji: '🧱', titel: 'Satz-Baukasten', ko: '문장 조립', aktiv: true },
   { id: 'redemittel', emoji: '💬', titel: 'Redemittel', ko: '표현 카드', aktiv: true },
   { id: 'fehlerheft', emoji: '📕', titel: 'Fehler-Heft', ko: '실수 노트', aktiv: true },
@@ -262,7 +266,7 @@ function CoachChat({ profile, t, verlauf, setVerlauf, onExit }) {
   )
 }
 
-function A2Training({ profile, t }) {
+function A2Training({ profile, t, words = [] }) {
   const [modul, setModul] = useState(null)
   const [uebung, setUebung] = useState(null)
   /* Coach-Verlauf überlebt Übungs-Ausflüge innerhalb des Tabs */
@@ -287,6 +291,10 @@ function A2Training({ profile, t }) {
 
   if (uebung === 'artikel') {
     return <ArtikelSwipe profile={profile} t={t} onExit={() => setUebung(null)} />
+  }
+
+  if (uebung === 'uebersetzen') {
+    return <UebersetzenSpiel profile={profile} words={words} t={t} onExit={() => setUebung(null)} />
   }
 
   if (uebung === 'smsmail') {

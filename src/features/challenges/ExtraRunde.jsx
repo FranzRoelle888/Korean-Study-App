@@ -204,7 +204,7 @@ function ExtraRunde({ material, onDone, onExit, profile, t }) {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onClear={() => setInput('')}
-              placeholder={t.typeKorean}
+              placeholder={t.typeZielwort}
               lang={lang}
               autoComplete="off"
             />

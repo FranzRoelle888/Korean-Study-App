@@ -1201,7 +1201,13 @@ Deno.serve(async (req) => {
        Satz nennt seine Woerter (Grundform) und Muster — die Funktion
        prueft das gegen die Listen und wirft Saetze mit Fremdwoertern raus. */
     if (action === 'satzChallengeErzeugen') {
-      if (profile !== 'ko') return json({ error: 'bad-profile' }, 400)
+      /* Seit 08.09. auch fuer 해인: dann steht der Aufgabensatz auf
+         KOREANISCH und sie schreibt Deutsch. Das Feld "de" ist immer
+         die Aufgabe (Sprache, die man kann), "ko" immer die Loesung
+         (Sprache, die man lernt). */
+      const lerntKo = profile === 'ko'
+      const zielSprache = lerntKo ? 'Korean' : 'German'
+      const promptSprache = lerntKo ? 'German' : 'Korean'
       const woerter = Array.isArray(body.woerter)
         ? body.woerter
             .slice(0, 600)
@@ -1229,55 +1235,76 @@ Deno.serve(async (req) => {
       const anzahl = Math.min(10, Math.max(3, Number(body.anzahl) || 5))
       const schwierigkeit = ['leicht', 'mittel', 'schwer'].includes(body.schwierigkeit) ? body.schwierigkeit : 'mittel'
       const wunsch = typeof body.wunsch === 'string' ? body.wunsch.trim().slice(0, 200) : ''
+      /* Abwechslung (Franz 08.09.): die App wuerfelt Schauplaetze und
+         Fokus-Woerter — sonst spielt jede Runde im Restaurant */
+      const szenen = Array.isArray(body.szenen) ? body.szenen.slice(0, 12).map((s: unknown) => String(s).slice(0, 60)) : []
+      const fokus = Array.isArray(body.fokus) ? body.fokus.slice(0, 40).map((s: unknown) => String(s).slice(0, 40)) : []
       const stufe =
         schwierigkeit === 'leicht'
-          ? 'EASY: 4-6 words, one pattern per sentence, very common words.'
+          ? 'EASY: 4-6 words, one pattern per sentence, very common words, simple statements.'
           : schwierigkeit === 'schwer'
-            ? 'HARD: 8-11 words, combine 2-3 patterns per sentence (e.g. past tense + location particle + "but"), use the less common words of the list too, embed a time or place expression. Still only listed words and patterns.'
-            : 'MEDIUM: 6-8 words, mix two patterns where natural.'
+            ? 'HARD — this must feel clearly harder than medium: 9-13 words. EVERY sentence combines at least TWO patterns from the list and has at least two of {time expression, place expression, object, reason}. At least two sentences must be complex: two clauses joined by a connector from the list (and/but/because/when/if), or a relative/modifying clause if the list allows one. Prefer the LESS common words of the word list. Vary the sentence type: at least one question and at least one negation.'
+            : 'MEDIUM: 6-8 words, combine two patterns where natural, at least one question in the round.'
       if (woerter.length < 15) return json({ error: 'empty' }, 400)
 
       const out = await callModel(
         [
-          'You write today\'s sentence challenge for Franz, a German beginner learning Korean. He must translate German sentences into Korean.',
-          'HARD CONSTRAINT: every Korean sentence may use ONLY words from the WORD LIST below (dictionary forms; conjugation, honorific/polite endings and particles are fine) and ONLY grammar from the PATTERN LIST. Proper nouns and numbers are not allowed either. If a sentence would need any other word, do not write it.',
-          'Mix the patterns freely — do not always use the simplest ones. Everyday situations, natural German. Polite 해요체 unless a pattern requires otherwise.',
+          `You write a translation exercise for a beginner (A1-A2) learning ${zielSprache}. You give a sentence in ${promptSprache}; the learner writes it in ${zielSprache}.`,
+          `HARD CONSTRAINT: every ${zielSprache} sentence may use ONLY words from the WORD LIST below (dictionary forms; inflection, conjugation, polite endings, particles and articles are fine) and ONLY grammar from the PATTERN LIST. No proper nouns, no numbers. If a sentence would need any other word, do not write it.`,
+          lerntKo
+            ? 'Polite 해요체 unless a pattern requires otherwise.'
+            : 'German nouns always with their article. Everyday spoken register.',
           `DIFFICULTY — ${stufe}`,
-          wunsch ? `LEARNER'S WISH for this round (follow it as far as the lists allow): "${wunsch}"` : '',
-          'ROTATION: avoid these recently used words and patterns unless unavoidable.',
-          `Recently used words: ${vermWoerter.join(', ') || '(none)'}`,
-          `Recently used patterns: ${vermMuster.join(', ') || '(none)'}`,
           '',
-          'WORD LIST (korean = english):',
+          'VARIETY — this matters, earlier rounds were repetitive:',
+          szenen.length
+            ? `Use these settings, ONE per sentence, in this order: ${szenen.map((s: string, i: number) => `(${i + 1}) ${s}`).join('  ')}. Do not invent other settings, and do not fall back to restaurants or cafés unless listed.`
+            : 'Use a different everyday setting for every sentence.',
+          fokus.length
+            ? `Build the sentences around these FOCUS WORDS — each sentence must contain at least one of them, and use as many different ones as you can: ${fokus.join(', ')}.`
+            : '',
+          'Vary the subject too (I / you / we / he / she / people), not every sentence in first person.',
+          wunsch ? `LEARNER'S WISH for this round (follow it as far as the lists allow): "${wunsch}"` : '',
+          `Also avoid these recently used words unless unavoidable: ${vermWoerter.slice(0, 60).join(', ') || '(none)'}`,
+          vermMuster.length ? `Recently used patterns: ${vermMuster.join(', ')}` : '',
+          '',
+          `WORD LIST (${zielSprache.toLowerCase()} = meaning):`,
           woerter.map((w: { ko: string; en: string }) => `${w.ko} = ${w.en}`).join('; '),
           '',
           'PATTERN LIST:',
           grammatik.length
             ? grammatik.map((g: { muster: string; name: string; beispiel: string }) => `${g.muster} (${g.name}) e.g. ${g.beispiel}`).join('\n')
-            : '-아/어요 (polite present); N은/는; N이/가; N을/를 — plain statements only',
+            : lerntKo
+              ? '-아/어요 (polite present); N은/는; N이/가; N을/를 — plain statements only'
+              : 'Präsens; Akkusativ; einfache Hauptsätze — plain statements only',
           '',
-          `Reply with ONLY this JSON: {"saetze":[{"de":"<German sentence>","ko":"<model Korean translation>","woerter":["<dictionary form of EVERY content word used, from the list>"],"grammatik":["<patterns used, exactly as in the list>"]}, ... ${anzahl + 2} sentences]}`,
+          `Reply with ONLY this JSON: {"saetze":[{"de":"<the task sentence in ${promptSprache}>","ko":"<model answer in ${zielSprache}>","woerter":["<dictionary form of EVERY content word used, from the list>"],"grammatik":["<patterns used, exactly as in the list>"]}, ... ${anzahl + 2} sentences]}`,
           `Write ${anzahl + 2} sentences so some can serve as spares. The "woerter" array must be complete and exact — it is checked by the app.`,
         ]
           .filter(Boolean)
           .join('\n'),
         [{ role: 'user', content: `Create ${anzahl + 2} sentences now.` }],
-        anzahl >= 8 ? 5000 : 3000
+        anzahl >= 8 ? 6000 : 4000
       )
-      const bib = new Set(woerter.map((w: { ko: string }) => w.ko))
-      const bibListe = [...bib]
       /* Wort bekannt? Exakt, oder als Stamm eines Bibliothekswortes
-         (공부 <- 공부하다), oder das gemeldete Wort beginnt mit dem Stamm
-         eines Bibliothekswortes (먹어요 <- 먹다). Vorher flogen schwere
-         Saetze zu oft raus, nur weil das Modell eine gebeugte Form oder
-         den Stamm gemeldet hatte (Franz 07.09.). */
-      const stamm = (w: string) => w.replace(/(하다|다)$/, '')
-      const bekannt = (w: string) => {
+         (공부 <- 공부하다 · geh <- gehen), oder das gemeldete Wort beginnt
+         mit dem Stamm eines Bibliothekswortes (먹어요 <- 먹다 · gehst <-
+         gehen). Vorher flogen schwere Saetze zu oft raus, nur weil das
+         Modell eine gebeugte Form gemeldet hatte (Franz 07.09.).
+         Deutsch zusaetzlich ohne Artikel und ohne Gross-/Kleinschreibung. */
+      const wortNorm = (w: string) =>
+        lerntKo ? w : w.toLowerCase().replace(/^(der|die|das)\s+/, '').trim()
+      const bibListe = woerter.map((w: { ko: string }) => wortNorm(w.ko))
+      const bib = new Set(bibListe)
+      const mindestStamm = lerntKo ? 2 : 3
+      const stamm = (w: string) => (lerntKo ? w.replace(/(하다|다)$/, '') : w.replace(/(en|n|e)$/, ''))
+      const bekannt = (w0: string) => {
+        const w = wortNorm(w0)
         if (bib.has(w)) return true
-        if (w.length >= 2 && bibListe.some((b) => b.startsWith(w))) return true
-        return bibListe.some((b) => {
+        if (w.length >= mindestStamm && bibListe.some((b: string) => b.startsWith(w))) return true
+        return bibListe.some((b: string) => {
           const s = stamm(b)
-          return s.length >= 2 && w.startsWith(s)
+          return s.length >= mindestStamm && w.startsWith(s)
         })
       }
       const musterSet = new Set(grammatik.map((g: { muster: string }) => g.muster))
@@ -1318,7 +1345,11 @@ Deno.serve(async (req) => {
        in Klammern) und einem Satz Begruendung auf Deutsch. Landet als
        Journal-Eintrag in sessions, damit der Tutor davon weiss. */
     if (action === 'satzChallengeBewerten') {
-      if (profile !== 'ko') return json({ error: 'bad-profile' }, 400)
+      /* Seit 08.09. auch fuer 해인: sie uebersetzt ins Deutsche, und die
+         Rueckmeldung steht auf Koreanisch (ihre Erklaersprache). */
+      const bewLerntKo = profile === 'ko'
+      const bewZiel = bewLerntKo ? 'Korean' : 'German'
+      const bewErklaer = bewLerntKo ? 'German' : 'Korean'
       const paare = Array.isArray(body.paare)
         ? body.paare
             .slice(0, 6)
@@ -1333,10 +1364,10 @@ Deno.serve(async (req) => {
       if (!paare.length) return json({ error: 'empty' }, 400)
       const out = await callModel(
         [
-          'You grade Franz\'s Korean translations of German sentences (beginner, A1-A2). For each pair you get: the German sentence, a model Korean translation, and his answer.',
-          'Verdicts: "gruen" = correct (meaning and grammar fine, even if worded differently from the model); "gelb" = acceptable but with a real remark (unnatural word order, missing but optional particle, slightly off nuance, wrong politeness that is still understandable); "rot" = a real error (wrong particle, wrong conjugation or tense, wrong word, missing required word, meaning changed). Different but correct phrasing with other known words is gruen, not rot. Do not punish spacing. Empty answer = rot.',
-          'For gelb and rot: "korrektur" = his sentence minimally fixed (keep his wording where possible), followed by the German translation in parentheses. "hinweis" = ONE short sentence in German saying what was wrong and why. For gruen: korrektur = his answer as is, hinweis = "" or a tiny optional tip.',
-          'Reply with ONLY this JSON: {"ergebnisse":[{"nr":1,"urteil":"gruen|gelb|rot","korrektur":"...","hinweis":"..."}, ...],"fazit":"<one or two German sentences: what to keep in mind next time>"}',
+          `You grade a beginner's (A1-A2) ${bewZiel} translations. For each pair you get: the task sentence, a model ${bewZiel} translation, and the learner's answer.`,
+          `Verdicts: "gruen" = correct (meaning and grammar fine, even if worded differently from the model); "gelb" = acceptable but with a real remark (unnatural word order, missing but optional particle, slightly off nuance, wrong register that is still understandable); "rot" = a real error (wrong particle or case, wrong conjugation or tense, wrong article, wrong word, missing required word, meaning changed). Different but correct phrasing with other known words is gruen, not rot. Do not punish spacing${bewLerntKo ? '' : ' or capitalisation'}. Empty answer = rot.`,
+          `For gelb and rot: "korrektur" = the learner's sentence minimally fixed (keep their wording where possible), followed by the ${bewErklaer} translation in parentheses. "hinweis" = ONE short sentence in ${bewErklaer} saying what was wrong and why. For gruen: korrektur = the answer as is, hinweis = "" or a tiny optional tip.`,
+          `Reply with ONLY this JSON: {"ergebnisse":[{"nr":1,"urteil":"gruen|gelb|rot","korrektur":"...","hinweis":"..."}, ...],"fazit":"<one or two ${bewErklaer} sentences: what to keep in mind next time>"}`,
         ].join('\n'),
         [
           {

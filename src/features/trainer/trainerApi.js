@@ -144,8 +144,29 @@ export function trainerVokabelNuancen({ profile, gruppe }) {
 
 /* Tages-Challenge (Franz): 5 deutsche Saetze nur aus eigenen Woertern +
    abgehakter Grammatik -> { saetze: [{de, ko, woerter, grammatik}], verworfen } */
-export function trainerSatzChallengeErzeugen({ profile, woerter, grammatik, vermeiden, anzahl, schwierigkeit, wunsch }) {
-  return call({ action: 'satzChallengeErzeugen', profile, woerter, grammatik, vermeiden, anzahl, schwierigkeit, wunsch })
+export function trainerSatzChallengeErzeugen({
+  profile,
+  woerter,
+  grammatik,
+  vermeiden,
+  anzahl,
+  schwierigkeit,
+  wunsch,
+  szenen,
+  fokus,
+}) {
+  return call({
+    action: 'satzChallengeErzeugen',
+    profile,
+    woerter,
+    grammatik,
+    vermeiden,
+    anzahl,
+    schwierigkeit,
+    wunsch,
+    szenen,
+    fokus,
+  })
 }
 
 /* Antworten bewerten -> { ergebnisse: [{nr, urteil, korrektur, hinweis}], fazit } */
