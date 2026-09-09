@@ -1030,12 +1030,15 @@ Deno.serve(async (req) => {
               hinweisRegel,
             ].join('\n')
           : [
-              'You enrich ONE German vocabulary entry for a Korean learner at A1/A2 level. Her card shows the German word (nouns WITH article) and a meaning line "English (한국어)".',
-              'Input line: german | meaning line (may be empty) | pos (may be empty) | - | needsExample (yes/no).',
+              'You enrich ONE German vocabulary entry for 해인, a Korean adult learning German at A1/A2 level. Her card shows the German word (nouns WITH article) and a meaning line "English (한국어)". Notes and explanations are in KOREAN, because that is her language.',
+              'Input line: german | meaning line she wrote (may be empty) | pos (may be empty) | - | needsExample (yes/no).',
+              'Work from the GERMAN word. Do not change the meaning line she wrote.',
               'Reply with ONLY this JSON object:',
               '{"de":null,',
               ' "pos":"<one of noun, verb, adj, adv, phrase, other; copy if given; noun if the word carries der/die/das>",',
+              ' "kasus":<ONLY for verbs, else null: the case pattern in a short readable form she can copy — "jdm. helfen (D)", "etw. sehen (A)", "jdm. etw. geben (D + A)", "warten auf + A", "sich freuen über + A". Use jdm. for a dative person, jdn. for an accusative person, etw. for a thing. If the verb takes no object at all (schlafen, regnen), null>,',
               ' "nuance":<null in most cases; only a NEEDED usage restriction, register, or classic confusion with a similar German word, max 60 chars, written in KOREAN>,',
+              ' "info":<a short "good to know" text in KOREAN or null: an ARRAY of 2-5 strings, one line each (never one string with line breaks), EVERY line starting with a bold Korean keyword in the exact form **사용:** (choose from 사용, 주의, 비슷, 격, 존댓말, 분리, 참고). German examples inline with a Korean translation in parentheses, e.g. Ich helfe dir (제가 도와줄게요). Cover typical patterns, the case the verb takes, contrast to a similar German word, separable verbs, perfect with sein or haben, du versus Sie. Be GENEROUS — only trivially concrete nouns (der Baum, der Apfel) get null. Max 200 characters per line>,',
               ' "ex":<only when needsExample is yes: ONE natural German sentence, A1/A2 grammar only (present tense or simple perfect, main clause), 4-9 words, everyday situation, contains the word; else null>,',
               ' "ex_tr":<Korean translation of ex, or null>,',
               ' "hanja":null}',
@@ -1097,6 +1100,7 @@ Deno.serve(async (req) => {
       let pos: string | null = null
       let nuance: string | null = null
       let info: string | null = null
+      let kasus: string | null = null
       let zaehlwort = zaehlwortVorgabe
       let zahlsystem: string | null = zahlsystemVorgabe
       let ex: string | null = null
@@ -1108,7 +1112,7 @@ Deno.serve(async (req) => {
         if (!roh) return null
         const zeilen = roh.map((z) => String(z ?? '').trim()).filter(Boolean)
         if (zeilen.length < 2 || zeilen.length > 5) return null
-        if (!zeilen.every((z) => /^\*\*[^*]{2,24}\*\*:?\s*\S/.test(z) && z.length <= 220)) return null
+        if (!zeilen.every((z) => /^\*\*[^*]{1,24}\*\*:?\s*\S/.test(z) && z.length <= 220)) return null
         return zeilen.map((z) => z.replace(/^\*\*([^*]+?):?\*\*:?/, '**$1:**')).join('\n')
       }
       try {
@@ -1116,11 +1120,16 @@ Deno.serve(async (req) => {
         de = text(j.de, 1, 60)
         pos = POS_OK.includes(j.pos) ? j.pos : POS_OK.includes(posGegeben) ? posGegeben : null
         nuance = j.nuance == null ? null : text(j.nuance, 3, 80)
+        info = pruefeInfo(j.info)
         if (lerntKoreanisch) {
-          info = pruefeInfo(j.info)
           if (j.zaehlwort === true) zaehlwort = true
           if (!zahlsystem && ['native', 'sino', 'beide'].includes(j.zahlsystem)) zahlsystem = j.zahlsystem
           if (!zaehlwort) zahlsystem = null
+        } else if (pos === 'verb') {
+          /* Kasus des Verbs (해인, Franz 09.09.): muss (D), (A) oder
+             eine Präposition mit Fall nennen, sonst hilft es nicht */
+          const k = text(j.kasus, 3, 44)
+          if (k && /\((D|A|D \+ A|A \+ D)\)|\+\s?(A|D)\b/.test(k)) kasus = k
         }
         if (brauchtSatz && !lerntKoreanisch) {
           const satz = text(j.ex, 4, 120)
@@ -1177,7 +1186,7 @@ Deno.serve(async (req) => {
         input_tokens: out.inputTokens,
         output_tokens: out.outputTokens,
       })
-      return json({ de, pos, nuance, ex, exTr, hanja, info, zaehlwort, zahlsystem })
+      return json({ de, pos, nuance, ex, exTr, hanja, info, zaehlwort, zahlsystem, kasus })
     }
 
     /* ---------- Nuancen bei gleicher Bedeutung (Vokabel-Motor, nur Franz) ----------

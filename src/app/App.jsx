@@ -495,6 +495,8 @@ function App() {
           felder.zaehlwort = true
           felder.zahlsystem = res.zahlsystem || null
         }
+        /* Kasus des Verbs (해인s Seite) */
+        if (res.kasus) felder.kasus = res.kasus
         if (!word.ex && res.ex) {
           felder.ex = res.ex
           felder.exTr = res.exTr || null

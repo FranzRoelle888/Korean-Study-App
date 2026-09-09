@@ -6,7 +6,7 @@ import Confetti from '../../shared/Confetti'
 import { MoonIcon, CardRidge, CardSkyline } from '../../shared/icons'
 import ClearableInput from '../../shared/ClearableInput'
 import { SpeakButton, speak, prewarmSpeech } from '../../shared/tts'
-import { HanjaZeile, Bedeutung, WortVergleich, DeutschZeile, InfoText, ZaehlChip } from '../../shared/motorTeile'
+import { HanjaZeile, Bedeutung, WortVergleich, DeutschZeile, InfoText, ZaehlChip, KasusChip } from '../../shared/motorTeile'
 import { useTastaturZu } from '../../shared/tastatur'
 
 /* ============================================================
@@ -321,6 +321,9 @@ function ReviewMotor({ initialQueue, words, onRate, onUndo, onExit, profile, t, 
                 </span>
               )}
               {art === 'produktion' && <ZaehlChip word={card} t={t} />}
+              {/* Kasus gehört auf die Rückseite: erst die Bedeutung,
+                  dann wie man das Verb baut */}
+              <KasusChip word={card} t={t} />
               <InfoText info={card.info} t={t} />
             </div>
           )}

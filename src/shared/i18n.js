@@ -78,6 +78,7 @@ const en = {
   /* Vokabel-Qualität (Franz 09.09.): Infotext, Zählwort, Familie */
   infoLabel: 'Good to know',
   zaehlwortChip: 'Counter',
+  kasusLabel: 'Which case this verb takes',
   zahlsystem: { native: 'native numbers: 한, 두, 세 …', sino: 'Sino-Korean numbers: 일, 이, 삼 …', beide: 'both number systems' },
   familieTreffer: 'Same meaning family – counts as right. The difference:',
   familieOhneNuance: 'no note yet',
@@ -457,6 +458,7 @@ const ko = {
   hoerMitText: '듣기 카드 · 이번엔 글자로',
   infoLabel: '알아두기',
   zaehlwortChip: '단위 명사',
+  kasusLabel: '이 동사가 쓰는 격',
   zahlsystem: { native: '고유어 수: 한, 두, 세 …', sino: '한자어 수: 일, 이, 삼 …', beide: '두 수 체계 모두' },
   familieTreffer: '같은 뜻 가족 – 정답이에요. 차이점:',
   familieOhneNuance: '메모 없음',
@@ -878,6 +880,7 @@ const de = {
   hoerMitText: 'Hör-Karte · diesmal mit Text',
   infoLabel: 'Gut zu wissen',
   zaehlwortChip: 'Zählwort',
+  kasusLabel: 'Welchen Fall dieses Verb verlangt',
   zahlsystem: { native: 'koreanische Zahlen: 한, 두, 세 …', sino: 'sino-koreanische Zahlen: 일, 이, 삼 …', beide: 'beide Zahlensysteme' },
   familieTreffer: 'Gleiche Bedeutungsfamilie – zählt als richtig. Der Unterschied:',
   familieOhneNuance: 'noch kein Hinweis',

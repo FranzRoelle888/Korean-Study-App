@@ -173,6 +173,8 @@ function wordFromRow(r) {
     familie: r.familie || null,
     zaehlwort: !!r.zaehlwort,
     zahlsystem: r.zahlsystem || null,
+    /* Kasus des Verbs, 해인s Seite (Migration 017): jdm. helfen (D) */
+    kasus: r.kasus || null,
     hand: Array.isArray(r.hand) && r.hand.length ? r.hand : null,
     createdAt: new Date(r.created_at).getTime(),
   }
@@ -209,12 +211,13 @@ function wordToRow(w) {
   if (w.familie) row.familie = w.familie
   if (w.zaehlwort) row.zaehlwort = true
   if (w.zahlsystem) row.zahlsystem = w.zahlsystem
+  if (w.kasus) row.kasus = w.kasus
   if (w.hand) row.hand = w.hand
   return row
 }
 /* Spalten aus Migration 016 — fehlt die Migration noch, lehnt die DB
    das Anlegen ab; dann ohne diese Spalten erneut versuchen */
-const SPALTEN_016 = ['info', 'familie', 'zaehlwort', 'zahlsystem', 'hand']
+const SPALTEN_016 = ['info', 'familie', 'zaehlwort', 'zahlsystem', 'hand', 'kasus']
 function ohneSpalten016(row) {
   const r = { ...row }
   for (const s of SPALTEN_016) delete r[s]
@@ -288,6 +291,7 @@ export async function ergaenzeWortInhalte(id, felder) {
     patch.zaehlwort = true
     patch.zahlsystem = felder.zahlsystem || null
   }
+  if (felder.kasus) patch.kasus = felder.kasus
   if (!Object.keys(patch).length) return
   const { error } = await mine(supabase.from('words').update(patch).eq('id', id))
   if (error) throw error
@@ -519,6 +523,7 @@ function vorratFromRow(r) {
     familie: r.familie || null,
     zaehlwort: !!r.zaehlwort,
     zahlsystem: r.zahlsystem || null,
+    kasus: r.kasus || null,
     bereit: !!r.bereit,
     audioOk: !!r.audio_ok,
     uebersprungen: !!r.uebersprungen,
@@ -1012,6 +1017,7 @@ export function dueCards(words, cards) {
       familie: byId[c.wordId].familie || null,
       zaehlwort: !!byId[c.wordId].zaehlwort,
       zahlsystem: byId[c.wordId].zahlsystem || null,
+      kasus: byId[c.wordId].kasus || null,
       /* 해인: Plural neben dem Nomen, Verb-Chips aus der Konjugation */
       plural: byId[c.wordId].plural || null,
       conj: byId[c.wordId].conj || null,
@@ -1207,6 +1213,7 @@ export function makeVorratWord(v) {
     familie: v.familie || null,
     zaehlwort: !!v.zaehlwort,
     zahlsystem: v.zahlsystem || null,
+    kasus: v.kasus || null,
     hand: null,
     createdAt: Date.now(),
   }

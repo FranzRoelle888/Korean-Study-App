@@ -57,7 +57,9 @@ function baue() {
   const liste = []
   const gesehen = new Set()
   for (const e of goethe) {
-    if (!e.de || FUNKTIONSWOERTER.has(e.id)) continue
+    /* aus = unbrauchbarer Rest der Quellenliste („Feier-",
+       „(an-)/(aus)ziehen"); der Anreicherungslauf markiert sie */
+    if (!e.de || e.aus || FUNKTIONSWOERTER.has(e.id)) continue
     const wort = e.artikel ? `${e.artikel} ${e.de}` : e.de
     const k = norm(wort)
     if (gesehen.has(k)) continue
@@ -68,15 +70,23 @@ function baue() {
     liste.push({
       invId: e.id,
       ko: wort,
-      /* Bedeutung: kuratierte 'English (한국어)'-Zeile, sonst Koreanisch */
-      en: kur?.en || e.ko || e.bsp_en || '',
+      /* Bedeutung: die angereicherte Zeile gewinnt (vom deutschen
+         Wort aus geschrieben und von einem zweiten Modell geprüft,
+         siehe scripts/deutsch-anreichern.mjs), danach die kuratierte
+         Liste, zuletzt der Rohbestand */
+      en: (e.en && e.ko ? `${e.en} (${e.ko})` : null) || kur?.en || e.ko || e.bsp_en || '',
       de: null,
-      pos: e.artikel ? 'noun' : e.konj ? 'verb' : kur?.pos || null,
+      pos: e.pos || (e.artikel ? 'noun' : e.konj ? 'verb' : kur?.pos || null),
       rang: RANG[e.id] ?? 99999,
       ex: satz,
       exTr: kur?.exEn || e.bsp_en || null,
-      nuance: null,
+      nuance: e.nuance || null,
       hanja: null,
+      /* Vokabel-Qualität (09.09.): Infotext auf Koreanisch,
+         Bedeutungsfamilie, Kasus des Verbs */
+      info: e.info || null,
+      familie: e.familie || null,
+      kasus: e.kasus || null,
       plural: e.artikel ? pluralAusgeschrieben(e.de, e.plural) : null,
       konj: e.konj || null,
       bereit: true,

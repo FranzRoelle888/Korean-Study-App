@@ -1,0 +1,100 @@
+# ============================================================
+# Deutsch anreichern (Kartenqualität auf 해인s Seite)
+#
+# Von Hand starten: Actions -> "Deutsch anreichern" -> Run workflow.
+# Was passiert (siehe docs/VOKABEL-KONZEPT.md §12):
+#   1. Goethe-Datei: die nächsten N Wörter nach Häufigkeit bekommen
+#      eine vom DEUTSCHEN Wort aus geschriebene Bedeutung
+#      ("English (한국어)"), Wortart, Plural, Konjugation, KASUS
+#      und einen koreanischen Infotext. Ein zweites Modell prüft
+#      jede Bedeutung.
+#   2. Ihre Bibliothek: dieselben Felder für die Wörter, die schon
+#      bei ihr liegen. Plural und Konjugation bleiben dem Nachtlauf
+#      fill-extras überlassen.
+#   3. Bedeutungsfamilien über beides.
+#
+# WICHTIG: Schritt 1 ändert eine Datei im Repo (goethe-woerter.json)
+# und der Lauf committet sie selbst — GitHub Pages deployt danach
+# automatisch. Das Protokoll zeigt JEDE Änderung als „alt -> neu";
+# wenn etwas nicht passt, ist ein "git revert" des Commits genug.
+#
+# Voraussetzung: Migrationen 016 und 017 sind ausgeführt.
+# Secrets: ANTHROPIC_API_KEY, SUPABASE_SERVICE_KEY.
+# ============================================================
+name: Deutsch anreichern
+
+on:
+  workflow_dispatch:
+    inputs:
+      anzahl:
+        description: 'Wie viele Wörter der Goethe-Datei anreichern (nach Häufigkeit)'
+        type: number
+        default: 300
+      probe:
+        description: 'Stichprobe: nur je 5 Wörter anfragen und anzeigen, nichts schreiben (ein paar Cent)'
+        type: boolean
+        default: false
+      nur_datei:
+        description: 'Nur die Goethe-Datei (ohne ihre Bibliothek, ohne Familien)'
+        type: boolean
+        default: false
+      nur_bestand:
+        description: 'Nur ihre Bibliothek (ohne Datei, ohne Familien)'
+        type: boolean
+        default: false
+      nur_nuancen:
+        description: 'Nur Bedeutungsfamilien neu rechnen (günstig)'
+        type: boolean
+        default: false
+      dry:
+        description: 'Trockenlauf (alles anfragen, nichts schreiben)'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  anreichern:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Anreichern
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          set -o pipefail
+          FLAGS=""
+          if [ "${{ inputs.probe }}" = "true" ]; then FLAGS="$FLAGS --probe"; fi
+          if [ "${{ inputs.dry }}" = "true" ]; then FLAGS="$FLAGS --dry"; fi
+          if [ "${{ inputs.nur_datei }}" = "true" ]; then FLAGS="$FLAGS --nur-datei"; fi
+          if [ "${{ inputs.nur_bestand }}" = "true" ]; then FLAGS="$FLAGS --nur-bestand"; fi
+          if [ "${{ inputs.nur_nuancen }}" = "true" ]; then FLAGS="$FLAGS --nuancen"; fi
+          node scripts/deutsch-anreichern.mjs --anzahl "${{ inputs.anzahl }}" $FLAGS 2>&1 | tee lauf.log
+
+      - name: Geänderte Goethe-Datei committen
+        if: ${{ inputs.dry != true && inputs.probe != true }}
+        run: |
+          if git diff --quiet -- src/core/inventare/goethe-woerter.json; then
+            echo "Datei unveraendert — nichts zu committen."
+            exit 0
+          fi
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add src/core/inventare/goethe-woerter.json
+          git commit -m "Goethe-Liste angereichert (Lauf ${{ github.run_number }}): Bedeutungen, Kasus, Infotexte"
+          git push
+
+      - name: Protokoll anzeigen
+        if: always()
+        run: |
+          echo '## Deutsch anreichern' >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          tail -n 160 lauf.log >> $GITHUB_STEP_SUMMARY || true
+          echo '```' >> $GITHUB_STEP_SUMMARY

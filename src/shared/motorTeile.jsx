@@ -255,6 +255,23 @@ export function InfoText({ info, t, offen = false, className = '' }) {
     </details>
   )
 }
+/* Kasus eines deutschen Verbs (jdm. helfen (D)). Dativ und
+   Akkusativ bekommen je eine eigene Farbe, damit der Fall am Blick
+   erkennbar ist und nicht erst beim Lesen (Franz 09.09.). */
+export function KasusChip({ word, t, className = '' }) {
+  if (!word?.kasus) return null
+  const text = String(word.kasus)
+  /* Beide Fälle im Muster -> zweifarbig gestreift über die Klasse */
+  const hatD = /\(D\b|\bD \+ A|\+\s?D\b/.test(text)
+  const hatA = /\(A\b|D \+ A\)|\+\s?A\b/.test(text)
+  const fall = hatD && hatA ? 'beide' : hatD ? 'dativ' : hatA ? 'akkusativ' : 'neutral'
+  return (
+    <span className={`kasus-chip kasus-${fall} ${className}`.trim()} lang="de" title={t.kasusLabel}>
+      {text}
+    </span>
+  )
+}
+
 export function ZaehlChip({ word, t, className = '' }) {
   if (!word?.zaehlwort) return null
   const system = word.zahlsystem && t.zahlsystem ? t.zahlsystem[word.zahlsystem] : ''

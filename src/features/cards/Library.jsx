@@ -4,7 +4,7 @@ import ClearableInput from '../../shared/ClearableInput'
 import { ArtikelWort } from '../../shared/ArtikelWort'
 import { SpeakButton, prewarmSpeech } from '../../shared/tts'
 import { trainerUebersetzung } from '../trainer/trainerApi'
-import { HanjaZeile, StufenPunkte, InfoText, ZaehlChip } from '../../shared/motorTeile'
+import { HanjaZeile, StufenPunkte, InfoText, ZaehlChip, KasusChip } from '../../shared/motorTeile'
 import { istMotor, stufenFuer, bedeutung } from '../../core/motor'
 
 /* ============================================================
@@ -35,7 +35,7 @@ function WordExtras({ vocab, t, lang }) {
   const hatHanja = Array.isArray(vocab.hanja) && vocab.hanja.length > 0
   const hatNuance = !!vocab.nuance
   /* Vokabel-Qualität: Infotext + Zählwort-Chip */
-  const hatInfo = !!vocab.info || !!vocab.zaehlwort
+  const hatInfo = !!vocab.info || !!vocab.zaehlwort || !!vocab.kasus
 
   /* Sobald das Info-Feld aufklappt, den Beispielsatz im
      Hintergrund vorwärmen — beim Tipp aufs Lautsprecher-Symbol
@@ -66,6 +66,7 @@ function WordExtras({ vocab, t, lang }) {
       {hatInfo && (
         <div className="extras-block">
           <ZaehlChip word={vocab} t={t} />
+          <KasusChip word={vocab} t={t} />
           <InfoText info={vocab.info} t={t} offen />
         </div>
       )}
@@ -557,7 +558,8 @@ function VocabRow({ vocab, onEdit, onDelete, tricky, stufe, profile, t }) {
     !!vocab.hanja ||
     !!vocab.nuance ||
     !!vocab.info ||
-    !!vocab.zaehlwort
+    !!vocab.zaehlwort ||
+    !!vocab.kasus
 
   return (
     <li className={zeigeInfo ? 'vocab-row vocab-row-open' : 'vocab-row'}>

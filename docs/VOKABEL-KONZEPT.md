@@ -421,3 +421,46 @@ Wunsch nach Infotexten.
 - Migration 016, Skript scripts/vokabeln-anreichern.mjs, Edge Function
   vokabelAnreichern gleichgezogen. Kosten grob 2-3 $ je Lauf mit 300
   Vorratswörtern.
+
+## 12. Verfahren 2 auf 해인s Seite (09.09.)
+
+Messung ihres Vorrats (1258 Wörter) vor dem Umbau:
+
+| Befund | Anzahl |
+|---|---|
+| nur eine automatisch gezogene koreanische Bedeutung | 1064 |
+| ohne Wortart | 321 |
+| Nomen ohne Plural | 131 |
+| Verben mit abgeschnittener Konjugation | 68 |
+| Bedeutung ist ein englischer Beispielsatz | 8 |
+
+Falsche Bedeutungen derselben Bauart wie 정도 = „Grad": nehmen als
+고르다 (auswählen), gehören als 속하다 (obwohl der Beispielsatz Besitz
+zeigt), fehlen als 결석하다.
+
+- **Ihr Vorrat bleibt eine Datei** (`goethe-woerter.json`). Die
+  Goethe-Liste ist für jeden Lerner dieselbe, funktioniert offline
+  und kostet keine Abfrage. `scripts/deutsch-anreichern.mjs`
+  schreibt die Datei, der Workflow committet sie.
+- **Bedeutung aus dem Deutschen.** Der mitgelieferte Beispielsatz
+  entscheidet, welche Bedeutung gemeint ist. Opus prüft Englisch und
+  Koreanisch getrennt. Ihre Bedeutungszeile bleibt „English (한국어)"
+  (Entscheidung Franz 09.09.).
+- **Infotext auf Koreanisch**, deutsche Beispiele inline, fettes
+  koreanisches Stichwort (사용, 주의, 비슷, 격, 존댓말, 분리, 참고).
+- **Kasus** `kasus` (Migration 017): kurzes Muster zum Abschreiben —
+  „jdm. helfen (D)", „etw. sehen (A)", „jdm. etw. geben (D + A)",
+  „warten auf + A". Dativ und Akkusativ haben je eine eigene Farbe,
+  beide Fälle einen Verlauf aus beiden. Sichtbar in Einführung,
+  Kartenrückseite und Bibliothek.
+- **Plural und Konjugation** ergänzt und repariert der Lauf nur in
+  der DATEI (dort sind sie im Ritual sichtbar). In ihrer Bibliothek
+  bleibt `fill-extras.mjs` zuständig — keine doppelte Zuständigkeit.
+- **Unbrauchbare Listenreste** („Feier-", „(an-)/(aus)ziehen") werden
+  mit `aus: true` dauerhaft ausgeblendet.
+- **Familien** wie bei Franz, zusätzlich über die koreanische Seite
+  der Bedeutung gruppiert.
+- **Hand-Schutz**: ein Wort, das nicht in der Goethe-Liste steht, hat
+  sie selbst eingetragen — seine Bedeutung wird nie überschrieben.
+- Nicht gebaut (Franz 09.09., „zu viel auf einmal"): Wortbausteine
+  für Komposita als Gegenstück zu den Hanja-Chips.

@@ -1043,3 +1043,43 @@
 }
 .familie-hinweis .familie-zeile { display: block; }
 .familie-hinweis .familie-zeile b { font-weight: 700; }
+
+/* ---------- Kasus-Chip (해인, Franz 09.09.) ----------
+   Dativ und Akkusativ tragen je eine eigene Farbe, damit der Fall
+   am Blick erkennbar ist. Verben mit beiden Faellen bekommen einen
+   Verlauf aus beiden Farben. */
+.kasus-chip {
+  display: inline-block;
+  margin: 5px 0 0;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+.kasus-dativ {
+  background: #e3f0fb;
+  border-color: #b9d8f2;
+  color: #1f5b8f;
+}
+.kasus-akkusativ {
+  background: #fdeee4;
+  border-color: #f6cfb4;
+  color: #9a5423;
+}
+.kasus-beide {
+  background: linear-gradient(100deg, #e3f0fb 0%, #e3f0fb 48%, #fdeee4 52%, #fdeee4 100%);
+  border-color: #d8cfc6;
+  color: #4a4550;
+}
+.kasus-neutral {
+  background: var(--primary-soft, #ece8f7);
+  color: var(--primary, #7263b8);
+}
+/* Auf der dunklen Einfuehrungskarte: gleiche Farben, kraeftiger */
+.daily-card .kasus-dativ { background: rgba(160, 205, 245, 0.28); border-color: rgba(160, 205, 245, 0.6); color: #dcecfb; }
+.daily-card .kasus-akkusativ { background: rgba(245, 190, 150, 0.28); border-color: rgba(245, 190, 150, 0.6); color: #fbe6d6; }
+.daily-card .kasus-beide { background: linear-gradient(100deg, rgba(160,205,245,0.28) 0%, rgba(160,205,245,0.28) 48%, rgba(245,190,150,0.28) 52%, rgba(245,190,150,0.28) 100%); border-color: rgba(255,255,255,0.35); color: #fff; }
+.daily-card .kasus-neutral { background: rgba(255, 255, 255, 0.18); color: #fff; }
