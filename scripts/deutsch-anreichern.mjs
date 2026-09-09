@@ -47,6 +47,7 @@
    Secrets: ANTHROPIC_API_KEY, SUPABASE_SERVICE_KEY (nur in Actions).
    ============================================================ */
 import { readFileSync, writeFileSync } from 'node:fs'
+import { germanPool } from '../src/core/germanPool.js'
 
 const SUPABASE_URL = 'https://gkrubhwwzgekmbiltslt.supabase.co'
 const DB_KEY = process.env.SUPABASE_SERVICE_KEY
@@ -226,17 +227,66 @@ function konjKaputt(konj) {
   return !/(t|en)$/i.test(m[2])
 }
 
-/* Listen-Artikel wie „Feier-", „Geburts-(jahr", „(an-)/(aus)ziehen"
-   sind Reste der Quellenliste und taugen nicht als Karte */
-const kaputterEintrag = (de) => {
-  const t = String(de ?? '').trim()
-  return !t || /[(/]/.test(t) || t.endsWith('-') || t.split(' ').length > 3
+/* ---------- Stichwort aufräumen (Fund 09.09.) ----------
+   Die Goethe-Liste trägt grammatische Vermerke IM Stichwort:
+   „Wasser (Sg.)", „Eltern (pl.)", „(sich) freuen", „gern(e)",
+   „(E-)Mail", „(ab)fahren". Bisher standen die mit auf ihrer Karte —
+   sie hätte „das Wasser (Sg.)" abtippen müssen. Wir werfen solche
+   Einträge NICHT weg (das wären 118 Wörter, darunter Wasser, Geld,
+   Milch, Musik), sondern räumen das Stichwort auf und merken uns,
+   was der Vermerk aussagte.
+
+   Rückgabe: { wort, numerus, reflexiv } oder null, wenn der Eintrag
+   wirklich unbrauchbar ist (unbalancierte Klammer, Schrägstrich-
+   Variante, Wortstamm mit Bindestrich am Ende). */
+function raeumeStichwort(roh) {
+  let t = String(roh ?? '').trim()
+  if (!t) return null
+  let numerus = null
+  let reflexiv = false
+
+  /* „Wasser (Sg.)" / „Eltern (pl.)" -> Vermerk merken, Wort behalten */
+  t = t.replace(/\s*\((Sg\.?|Sing\.?)\)\s*$/i, () => ((numerus = 'sg'), ''))
+  t = t.replace(/\s*\(Pl\.?\)\s*$/i, () => ((numerus = 'pl'), ''))
+
+  /* „(sich) freuen" und „freuen (sich)" -> „sich freuen" */
+  if (/\(sich\)/.test(t)) {
+    reflexiv = true
+    t = t.replace(/\(sich\)/g, '').trim()
+    t = `sich ${t}`.replace(/\s+/g, ' ')
+  }
+
+  /* „gern(e)" -> „gern", „vorn(e)" -> „vorn" */
+  t = t.replace(/\(e\)\s*$/i, '')
+
+  /* „(E-)Mail" -> „E-Mail", „(Fahr)Rad" -> „Fahrrad",
+     „(ab)fahren" -> „abfahren", „(Kredit)-Karte" -> „Kredit-Karte" */
+  t = t.replace(/^\(([^()]+)\)(\S.*)$/, (_, vorn, rest) => {
+    if (/-$/.test(vorn) || /^[^A-Za-zÄÖÜäöüß]/.test(rest)) return vorn + rest
+    /* Fahr + Rad -> Fahrrad; ab + fahren bleibt abfahren */
+    return /^[A-ZÄÖÜ]/.test(vorn) ? vorn + rest[0].toLowerCase() + rest.slice(1) : vorn + rest
+  })
+
+  /* „fährt (ab)" ist keine Vokabel, sondern eine Konjugationsform
+     mit abgetrennter Vorsilbe — anders als „Grad (Celsius)" */
+  const VORSILBEN = /^(ab|an|auf|aus|bei|ein|los|mit|nach|vor|weg|zu|zurück|her|hin)$/i
+  const klammerEnde = t.match(/\(([^()]*)\)\s*$/)
+  if (klammerEnde && VORSILBEN.test(klammerEnde[1].trim())) return null
+  /* „Grad (Celsius)" -> „Grad": erklärender Zusatz am Ende */
+  t = t.replace(/\s*\([^()]*\)\s*$/, '')
+
+  t = t.trim()
+  /* Was jetzt noch eine Klammer, einen Schrägstrich oder einen
+     Bindestrich am Ende trägt, ist ein Rest der Quellenliste */
+  if (!t || /[()/]/.test(t) || t.endsWith('-')) return null
+  return { wort: t, numerus, reflexiv }
 }
+
 
 /* ---------- Prompts ---------- */
 const SYSTEM = [
   'You enrich German vocabulary entries for 해인, a Korean adult learning German at A1/A2 level. Her cards show the German word (nouns WITH article) and a meaning line in the form "English (한국어)". Notes and explanations are in KOREAN, because that is her language.',
-  'Input, one entry per line: id | german headword (nouns with article) | pos (may be empty) | example sentence from the Goethe list (this shows WHICH SENSE is meant — the strongest signal you have) | current Korean gloss (UNRELIABLE: auto-extracted, often the wrong sense — e.g. nehmen listed as 고르다, gehören as 속하다) | fixedMeaning (yes = the learner wrote this meaning herself: keep it) | current plural (may be empty or a short pattern) | current conjugation (may be empty or CUT OFF, e.g. "hat gefalle") | reviewer note (empty, or an objection from a second model to your previous attempt: take it seriously).',
+  'Input, one entry per line: id | german headword (nouns with article) | pos (may be empty) | grammar note from the source list (may be empty: "singular only", "plural only", "reflexive" — trust it) | example sentence from the Goethe list (this shows WHICH SENSE is meant — the strongest signal you have) | current Korean gloss (UNRELIABLE: auto-extracted, often the wrong sense — e.g. nehmen listed as 고르다, gehören as 속하다) | fixedMeaning (yes = the learner wrote this meaning herself: keep it) | current plural (may be empty or a short pattern) | current conjugation (may be empty or CUT OFF, e.g. "hat gefalle") | reviewer note (empty, or an objection from a second model to your previous attempt: take it seriously).',
   '',
   'Work from the GERMAN word, and let the example sentence decide which sense to give. Ignore the current Korean gloss whenever it does not match that sense.',
   'Return ONLY a JSON array, one object per id, with exactly these keys:',
@@ -244,7 +294,7 @@ const SYSTEM = [
   '  "en": English gloss, the 1-2 senses a beginner meets most, each 1-3 words, senses separated by " / " (e.g. "to take"; "to belong to"; "to be missing / to be absent"). Verbs as "to ...". Nouns without article.',
   '  "ko": Korean gloss with the SAME senses in the SAME order, written directly from the German word (not translated from your English), each 1-3 everyday Korean words, separated by " / " (e.g. "가지다, 잡다"; "~의 것이다"). Plain dictionary style, no sentence.',
   '  "pos": one of noun, verb, adj, adv, phrase, other. Nouns carry an article, verbs are infinitives.',
-  '  "plural": ONLY for nouns: the plural written out with die, e.g. "die Einladungen". If the noun has no usual plural (die Butter, der Durst), null.',
+  '  "plural": ONLY for nouns: the plural written out with die, e.g. "die Einladungen". If the grammar note says "singular only", or the noun has no usual plural (die Butter, der Durst), null. If it says "plural only" (die Eltern, die Leute), null as well and say so in info.',
   '  "er": ONLY for verbs: the 3rd person singular present, e.g. "hilft", "fährt ab", "ruft an". Else null.',
   '  "perfekt": ONLY for verbs: the perfect with its auxiliary, e.g. "hat geholfen", "ist gefahren". Write it COMPLETE — never cut off. Else null.',
   '  "kasus": ONLY for verbs, else null. The case pattern in a short readable form the learner can copy: "jdm. helfen (D)", "etw. sehen (A)", "jdm. etw. geben (D + A)", "warten auf + A", "sich freuen über + A". Use jdm. for a dative person, jdn. for an accusative person, etw. for a thing. If the verb takes no object at all (schlafen, regnen), null.',
@@ -261,7 +311,7 @@ const SYSTEM_PRUEF = [
 ].join('\n')
 
 const zeile = (e, notiz = '') =>
-  [e.id, e.wort, e.pos || '', e.satz || '', e.koAlt || '', e.fest ? 'yes' : 'no', e.plural || '', e.konj || '', notiz].join(' | ')
+  [e.id, e.wort, e.pos || '', e.vermerk || '', e.satz || '', e.koAlt || '', e.fest ? 'yes' : 'no', e.plural || '', e.konj || '', notiz].join(' | ')
 
 /* ---------- Ein Stapel anreichern (Sonnet schreibt, Opus prüft) ---------- */
 async function reichereAn(eintraege) {
@@ -380,27 +430,61 @@ const RANG = rangDaten.rang || {}
 const FUNKTIONSWORT = new Set(rangDaten.funktionswort || [])
 const dateiNachId = new Map(datei.map((e) => [e.id, e]))
 const wortVon = (e) => (e.artikel ? `${e.artikel} ${e.de}` : e.de)
-const dateiNachWort = new Map(datei.map((e) => [norm(wortVon(e)), e]))
+const dateiNachWort = () => new Map(datei.map((e) => [norm(wortVon(e)), e]))
+/* Die kuratierte Liste — dieselbe Quelle, aus der ihr Vorrat die
+   Bedeutungszeile nimmt (src/core/deutschVorrat.js) */
+const kuratiert = new Map(germanPool.map((e) => [norm(e.ko), e]))
+/* Welche Bedeutungen hätte der Vorrat für dieses Wort geliefert?
+   Steht bei ihr GENAU eine davon, kam sie aus dem Vorrat und darf
+   ersetzt werden. Steht etwas anderes da, hat SIE es geschrieben —
+   dann bleibt es (Sorge Franz 09.09.: sie hat Wörter hochgeladen). */
+function ausDemVorrat(inv, ihreBedeutung) {
+  if (!inv) return false
+  const kur = kuratiert.get(norm(wortVon(inv)))
+  const moeglich = [kur?.en, inv.ko, inv.bsp_en, inv.en && inv.ko ? `${inv.en} (${inv.ko})` : null]
+    .filter(Boolean)
+    .map((s) => norm(s))
+  return moeglich.includes(norm(ihreBedeutung))
+}
 
 function dateiSchreiben() {
   if (TROCKEN) return
   writeFileSync(DATEI, JSON.stringify(datei, null, 1) + '\n')
 }
 
+/* Stichwörter der Liste aufräumen. Läuft VOR allem anderen, denn
+   auch der Bibliotheks-Schritt vergleicht gegen diese Wörter. */
+function stichwoerterRaeumen() {
+  let ausgeblendet = 0
+  let geraeumt = 0
+  for (const e of datei) {
+    const r = e.bsp ? raeumeStichwort(e.de) : null
+    if (!r) {
+      if (!e.aus) {
+        e.aus = true
+        ausgeblendet++
+      }
+      continue
+    }
+    if (e.aus) delete e.aus
+    if (r.wort !== e.de) {
+      console.log(`  aufgeräumt: „${e.de}" -> „${r.wort}"`)
+      e.de = r.wort
+      geraeumt++
+    }
+    if (r.numerus && !e.numerus) e.numerus = r.numerus
+    if (r.reflexiv && !e.reflexiv) e.reflexiv = true
+  }
+  if (geraeumt || ausgeblendet)
+    console.log(`Stichwörter aufgeräumt: ${geraeumt} · endgültig ausgeblendet: ${ausgeblendet}`)
+  if (geraeumt) dateiSchreiben()
+  return { geraeumt, ausgeblendet }
+}
+
 /* ---------- Schritt 1: Die Goethe-Datei ---------- */
 async function dateiAnreichern() {
   console.log(`\n=== Schritt 1: Goethe-Datei (Ziel ${ANZAHL} angereicherte Wörter) ===`)
 
-  /* Unbrauchbare Reste der Quellenliste dauerhaft ausblenden */
-  let ausgeblendet = 0
-  for (const e of datei) {
-    const schrott = kaputterEintrag(e.de) || !e.bsp
-    if (schrott && !e.aus) {
-      e.aus = true
-      ausgeblendet++
-    }
-  }
-  if (ausgeblendet) console.log(`Unbrauchbare Einträge ausgeblendet: ${ausgeblendet}`)
 
   const kandidaten = datei
     .filter((e) => !e.aus && !FUNKTIONSWORT.has(e.id))
@@ -415,6 +499,11 @@ async function dateiAnreichern() {
     id: e.id,
     wort: wortVon(e),
     pos: e.artikel ? 'noun' : e.konj ? 'verb' : '',
+    /* Vermerk aus dem aufgeräumten Stichwort: nur Singular, nur
+       Plural, reflexiv — das Modell soll es wissen, nicht raten */
+    vermerk: [e.numerus === 'sg' ? 'singular only' : '', e.numerus === 'pl' ? 'plural only' : '', e.reflexiv ? 'reflexive' : '']
+      .filter(Boolean)
+      .join(', '),
     satz: e.bsp || '',
     koAlt: e.ko || '',
     fest: false /* die Listen-Bedeutung ist nicht ihre — darf ersetzt werden */,
@@ -474,9 +563,25 @@ async function bestandAnreichern() {
   }
   console.log(`Wörter: ${woerter.length}`)
 
+  const nachWort = dateiNachWort()
   const offen = []
+  let geraeumt = 0
   for (const w of woerter) {
-    const inv = dateiNachWort.get(norm(w.ko))
+    /* Trägt ihr Wort selbst noch einen Listen-Vermerk („das Wasser
+       (Sg.)"), wird er entfernt — sonst müsste sie ihn abtippen und
+       die Dublettensperre gegen den Vorrat greift nicht mehr */
+    const geraeumtesWort = raeumeStichwort(w.ko.replace(/^(der|die|das)\s+/i, ''))
+    if (geraeumtesWort) {
+      const artikel = (w.ko.match(/^(der|die|das)\s+/i) || [''])[0]
+      const neuesWort = norm(artikel + geraeumtesWort.wort)
+      if (neuesWort !== norm(w.ko)) {
+        console.log(`  ${TROCKEN ? '[trocken] ' : ''}Wort aufgeräumt: „${w.ko}" -> „${neuesWort}"`)
+        await patche('words', `id=eq.${w.id}`, { ko: neuesWort })
+        w.ko = neuesWort
+        geraeumt++
+      }
+    }
+    const inv = nachWort.get(norm(w.ko))
     const hand = handFelder(w)
     const neu = (w.anreicherung ?? 0) < METHODE
     if (!neu && w.info && w.pos) continue
@@ -486,9 +591,11 @@ async function bestandAnreichern() {
       pos: w.pos || (inv?.artikel ? 'noun' : inv?.konj ? 'verb' : ''),
       satz: w.ex || inv?.bsp || '',
       koAlt: w.en || '',
-      /* Steht das Wort nicht in der Goethe-Liste, hat sie es selbst
-         eingetragen — dann ist die Bedeutung ihre und bleibt */
-      fest: !inv || hand.includes('en'),
+      /* Ihre Bedeutung bleibt, wenn das Wort gar nicht in der Liste
+         steht, wenn sie das Feld von Hand geändert hat, oder wenn
+         ihre Bedeutung nicht die des Vorrats ist (dann hat sie sie
+         selbst geschrieben) */
+      fest: !inv || hand.includes('en') || !ausDemVorrat(inv, w.en),
       plural: '',
       konj: '',
       vorhanden: w,
@@ -497,7 +604,9 @@ async function bestandAnreichern() {
       inv,
     })
   }
-  console.log(`Wörter, die das Modell braucht: ${offen.length}`)
+  if (geraeumt) console.log(`Wörter mit Listen-Vermerk aufgeräumt: ${geraeumt}`)
+  const eigene = offen.filter((e) => e.fest).length
+  console.log(`Wörter, die das Modell braucht: ${offen.length} · davon mit EIGENER Bedeutung (bleibt unangetastet): ${eigene}`)
   if (PROBE) offen.splice(5)
   if (!offen.length) return
 
@@ -556,8 +665,12 @@ const koSinne = (s) => {
 async function familienBilden() {
   console.log('\n=== Schritt 3: Bedeutungsfamilien + Nuancen ===')
   const woerter = await hole(`words?profile=eq.${PROFIL}&select=id,ko,en,pos,ex,nuance,familie,hand`)
+  /* Wörter, die schon bei ihr liegen, kommen aus der Bibliothek —
+     sonst stünde dasselbe Wort zweimal in einer Gruppe und bildete
+     eine „Familie" mit sich selbst (Fund im Probelauf 09.09.) */
+  const inBibliothek = new Set(woerter.map((w) => norm(w.ko)))
   const ausDatei = datei
-    .filter((e) => !e.aus && (e.anr ?? 0) >= METHODE)
+    .filter((e) => !e.aus && (e.anr ?? 0) >= METHODE && !inBibliothek.has(norm(wortVon(e))))
     .map((e) => ({
       key: e.id,
       quelle: 'datei',
@@ -609,6 +722,7 @@ async function familienBilden() {
     'Several German words in a Korean learner\'s deck share a gloss, so they look identical in her app. Input: groups, each line "groupId | german | meaning | example sentence".',
     'For EACH group decide: is this a real MEANING FAMILY — words a beginner reasonably treats as the same meaning (sprechen/reden "to talk", bekommen/erhalten "to receive", machen/tun "to do")? Then "familie": true. If they merely share a word in the gloss but mean different things (die Bank "bench" vs "bank"), "familie": false.',
     'Answer false as well whenever the words differ in something the learner MUST get right and would stop noticing if the app accepted either one: pointing words that differ by distance or speaker (hier/da/dort, dieser/jener), direction (hingehen vs herkommen, bringen vs holen), opposites of any kind, and pairs where one asks a question and the other states an amount. Word class alone (verb vs its noun, arbeiten/die Arbeit) does NOT make them different — those stay a family.',
+    'Male/female pairs of the SAME role (der Arzt / die Ärztin, der Schüler / die Schülerin, der Sänger / die Sängerin) ARE always a family — she recognised the meaning, and the -in form is practised on the typing card. Be consistent: treat every such pair the same way.',
     'And for EACH word write a short DISTINGUISHING note in KOREAN (max 60 characters) that says what makes THIS word different from the others in its group — usage, register, nuance, typical context. Example: sprechen -> "격식 있는 말하기, 언어를 구사할 때"; reden -> "일상 대화, 수다에 가까움".',
     'Return ONLY a JSON array: [{"groupId":"...","familie":true|false,"woerter":[{"wort":"...","nuance":"..."}]}] — one object per group, every word included, notes within a group must differ.',
   ].join('\n')
@@ -682,6 +796,9 @@ function bericht() {
 }
 
 /* ---------- Hauptlauf ---------- */
+/* Immer zuerst: die Stichwörter der Liste aufräumen */
+stichwoerterRaeumen()
+
 if (NUR_NUANCEN) {
   await familienBilden()
 } else if (NUR_DATEI) {

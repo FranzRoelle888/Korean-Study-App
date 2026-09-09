@@ -456,11 +456,27 @@ zeigt), fehlen als 결석하다.
 - **Plural und Konjugation** ergänzt und repariert der Lauf nur in
   der DATEI (dort sind sie im Ritual sichtbar). In ihrer Bibliothek
   bleibt `fill-extras.mjs` zuständig — keine doppelte Zuständigkeit.
-- **Unbrauchbare Listenreste** („Feier-", „(an-)/(aus)ziehen") werden
-  mit `aus: true` dauerhaft ausgeblendet.
+- **Stichwörter aufräumen statt wegwerfen** (Fund im Probelauf 09.09.):
+  Die Liste trägt grammatische Vermerke IM Stichwort — „Wasser (Sg.)",
+  „Eltern (pl.)", „(sich) freuen", „gern(e)", „(E-)Mail", „(Fahr)Rad".
+  Bisher standen die mit auf ihrer Karte, sie hätte „das Wasser (Sg.)"
+  abtippen müssen. Der Lauf räumt sie auf (111 Wörter) und merkt sich
+  `numerus` und `reflexiv`. Nur echte Reste — Wortstämme wie „all-",
+  Konjugationsformen wie „hat gedankt" oder „fährt (ab)",
+  Schrägstrich-Varianten — bekommen `aus: true` (81 Stück).
+  Ihre Bibliothekswörter werden genauso aufgeräumt, sonst greift die
+  Dublettensperre gegen den Vorrat nicht mehr.
 - **Familien** wie bei Franz, zusätzlich über die koreanische Seite
   der Bedeutung gruppiert.
-- **Hand-Schutz**: ein Wort, das nicht in der Goethe-Liste steht, hat
-  sie selbst eingetragen — seine Bedeutung wird nie überschrieben.
+- **Hand-Schutz, genauer als bei Franz**: Ihre Bedeutung bleibt, wenn
+  das Wort nicht in der Liste steht, wenn sie das Feld von Hand
+  geändert hat, ODER wenn ihre Bedeutung nicht die ist, die der Vorrat
+  geliefert hätte. Letzteres erkennt hochgeladene und selbst
+  geschriebene Bedeutungen zuverlässig (Sorge Franz 09.09.).
+- **Ein Wort, das schon in ihrer Bibliothek liegt, kommt im
+  Familien-Schritt NICHT zusätzlich aus der Datei** — sonst bildete es
+  eine Familie mit sich selbst (Fund im Probelauf: „haben" zweimal).
+- **Männlich/weiblich** (der Arzt / die Ärztin) ist immer eine Familie,
+  einheitlich für alle solchen Paare.
 - Nicht gebaut (Franz 09.09., „zu viel auf einmal"): Wortbausteine
   für Komposita als Gegenstück zu den Hanja-Chips.
