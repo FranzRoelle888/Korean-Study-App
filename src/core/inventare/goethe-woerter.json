@@ -117,7 +117,8 @@
   "bsp": "Alles Gute!",
   "bsp_en": "All the best!",
   "ko": "모든",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-11",
@@ -129,7 +130,9 @@
   "bsp": "Er kommt allein.",
   "bsp_en": "He comes alone.",
   "ko": "혼자",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "adv",
+  "anr": 2
  },
  {
   "id": "g-12",
@@ -213,7 +216,8 @@
   "bsp": "Willst du diese Jacke?",
   "bsp_en": "Do you want this jacket?",
   "ko": "다른",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-19",
@@ -301,7 +305,7 @@
  },
  {
   "id": "g-26",
-  "de": "(sich) anmelden",
+  "de": "sich anmelden",
   "artikel": null,
   "plural": null,
   "konj": null,
@@ -309,7 +313,8 @@
   "bsp": "Wo kann ich mich anmelden?",
   "bsp_en": "Where can I register?",
   "ko": "등록하다",
-  "extras_auto": true
+  "extras_auto": true,
+  "reflexiv": true
  },
  {
   "id": "g-27",
@@ -445,7 +450,7 @@
  },
  {
   "id": "g-38",
-  "de": "(sich) anziehen",
+  "de": "sich anziehen",
   "artikel": null,
   "plural": null,
   "konj": null,
@@ -453,7 +458,8 @@
   "bsp": "Ich muss mich noch anziehen.",
   "bsp_en": "I still need to get dressed.",
   "ko": "옷을 입다",
-  "extras_auto": true
+  "extras_auto": true,
+  "reflexiv": true
  },
  {
   "id": "g-39",
@@ -501,19 +507,24 @@
   "bsp": "Wo arbeiten Sie?",
   "bsp_en": "Where do you work?",
   "ko": "일하다",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "verb",
+  "anr": 2
  },
  {
   "id": "g-43",
   "de": "Arbeit",
   "artikel": "die",
-  "plural": "-en",
+  "plural": "die Arbeiten",
   "konj": null,
   "stufe": "A1",
   "bsp": "Mein Bruder sucht Arbeit.",
   "bsp_en": "My brother is looking for work.",
   "ko": "일",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "noun",
+  "info": "**사용:** Arbeit suchen (일을 찾다), zur Arbeit gehen (직장에 가다)\n**비슷:** Job(일자리)과 비슷하나 Arbeit는 '노동/일' 자체를 의미",
+  "anr": 2
  },
  {
   "id": "g-44",
@@ -573,7 +584,9 @@
   "bsp": "Ich bin auch Spanier.",
   "bsp_en": "I am also Spanish.",
   "ko": "또한",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "adv",
+  "anr": 2
  },
  {
   "id": "g-49",
@@ -627,13 +640,15 @@
   "id": "g-53",
   "de": "Auge",
   "artikel": "das",
-  "plural": "-n",
+  "plural": "die Augen",
   "konj": null,
   "stufe": "A1",
   "bsp": "Er hat blaue Augen.",
   "bsp_en": "He has blue eyes.",
   "ko": "눈",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "noun",
+  "anr": 2
  },
  {
   "id": "g-54",
@@ -805,7 +820,7 @@
  },
  {
   "id": "g-68",
-  "de": "(sich) ausziehen",
+  "de": "sich ausziehen",
   "artikel": null,
   "plural": null,
   "konj": null,
@@ -813,19 +828,22 @@
   "bsp": "Zieh die Schuhe aus, bitte!",
   "bsp_en": "Take off your shoes, please!",
   "ko": "벗다",
-  "extras_auto": true
+  "extras_auto": true,
+  "reflexiv": true
  },
  {
   "id": "g-69",
   "de": "Auto",
   "artikel": "das",
-  "plural": "-s",
+  "plural": "die Autos",
   "konj": null,
   "stufe": "A1",
   "bsp": "Er kommt mit dem Auto.",
   "bsp_en": "He comes by car.",
   "ko": "자동차",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "noun",
+  "anr": 2
  },
  {
   "id": "g-70",
@@ -867,13 +885,15 @@
   "id": "g-73",
   "de": "Baby",
   "artikel": "das",
-  "plural": "-s",
+  "plural": "die Babys",
   "konj": null,
   "stufe": "A1",
   "bsp": "Mein Kind ist noch ein Baby.",
   "bsp_en": "My child is still a baby.",
   "ko": "아기",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "noun",
+  "anr": 2
  },
  {
   "id": "g-74",
@@ -1089,7 +1109,9 @@
   "bsp": "Beide Eltern arbeiten.",
   "bsp_en": "Both parents work.",
   "ko": "둘 다",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "other",
+  "anr": 2
  },
  {
   "id": "g-92",
@@ -1125,7 +1147,8 @@
   "bsp": "Viele meiner Verwandten, z. B. meine beiden Brüder, arbeiten auch hier.",
   "bsp_en": "Many of my relatives, e.g., my two brothers, also work here.",
   "ko": "예를 들어",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-95",
@@ -1149,7 +1172,8 @@
   "bsp": "Ein Bekannter von mir heißt Klaus.",
   "bsp_en": "A friend of mine is named Klaus.",
   "ko": "지인",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-97",
@@ -1221,7 +1245,9 @@
   "bsp": "Es geht mir schon besser.",
   "bsp_en": "I’m already feeling better.",
   "ko": "더 좋은",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "adj",
+  "anr": 2
  },
  {
   "id": "g-103",
@@ -1233,7 +1259,8 @@
   "bsp": "Am besten treffen wir uns morgen.",
   "bsp_en": "It’s best if we meet tomorrow.",
   "ko": "가장 좋은",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-104",
@@ -1365,19 +1392,25 @@
   "bsp": "Eine Tasse Kaffee, bitte!",
   "bsp_en": "A cup of coffee, please!",
   "ko": "부탁합니다",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "other",
+  "info": "**사용:** 부탁하거나 주문할 때 씀: Ein Kaffee, bitte! (커피 한 잔 주세요)\n**사용:** Danke!에 대한 대답으로도 씀: Bitte! (천만에요)",
+  "anr": 2
  },
  {
   "id": "g-115",
   "de": "Bitte",
   "artikel": "die",
-  "plural": "-n",
+  "plural": "die Bitten",
   "konj": null,
   "stufe": "A1",
   "bsp": "Ich habe noch eine Bitte.",
   "bsp_en": "I have one more request.",
   "ko": "부탁",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "noun",
+  "info": "**사용:** die Bitte는 '부탁, 요청'이라는 뜻 (Ich habe eine Bitte - 부탁이 있어요).\n**비슷:** 부사 bitte(제발, ~해주세요)와 형태가 비슷하니 품사 구분 주의.",
+  "anr": 2
  },
  {
   "id": "g-116",
@@ -1408,12 +1441,15 @@
   "de": "bleiben",
   "artikel": null,
   "plural": null,
-  "konj": null,
+  "konj": "bleibt, ist geblieben",
   "stufe": "A1",
   "bsp": "Ich bleibe heute zu Hause.",
   "bsp_en": "I am staying home today.",
   "ko": "머무르다",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "verb",
+  "info": "**사용:** zu Hause bleiben(집에 머물다)처럼 장소 표현과 자주 씁니다.\n**주의:** 이동·상태변화 동사라 완료형은 haben이 아니라 sein을 씁니다.",
+  "anr": 2
  },
  {
   "id": "g-119",
@@ -1480,12 +1516,16 @@
   "de": "brauchen",
   "artikel": null,
   "plural": null,
-  "konj": null,
+  "konj": "braucht, hat gebraucht",
   "stufe": "A1",
   "bsp": "Brauchst du die Zeitung noch?",
   "bsp_en": "Do you still need the newspaper?",
   "ko": "필요하다",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "verb",
+  "kasus": "etw. brauchen (A)",
+  "info": "**사용:** Brauchst du...? (~이 필요해?)는 일상 대화에서 자주 쓰입니다.\n**참고:** brauchen + zu + 동사원형으로 '~할 필요가 있다'를 표현하기도 합니다.",
+  "anr": 2
  },
  {
   "id": "g-125",
@@ -1528,12 +1568,16 @@
   "de": "bringen",
   "artikel": null,
   "plural": null,
-  "konj": null,
+  "konj": "bringt, hat gebracht",
   "stufe": "A1",
   "bsp": "Bringen Sie mir bitte noch einen Kaffee!",
   "bsp_en": "Please bring me another coffee!",
   "ko": "가져다주다",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "verb",
+  "kasus": "jdm. etw. bringen (D + A)",
+  "info": "**격:** 누구에게 무엇을 가져다주는지 3격+4격으로 표현: mir einen Kaffee bringen.\n**존댓말:** Bringen Sie mir bitte...!는 정중한 요청 표현입니다.",
+  "anr": 2
  },
  {
   "id": "g-129",
@@ -1563,13 +1607,15 @@
   "id": "g-131",
   "de": "Bruder",
   "artikel": "der",
-  "plural": "-ü",
+  "plural": "die Brüder",
   "konj": null,
   "stufe": "A1",
   "bsp": "Sein Bruder arbeitet auch hier.",
   "bsp_en": "His brother also works here.",
   "ko": "형제",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "noun",
+  "anr": 2
  },
  {
   "id": "g-132",
@@ -1677,7 +1723,8 @@
   "bsp": "Von Mainz nach Frankfurt sind es circa fünfzig Kilometer.",
   "bsp_en": "From Mainz to Frankfurt is approximately fifty kilometers.",
   "ko": "대략",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-141",
@@ -1701,7 +1748,10 @@
   "bsp": "Da hinten ist er ja.",
   "bsp_en": "There he is over there.",
   "ko": "저기",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "adv",
+  "info": "**사용:** 장소를 가리킬 때 씁니다: Da hinten ist er (저기 뒤에 그가 있다).\n**참고:** 시간적 의미로 '그때'로도 쓰일 수 있어요.",
+  "anr": 2
  },
  {
   "id": "g-143",
@@ -1749,7 +1799,10 @@
   "bsp": "Vielen Dank!",
   "bsp_en": "Many thanks!",
   "ko": "감사",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "noun",
+  "info": "**사용:** Vielen Dank! (정말 감사합니다!) 는 매우 흔한 인사 표현\n**참고:** 보통 단수로만 사용되며 복수형은 거의 쓰이지 않음",
+  "anr": 2
  },
  {
   "id": "g-147",
@@ -1761,7 +1814,9 @@
   "bsp": "Soll ich Ihnen helfen? - Nein, danke!",
   "bsp_en": "Should I help you? - No, thank you!",
   "ko": "고맙습니다",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "other",
+  "anr": 2
  },
  {
   "id": "g-148",
@@ -1773,7 +1828,10 @@
   "bsp": "Ich muss noch schnell zur Post, dann komme ich.",
   "bsp_en": "I need to quickly go to the post office, then I'll come.",
   "ko": "그 다음에",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "adv",
+  "info": "**사용:** dann은 시간 순서나 결과를 나타냄 (dann komme ich - 그 다음에 갈게요).\n**비슷:** jetzt(지금)와 대조되는 시간 표현.",
+  "anr": 2
  },
  {
   "id": "g-149",
@@ -1809,7 +1867,8 @@
   "bsp": "Ist das dein Auto?",
   "bsp_en": "Is that your car?",
   "ko": "너의",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-152",
@@ -1857,7 +1916,8 @@
   "bsp": "Ich nehme lieber diesen Kuchen.",
   "bsp_en": "I’d prefer to take this cake.",
   "ko": "이",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-156",
@@ -1929,7 +1989,10 @@
   "bsp": "Deine Tasche kannst du dorthin stellen.",
   "bsp_en": "You can place your bag over there.",
   "ko": "거기, 저기",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "adv",
+  "info": "**사용:** dort는 위치를 나타내며, dorthin(그쪽으로), dorther(그곳에서부터)로 방향을 표현합니다.\n**비슷:** hier(여기) - dort(거기/저기) - da(거기)의 차이를 기억하세요.",
+  "anr": 2
  },
  {
   "id": "g-162",
@@ -2013,7 +2076,11 @@
   "bsp": "Sie dürfen hier nicht rauchen.",
   "bsp_en": "You’re not allowed to smoke here.",
   "ko": "해도 되다",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "verb",
+  "nuance": "화법조동사, 항상 동사원형과 함께 씀",
+  "info": "**사용:** Sie dürfen hier nicht rauchen = 여기서 담배 피우시면 안 돼요 (허가/금지 표현).\n**분리:** 문장 끝에 본동사(원형)가 오는 구조: Darf ich hier parken?\n**비슷:** können(할 수 있다, 능력)과 혼동하지 마세요.",
+  "anr": 2
  },
  {
   "id": "g-169",
@@ -2029,7 +2096,7 @@
  },
  {
   "id": "g-170",
-  "de": "(sich) duschen",
+  "de": "sich duschen",
   "artikel": null,
   "plural": null,
   "konj": null,
@@ -2037,7 +2104,9 @@
   "bsp": "Ich bade nicht so gern, ich dusche lieber.",
   "bsp_en": "I don’t like bathing much; I prefer showering.",
   "ko": "샤워하다",
-  "extras_auto": true
+  "extras_auto": true,
+  "reflexiv": true,
+  "aus": true
  },
  {
   "id": "g-171",
@@ -2109,7 +2178,8 @@
   "bsp": "Ich nehme ein Bier. Willst du auch eins?",
   "bsp_en": "I'll have a beer. Do you want one too?",
   "ko": "하나의",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-177",
@@ -2121,7 +2191,9 @@
   "bsp": "Die Prüfung ist ganz einfach.",
   "bsp_en": "The exam is very simple.",
   "ko": "쉬운",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "adj",
+  "anr": 2
  },
  {
   "id": "g-178",
@@ -2157,7 +2229,11 @@
   "bsp": "Darf ich Sie zu einem Kaffee einladen?",
   "bsp_en": "May I invite you for a coffee?",
   "ko": "초대하다",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "verb",
+  "kasus": "jdn. einladen (A) + zu D",
+  "info": "**분리:** 분리동사예요: Ich lade dich ein (내가 너를 초대할게).\n**격:** jemanden zum Essen einladen (누군가를 식사에 초대하다).",
+  "anr": 2
  },
  {
   "id": "g-181",
@@ -2181,7 +2257,9 @@
   "bsp": "Diese Prüfung mache ich nicht noch einmal.",
   "bsp_en": "I won't take this exam again.",
   "ko": "한 번",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "adv",
+  "anr": 2
  },
  {
   "id": "g-183",
@@ -2221,7 +2299,7 @@
  },
  {
   "id": "g-186",
-  "de": "Eltern (pl.)",
+  "de": "Eltern",
   "artikel": "die",
   "plural": null,
   "konj": null,
@@ -2229,7 +2307,8 @@
   "bsp": "Meine Eltern leben in Spanien.",
   "bsp_en": "My parents live in Spain.",
   "ko": "부모",
-  "extras_auto": true
+  "extras_auto": true,
+  "numerus": "pl"
  },
  {
   "id": "g-187",
@@ -2283,13 +2362,16 @@
   "id": "g-191",
   "de": "Ende",
   "artikel": "das",
-  "plural": "-n",
+  "plural": "die Enden",
   "konj": null,
   "stufe": "A1",
   "bsp": "Sie wohnt am Ende der Straße.",
   "bsp_en": "She lives at the end of the street.",
   "ko": "끝",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "noun",
+  "info": "**사용:** am Ende der Straße (길 끝에) 처럼 장소나 시간의 끝을 나타냄\n**참고:** zu Ende sein (끝나다) 같은 표현에서 자주 사용됨",
+  "anr": 2
  },
  {
   "id": "g-192",
@@ -2385,7 +2467,11 @@
   "bsp": "Wir müssen euch etwas erzählen!",
   "bsp_en": "We need to tell you something!",
   "ko": "이야기하다",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "verb",
+  "kasus": "jdm. etw. erzählen (D + A)",
+  "info": "**격:** 누구에게 무엇을 이야기하는지 3격+4격으로 표현: euch etwas erzählen.\n**비슷:** sagen(간단히 말하다)보다 erzählen은 이야기·경험을 들려줄 때 씁니다.",
+  "anr": 2
  },
  {
   "id": "g-200",
@@ -2409,7 +2495,11 @@
   "bsp": "Was gibt es zu essen?",
   "bsp_en": "What is there to eat?",
   "ko": "먹다",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "verb",
+  "kasus": "etw. essen (A)",
+  "info": "**격:** 먹는 대상은 4격: Ich esse einen Apfel (사과를 먹어요).\n**주의:** isst는 철자에 유의하세요 (isst, 어간 ss+t).",
+  "anr": 2
  },
  {
   "id": "g-202",
@@ -2421,7 +2511,10 @@
   "bsp": "Das Essen ist heute sehr gut.",
   "bsp_en": "The food is very good today.",
   "ko": "음식",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "noun",
+  "info": "**참고:** essen(먹다) 동사에서 나온 명사로, 보통 단수로만 쓰여 복수형이 거의 없습니다.\n**사용:** das Essen kochen(음식을 요리하다), das Essen ist fertig(식사가 준비됐다) 등으로 자주 씁니다.",
+  "anr": 2
  },
  {
   "id": "g-203",
@@ -2499,13 +2592,15 @@
   "id": "g-209",
   "de": "Familie",
   "artikel": "die",
-  "plural": "-n",
+  "plural": "die Familien",
   "konj": null,
   "stufe": "A1",
   "bsp": "Meine Familie lebt in Spanien.",
   "bsp_en": "My family lives in Spain.",
   "ko": "가족",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "noun",
+  "anr": 2
  },
  {
   "id": "g-210",
@@ -2564,7 +2659,8 @@
   "stufe": "A1",
   "bsp": "z. B. Feierabend, Feiertag",
   "bsp_en": "For example, end of work, public holiday",
-  "ko": null
+  "ko": null,
+  "aus": true
  },
  {
   "id": "g-215",
@@ -2612,7 +2708,10 @@
   "bsp": "Wollen wir heute Abend mal fernsehen?",
   "bsp_en": "Shall we watch TV tonight?",
   "ko": "텔레비전을 보다",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "verb",
+  "info": "**분리:** fern + sehen 분리동사, Ich sehe fern. (나는 텔레비전을 본다)\n**격:** 목적어 없이 쓰는 자동사",
+  "anr": 2
  },
  {
   "id": "g-219",
@@ -2624,7 +2723,9 @@
   "bsp": "Bist du fertig?",
   "bsp_en": "Are you ready?",
   "ko": "다 끝난",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "adj",
+  "anr": 2
  },
  {
   "id": "g-220",
@@ -2654,13 +2755,15 @@
   "id": "g-222",
   "de": "Film",
   "artikel": "der",
-  "plural": "-e",
+  "plural": "die Filme",
   "konj": null,
   "stufe": "A1",
   "bsp": "Ich möchte gern diesen Film sehen.",
   "bsp_en": "I would like to see this film.",
   "ko": "영화",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "noun",
+  "anr": 2
  },
  {
   "id": "g-223",
@@ -2672,7 +2775,11 @@
   "bsp": "Wir müssen den Schlüssel finden.",
   "bsp_en": "We need to find the key.",
   "ko": "찾다",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "verb",
+  "kasus": "etw. finden (A)",
+  "info": "**격:** 목적어는 4격 (etw. finden)\n**사용:** Ich finde das gut. (나는 그게 좋다고 생각해) - 의견 표현에도 사용",
+  "anr": 2
  },
  {
   "id": "g-224",
@@ -2744,7 +2851,8 @@
   "bsp": "Wann fliegst du ab?",
   "bsp_en": "When do you depart?",
   "ko": "출발하다",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-230",
@@ -2816,31 +2924,41 @@
   "bsp": "Er möchte Sie etwas fragen. Wann kommen Sie?",
   "bsp_en": "He would like to ask you something. When are you coming?",
   "ko": "묻다",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "verb",
+  "kasus": "jdn. etw. fragen (A + A)",
+  "info": "**사용:** jdn. etw. fragen (누구에게 무엇을 묻다) - Er fragt Sie etwas (그가 당신에게 뭔가 물어봐요).\n**비슷:** sich fragen = 궁금해하다, 스스로에게 묻다 (다른 뜻)\n**격:** 사람과 사물 둘 다 목적격(A)을 씁니다.",
+  "anr": 2
  },
  {
   "id": "g-236",
   "de": "Frage",
   "artikel": "die",
-  "plural": "-n",
+  "plural": "die Fragen",
   "konj": null,
   "stufe": "A1",
   "bsp": "Ich habe eine Frage.",
   "bsp_en": "I have a question.",
   "ko": "질문",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "noun",
+  "info": "**사용:** eine Frage stellen (질문을 하다), eine Frage haben (질문이 있다)\n**비슷:** Problem(문제)과 혼동하지 말 것, Frage는 '질문'의 의미",
+  "anr": 2
  },
  {
   "id": "g-237",
   "de": "Frau",
   "artikel": "die",
-  "plural": "-en",
+  "plural": "die Frauen",
   "konj": null,
   "stufe": "A1",
   "bsp": "Das ist Frau Becker.",
   "bsp_en": "This is Mrs. Becker.",
   "ko": "여성",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "noun",
+  "info": "**사용:** Frau + 성 (Frau Becker)는 \"~씨/부인\"이라는 뜻으로 씁니다.\n**비슷:** meine Frau처럼 \"아내\"라는 뜻으로도 쓰입니다.",
+  "anr": 2
  },
  {
   "id": "g-238",
@@ -2880,7 +2998,7 @@
  },
  {
   "id": "g-241",
-  "de": "(sich) freuen",
+  "de": "sich freuen",
   "artikel": null,
   "plural": null,
   "konj": null,
@@ -2888,19 +3006,24 @@
   "bsp": "Ich freue mich auf den Urlaub.",
   "bsp_en": "I am looking forward to the vacation.",
   "ko": "기대하다",
-  "extras_auto": true
+  "extras_auto": true,
+  "reflexiv": true,
+  "aus": true
  },
  {
   "id": "g-242",
   "de": "Freund",
   "artikel": "der",
-  "plural": "-e",
+  "plural": "die Freunde",
   "konj": null,
   "stufe": "A1",
   "bsp": "Das ist ein Freund von mir.",
   "bsp_en": "This is a friend of mine.",
   "ko": "친구",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "noun",
+  "info": "**비슷:** 여자 친구는 Freundin, ein guter Freund는 친한 친구/남자친구를 뜻할 수도 있습니다.\n**사용:** ein Freund von mir처럼 소유 표현에 자주 씁니다.",
+  "anr": 2
  },
  {
   "id": "g-243",
@@ -3020,7 +3143,11 @@
   "bsp": "Kannst du mir bitte deinen Kugelschreiber geben?",
   "bsp_en": "Can you please give me your pen?",
   "ko": "주다",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "verb",
+  "kasus": "jdm. etw. geben (D + A)",
+  "info": "**격:** jdm. etw. geben (D + A): Ich gebe dir das Buch (내가 너에게 책을 줄게).\n**사용:** es gibt + A (~가 있다) 구문도 자주 써요: Es gibt viele Leute (사람들이 많아요).",
+  "anr": 2
  },
  {
   "id": "g-253",
@@ -3075,12 +3202,17 @@
   "de": "gefallen",
   "artikel": null,
   "plural": null,
-  "konj": "gefällt, hat gefalle",
+  "konj": "gefällt, hat gefallen",
   "stufe": "A1",
   "bsp": "Das gefällt mir.",
   "bsp_en": "I like that.",
   "ko": "마음에 들다",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "verb",
+  "kasus": "jdm. gefallen (D)",
+  "nuance": "mögen과 문장 구조가 반대임",
+  "info": "**격:** 마음에 드는 사람은 3격: Das Kleid gefällt mir (그 원피스가 마음에 들어요).\n**비슷:** mögen은 'Ich mag'처럼 주어가 좋아하는 사람, gefallen은 'Das gefällt mir'처럼 대상이 주어입니다.",
+  "anr": 2
  },
  {
   "id": "g-258",
@@ -3104,7 +3236,10 @@
   "bsp": "Ich weiß nicht, wie das geht.",
   "bsp_en": "I don’t know how it works.",
   "ko": "가다",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "verb",
+  "info": "**사용:** Wie geht's? (어떻게 지내요?) 처럼 안부 인사에도 쓰여요.\n**주의:** 이동의 뜻 외에 Das geht (그건 돼요) 처럼 '작동하다, 가능하다'는 뜻도 있어요.\n**격:** 보통 목적어 없이 쓰는 자동사예요: Ich gehe nach Hause (집에 가요).",
+  "anr": 2
  },
  {
   "id": "g-260",
@@ -3116,7 +3251,11 @@
   "bsp": "Wem gehört das?",
   "bsp_en": "Whose is this?",
   "ko": "속하다",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "verb",
+  "kasus": "jdm. gehören (D)",
+  "info": "**격:** 소유자는 3격(Dative)으로 씁니다: Das Buch gehört mir (그 책은 내 것이다).\n**주의:** gehören(속하다)과 haben(가지다)을 헷갈리지 마세요.",
+  "anr": 2
  },
  {
   "id": "g-261",
@@ -3128,7 +3267,10 @@
   "bsp": "Hast du noch Geld?",
   "bsp_en": "Do you still have money?",
   "ko": "돈",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "noun",
+  "info": "**참고:** Geld는 보통 단수로만 쓰고 복수형은 거의 사용하지 않음\n**사용:** Geld verdienen (돈을 벌다), Geld ausgeben (돈을 쓰다)",
+  "anr": 2
  },
  {
   "id": "g-262",
@@ -3164,11 +3306,14 @@
   "bsp": "Da kommt er ja gerade.",
   "bsp_en": "There he comes just now.",
   "ko": "방금",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "adv",
+  "info": "**사용:** \"지금 막\"이라는 뜻으로 자주 씁니다 (Er kommt gerade).\n**비슷:** 형용사로는 \"곧은, 똑바른\"이라는 뜻도 있습니다 (eine gerade Linie).",
+  "anr": 2
  },
  {
   "id": "g-265",
-  "de": "gern(e)",
+  "de": "gern",
   "artikel": null,
   "plural": null,
   "konj": null,
@@ -3176,7 +3321,8 @@
   "bsp": "Ich gehe gerne einkaufen.",
   "bsp_en": "I like to go shopping.",
   "ko": "기꺼이",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-266",
@@ -3204,7 +3350,7 @@
  },
  {
   "id": "g-268",
-  "de": "Geschwister (pl.)",
+  "de": "Geschwister",
   "artikel": "die",
   "plural": null,
   "konj": null,
@@ -3212,7 +3358,8 @@
   "bsp": "Ich habe leider keine Geschwister.",
   "bsp_en": "Unfortunately, I have no siblings.",
   "ko": "형제자매",
-  "extras_auto": true
+  "extras_auto": true,
+  "numerus": "pl"
  },
  {
   "id": "g-269",
@@ -3279,12 +3426,16 @@
   "de": "gewinnen",
   "artikel": null,
   "plural": null,
-  "konj": "gewinnt, hat gewonne",
+  "konj": "gewinnt, hat gewonnen",
   "stufe": "A1",
   "bsp": "Wer gewinnt das Spiel?",
   "bsp_en": "Who wins the game?",
   "ko": "이기다",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "verb",
+  "kasus": "etw. gewinnen (A)",
+  "info": "**격:** 이기는 대상(경기 등)은 4격: Wer gewinnt das Spiel? (누가 경기를 이기나요?)\n**사용:** 상대방을 이길 때는 gegen jdn. gewinnen (Er gewinnt gegen mich).",
+  "anr": 2
  },
  {
   "id": "g-275",
@@ -3308,7 +3459,12 @@
   "bsp": "Sie können mir glauben, es ist so.",
   "bsp_en": "You can believe me, it is so.",
   "ko": "믿다",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "verb",
+  "kasus": "jdm. glauben (D) / an etw. glauben (A)",
+  "nuance": "사람을 믿을 땐 3격, 대상을 믿을 땐 an+4격",
+  "info": "**격:** 사람을 믿을 때는 3격을 씁니다: Ich glaube dir (난 널 믿어).\n**사용:** 어떤 것/신념을 믿을 때는 an + 4격: Ich glaube an Gott (난 신을 믿어).",
+  "anr": 2
  },
  {
   "id": "g-277",
@@ -3320,7 +3476,10 @@
   "bsp": "Das ist mir gleich.",
   "bsp_en": "It doesn’t matter to me.",
   "ko": "같은",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "adj",
+  "info": "**사용:** Das ist mir gleich = 나는 상관없어, 아무래도 좋아.\n**참고:** gleich는 시간부사로 '곧'이라는 뜻으로도 자주 쓰입니다 (Ich komme gleich).",
+  "anr": 2
  },
  {
   "id": "g-278",
@@ -3372,7 +3531,7 @@
  },
  {
   "id": "g-282",
-  "de": "Grad (Celsius)",
+  "de": "Grad",
   "artikel": null,
   "plural": null,
   "konj": null,
@@ -3387,12 +3546,17 @@
   "de": "gratulieren",
   "artikel": null,
   "plural": null,
-  "konj": "gratuliert, hat g",
+  "konj": "gratuliert, hat gratuliert",
   "stufe": "A1",
   "bsp": "Ich gratuliere dir!",
   "bsp_en": "I congratulate you!",
   "ko": "축하하다",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "verb",
+  "kasus": "jdm. gratulieren (D)",
+  "nuance": "3격 지배 동사, 목적어를 4격으로 착각하기 쉬움",
+  "info": "**격:** Ich gratuliere dir (너에게 축하한다) - 3격을 씁니다.\n**사용:** zum Geburtstag gratulieren (생일을 축하하다)처럼 zu와 함께 자주 사용돼요.",
+  "anr": 2
  },
  {
   "id": "g-284",
@@ -3404,7 +3568,11 @@
   "bsp": "Heute grillen wir im Garten.",
   "bsp_en": "Today we are grilling in the garden.",
   "ko": "바비큐하다",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "verb",
+  "kasus": "etw. grillen (A)",
+  "info": "**사용:** Fleisch grillen (고기를 굽다)처럼 목적어와 함께, 또는 목적어 없이도 씁니다.\n**참고:** 여름철 정원 파티(Gartenparty)와 관련된 표현으로 자주 등장해요.",
+  "anr": 2
  },
  {
   "id": "g-285",
@@ -3432,7 +3600,7 @@
  },
  {
   "id": "g-287",
-  "de": "Großeltern (pl.)",
+  "de": "Großeltern",
   "artikel": "die",
   "plural": null,
   "konj": null,
@@ -3440,7 +3608,8 @@
   "bsp": "Meine Großeltern leben in Japan.",
   "bsp_en": "My grandparents live in Japan.",
   "ko": "조부모",
-  "extras_auto": true
+  "extras_auto": true,
+  "numerus": "pl"
  },
  {
   "id": "g-288",
@@ -3524,7 +3693,10 @@
   "bsp": "Das finde ich gut.",
   "bsp_en": "I think that’s good.",
   "ko": "좋은",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "adj",
+  "info": "**참고:** 비교급/최상급: gut - besser - am besten (불규칙 변화).\n**사용:** Das finde ich gut (나는 그것이 좋다고 생각한다)처럼 의견을 말할 때 자주 씁니다.",
+  "anr": 2
  },
  {
   "id": "g-295",
@@ -3548,7 +3720,11 @@
   "bsp": "Ich habe ein neues Auto.",
   "bsp_en": "I have a new car.",
   "ko": "가지다",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "verb",
+  "kasus": "etw. haben (A)",
+  "info": "**격:** haben은 항상 4격(A) 목적어를 가져요: Ich habe einen Bruder (저는 남동생이 있어요).\n**참고:** 대부분의 동사의 완료형을 만들 때 조동사로 쓰여요.",
+  "anr": 2
  },
  {
   "id": "g-297",
@@ -3596,7 +3772,9 @@
   "bsp": "Hallo Inge! Wie geht’s?",
   "bsp_en": "Hello Inge! How are you?",
   "ko": "안녕",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "other",
+  "anr": 2
  },
  {
   "id": "g-301",
@@ -3608,7 +3786,11 @@
   "bsp": "Dieser Zug hält nicht in Rüdesheim.",
   "bsp_en": "This train does not stop in Rüdesheim.",
   "ko": "정차하다",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "verb",
+  "kasus": "etw. halten (A)",
+  "info": "**사용:** 기차나 버스가 멈출 때 씁니다: Der Zug hält hier (기차가 여기서 정차한다).\n**분리:** 불규칙 동사로 du hältst, er hält처럼 변합니다.",
+  "anr": 2
  },
  {
   "id": "g-302",
@@ -3650,13 +3832,15 @@
   "id": "g-305",
   "de": "Haus",
   "artikel": "das",
-  "plural": "-ä, er",
+  "plural": "die Häuser",
   "konj": null,
   "stufe": "A1",
   "bsp": "In welchem Haus wohnst du?",
   "bsp_en": "In which house do you live?",
   "ko": "집",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "noun",
+  "anr": 2
  },
  {
   "id": "g-306",
@@ -3704,7 +3888,11 @@
   "bsp": "Meine Schwester heiratet einen Japaner.",
   "bsp_en": "My sister is marrying a Japanese person.",
   "ko": "결혼하다",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "verb",
+  "kasus": "jdn. heiraten (A)",
+  "nuance": "영어 marry with와 달리 전치사 없이 4격 목적어",
+  "anr": 2
  },
  {
   "id": "g-310",
@@ -3716,7 +3904,9 @@
   "bsp": "Ich heiße Charlotte Meier.",
   "bsp_en": "My name is Charlotte Meier.",
   "ko": "이름이 ~이다",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "verb",
+  "anr": 2
  },
  {
   "id": "g-311",
@@ -3728,7 +3918,10 @@
   "bsp": "Können Sie mir helfen, bitte?",
   "bsp_en": "Can you help me, please?",
   "ko": "돕다",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "verb",
+  "kasus": "jdm. helfen (D)",
+  "anr": 2
  },
  {
   "id": "g-312",
@@ -3758,12 +3951,15 @@
   "id": "g-314",
   "de": "Herr",
   "artikel": "der",
-  "plural": "-en",
+  "plural": "die Herren",
   "konj": null,
   "stufe": "A1",
   "bsp": "Guten Tag, Herr Sommer!",
   "bsp_en": "Good day, Mr. Sommer!",
-  "ko": null
+  "ko": null,
+  "pos": "noun",
+  "info": "**격:** der Herr는 약변화 명사로 den Herrn, dem Herrn, des Herrn처럼 변합니다.\n**사용:** Herr + 성(姓)으로 남자를 부를 때 씁니다 (Herr Sommer).\n**참고:** 복수형 die Herren은 '신사분들'이라는 뜻으로도 쓰입니다.",
+  "anr": 2
  },
  {
   "id": "g-315",
@@ -3787,7 +3983,9 @@
   "bsp": "Heute ist ein schöner Tag.",
   "bsp_en": "Today is a beautiful day.",
   "ko": "오늘",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "adv",
+  "anr": 2
  },
  {
   "id": "g-317",
@@ -3799,19 +3997,25 @@
   "bsp": "Hier ist 06131-553221, Pamela Linke.",
   "bsp_en": "Here is 06131-553221, Pamela Linke.",
   "ko": "여기",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "adv",
+  "anr": 2
  },
  {
   "id": "g-318",
   "de": "Hilfe",
   "artikel": "die",
-  "plural": null,
+  "plural": "die Hilfen",
   "konj": null,
   "stufe": "A1",
   "bsp": "Hilfe! Bitte helfen Sie mir!",
   "bsp_en": "Help! Please help me!",
   "ko": "도움",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "noun",
+  "nuance": "보통 단수로 사용됨 (구체적 지원책일 때만 복수)",
+  "info": "**사용:** Hilfe! (도와주세요!) 는 긴급 상황에서 자주 쓰는 표현\n**비슷:** 동사 helfen (돕다)과 함께 알아두면 좋음",
+  "anr": 2
  },
  {
   "id": "g-319",
@@ -3871,7 +4075,11 @@
   "bsp": "Ich hole zwei Flaschen Wasser aus der Küche.",
   "bsp_en": "I will get two bottles of water from the kitchen.",
   "ko": "가져오다",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "verb",
+  "kasus": "etw. holen (A)",
+  "nuance": "bringen과 구별",
+  "anr": 2
  },
  {
   "id": "g-324",
@@ -3883,7 +4091,11 @@
   "bsp": "Hör mal! Was ist das?",
   "bsp_en": "Listen! What is that?",
   "ko": "듣다",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "verb",
+  "kasus": "etw. hören (A)",
+  "info": "**격:** etw. hören (A): Musik hören (음악을 듣다).\n**비슷:** hören(듣다)과 zuhören(귀 기울여 듣다)을 구분하세요.",
+  "anr": 2
  },
  {
   "id": "g-325",
@@ -3942,7 +4154,8 @@
   "stufe": "A1",
   "bsp": "Gib ihr/ihm bitte das Buch.",
   "bsp_en": "Please give her/him the book.",
-  "ko": null
+  "ko": null,
+  "aus": true
  },
  {
   "id": "g-330",
@@ -3954,7 +4167,9 @@
   "bsp": "Frau Bast kommt immer zu spät.",
   "bsp_en": "Ms. Bast always arrives late.",
   "ko": "항상",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "adv",
+  "anr": 2
  },
  {
   "id": "g-331",
@@ -4038,7 +4253,8 @@
   "bsp": "Blumen kannst du in jedem Bahnhof kaufen.",
   "bsp_en": "You can buy flowers at any train station.",
   "ko": "모든",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-338",
@@ -4050,7 +4266,10 @@
   "bsp": "Jetzt machen wir eine Pause.",
   "bsp_en": "Now we are taking a break.",
   "ko": "지금",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "adv",
+  "info": "**사용:** jetzt는 '지금, 바로 이 순간'을 뜻함 (Jetzt machen wir eine Pause - 지금 쉬는 시간을 갖자).\n**비슷:** dann(그 다음에)과 시간 순서 표현에서 헷갈리지 않도록 주의.",
+  "anr": 2
  },
  {
   "id": "g-339",
@@ -4092,13 +4311,15 @@
   "id": "g-342",
   "de": "Junge",
   "artikel": "der",
-  "plural": "-n",
+  "plural": "die Jungen",
   "konj": null,
   "stufe": "A1",
   "bsp": "Ich habe zwei Kinder. Einen Jungen und ein Mädchen.",
   "bsp_en": "I have two children. A boy and a girl.",
   "ko": "소년",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "noun",
+  "anr": 2
  },
  {
   "id": "g-343",
@@ -4138,7 +4359,7 @@
  },
  {
   "id": "g-346",
-  "de": "(Kredit)-Karte",
+  "de": "Kredit-Karte",
   "artikel": null,
   "plural": null,
   "konj": "-n",
@@ -4182,7 +4403,11 @@
   "bsp": "Tim kauft sich ein neues Auto.",
   "bsp_en": "Tim is buying a new car.",
   "ko": "사다",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "verb",
+  "kasus": "(sich) etw. kaufen (D + A)",
+  "info": "**격:** 물건은 4격, '자신을 위해'는 재귀 3격: Er kauft sich ein Auto (그는 자신에게 차를 산다).\n**사용:** jdm. etw. kaufen도 가능: Ich kaufe dir ein Buch (너에게 책을 사줄게).",
+  "anr": 2
  },
  {
   "id": "g-350",
@@ -4206,7 +4431,11 @@
   "bsp": "Kennen Sie diese Frau? – Nein, leider nicht.",
   "bsp_en": "Do you know this woman? – No, unfortunately not.",
   "ko": "알다",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "verb",
+  "kasus": "jdn./etw. kennen (A)",
+  "nuance": "wissen(사실을 알다)과 구별해야 함",
+  "anr": 2
  },
  {
   "id": "g-352",
@@ -4218,19 +4447,25 @@
   "bsp": "Wir sind neu hier. Wir möchten Sie kennenlernen.",
   "bsp_en": "We are new here. We’d like to get to know you.",
   "ko": "알게 되다",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "verb",
+  "kasus": "jdn. kennenlernen (A)",
+  "info": "**분리:** 분리동사입니다. Ich lerne dich kennen (너를 알게 돼).\n**사용:** 새로운 사람을 처음 만나 알게 될 때 씁니다.\n**참고:** kennen(이미 알다)과 구별해서 사용하세요.",
+  "anr": 2
  },
  {
   "id": "g-353",
   "de": "Kind",
   "artikel": "das",
-  "plural": "-er",
+  "plural": "die Kinder",
   "konj": null,
   "stufe": "A1",
   "bsp": "Wie viele Kinder haben Sie?",
   "bsp_en": "How many children do you have?",
   "ko": "아이",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "noun",
+  "anr": 2
  },
  {
   "id": "g-354",
@@ -4278,7 +4513,10 @@
   "bsp": "Kommst du mit? – Klar!",
   "bsp_en": "Are you coming along? – Sure!",
   "ko": "물론",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "adj",
+  "info": "**사용:** 대답으로 \"물론이지!\"라는 뜻으로 자주 씁니다 (Klar!).\n**비슷:** 원래 뜻은 \"분명한, 맑은\"입니다 (klarer Himmel).",
+  "anr": 2
  },
  {
   "id": "g-358",
@@ -4326,7 +4564,11 @@
   "bsp": "Herr Georgi kann gut kochen.",
   "bsp_en": "Mr. Georgi can cook well.",
   "ko": "요리하다",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "verb",
+  "kasus": "etw. kochen (A)",
+  "info": "**사용:** Ich koche Suppe (나는 수프를 요리한다)처럼 목적어 없이도 쓸 수 있어요.\n**참고:** gut kochen können (요리를 잘하다)처럼 능력을 말할 때도 자주 사용됩니다.",
+  "anr": 2
  },
  {
   "id": "g-362",
@@ -4362,7 +4604,11 @@
   "bsp": "Woher kommen Sie? – Aus Frankreich.",
   "bsp_en": "Where are you from? – From France.",
   "ko": "오다",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "verb",
+  "kasus": "kommen aus + D",
+  "info": "**격:** kommen aus + D: Ich komme aus Korea (저는 한국에서 왔어요).\n**사용:** Woher kommst du? (어디서 왔어요?) 자기소개할 때 자주 쓰는 질문이에요.",
+  "anr": 2
  },
  {
   "id": "g-365",
@@ -4374,7 +4620,10 @@
   "bsp": "Ich kann Deutsch und Russisch.",
   "bsp_en": "I can speak German and Russian.",
   "ko": "할 수 있다",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "verb",
+  "info": "**사용:** 언어나 능력을 말할 때 씀: Ich kann Deutsch (저는 독일어를 할 수 있어요).\n**격:** 화법동사로 보통 동사원형과 함께 써요: Ich kann schwimmen (수영할 수 있어요).",
+  "anr": 2
  },
  {
   "id": "g-366",
@@ -4392,13 +4641,16 @@
   "id": "g-367",
   "de": "Kopf",
   "artikel": "der",
-  "plural": "¨-e",
+  "plural": "die Köpfe",
   "konj": null,
   "stufe": "A1",
   "bsp": "Mein Kopf tut weh!",
   "bsp_en": "My head hurts!",
   "ko": "머리",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "noun",
+  "info": "**사용:** Mein Kopf tut weh (머리가 아파요) 처럼 신체 부위로 자주 쓰임\n**참고:** 'Kopf' 는 관용구에도 많이 사용됨: den Kopf verlieren (당황하다)",
+  "anr": 2
  },
  {
   "id": "g-368",
@@ -4410,7 +4662,10 @@
   "bsp": "Wie viel kostet das? – 10 Euro.",
   "bsp_en": "How much does it cost? – 10 euros.",
   "ko": "값이 나가다",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "verb",
+  "kasus": "etw. kostet + Preis (A)",
+  "anr": 2
  },
  {
   "id": "g-369",
@@ -4434,7 +4689,11 @@
   "bsp": "Ich kriege 15 Euro in der Stunde für meine Arbeit.",
   "bsp_en": "I get 15 euros an hour for my work.",
   "ko": "받다",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "verb",
+  "kasus": "etw. kriegen (A)",
+  "nuance": "구어체 표현, bekommen보다 캐주얼함",
+  "anr": 2
  },
  {
   "id": "g-371",
@@ -4506,7 +4765,8 @@
   "bsp": "Jede Mutter kümmert sich um ihre kleinen Kinder.",
   "bsp_en": "Every mother takes care of her small children.",
   "ko": "돌보다",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-377",
@@ -4554,7 +4814,9 @@
   "bsp": "Die Kinder lachen viel.",
   "bsp_en": "The children laugh a lot.",
   "ko": "웃다",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "verb",
+  "anr": 2
  },
  {
   "id": "g-381",
@@ -4602,7 +4864,10 @@
   "bsp": "Wie lange fährt der Zug von Hamburg nach Berlin?",
   "bsp_en": "How long does the train from Hamburg to Berlin take?",
   "ko": "오래",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "adv",
+  "info": "**사용:** Wie lange...?는 시간의 길이를 물을 때 씁니다 (Wie lange dauert das? 얼마나 걸려요?).\n**비슷:** lang(형용사, 길이)과 lange(부사, 시간)를 구분하세요.",
+  "anr": 2
  },
  {
   "id": "g-385",
@@ -4626,7 +4891,10 @@
   "bsp": "Ich möchte nicht Auto fahren, ich möchte laufen.",
   "bsp_en": "I don’t want to drive; I want to walk.",
   "ko": "걷다",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "verb",
+  "info": "**사용:** 일상에서는 '걷다', 스포츠 맥락에서는 '달리다'라는 뜻으로 쓰여요.\n**비슷:** gehen(가다)과 달리 laufen은 걷거나 뛰는 동작 자체를 강조해요.",
+  "anr": 2
  },
  {
   "id": "g-387",
@@ -4650,23 +4918,29 @@
   "bsp": "Sie lebt bei ihrer Schwester.",
   "bsp_en": "She lives with her sister.",
   "ko": "살다",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "verb",
+  "info": "**격:** 장소는 in/bei + D로 표현해요: Ich lebe in Berlin (저는 베를린에 살아요).\n**비슷:** wohnen(거주하다)과 비슷하지만 leben은 '생존하다'라는 더 넓은 의미도 있어요.",
+  "anr": 2
  },
  {
   "id": "g-389",
   "de": "Leben",
   "artikel": "das",
-  "plural": "-",
+  "plural": "die Leben",
   "konj": null,
   "stufe": "A1",
   "bsp": "Das Leben in diesem Land ist teuer.",
   "bsp_en": "Life in this country is expensive.",
   "ko": "삶",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "noun",
+  "info": "**사용:** 주로 단수로 씀: Das Leben ist teuer (삶이 비싸다)\n**참고:** 복수형 die Leben은 거의 쓰이지 않음",
+  "anr": 2
  },
  {
   "id": "g-390",
-  "de": "Lebensmittel (pl.)",
+  "de": "Lebensmittel",
   "artikel": "die",
   "plural": null,
   "konj": null,
@@ -4674,7 +4948,8 @@
   "bsp": "Lebensmittel bekommen Sie im Supermarkt.",
   "bsp_en": "You can get groceries at the supermarket.",
   "ko": "식료품",
-  "extras_auto": true
+  "extras_auto": true,
+  "numerus": "pl"
  },
  {
   "id": "g-391",
@@ -4698,7 +4973,12 @@
   "bsp": "Legen Sie das Buch auf den Tisch.",
   "bsp_en": "Put the book on the table.",
   "ko": "놓다",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "verb",
+  "kasus": "etw. legen (A) + wohin (auf/in + A)",
+  "nuance": "liegen(놓여 있다, 상태)과 구별: legen은 이동/동작",
+  "info": "**격:** 놓는 위치는 방향을 나타내는 4격: Ich lege es auf den Tisch (책상 위에 놓는다).\n**비슷:** legen(놓다, 동작) vs. liegen(놓여 있다, 상태).",
+  "anr": 2
  },
  {
   "id": "g-393",
@@ -4758,7 +5038,11 @@
   "bsp": "Wie lange lernen Sie schon Deutsch?",
   "bsp_en": "How long have you been learning German?",
   "ko": "배우다",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "verb",
+  "kasus": "etw. lernen (A)",
+  "nuance": "studieren(전공 공부하다)과 구별",
+  "anr": 2
  },
  {
   "id": "g-398",
@@ -4770,7 +5054,10 @@
   "bsp": "Ich lese ein Buch von García Márquez.",
   "bsp_en": "I’m reading a book by García Márquez.",
   "ko": "읽다",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "verb",
+  "kasus": "etw. lesen (A)",
+  "anr": 2
  },
  {
   "id": "g-399",
@@ -4782,11 +5069,12 @@
   "bsp": "Morgen ist der letzte Kurstag.",
   "bsp_en": "Tomorrow is the last day of the course.",
   "ko": "마지막의",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-400",
-  "de": "Leute (pl.)",
+  "de": "Leute",
   "artikel": "die",
   "plural": null,
   "konj": null,
@@ -4794,7 +5082,8 @@
   "bsp": "In der Disko sind viele Leute.",
   "bsp_en": "There are many people at the disco.",
   "ko": "사람들",
-  "extras_auto": true
+  "extras_auto": true,
+  "numerus": "pl"
  },
  {
   "id": "g-401",
@@ -4818,7 +5107,8 @@
   "bsp": "Liebe Susanne, lieber Hans,",
   "bsp_en": "Dear Susanne, dear Hans,",
   "ko": "친애하는, 사랑하는",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-403",
@@ -4830,7 +5120,10 @@
   "bsp": "Ich liebe dich!",
   "bsp_en": "I love you!",
   "ko": "사랑하다",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "verb",
+  "kasus": "jdn./etw. lieben (A)",
+  "anr": 2
  },
  {
   "id": "g-404",
@@ -4854,7 +5147,8 @@
   "bsp": "Mein Lieblingsfilm ist Schwarze Augen.",
   "bsp_en": "My favorite movie is Black Eyes.",
   "ko": "가장 좋아하는",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-406",
@@ -4950,19 +5244,26 @@
   "bsp": "Was machst du heute Abend?",
   "bsp_en": "What are you doing this evening?",
   "ko": "하다, 만들다",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "verb",
+  "kasus": "etw. machen (A)",
+  "info": "**사용:** Was machst du? (뭐 해?) 처럼 직업이나 활동을 물을 때도 자주 써요.\n**비슷:** tun(하다)과 뜻이 비슷하지만 machen이 훨씬 더 일반적으로 쓰여요.",
+  "anr": 2
  },
  {
   "id": "g-414",
   "de": "Mädchen",
   "artikel": "das",
-  "plural": "–",
+  "plural": "die Mädchen",
   "konj": null,
   "stufe": "A1",
   "bsp": "Familie Kurz bekommt ein Baby. – Junge oder Mädchen?",
   "bsp_en": "The Kurz family is having a baby. – Boy or girl?",
   "ko": "소녀",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "noun",
+  "info": "**주의:** Mädchen은 문법상 중성(das)이지만 의미는 여성입니다.\n**참고:** 단수와 복수 형태가 같습니다 (die Mädchen).",
+  "anr": 2
  },
  {
   "id": "g-415",
@@ -4980,13 +5281,16 @@
   "id": "g-416",
   "de": "Mann",
   "artikel": "der",
-  "plural": "-ä, er",
+  "plural": "die Männer",
   "konj": null,
   "stufe": "A1",
   "bsp": "Mein Mann arbeitet bei der Polizei.",
   "bsp_en": "My husband works at the police.",
   "ko": "남편, 남자",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "noun",
+  "info": "**사용:** 문맥에 따라 '남편' 또는 일반적인 '남자'를 의미함\n**비슷:** der Ehemann은 '남편'만을 명확히 가리키는 단어",
+  "anr": 2
  },
  {
   "id": "g-417",
@@ -5034,7 +5338,9 @@
   "bsp": "Dieses Auto kostet 1.000 Euro mehr als das andere.",
   "bsp_en": "This car costs 1,000 euros more than the other one.",
   "ko": "더 많이",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "adv",
+  "anr": 2
  },
  {
   "id": "g-421",
@@ -5058,19 +5364,23 @@
   "bsp": "Die meisten Norddeutschen sind sehr groß.",
   "bsp_en": "Most North Germans are very tall.",
   "ko": "대부분의",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-423",
   "de": "Mensch",
   "artikel": "der",
-  "plural": "-en",
+  "plural": "die Menschen",
   "konj": null,
   "stufe": "A1",
   "bsp": "Die Menschen sind hier anders als bei uns.",
   "bsp_en": "People here are different from us.",
   "ko": "사람",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "noun",
+  "info": "**격:** 약변화 명사, 단수 4격/3격도 den/dem Menschen\n**비슷:** Mann(남자)과 달리 Mensch는 사람 전체를 가리킴",
+  "anr": 2
  },
  {
   "id": "g-424",
@@ -5082,7 +5392,12 @@
   "bsp": "Ich möchte ein Auto mieten.",
   "bsp_en": "I would like to rent a car.",
   "ko": "임대하다, 빌리다",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "verb",
+  "kasus": "etw. mieten (A)",
+  "nuance": "임차인 입장에서 '빌리다'. 집주인 입장은 vermieten",
+  "info": "**비슷:** mieten(빌리다) vs. vermieten(빌려주다) 방향에 주의하세요.\n**사용:** ein Auto/eine Wohnung mieten (차/집을 빌리다)처럼 자주 씁니다.",
+  "anr": 2
  },
  {
   "id": "g-425",
@@ -5182,7 +5497,7 @@
  },
  {
   "id": "g-433",
-  "de": "Möbel (pl.)",
+  "de": "Möbel",
   "artikel": "die",
   "plural": null,
   "konj": null,
@@ -5190,7 +5505,8 @@
   "bsp": "Sind die Möbel neu?",
   "bsp_en": "Are the furniture new?",
   "ko": "가구",
-  "extras_auto": true
+  "extras_auto": true,
+  "numerus": "pl"
  },
  {
   "id": "g-434",
@@ -5202,7 +5518,12 @@
   "bsp": "Was möchten Sie trinken?",
   "bsp_en": "What would you like to drink?",
   "ko": "원하다",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "verb",
+  "kasus": "etw. möchten (A) / möchten + Infinitiv",
+  "nuance": "mögen의 화법조동사형, 과거분사형은 거의 안 씀",
+  "info": "**사용:** 정중한 요청/희망 표현: Ich möchte einen Kaffee (커피 한 잔 주세요).\n**분리:** 다른 동사와 함께 쓰일 때 그 동사는 문장 끝: Ich möchte schlafen (자고 싶어요).\n**비슷:** mögen(좋아하다)과 다른 의미이니 주의.",
+  "anr": 2
  },
  {
   "id": "g-435",
@@ -5214,7 +5535,12 @@
   "bsp": "Magst du Kaffee oder Tee?",
   "bsp_en": "Do you like coffee or tea?",
   "ko": "좋아하다",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "verb",
+  "kasus": "etw./jdn. mögen (A)",
+  "nuance": "möchten(원하다)과 헷갈리지 않도록 주의",
+  "info": "**격:** 좋아하는 대상은 4격: Ich mag Kaffee (나는 커피를 좋아해).\n**비슷:** mögen(좋아하다) vs. möchten(원하다) - 의미가 다름.",
+  "anr": 2
  },
  {
   "id": "g-436",
@@ -5232,13 +5558,16 @@
   "id": "g-437",
   "de": "Moment",
   "artikel": "der",
-  "plural": "-e",
+  "plural": "die Momente",
   "konj": null,
   "stufe": "A1",
   "bsp": "Moment mal bitte!",
   "bsp_en": "Just a moment, please!",
   "ko": "순간",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "noun",
+  "info": "**사용:** Moment mal!은 '잠깐만요!'라는 일상 표현입니다.\n**비슷:** einen Moment, bitte(잠시만요)도 자주 쓰이는 표현입니다.",
+  "anr": 2
  },
  {
   "id": "g-438",
@@ -5250,7 +5579,10 @@
   "bsp": "Morgen beginnt die Schule um 10 Uhr.",
   "bsp_en": "School starts at 10 a.m. tomorrow.",
   "ko": "내일",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "adv",
+  "nuance": "대문자 명사 Morgen(아침)과 혼동 주의",
+  "anr": 2
  },
  {
   "id": "g-439",
@@ -5286,19 +5618,24 @@
   "bsp": "Ich muss jeden Tag von 8 Uhr bis 18 Uhr arbeiten.",
   "bsp_en": "I have to work every day from 8 a.m. to 6 p.m.",
   "ko": "해야 하다",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "verb",
+  "info": "**사용:** 의무나 필연을 나타냄: Ich muss arbeiten (나는 일해야 한다)\n**격:** 다른 동사와 함께 쓰면 완료형은 hat...müssen 형태가 됨",
+  "anr": 2
  },
  {
   "id": "g-442",
   "de": "Mutter",
   "artikel": "die",
-  "plural": "-ü",
+  "plural": "die Mütter",
   "konj": null,
   "stufe": "A1",
   "bsp": "Frau Berghäuser ist die Mutter von Michaela.",
   "bsp_en": "Mrs. Berghäuser is Michaela’s mother.",
   "ko": "어머니",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "noun",
+  "anr": 2
  },
  {
   "id": "g-443",
@@ -5322,19 +5659,23 @@
   "bsp": "Sehen wir uns nächste Woche?",
   "bsp_en": "Shall we see each other next week?",
   "ko": "다음",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-445",
   "de": "Name",
   "artikel": "der",
-  "plural": "-n",
+  "plural": "die Namen",
   "konj": null,
   "stufe": "A1",
   "bsp": "Mein Name ist Thomas Schmidt.",
   "bsp_en": "My name is Thomas Schmidt.",
   "ko": "이름",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "noun",
+  "info": "**격:** 약변화 명사, 2격 des Namens, 3/4격 den/dem Namen\n**사용:** Wie ist dein Name? (이름이 뭐예요?)",
+  "anr": 2
  },
  {
   "id": "g-446",
@@ -5346,7 +5687,11 @@
   "bsp": "Heute gibt es Hähnchen. Das nehme ich.",
   "bsp_en": "Today there’s chicken. I’ll take that.",
   "ko": "고르다",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "verb",
+  "kasus": "etw. nehmen (A)",
+  "info": "**사용:** 음식이나 물건을 고를 때도 씁니다: Ich nehme das Hähnchen (닭고기로 할게요).\n**분리:** 불규칙 동사로 du nimmst, er nimmt처럼 모음이 바뀝니다.",
+  "anr": 2
  },
  {
   "id": "g-447",
@@ -5358,7 +5703,9 @@
   "bsp": "Fährst du auch nach München? – Nein, ich habe keine Zeit.",
   "bsp_en": "Are you going to Munich too? – No, I don’t have time.",
   "ko": "아니오",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "other",
+  "anr": 2
  },
  {
   "id": "g-448",
@@ -5382,7 +5729,10 @@
   "bsp": "Das stimmt nicht.",
   "bsp_en": "That’s not true.",
   "ko": "않다",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "other",
+  "info": "**주의:** 문장 전체를 부정할 때는 nicht, 명사를 부정할 때는 kein을 써요 (Das ist kein Auto).\n**사용:** 보통 동사나 형용사 뒤에 위치해요: Ich verstehe nicht (저는 이해하지 못해요).",
+  "anr": 2
  },
  {
   "id": "g-450",
@@ -5394,7 +5744,9 @@
   "bsp": "Das macht nichts.",
   "bsp_en": "It doesn’t matter.",
   "ko": "아무것도",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "other",
+  "anr": 2
  },
  {
   "id": "g-451",
@@ -5406,7 +5758,9 @@
   "bsp": "Er kommt nie pünktlich.",
   "bsp_en": "He never arrives on time.",
   "ko": "결코",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "adv",
+  "anr": 2
  },
  {
   "id": "g-452",
@@ -5454,7 +5808,9 @@
   "bsp": "Ich möchte nur ein Glas Wasser.",
   "bsp_en": "I’d like only a glass of water.",
   "ko": "단지",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "adv",
+  "anr": 2
  },
  {
   "id": "g-456",
@@ -5502,7 +5858,10 @@
   "bsp": "Ich öffne die Tür.",
   "bsp_en": "I’m opening the door.",
   "ko": "열다",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "verb",
+  "kasus": "etw. öffnen (A)",
+  "anr": 2
  },
  {
   "id": "g-460",
@@ -5568,13 +5927,16 @@
   "id": "g-465",
   "de": "Ordnung",
   "artikel": "die",
-  "plural": "-en",
+  "plural": "die Ordnungen",
   "konj": null,
   "stufe": "A1",
   "bsp": "Das ist in Ordnung.",
   "bsp_en": "That’s all right.",
   "ko": "질서",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "noun",
+  "info": "**사용:** Das ist in Ordnung은 '괜찮아요, 문제없어요'라는 뜻의 관용 표현입니다.\n**참고:** 원래 뜻은 '질서, 정돈'이며 in Ordnung bringen(정리하다)처럼도 쓰입니다.",
+  "anr": 2
  },
  {
   "id": "g-466",
@@ -5602,7 +5964,7 @@
  },
  {
   "id": "g-468",
-  "de": "Papiere (pl.)",
+  "de": "Papiere",
   "artikel": "die",
   "plural": null,
   "konj": null,
@@ -5610,7 +5972,8 @@
   "bsp": "Haben Sie Ihre Papiere dabei?",
   "bsp_en": "Do you have your papers with you?",
   "ko": "서류",
-  "extras_auto": true
+  "extras_auto": true,
+  "numerus": "pl"
  },
  {
   "id": "g-469",
@@ -5698,7 +6061,7 @@
  },
  {
   "id": "g-476",
-  "de": "Pommes frites (pl.)",
+  "de": "Pommes frites",
   "artikel": "die",
   "plural": null,
   "konj": null,
@@ -5706,7 +6069,8 @@
   "bsp": "Die Kinder essen Hähnchen mit Pommes frites.",
   "bsp_en": "The children are eating chicken with fries.",
   "ko": "감자튀김",
-  "extras_auto": true
+  "extras_auto": true,
+  "numerus": "pl"
  },
  {
   "id": "g-477",
@@ -5772,13 +6136,15 @@
   "id": "g-482",
   "de": "Problem",
   "artikel": "das",
-  "plural": "-e",
+  "plural": "die Probleme",
   "konj": null,
   "stufe": "A1",
   "bsp": "Mein Problem ist die Sprache.",
   "bsp_en": "My problem is the language.",
   "ko": "문제",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "noun",
+  "anr": 2
  },
  {
   "id": "g-483",
@@ -6018,7 +6384,10 @@
   "bsp": "Habe ich das richtig verstanden?",
   "bsp_en": "Did I understand that correctly?",
   "ko": "올바른",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "adj",
+  "info": "**사용:** Das ist richtig. (그것이 맞다), richtig verstehen (제대로 이해하다)\n**비슷:** korrekt와 유사하지만 일상 회화에서 더 많이 사용",
+  "anr": 2
  },
  {
   "id": "g-503",
@@ -6066,7 +6435,11 @@
   "bsp": "Sag mal, wie geht es dir denn?",
   "bsp_en": "Tell me, how are you doing?",
   "ko": "말하다",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "verb",
+  "kasus": "(jdm.) etw. sagen (D + A)",
+  "info": "**사용:** sagen은 '말하다'라는 뜻 (Ich sage dir die Wahrheit - 진실을 말해줄게).\n**비슷:** sprechen(대화하다), erzählen(이야기하다)과 의미 구분 필요.",
+  "anr": 2
  },
  {
   "id": "g-507",
@@ -6270,7 +6643,10 @@
   "bsp": "Er fährt schnell.",
   "bsp_en": "He drives fast.",
   "ko": "빠른",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "adj",
+  "info": "**사용:** 형용사와 부사 형태가 같습니다: ein schnelles Auto (빠른 차), Er fährt schnell (그는 빠르게 운전한다).\n**비슷:** langsam(느린)과 반대말로 자주 짝지어 나옵니다.",
+  "anr": 2
  },
  {
   "id": "g-524",
@@ -6294,7 +6670,10 @@
   "bsp": "Schönen Urlaub!",
   "bsp_en": "Have a nice vacation!",
   "ko": "아름다운",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "adj",
+  "info": "**사용:** Schönen Urlaub! (좋은 휴가 되세요!), Schönes Wochenende! (좋은 주말 되세요!)\n**비슷:** 인사말에서는 '아름답다'가 아니라 '좋은/즐거운'의 뜻",
+  "anr": 2
  },
  {
   "id": "g-526",
@@ -6426,7 +6805,11 @@
   "bsp": "Ich kann dich nicht sehen.",
   "bsp_en": "I can’t see you.",
   "ko": "보다",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "verb",
+  "kasus": "etw./jdn. sehen (A)",
+  "info": "**사용:** sehen은 눈으로 무언가를 인지하는 '보다' (Ich sehe dich - 너를 본다).\n**비슷:** schauen(바라보다), gucken(구어체로 보다)과 뉘앙스 차이 있음.",
+  "anr": 2
  },
  {
   "id": "g-537",
@@ -6450,7 +6833,9 @@
   "bsp": "Danke sehr!",
   "bsp_en": "Thank you very much!",
   "ko": "매우",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "adv",
+  "anr": 2
  },
  {
   "id": "g-539",
@@ -6469,12 +6854,15 @@
   "de": "weg sein",
   "artikel": null,
   "plural": null,
-  "konj": null,
+  "konj": "ist weg, ist weg gewesen",
   "stufe": "A1",
   "bsp": "Herr Meier ist schon weg.",
   "bsp_en": "Mr. Meier is already gone.",
   "ko": "가고 없다",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "verb",
+  "info": "**사용:** 사람이나 물건이 없어졌을 때 씀: Er ist weg (그는 가고 없다)\n**분리:** weg는 부사로 sein과 결합해 상태를 나타냄",
+  "anr": 2
  },
  {
   "id": "g-541",
@@ -6558,7 +6946,9 @@
   "bsp": "Sie müssen das so machen!",
   "bsp_en": "You have to do it like this!",
   "ko": "그렇게",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "adv",
+  "anr": 2
  },
  {
   "id": "g-548",
@@ -6582,19 +6972,23 @@
   "bsp": "Bitte antworten Sie sofort.",
   "bsp_en": "Please answer immediately.",
   "ko": "즉시",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "adv",
+  "anr": 2
  },
  {
   "id": "g-550",
   "de": "Sohn",
   "artikel": "der",
-  "plural": "-ö, e",
+  "plural": "die Söhne",
   "konj": null,
   "stufe": "A1",
   "bsp": "Das ist Hans, mein Sohn.",
   "bsp_en": "This is Hans, my son.",
   "ko": "아들",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "noun",
+  "anr": 2
  },
  {
   "id": "g-551",
@@ -6606,7 +7000,11 @@
   "bsp": "Soll ich kommen?",
   "bsp_en": "Should I come?",
   "ko": "~해야 한다",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "verb",
+  "nuance": "müssen(의무)과 달리 타인의 요청·조언에 따른 의무를 뜻함",
+  "info": "**사용:** Soll ich...? 형태로 상대의 의견을 물을 때 자주 씀 (제가 ~할까요?)\n**격:** 다른 동사와 함께 쓰면 완료형은 hat...sollen 형태(이중부정형)가 됨",
+  "anr": 2
  },
  {
   "id": "g-552",
@@ -6642,7 +7040,9 @@
   "bsp": "Das können wir später machen.",
   "bsp_en": "We can do that later.",
   "ko": "나중에",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "adv",
+  "anr": 2
  },
  {
   "id": "g-555",
@@ -6666,7 +7066,10 @@
   "bsp": "Die Kinder spielen draußen.",
   "bsp_en": "The children are playing outside.",
   "ko": "놀다",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "verb",
+  "info": "**사용:** Fußball spielen, Klavier spielen처럼 목적어를 넣어 '운동/악기하다' 뜻으로도 씀.\n**참고:** Die Kinder spielen draußen처럼 목적어 없이도 자주 쓰입니다.",
+  "anr": 2
  },
  {
   "id": "g-557",
@@ -6702,19 +7105,25 @@
   "bsp": "Kann ich (mit) Herrn Klein sprechen?",
   "bsp_en": "May I speak with Mr. Klein?",
   "ko": "말하다",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "verb",
+  "kasus": "mit jdm. sprechen (mit + D)",
+  "info": "**격:** 누구와 이야기하는지는 mit + 3격으로 표현합니다: mit Herrn Klein sprechen.\n**분리:** 불규칙 동사로 du sprichst, er spricht처럼 어간모음이 바뀝니다.\n**비슷:** reden(말을 늘어놓다)과 비슷하지만 sprechen이 더 일반적입니다.",
+  "anr": 2
  },
  {
   "id": "g-560",
   "de": "Stadt",
   "artikel": "die",
-  "plural": "-ä, e",
+  "plural": "die Städte",
   "konj": null,
   "stufe": "A1",
   "bsp": "Heidelberg ist eine alte Stadt.",
   "bsp_en": "Heidelberg is an old city.",
   "ko": "도시",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "noun",
+  "anr": 2
  },
  {
   "id": "g-561",
@@ -6726,19 +7135,25 @@
   "bsp": "Ich glaube es nicht, aber es steht in der Zeitung.",
   "bsp_en": "I don’t believe it, but it’s written in the newspaper.",
   "ko": "쓰여 있다",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "verb",
+  "info": "**사용:** Es steht in der Zeitung. (신문에 쓰여 있다)\n**격:** 장소를 말할 때는 in/auf + D와 함께 사용",
+  "anr": 2
  },
  {
   "id": "g-562",
   "de": "Stelle",
   "artikel": "die",
-  "plural": "-n",
+  "plural": "die Stellen",
   "konj": null,
   "stufe": "A1",
   "bsp": "Ich habe eine neue Stelle.",
   "bsp_en": "I have a new job.",
   "ko": "일자리",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "noun",
+  "info": "**사용:** eine neue Stelle (새 일자리) 처럼 직장을 의미함\n**참고:** 장소의 의미로도 쓰임: an dieser Stelle (이 자리에서)",
+  "anr": 2
  },
  {
   "id": "g-563",
@@ -6828,13 +7243,16 @@
   "id": "g-570",
   "de": "Stunde",
   "artikel": "die",
-  "plural": "-n",
+  "plural": "die Stunden",
   "konj": null,
   "stufe": "A1",
   "bsp": "Ich bin in einer Stunde zurück.",
   "bsp_en": "I’ll be back in an hour.",
   "ko": "시간",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "noun",
+  "info": "**사용:** in einer Stunde = 한 시간 후에 (미래 시점을 나타낼 때).\n**비슷:** Unterrichtsstunde(수업 시간)와 Uhrzeit(정확한 시각)를 혼동하지 마세요.",
+  "anr": 2
  },
  {
   "id": "g-571",
@@ -7062,11 +7480,14 @@
   "bsp": "Sein Vater ist schon lange tot.",
   "bsp_en": "His father has been dead for a long time.",
   "ko": "죽은",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "adj",
+  "info": "**비슷:** sterben(죽다, 동사)과 헷갈리지 않도록 주의하세요. tot는 형용사입니다.\n**사용:** Er ist tot (그는 죽었다)처럼 sein 동사와 함께 상태를 나타냅니다.",
+  "anr": 2
  },
  {
   "id": "g-590",
-  "de": "(sich) treffen",
+  "de": "sich treffen",
   "artikel": null,
   "plural": null,
   "konj": null,
@@ -7074,7 +7495,9 @@
   "bsp": "Ich treffe in der Stadt einen Kollegen.",
   "bsp_en": "I’m meeting a colleague in the city.",
   "ko": "만나다",
-  "extras_auto": true
+  "extras_auto": true,
+  "reflexiv": true,
+  "aus": true
  },
  {
   "id": "g-591",
@@ -7122,7 +7545,11 @@
   "bsp": "Ich habe noch etwas zu tun.",
   "bsp_en": "I still have something to do.",
   "ko": "하다",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "verb",
+  "kasus": "etw. tun (A)",
+  "info": "**사용:** tun은 '하다'라는 뜻으로 다소 추상적이거나 일반적인 행동에 사용 (etwas zu tun haben - 할 일이 있다).\n**비슷:** machen(만들다, 하다)과 의미가 겹치지만 tun은 더 격식/일반적.",
+  "anr": 2
  },
  {
   "id": "g-595",
@@ -7218,7 +7645,8 @@
   "bsp": "Das ist unsere Lehrerin.",
   "bsp_en": "This is our teacher.",
   "ko": "우리의",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-603",
@@ -7296,13 +7724,15 @@
   "id": "g-609",
   "de": "Vater",
   "artikel": "der",
-  "plural": "-ä",
+  "plural": "die Väter",
   "konj": null,
   "stufe": "A1",
   "bsp": "Mein Vater ist Arbeiter.",
   "bsp_en": "My father is a worker.",
   "ko": "아버지",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "noun",
+  "anr": 2
  },
  {
   "id": "g-610",
@@ -7434,7 +7864,9 @@
   "bsp": "Hier regnet es viel.",
   "bsp_en": "It rains a lot here.",
   "ko": "많이",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "adv",
+  "anr": 2
  },
  {
   "id": "g-621",
@@ -7446,7 +7878,9 @@
   "bsp": "Ich komme vielleicht mit dem Bus.",
   "bsp_en": "Maybe I’ll take the bus.",
   "ko": "아마도",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "adv",
+  "anr": 2
  },
  {
   "id": "g-622",
@@ -7498,7 +7932,7 @@
  },
  {
   "id": "g-626",
-  "de": "(sich) vorstellen",
+  "de": "sich vorstellen",
   "artikel": null,
   "plural": null,
   "konj": null,
@@ -7506,7 +7940,9 @@
   "bsp": "Wir wollen uns kennenlernen.",
   "bsp_en": "Können Sie sich bitte vorstellen? We want to get to know each other. Could you please introduce yourself?",
   "ko": "소개하다",
-  "extras_auto": true
+  "extras_auto": true,
+  "reflexiv": true,
+  "aus": true
  },
  {
   "id": "g-627",
@@ -7542,7 +7978,9 @@
   "bsp": "Wann bist du fertig?",
   "bsp_en": "When will you be done?",
   "ko": "언제",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "adv",
+  "anr": 2
  },
  {
   "id": "g-630",
@@ -7554,7 +7992,11 @@
   "bsp": "Können Sie ein paar Minuten warten?",
   "bsp_en": "Can you wait for a few minutes?",
   "ko": "기다리다",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "verb",
+  "kasus": "warten auf + A",
+  "info": "**격:** 기다리는 대상은 auf + 4격으로 씁니다: Ich warte auf dich (너를 기다려).\n**존댓말:** Können Sie warten?은 정중한 표현입니다.",
+  "anr": 2
  },
  {
   "id": "g-631",
@@ -7566,7 +8008,9 @@
   "bsp": "Warum kommt er nicht?",
   "bsp_en": "Why isn’t he coming?",
   "ko": "왜",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "adv",
+  "anr": 2
  },
  {
   "id": "g-632",
@@ -7594,7 +8038,7 @@
  },
  {
   "id": "g-634",
-  "de": "(sich) waschen",
+  "de": "sich waschen",
   "artikel": null,
   "plural": null,
   "konj": null,
@@ -7602,7 +8046,9 @@
   "bsp": "Wo kann ich mir die Hände waschen?",
   "bsp_en": "Where can I wash my hands?",
   "ko": "씻다",
-  "extras_auto": true
+  "extras_auto": true,
+  "reflexiv": true,
+  "aus": true
  },
  {
   "id": "g-635",
@@ -7674,7 +8120,10 @@
   "bsp": "Der Bus fährt nicht weiter.",
   "bsp_en": "The bus isn’t going any further.",
   "ko": "계속해서",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "adv",
+  "info": "**사용:** weiterfahren, weitergehen처럼 동사와 결합해 '계속 ~하다'라는 뜻을 만듭니다.\n**참고:** Der Bus fährt nicht weiter = 버스가 더 이상 가지 않는다.",
+  "anr": 2
  },
  {
   "id": "g-641",
@@ -7686,19 +8135,22 @@
   "bsp": "Welches Buch möchtest du?",
   "bsp_en": "Which book do you want?",
   "ko": "어느",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-642",
   "de": "Welt",
   "artikel": "die",
-  "plural": "-en",
+  "plural": "die Welten",
   "konj": null,
   "stufe": "A1",
   "bsp": "Es gibt viele Probleme auf der Welt.",
   "bsp_en": "There are many problems in the world.",
   "ko": "세계",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "noun",
+  "anr": 2
  },
  {
   "id": "g-643",
@@ -7734,7 +8186,10 @@
   "bsp": "Mein Sohn will Arzt werden.",
   "bsp_en": "My son wants to become a doctor.",
   "ko": "되다",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "verb",
+  "info": "**격:** Arzt werden (의사가 되다)처럼 1격(주격) 보어와 함께 씁니다.\n**사용:** 완료형은 sein 동사와 함께: Er ist Arzt geworden (그는 의사가 되었다).\n**주의:** werden은 미래시제 조동사로도 쓰입니다: Ich werde kommen (나는 올 것이다).",
+  "anr": 2
  },
  {
   "id": "g-646",
@@ -7770,7 +8225,9 @@
   "bsp": "Wie heißt du?",
   "bsp_en": "What’s your name?",
   "ko": "어떻게",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "adv",
+  "anr": 2
  },
  {
   "id": "g-649",
@@ -7818,7 +8275,11 @@
   "bsp": "Wie viel Milch nehmen Sie?",
   "bsp_en": "How much milk would you like?",
   "ko": "얼마나",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "adv",
+  "nuance": "양은 wie viel, 개수는 wie viele로 구분",
+  "info": "**사용:** 양이나 가격을 물을 때 씀 (Wie viel kostet das?).\n**비슷:** 사람이나 사물의 개수를 물을 땐 wie viele를 씁니다 (Wie viele Kinder?).",
+  "anr": 2
  },
  {
   "id": "g-653",
@@ -7866,7 +8327,12 @@
   "bsp": "Weißt du, wie er heißt?",
   "bsp_en": "Do you know what his name is?",
   "ko": "알다",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "verb",
+  "kasus": "etw. wissen (A)",
+  "nuance": "kennen(사람/장소를 알다)과 wissen(사실을 알다) 구별 주의",
+  "info": "**비슷:** wissen(사실을 알다) vs. kennen(사람/사물과 친숙하다)의 차이를 기억하세요.\n**격:** Ich weiß das (나는 그것을 안다)처럼 4격 목적어 또는 dass-절과 함께 씁니다.\n**주의:** 불규칙 동사: ich weiß, du weißt, er weiß.",
+  "anr": 2
  },
  {
   "id": "g-657",
@@ -7878,7 +8344,9 @@
   "bsp": "Wo waren Sie im Urlaub?",
   "bsp_en": "Where were you on vacation?",
   "ko": "어디",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "adv",
+  "anr": 2
  },
  {
   "id": "g-658",
@@ -7938,7 +8406,10 @@
   "bsp": "Wollen Sie einen Kaffee trinken?",
   "bsp_en": "Do you want to drink some coffee?",
   "ko": "원하다",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "verb",
+  "info": "**사용:** wollen + 동사원형: 무엇을 하고 싶다는 의지/의도 (Ich will schlafen - 자고 싶어요).\n**격:** 뒤에 오는 동사는 문장 끝에 원형(Infinitiv)으로 위치함.\n**주의:** 다른 동사와 완료형 쓸 때는 hat ... wollen 형태(Ersatzinfinitiv)가 됨.",
+  "anr": 2
  },
  {
   "id": "g-663",
@@ -7980,13 +8451,15 @@
   "id": "g-666",
   "de": "Zeit",
   "artikel": "die",
-  "plural": "-en",
+  "plural": "die Zeiten",
   "konj": null,
   "stufe": "A1",
   "bsp": "Ich habe heute keine Zeit.",
   "bsp_en": "I don’t have time today.",
   "ko": "시간",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "noun",
+  "anr": 2
  },
  {
   "id": "g-667",
@@ -8094,7 +8567,10 @@
   "bsp": "Einmal Frankfurt und zurück.",
   "bsp_en": "Once to Frankfurt and back.",
   "ko": "다시",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "adv",
+  "info": "**분리:** zurückkommen, zurückgeben 같은 분리동사에 자주 사용됩니다.\n**사용:** hin und zurück(왕복)이라는 표현에서도 쓰입니다.",
+  "anr": 2
  },
  {
   "id": "g-676",
@@ -8106,7 +8582,10 @@
   "bsp": "Sollen wir zusammen essen gehen?",
   "bsp_en": "Should we go out to eat together?",
   "ko": "함께",
-  "extras_auto": true
+  "extras_auto": true,
+  "pos": "adv",
+  "info": "**사용:** zusammen essen, zusammen arbeiten처럼 동사 뒤에 붙여 씁니다.\n**비슷:** mit는 '~와 함께'라는 뜻이지만 zusammen은 부사로 동반의 의미를 강조합니다.",
+  "anr": 2
  },
  {
   "id": "g-677",
@@ -8134,7 +8613,7 @@
  },
  {
   "id": "g-679",
-  "de": "Achtung (Sg.)",
+  "de": "Achtung",
   "artikel": null,
   "plural": null,
   "konj": null,
@@ -8142,7 +8621,9 @@
   "bsp": "Achtung an Gleis drei: Die Türen schließen. Der Zug fährt jetzt ab.",
   "bsp_en": "Attention at platform three: The doors are closing. The train is leaving now.",
   "ko": "주의",
-  "extras_auto": true
+  "extras_auto": true,
+  "numerus": "sg",
+  "aus": true
  },
  {
   "id": "g-680",
@@ -8194,7 +8675,7 @@
  },
  {
   "id": "g-684",
-  "de": "Alter (Sg.)",
+  "de": "Alter",
   "artikel": "das",
   "plural": null,
   "konj": null,
@@ -8202,7 +8683,9 @@
   "bsp": "Alter: 18 Jahre.",
   "bsp_en": "Age: 18 years.",
   "ko": "나이",
-  "extras_auto": true
+  "extras_auto": true,
+  "numerus": "sg",
+  "aus": true
  },
  {
   "id": "g-685",
@@ -8254,7 +8737,7 @@
  },
  {
   "id": "g-689",
-  "de": "anmelden (sich)",
+  "de": "sich anmelden",
   "artikel": null,
   "plural": null,
   "konj": null,
@@ -8262,7 +8745,9 @@
   "bsp": "Wo kann ich mich anmelden?",
   "bsp_en": "Where can I register?",
   "ko": "신청하다",
-  "extras_auto": true
+  "extras_auto": true,
+  "reflexiv": true,
+  "aus": true
  },
  {
   "id": "g-690",
@@ -8314,7 +8799,7 @@
  },
  {
   "id": "g-694",
-  "de": "ärgern (sich)",
+  "de": "sich ärgern",
   "artikel": null,
   "plural": null,
   "konj": null,
@@ -8322,7 +8807,8 @@
   "bsp": "Warum ärgerst du dich? - Ich ärgere mich, weil das Wetter schlecht ist.",
   "bsp_en": "Why are you upset? - I am upset because the weather is bad.",
   "ko": "화내다",
-  "extras_auto": true
+  "extras_auto": true,
+  "reflexiv": true
  },
  {
   "id": "g-695",
@@ -8358,7 +8844,8 @@
   "bsp": "Ich möchte auf jeden Fall den neuen James-Bond-Film sehen. - Wirklich? Ich finde James-Bond-Filme langweilig. Ich sehe ihn auf keinen Fall an!",
   "bsp_en": "I definitely want to see the new James Bond movie. - Really? I find James Bond movies boring. I definitely won’t watch it!",
   "ko": "어떤 경우에도",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-698",
@@ -8458,7 +8945,7 @@
  },
  {
   "id": "g-706",
-  "de": "Ausland (Sg.)",
+  "de": "Ausland",
   "artikel": "das",
   "plural": null,
   "konj": null,
@@ -8466,7 +8953,9 @@
   "bsp": "Fahren Sie ins Ausland?",
   "bsp_en": "Are you going abroad?",
   "ko": "외국",
-  "extras_auto": true
+  "extras_auto": true,
+  "numerus": "sg",
+  "aus": true
  },
  {
   "id": "g-707",
@@ -8482,7 +8971,7 @@
  },
  {
   "id": "g-708",
-  "de": "ausruhen (sich)",
+  "de": "sich ausruhen",
   "artikel": null,
   "plural": null,
   "konj": null,
@@ -8490,7 +8979,8 @@
   "bsp": "Ruh dich erst mal aus! Du bist sicher müde.",
   "bsp_en": "Rest for a while! You must be tired.",
   "ko": "쉬다",
-  "extras_auto": true
+  "extras_auto": true,
+  "reflexiv": true
  },
  {
   "id": "g-709",
@@ -8674,7 +9164,7 @@
  },
  {
   "id": "g-724",
-  "de": "bedanken (sich)",
+  "de": "sich bedanken",
   "artikel": null,
   "plural": null,
   "konj": null,
@@ -8682,11 +9172,12 @@
   "bsp": "Ich möchte mich noch einmal sehr herzlich für Ihre Hilfe bedanken.",
   "bsp_en": "I would like to thank you very much once again for your help.",
   "ko": "감사하다",
-  "extras_auto": true
+  "extras_auto": true,
+  "reflexiv": true
  },
  {
   "id": "g-725",
-  "de": "beeilen (sich)",
+  "de": "sich beeilen",
   "artikel": null,
   "plural": null,
   "konj": null,
@@ -8694,7 +9185,8 @@
   "bsp": "Kannst du dich bitte beeilen? Der Bus fährt gleich ab!",
   "bsp_en": "Could you please hurry? The bus is about to leave!",
   "ko": "서두르다",
-  "extras_auto": true
+  "extras_auto": true,
+  "reflexiv": true
  },
  {
   "id": "g-726",
@@ -8818,7 +9310,7 @@
  },
  {
   "id": "g-736",
-  "de": "beschweren (sich)",
+  "de": "sich beschweren",
   "artikel": null,
   "plural": null,
   "konj": null,
@@ -8826,7 +9318,8 @@
   "bsp": "Hier ist es zu laut. Wo können wir uns beschweren?",
   "bsp_en": "It’s too loud here. Where can we complain?",
   "ko": "항의하다",
-  "extras_auto": true
+  "extras_auto": true,
+  "reflexiv": true
  },
  {
   "id": "g-737",
@@ -8878,7 +9371,7 @@
  },
  {
   "id": "g-741",
-  "de": "bewerben (sich)",
+  "de": "sich bewerben",
   "artikel": null,
   "plural": null,
   "konj": null,
@@ -8886,7 +9379,8 @@
   "bsp": "Ich möchte mich um diese Stelle bewerben.",
   "bsp_en": "I would like to apply for this position.",
   "ko": "지원하다",
-  "extras_auto": true
+  "extras_auto": true,
+  "reflexiv": true
  },
  {
   "id": "g-742",
@@ -8898,7 +9392,8 @@
   "bsp": "",
   "bsp_en": "",
   "ko": "지원서",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-743",
@@ -8970,7 +9465,8 @@
   "bsp": "Ich schreibe einen Blog über Mode.",
   "bsp_en": "I write a blog about fashion.",
   "ko": "블로그",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-749",
@@ -9082,7 +9578,7 @@
  },
  {
   "id": "g-758",
-  "de": "Butter (Sg.)",
+  "de": "Butter",
   "artikel": "die",
   "plural": null,
   "konj": null,
@@ -9090,7 +9586,9 @@
   "bsp": "Möchtest du Butter aufs Brot oder nur Käse?",
   "bsp_en": "Would you like butter on your bread or just cheese?",
   "ko": "버터",
-  "extras_auto": true
+  "extras_auto": true,
+  "numerus": "sg",
+  "aus": true
  },
  {
   "id": "g-759",
@@ -9126,7 +9624,8 @@
   "bsp": "",
   "bsp_en": "",
   "ko": "채팅하다",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-762",
@@ -9138,7 +9637,8 @@
   "bsp": "",
   "bsp_en": "",
   "ko": "채팅했다",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-763",
@@ -9162,7 +9662,8 @@
   "bsp": "Mein Sohn liest immer nur Comics.",
   "bsp_en": "My son always reads comics.",
   "ko": "만화",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-765",
@@ -9186,7 +9687,8 @@
   "bsp": "Darauf fällt mir keine Antwort ein.",
   "bsp_en": "I can’t think of an answer to that.",
   "ko": "그것에",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-767",
@@ -9210,7 +9712,8 @@
   "bsp": "",
   "bsp_en": "",
   "ko": "함께하다",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-769",
@@ -9222,7 +9725,8 @@
   "bsp": "",
   "bsp_en": "",
   "ko": "함께했다",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-770",
@@ -9234,7 +9738,8 @@
   "bsp": "",
   "bsp_en": "",
   "ko": "함께했었다",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-771",
@@ -9245,7 +9750,8 @@
   "stufe": "A2",
   "bsp": "Ich bin dafür/dagegen.",
   "bsp_en": "I’m in favor/against.",
-  "ko": null
+  "ko": null,
+  "aus": true
  },
  {
   "id": "g-772",
@@ -9256,7 +9762,8 @@
   "stufe": "A2",
   "bsp": "",
   "bsp_en": "",
-  "ko": null
+  "ko": null,
+  "aus": true
  },
  {
   "id": "g-773",
@@ -9267,7 +9774,8 @@
   "stufe": "A2",
   "bsp": "",
   "bsp_en": "",
-  "ko": null
+  "ko": null,
+  "aus": true
  },
  {
   "id": "g-774",
@@ -9278,7 +9786,8 @@
   "stufe": "A2",
   "bsp": "",
   "bsp_en": "",
-  "ko": null
+  "ko": null,
+  "aus": true
  },
  {
   "id": "g-775",
@@ -9294,7 +9803,7 @@
  },
  {
   "id": "g-776",
-  "de": "Dank (Sg.)",
+  "de": "Dank",
   "artikel": "der",
   "plural": null,
   "konj": null,
@@ -9302,7 +9811,9 @@
   "bsp": "Vielen Dank!",
   "bsp_en": "Thank you very much!",
   "ko": "감사",
-  "extras_auto": true
+  "extras_auto": true,
+  "numerus": "sg",
+  "aus": true
  },
  {
   "id": "g-777",
@@ -9314,7 +9825,8 @@
   "bsp": "",
   "bsp_en": "",
   "ko": "감사했다",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-778",
@@ -9350,7 +9862,8 @@
   "bsp": "",
   "bsp_en": "",
   "ko": "걸렸다",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-781",
@@ -9374,7 +9887,8 @@
   "bsp": "",
   "bsp_en": "",
   "ko": "생각했다",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-783",
@@ -9458,7 +9972,8 @@
   "bsp": "",
   "bsp_en": "",
   "ko": "토론했다",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-790",
@@ -9518,7 +10033,8 @@
   "bsp": "",
   "bsp_en": "",
   "ko": "인쇄했다",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-795",
@@ -9558,7 +10074,7 @@
  },
  {
   "id": "g-798",
-  "de": "Durst (Sing.)",
+  "de": "Durst",
   "artikel": "der",
   "plural": null,
   "konj": null,
@@ -9566,11 +10082,13 @@
   "bsp": "Hast du etwas zu trinken? Ich habe großen Durst.",
   "bsp_en": "Do you have something to drink? I’m very thirsty.",
   "ko": "갈증",
-  "extras_auto": true
+  "extras_auto": true,
+  "numerus": "sg",
+  "aus": true
  },
  {
   "id": "g-799",
-  "de": "duschen (sich)",
+  "de": "sich duschen",
   "artikel": null,
   "plural": null,
   "konj": "duscht",
@@ -9578,7 +10096,8 @@
   "bsp": "Ich bade nicht so gern, ich dusche lieber.",
   "bsp_en": "I don’t like to bathe, I prefer to shower.",
   "ko": "샤워하다",
-  "extras_auto": true
+  "extras_auto": true,
+  "reflexiv": true
  },
  {
   "id": "g-800",
@@ -9590,7 +10109,8 @@
   "bsp": "",
   "bsp_en": "",
   "ko": "샤워했다",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-801",
@@ -9662,7 +10182,8 @@
   "bsp": "",
   "bsp_en": "",
   "ko": "포장했다",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-807",
@@ -9686,11 +10207,12 @@
   "bsp": "",
   "bsp_en": "",
   "ko": "탔다",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-809",
-  "de": "eintragen (sich)",
+  "de": "sich eintragen",
   "artikel": null,
   "plural": null,
   "konj": null,
@@ -9698,7 +10220,8 @@
   "bsp": "Sie müssen Ihren Namen und Ihre Adresse eintragen.",
   "bsp_en": "You need to enter your name and address.",
   "ko": "등록하다",
-  "extras_auto": true
+  "extras_auto": true,
+  "reflexiv": true
  },
  {
   "id": "g-810",
@@ -9722,7 +10245,8 @@
   "bsp": "",
   "bsp_en": "",
   "ko": "등록했다",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-812",
@@ -9746,7 +10270,8 @@
   "bsp": "Nicht alle zusammen. Könnt ihr bitte einzeln sprechen?",
   "bsp_en": "Not all together. Can you please speak individually?",
   "ko": "개별의",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-814",
@@ -9782,7 +10307,8 @@
   "bsp": "",
   "bsp_en": "",
   "ko": "이사 들어갔다",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-817",
@@ -9806,7 +10332,8 @@
   "bsp": "Nicht alle Kinder haben ein eigenes Zimmer.",
   "bsp_en": "Not all children have their own room.",
   "ko": "자신의",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-819",
@@ -9822,7 +10349,7 @@
  },
  {
   "id": "g-820",
-  "de": "Eis (Sg.)",
+  "de": "Eis",
   "artikel": "das",
   "plural": null,
   "konj": null,
@@ -9830,11 +10357,12 @@
   "bsp": "Möchtest du auch ein Eis?",
   "bsp_en": "Would you like an ice cream, too?",
   "ko": "아이스크림",
-  "extras_auto": true
+  "extras_auto": true,
+  "numerus": "sg"
  },
  {
   "id": "g-821",
-  "de": "(E-)Mail",
+  "de": "E-Mail",
   "artikel": "die",
   "plural": "-s",
   "konj": null,
@@ -9842,7 +10370,8 @@
   "bsp": "Ich schreibe Ihnen/dir eine E-Mail.",
   "bsp_en": "I’m writing you an email.",
   "ko": "이메일",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-822",
@@ -9854,7 +10383,8 @@
   "bsp": "",
   "bsp_en": "",
   "ko": "추천하다",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-823",
@@ -9866,7 +10396,8 @@
   "bsp": "",
   "bsp_en": "",
   "ko": "추천했다",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-824",
@@ -9878,7 +10409,8 @@
   "bsp": "In diesem Text sind einige Fehler.",
   "bsp_en": "There are some mistakes in this text.",
   "ko": "몇몇의",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-825",
@@ -9890,7 +10422,8 @@
   "bsp": "",
   "bsp_en": "",
   "ko": "장보다",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-826",
@@ -9902,7 +10435,8 @@
   "bsp": "",
   "bsp_en": "",
   "ko": "장봤다",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-827",
@@ -9930,7 +10464,7 @@
  },
  {
   "id": "g-829",
-  "de": "entschuldigen (sich)",
+  "de": "sich entschuldigen",
   "artikel": null,
   "plural": null,
   "konj": null,
@@ -9938,7 +10472,8 @@
   "bsp": "Entschuldigen Sie bitte!",
   "bsp_en": "Excuse me, please!",
   "ko": "사과하다",
-  "extras_auto": true
+  "extras_auto": true,
+  "reflexiv": true
  },
  {
   "id": "g-830",
@@ -9950,7 +10485,8 @@
   "bsp": "",
   "bsp_en": "",
   "ko": "사과하다",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-831",
@@ -9962,7 +10498,8 @@
   "bsp": "",
   "bsp_en": "",
   "ko": "사과했다",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-832",
@@ -9989,7 +10526,7 @@
  },
  {
   "id": "g-834",
-  "de": "erinnern (sich)",
+  "de": "sich erinnern",
   "artikel": null,
   "plural": null,
   "konj": null,
@@ -9997,7 +10534,8 @@
   "bsp": "Erinnerst du dich an José? - Nein, ich erinnere mich nicht an ihn, tut mir leid.",
   "bsp_en": "Do you remember José? - No, I don’t remember him, I’m sorry.",
   "ko": "기억하다",
-  "extras_auto": true
+  "extras_auto": true,
+  "reflexiv": true
  },
  {
   "id": "g-835",
@@ -10009,7 +10547,8 @@
   "bsp": "",
   "bsp_en": "",
   "ko": "기억하다",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-836",
@@ -10021,7 +10560,8 @@
   "bsp": "",
   "bsp_en": "",
   "ko": "기억했다",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-837",
@@ -10045,7 +10585,8 @@
   "bsp": "",
   "bsp_en": "",
   "ko": "감기 걸렸다",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-839",
@@ -10057,7 +10598,8 @@
   "bsp": "",
   "bsp_en": "",
   "ko": "감기 걸렸었다",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-840",
@@ -10069,7 +10611,8 @@
   "bsp": "",
   "bsp_en": "",
   "ko": "감기 걸렸었다",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-841",
@@ -10081,7 +10624,8 @@
   "bsp": "",
   "bsp_en": "",
   "ko": "허락했다",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-842",
@@ -10105,7 +10649,8 @@
   "bsp": "",
   "bsp_en": "",
   "ko": "허락되었다",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-844",
@@ -10117,11 +10662,12 @@
   "bsp": "",
   "bsp_en": "",
   "ko": "허락되었었다",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-845",
-  "de": "Erlaubnis (Sg.)",
+  "de": "Erlaubnis",
   "artikel": "die",
   "plural": null,
   "konj": null,
@@ -10129,7 +10675,8 @@
   "bsp": "Haben Sie eine Arbeitserlaubnis?",
   "bsp_en": "Do you have a work permit?",
   "ko": "허가",
-  "extras_auto": true
+  "extras_auto": true,
+  "numerus": "sg"
  },
  {
   "id": "g-846",
@@ -10165,7 +10712,8 @@
   "bsp": "",
   "bsp_en": "",
   "ko": "도착한",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-849",
@@ -10177,7 +10725,8 @@
   "bsp": "",
   "bsp_en": "",
   "ko": "도착했다",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-850",
@@ -10217,7 +10766,7 @@
  },
  {
   "id": "g-853",
-  "de": "(ab)fahren",
+  "de": "abfahren",
   "artikel": null,
   "plural": null,
   "konj": null,
@@ -10225,7 +10774,8 @@
   "bsp": "Ich fahre mit dem Auto zur Arbeit.",
   "bsp_en": "I’m driving to work.",
   "ko": "출발하다",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-854",
@@ -10237,7 +10787,8 @@
   "bsp": "Achtung an Gleis 17! Der Zug München - Paris fährt jetzt ab.",
   "bsp_en": "Attention on platform 17! The Munich-Paris train is departing.",
   "ko": "출발하다",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-855",
@@ -10249,7 +10800,8 @@
   "bsp": "Der Zug ist schon abgefahren.",
   "bsp_en": "The train has already left.",
   "ko": "출발했다",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-856",
@@ -10265,7 +10817,7 @@
  },
  {
   "id": "g-857",
-  "de": "(Fahr)Rad",
+  "de": "Fahrrad",
   "artikel": "das",
   "plural": "¨-er",
   "konj": null,
@@ -10273,7 +10825,8 @@
   "bsp": "Wenn es nicht regnet, fahre ich mit dem Fahrrad.",
   "bsp_en": "If it doesn’t rain, I’ll go by bike.",
   "ko": "자전거",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-858",
@@ -10373,7 +10926,7 @@
  },
  {
   "id": "g-866",
-  "de": "Ferien (Pl.)",
+  "de": "Ferien",
   "artikel": "die",
   "plural": null,
   "konj": null,
@@ -10381,7 +10934,8 @@
   "bsp": "Bald haben wir Ferien.",
   "bsp_en": "We’ll have a holiday soon.",
   "ko": "방학",
-  "extras_auto": true
+  "extras_auto": true,
+  "numerus": "pl"
  },
  {
   "id": "g-867",
@@ -10393,7 +10947,8 @@
   "bsp": "Fährst du in den Ferien weg oder bleibst du zu Hause?",
   "bsp_en": "Are you going away during the holidays, or are you staying home?",
   "ko": "방학",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-868",
@@ -10457,7 +11012,7 @@
  },
  {
   "id": "g-873",
-  "de": "Fieber (Sg.)",
+  "de": "Fieber",
   "artikel": "das",
   "plural": null,
   "konj": null,
@@ -10465,7 +11020,9 @@
   "bsp": "Sie hat hohes Fieber.",
   "bsp_en": "She has a high fever.",
   "ko": "열",
-  "extras_auto": true
+  "extras_auto": true,
+  "numerus": "sg",
+  "aus": true
  },
  {
   "id": "g-874",
@@ -10481,7 +11038,7 @@
  },
  {
   "id": "g-875",
-  "de": "Fleisch (Sg.)",
+  "de": "Fleisch",
   "artikel": "das",
   "plural": null,
   "konj": null,
@@ -10489,7 +11046,9 @@
   "bsp": "Fleisch mag ich nicht.",
   "bsp_en": "I don’t like meat.",
   "ko": "고기",
-  "extras_auto": true
+  "extras_auto": true,
+  "numerus": "sg",
+  "aus": true
  },
  {
   "id": "g-876",
@@ -10505,7 +11064,7 @@
  },
  {
   "id": "g-877",
-  "de": "(ab)fliegen",
+  "de": "abfliegen",
   "artikel": null,
   "plural": null,
   "konj": "fliegt (ab)",
@@ -10589,7 +11148,7 @@
  },
  {
   "id": "g-884",
-  "de": "Frühstück (Sg.)",
+  "de": "Frühstück",
   "artikel": "das",
   "plural": null,
   "konj": null,
@@ -10597,11 +11156,13 @@
   "bsp": "Möchtest du ein Ei zum Frühstück?",
   "bsp_en": "Would you like an egg for breakfast?",
   "ko": "아침 식사",
-  "extras_auto": true
+  "extras_auto": true,
+  "numerus": "sg",
+  "aus": true
  },
  {
   "id": "g-885",
-  "de": "fühlen (sich)",
+  "de": "sich fühlen",
   "artikel": null,
   "plural": null,
   "konj": "fühlt",
@@ -10609,7 +11170,8 @@
   "bsp": "Wie fühlen Sie sich?",
   "bsp_en": "How are you feeling?",
   "ko": "느끼다",
-  "extras_auto": true
+  "extras_auto": true,
+  "reflexiv": true
  },
  {
   "id": "g-886",
@@ -10625,7 +11187,7 @@
  },
  {
   "id": "g-887",
-  "de": "Fundsachen (Pl.)",
+  "de": "Fundsachen",
   "artikel": "die",
   "plural": null,
   "konj": null,
@@ -10633,7 +11195,8 @@
   "bsp": "Haben Sie meinen Schirm gefunden?",
   "bsp_en": "Have you found my umbrella?",
   "ko": "분실물",
-  "extras_auto": true
+  "extras_auto": true,
+  "numerus": "pl"
  },
  {
   "id": "g-888",
@@ -10645,7 +11208,8 @@
   "bsp": "Sie können dort bei den Fundsachen schauen.",
   "bsp_en": "You can check at lost and found.",
   "ko": "분실물 보관소",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-889",
@@ -10661,7 +11225,7 @@
  },
  {
   "id": "g-890",
-  "de": "Freizeit (Sg.)",
+  "de": "Freizeit",
   "artikel": "die",
   "plural": null,
   "konj": null,
@@ -10669,11 +11233,13 @@
   "bsp": "In meiner Freizeit spiele ich oft Fußball.",
   "bsp_en": "In my free time, I often play football.",
   "ko": "여가 시간",
-  "extras_auto": true
+  "extras_auto": true,
+  "numerus": "sg",
+  "aus": true
  },
  {
   "id": "g-891",
-  "de": "freuen (sich)",
+  "de": "sich freuen",
   "artikel": null,
   "plural": null,
   "konj": "freut",
@@ -10681,7 +11247,8 @@
   "bsp": "Zum Geburtstag habe ich ein interessantes Buch bekommen.",
   "bsp_en": "I’m very happy about the gift I received for my birthday.",
   "ko": "기뻐하다",
-  "extras_auto": true
+  "extras_auto": true,
+  "reflexiv": true
  },
  {
   "id": "g-892",
@@ -10788,7 +11355,8 @@
   "stufe": "A2",
   "bsp": "Das Geburtsjahr Ihres Sohnes, bitte?",
   "bsp_en": "The year of birth of your son, please?",
-  "ko": null
+  "ko": null,
+  "aus": true
  },
  {
   "id": "g-901",
@@ -10800,7 +11368,8 @@
   "bsp": "Sehr geehrte Damen und Herren,",
   "bsp_en": "Dear Ladies and Gentlemen,",
   "ko": "존경하는",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-902",
@@ -10852,7 +11421,7 @@
  },
  {
   "id": "g-906",
-  "de": "Geld (Sg.)",
+  "de": "Geld",
   "artikel": "das",
   "plural": null,
   "konj": null,
@@ -10860,7 +11429,9 @@
   "bsp": "Hast du noch Geld?",
   "bsp_en": "Do you have any money left?",
   "ko": "돈",
-  "extras_auto": true
+  "extras_auto": true,
+  "numerus": "sg",
+  "aus": true
  },
  {
   "id": "g-907",
@@ -10876,7 +11447,7 @@
  },
  {
   "id": "g-908",
-  "de": "Gemüse (Sg.)",
+  "de": "Gemüse",
   "artikel": "das",
   "plural": null,
   "konj": null,
@@ -10884,7 +11455,9 @@
   "bsp": "Wir kaufen das Gemüse immer auf dem Markt.",
   "bsp_en": "We always buy vegetables at the market.",
   "ko": "채소",
-  "extras_auto": true
+  "extras_auto": true,
+  "numerus": "sg",
+  "aus": true
  },
  {
   "id": "g-909",
@@ -10912,7 +11485,7 @@
  },
  {
   "id": "g-911",
-  "de": "Gepäck (Sg.)",
+  "de": "Gepäck",
   "artikel": "das",
   "plural": null,
   "konj": null,
@@ -10920,7 +11493,9 @@
   "bsp": "Wollen Sie Ihr Gepäck mitnehmen?",
   "bsp_en": "Do you want to take your luggage with you?",
   "ko": "짐",
-  "extras_auto": true
+  "extras_auto": true,
+  "numerus": "sg",
+  "aus": true
  },
  {
   "id": "g-912",
@@ -10984,7 +11559,7 @@
  },
  {
   "id": "g-917",
-  "de": "Geschirr (Sg.)",
+  "de": "Geschirr",
   "artikel": "das",
   "plural": null,
   "konj": null,
@@ -10992,7 +11567,8 @@
   "bsp": "Stellst du bitte das Geschirr in den Schrank?",
   "bsp_en": "Could you please put the dishes in the cupboard?",
   "ko": "그릇",
-  "extras_auto": true
+  "extras_auto": true,
+  "numerus": "sg"
  },
  {
   "id": "g-918",
@@ -11020,7 +11596,7 @@
  },
  {
   "id": "g-920",
-  "de": "Gesundheit (Sg.)",
+  "de": "Gesundheit",
   "artikel": "die",
   "plural": null,
   "konj": null,
@@ -11028,7 +11604,8 @@
   "bsp": "Gesundheit! Sind Sie erkältet?",
   "bsp_en": "Bless you! Are you catching a cold?",
   "ko": "건강",
-  "extras_auto": true
+  "extras_auto": true,
+  "numerus": "sg"
  },
  {
   "id": "g-921",
@@ -11056,7 +11633,7 @@
  },
  {
   "id": "g-923",
-  "de": "Glück (Sg.)",
+  "de": "Glück",
   "artikel": "das",
   "plural": null,
   "konj": null,
@@ -11064,11 +11641,13 @@
   "bsp": "Viel Glück!",
   "bsp_en": "Good luck!",
   "ko": "행운",
-  "extras_auto": true
+  "extras_auto": true,
+  "numerus": "sg",
+  "aus": true
  },
  {
   "id": "g-924",
-  "de": "Grippe (Sg.)",
+  "de": "Grippe",
   "artikel": "die",
   "plural": null,
   "konj": null,
@@ -11076,7 +11655,8 @@
   "bsp": "Ich habe eine Grippe und kann leider nicht kommen.",
   "bsp_en": "I have the flu and unfortunately can’t come.",
   "ko": "독감",
-  "extras_auto": true
+  "extras_auto": true,
+  "numerus": "sg"
  },
  {
   "id": "g-925",
@@ -11200,7 +11780,7 @@
  },
  {
   "id": "g-935",
-  "de": "Heimat (Sg.)",
+  "de": "Heimat",
   "artikel": "die",
   "plural": null,
   "konj": null,
@@ -11208,7 +11788,9 @@
   "bsp": "Ich komme aus der Schweiz. Das ist meine Heimat.",
   "bsp_en": "I come from Switzerland. That’s my home.",
   "ko": "고향",
-  "extras_auto": true
+  "extras_auto": true,
+  "numerus": "sg",
+  "aus": true
  },
  {
   "id": "g-936",
@@ -11256,7 +11838,8 @@
   "bsp": "Komm bitte mal her!",
   "bsp_en": "Come here, please!",
   "ko": "이리로",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-940",
@@ -11268,7 +11851,8 @@
   "bsp": "Möchtet ihr nicht rauskommen? Das Wetter ist so schön.",
   "bsp_en": "Don’t you want to come outside? The weather is so nice.",
   "ko": "밖으로",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-941",
@@ -11280,7 +11864,8 @@
   "bsp": "Herein! Die Tür ist offen.",
   "bsp_en": "Come in! The door is open.",
   "ko": "안으로",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-942",
@@ -11308,7 +11893,7 @@
  },
  {
   "id": "g-944",
-  "de": "Hilfe (Sg.)",
+  "de": "Hilfe",
   "artikel": "die",
   "plural": null,
   "konj": null,
@@ -11316,11 +11901,13 @@
   "bsp": "Hilfe! Bitte helfen Sie mir!",
   "bsp_en": "Help! Please help me!",
   "ko": "도움",
-  "extras_auto": true
+  "extras_auto": true,
+  "numerus": "sg",
+  "aus": true
  },
  {
   "id": "g-945",
-  "de": "Himmel (Sg.)",
+  "de": "Himmel",
   "artikel": "der",
   "plural": null,
   "konj": null,
@@ -11328,7 +11915,8 @@
   "bsp": "Heute ist so tolles Wetter: Der Himmel ist blau und es gibt keine Wolken.",
   "bsp_en": "Today the weather is so nice: The sky is blue and there are no clouds.",
   "ko": "하늘",
-  "extras_auto": true
+  "extras_auto": true,
+  "numerus": "sg"
  },
  {
   "id": "g-946",
@@ -11340,7 +11928,8 @@
   "bsp": "Wo gehst du hin?/Wohin gehst du?",
   "bsp_en": "Where are you going?/Where are you headed?",
   "ko": "그쪽으로",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-947",
@@ -11404,7 +11993,7 @@
  },
  {
   "id": "g-952",
-  "de": "Hunger (Sg.)",
+  "de": "Hunger",
   "artikel": "der",
   "plural": null,
   "konj": null,
@@ -11412,7 +12001,9 @@
   "bsp": "Ich habe Hunger! Wann können wir endlich essen?",
   "bsp_en": "I’m hungry! When can we eat?",
   "ko": "배고픔",
-  "extras_auto": true
+  "extras_auto": true,
+  "numerus": "sg",
+  "aus": true
  },
  {
   "id": "g-953",
@@ -11440,7 +12031,7 @@
  },
  {
   "id": "g-955",
-  "de": "informieren (sich)",
+  "de": "sich informieren",
   "artikel": null,
   "plural": null,
   "konj": "informiert, hat informiert",
@@ -11448,7 +12039,8 @@
   "bsp": "Ich möchte mich vor der Reise über das Land informieren.",
   "bsp_en": "I want to inform myself about the country before the trip.",
   "ko": "알아보다",
-  "extras_auto": true
+  "extras_auto": true,
+  "reflexiv": true
  },
  {
   "id": "g-956",
@@ -11500,7 +12092,7 @@
  },
  {
   "id": "g-960",
-  "de": "interessieren (sich)",
+  "de": "sich interessieren",
   "artikel": null,
   "plural": null,
   "konj": "interessiert, hat interessiert",
@@ -11508,7 +12100,8 @@
   "bsp": "Ich interessiere mich für Fußball.",
   "bsp_en": "I am interested in soccer.",
   "ko": "관심 있다",
-  "extras_auto": true
+  "extras_auto": true,
+  "reflexiv": true
  },
  {
   "id": "g-961",
@@ -11524,7 +12117,7 @@
  },
  {
   "id": "g-962",
-  "de": "Internet (Sg.)",
+  "de": "Internet",
   "artikel": "das",
   "plural": null,
   "konj": null,
@@ -11532,7 +12125,9 @@
   "bsp": "Das findest du im Internet.",
   "bsp_en": "You can find that on the Internet.",
   "ko": "인터넷",
-  "extras_auto": true
+  "extras_auto": true,
+  "numerus": "sg",
+  "aus": true
  },
  {
   "id": "g-963",
@@ -11548,7 +12143,7 @@
  },
  {
   "id": "g-964",
-  "de": "Jeans (Pl.)",
+  "de": "Jeans",
   "artikel": "die",
   "plural": null,
   "konj": null,
@@ -11556,7 +12151,8 @@
   "bsp": "Ich mag Jeans lieber als Röcke.",
   "bsp_en": "I prefer jeans to skirts.",
   "ko": "청바지",
-  "extras_auto": true
+  "extras_auto": true,
+  "numerus": "pl"
  },
  {
   "id": "g-965",
@@ -11616,7 +12212,8 @@
   "bsp": "Viele Jugendliche hören den ganzen Tag Musik.",
   "bsp_en": "Many young people listen to music all day.",
   "ko": "청소년",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-970",
@@ -11656,7 +12253,7 @@
  },
  {
   "id": "g-973",
-  "de": "Käse (Sg.)",
+  "de": "Käse",
   "artikel": "der",
   "plural": null,
   "konj": null,
@@ -11664,7 +12261,8 @@
   "bsp": "Isst du lieber Käse oder Wurst?",
   "bsp_en": "Do you prefer cheese or sausage?",
   "ko": "치즈",
-  "extras_auto": true
+  "extras_auto": true,
+  "numerus": "sg"
  },
  {
   "id": "g-974",
@@ -11692,7 +12290,7 @@
  },
  {
   "id": "g-976",
-  "de": "Kenntnisse (Pl.)",
+  "de": "Kenntnisse",
   "artikel": "die",
   "plural": null,
   "konj": null,
@@ -11700,7 +12298,8 @@
   "bsp": "Deine Deutschkenntnisse sind sehr gut!",
   "bsp_en": "Your German skills are very good!",
   "ko": "지식",
-  "extras_auto": true
+  "extras_auto": true,
+  "numerus": "pl"
  },
  {
   "id": "g-977",
@@ -11764,7 +12363,7 @@
  },
  {
   "id": "g-982",
-  "de": "Kleidung (Sg.)",
+  "de": "Kleidung",
   "artikel": "die",
   "plural": null,
   "konj": null,
@@ -11772,7 +12371,9 @@
   "bsp": "Wo finde ich Kleidung? – Hosen im ersten, Kleider und Röcke im zweiten Stock.",
   "bsp_en": "Where can I find clothing? – Pants on the first floor, dresses and skirts on the second floor.",
   "ko": "옷",
-  "extras_auto": true
+  "extras_auto": true,
+  "numerus": "sg",
+  "aus": true
  },
  {
   "id": "g-983",
@@ -11848,7 +12449,7 @@
  },
  {
   "id": "g-989",
-  "de": "Kosmetik (Sg.)",
+  "de": "Kosmetik",
   "artikel": "die",
   "plural": null,
   "konj": null,
@@ -11856,7 +12457,8 @@
   "bsp": "Kosmetik können Sie im Erdgeschoss kaufen.",
   "bsp_en": "You can buy cosmetics on the ground floor.",
   "ko": "화장품",
-  "extras_auto": true
+  "extras_auto": true,
+  "numerus": "sg"
  },
  {
   "id": "g-990",
@@ -11968,7 +12570,7 @@
  },
  {
   "id": "g-999",
-  "de": "kümmern (sich)",
+  "de": "sich kümmern",
   "artikel": null,
   "plural": null,
   "konj": "kümmert sich, hat sich gekümmert",
@@ -11976,7 +12578,8 @@
   "bsp": "Sonja kann nicht arbeiten. Sie muss sich um ihre Tochter kümmern.",
   "bsp_en": "Sonja can’t work. She has to take care of her daughter.",
   "ko": "돌보다",
-  "extras_auto": true
+  "extras_auto": true,
+  "reflexiv": true
  },
  {
   "id": "g-1000",
@@ -12048,7 +12651,8 @@
   "bsp": "Ich brauche einen neuen Laptop.",
   "bsp_en": "I need a new laptop.",
   "ko": "노트북",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-1006",
@@ -12084,7 +12688,8 @@
   "bsp": "Es tut mir leid, dass ich nicht kommen kann.",
   "bsp_en": "I’m sorry that I can’t come.",
   "ko": "유감스럽다",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-1009",
@@ -12160,7 +12765,7 @@
  },
  {
   "id": "g-1015",
-  "de": "Lust (Sg.)",
+  "de": "Lust",
   "artikel": "die",
   "plural": null,
   "konj": null,
@@ -12168,7 +12773,8 @@
   "bsp": "Gehen wir heute Abend ins Kino? - Nein, ich habe keine Lust.",
   "bsp_en": "Shall we go to the cinema this evening? - No, I don’t feel like it.",
   "ko": "의욕",
-  "extras_auto": true
+  "extras_auto": true,
+  "numerus": "sg"
  },
  {
   "id": "g-1016",
@@ -12204,7 +12810,8 @@
   "bsp": "Sag mal, wie gefällt dir mein neues Kleid?",
   "bsp_en": "Tell me, how do you like my new dress?",
   "ko": "한번",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-1019",
@@ -12228,7 +12835,8 @@
   "bsp": "Manche Nachbarn sind unfreundlich.",
   "bsp_en": "Some neighbors are unfriendly.",
   "ko": "몇몇의",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-1021",
@@ -12376,7 +12984,7 @@
  },
  {
   "id": "g-1033",
-  "de": "Milch (Sg.)",
+  "de": "Milch",
   "artikel": "die",
   "plural": null,
   "konj": null,
@@ -12384,7 +12992,9 @@
   "bsp": "Die Milch steht im Kühlschrank.",
   "bsp_en": "The milk is in the fridge.",
   "ko": "우유",
-  "extras_auto": true
+  "extras_auto": true,
+  "numerus": "sg",
+  "aus": true
  },
  {
   "id": "g-1034",
@@ -12400,7 +13010,7 @@
  },
  {
   "id": "g-1035",
-  "de": "Mineralwasser (Sg.)",
+  "de": "Mineralwasser",
   "artikel": "das",
   "plural": null,
   "konj": null,
@@ -12408,11 +13018,12 @@
   "bsp": "Ein Glas Mineralwasser, bitte.",
   "bsp_en": "A glass of mineral water, please.",
   "ko": "광천수",
-  "extras_auto": true
+  "extras_auto": true,
+  "numerus": "sg"
  },
  {
   "id": "g-1036",
-  "de": "mit (+ mitbringen/-kommen/-machen/-nehmen/-spielen)",
+  "de": "mit",
   "artikel": null,
   "plural": null,
   "konj": null,
@@ -12420,7 +13031,8 @@
   "bsp": "Trinken Sie den Kaffee mit oder ohne Zucker?",
   "bsp_en": "Do you take your coffee with or without sugar?",
   "ko": "함께",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-1037",
@@ -12520,7 +13132,7 @@
  },
  {
   "id": "g-1045",
-  "de": "Müll (Sg.)",
+  "de": "Müll",
   "artikel": "der",
   "plural": null,
   "konj": null,
@@ -12528,7 +13140,8 @@
   "bsp": "Bringst du bitte den Müll raus?",
   "bsp_en": "Can you please take out the trash?",
   "ko": "쓰레기",
-  "extras_auto": true
+  "extras_auto": true,
+  "numerus": "sg"
  },
  {
   "id": "g-1046",
@@ -12544,7 +13157,7 @@
  },
  {
   "id": "g-1047",
-  "de": "Musik (Sg.)",
+  "de": "Musik",
   "artikel": "die",
   "plural": null,
   "konj": null,
@@ -12552,7 +13165,8 @@
   "bsp": "Wie findest du die Musik?",
   "bsp_en": "How do you find the music?",
   "ko": "음악",
-  "extras_auto": true
+  "extras_auto": true,
+  "numerus": "sg"
  },
  {
   "id": "g-1048",
@@ -12604,7 +13218,7 @@
  },
  {
   "id": "g-1052",
-  "de": "Nähe (Sg.)",
+  "de": "Nähe",
   "artikel": "die",
   "plural": null,
   "konj": null,
@@ -12612,7 +13226,8 @@
   "bsp": "Die Post ist in der Nähe vom Bahnhof.",
   "bsp_en": "The post office is near the train station.",
   "ko": "근처",
-  "extras_auto": true
+  "extras_auto": true,
+  "numerus": "sg"
  },
  {
   "id": "g-1053",
@@ -12628,7 +13243,7 @@
  },
  {
   "id": "g-1054",
-  "de": "Natur (Sg.)",
+  "de": "Natur",
   "artikel": "die",
   "plural": null,
   "konj": null,
@@ -12636,7 +13251,8 @@
   "bsp": "Ich bin gern draußen in der Natur.",
   "bsp_en": "I like being outside in nature.",
   "ko": "자연",
-  "extras_auto": true
+  "extras_auto": true,
+  "numerus": "sg"
  },
  {
   "id": "g-1055",
@@ -12820,7 +13436,7 @@
  },
  {
   "id": "g-1070",
-  "de": "Obst (Sg.)",
+  "de": "Obst",
   "artikel": "das",
   "plural": null,
   "konj": null,
@@ -12828,7 +13444,9 @@
   "bsp": "Obst kaufe ich immer auf dem Markt. Heute kaufe ich Äpfel und Orangen.",
   "bsp_en": "I always buy fruit at the market. Today I’m buying apples and oranges.",
   "ko": "과일",
-  "extras_auto": true
+  "extras_auto": true,
+  "numerus": "sg",
+  "aus": true
  },
  {
   "id": "g-1071",
@@ -13120,7 +13738,7 @@
  },
  {
   "id": "g-1095",
-  "de": "Polizei (Sg.)",
+  "de": "Polizei",
   "artikel": "die",
   "plural": null,
   "konj": null,
@@ -13128,7 +13746,9 @@
   "bsp": "Rufen Sie die Polizei!",
   "bsp_en": "Call the police!",
   "ko": "경찰",
-  "extras_auto": true
+  "extras_auto": true,
+  "numerus": "sg",
+  "aus": true
  },
  {
   "id": "g-1096",
@@ -13143,7 +13763,7 @@
  },
  {
   "id": "g-1097",
-  "de": "Post (Sg.)",
+  "de": "Post",
   "artikel": "die",
   "plural": null,
   "konj": null,
@@ -13151,7 +13771,9 @@
   "bsp": "Entschuldigung, wo ist die Post?",
   "bsp_en": "Excuse me, where is the post office?",
   "ko": "우체국",
-  "extras_auto": true
+  "extras_auto": true,
+  "numerus": "sg",
+  "aus": true
  },
  {
   "id": "g-1098",
@@ -13323,7 +13945,7 @@
  },
  {
   "id": "g-1112",
-  "de": "Quiz (Sg.)",
+  "de": "Quiz",
   "artikel": "das",
   "plural": null,
   "konj": null,
@@ -13331,7 +13953,8 @@
   "bsp": "Er schaut gern Quizsendungen an.",
   "bsp_en": "He likes watching quiz shows.",
   "ko": "퀴즈",
-  "extras_auto": true
+  "extras_auto": true,
+  "numerus": "sg"
  },
  {
   "id": "g-1113",
@@ -13419,7 +14042,7 @@
  },
  {
   "id": "g-1120",
-  "de": "Regen (Sg.)",
+  "de": "Regen",
   "artikel": "der",
   "plural": null,
   "konj": null,
@@ -13427,7 +14050,9 @@
   "bsp": "Bei Regen gehe ich nicht aus dem Haus.",
   "bsp_en": "I don't go out if it rains.",
   "ko": "비",
-  "extras_auto": true
+  "extras_auto": true,
+  "numerus": "sg",
+  "aus": true
  },
  {
   "id": "g-1121",
@@ -13479,7 +14104,7 @@
  },
  {
   "id": "g-1125",
-  "de": "Reis (Sg.)",
+  "de": "Reis",
   "artikel": "der",
   "plural": null,
   "konj": null,
@@ -13487,7 +14112,9 @@
   "bsp": "Ich esse gern Reis mit Gemüse und Fisch.",
   "bsp_en": "I like to eat rice with vegetables and fish.",
   "ko": "쌀, 밥",
-  "extras_auto": true
+  "extras_auto": true,
+  "numerus": "sg",
+  "aus": true
  },
  {
   "id": "g-1126",
@@ -13659,7 +14286,7 @@
  },
  {
   "id": "g-1140",
-  "de": "Ruhe (Sg.)",
+  "de": "Ruhe",
   "artikel": "die",
   "plural": null,
   "konj": null,
@@ -13667,7 +14294,8 @@
   "bsp": "Ruhe, bitte! Hier in der Bibliothek darf man nicht laut sprechen.",
   "bsp_en": "Quiet, please! In the library, you can't speak loudly.",
   "ko": "조용함, 정적",
-  "extras_auto": true
+  "extras_auto": true,
+  "numerus": "sg"
  },
  {
   "id": "g-1141",
@@ -13911,7 +14539,7 @@
  },
  {
   "id": "g-1161",
-  "de": "Schnee (Sg.)",
+  "de": "Schnee",
   "artikel": "der",
   "plural": null,
   "konj": null,
@@ -13919,11 +14547,12 @@
   "bsp": "In den Bergen liegt viel Schnee.",
   "bsp_en": "There's a lot of snow in the mountains.",
   "ko": "눈",
-  "extras_auto": true
+  "extras_auto": true,
+  "numerus": "sg"
  },
  {
   "id": "g-1162",
-  "de": "schneiden (sich)",
+  "de": "sich schneiden",
   "artikel": null,
   "plural": null,
   "konj": "schneidet",
@@ -13931,7 +14560,8 @@
   "bsp": "Das Messer schneidet nicht gut.",
   "bsp_en": "The knife doesn't cut well.",
   "ko": "자르다",
-  "extras_auto": true
+  "extras_auto": true,
+  "reflexiv": true
  },
  {
   "id": "g-1163",
@@ -13947,7 +14577,7 @@
  },
  {
   "id": "g-1164",
-  "de": "Schokolade (Sg.)",
+  "de": "Schokolade",
   "artikel": "die",
   "plural": null,
   "konj": null,
@@ -13955,7 +14585,8 @@
   "bsp": "Julia liebt Schokolade.",
   "bsp_en": "Julia loves chocolate.",
   "ko": "초콜릿",
-  "extras_auto": true
+  "extras_auto": true,
+  "numerus": "sg"
  },
  {
   "id": "g-1165",
@@ -14031,7 +14662,7 @@
  },
  {
   "id": "g-1171",
-  "de": "See (Sg)",
+  "de": "See",
   "artikel": "die",
   "plural": null,
   "konj": null,
@@ -14039,7 +14670,8 @@
   "bsp": "Die See ist heute ruhig.",
   "bsp_en": "The sea is calm today.",
   "ko": "바다",
-  "extras_auto": true
+  "extras_auto": true,
+  "numerus": "sg"
  },
  {
   "id": "g-1172",
@@ -14062,7 +14694,8 @@
   "stufe": "A2",
   "bsp": "Das Licht ist noch an/schon aus.",
   "bsp_en": "The light is still on/has already been turned off.",
-  "ko": null
+  "ko": null,
+  "aus": true
  },
  {
   "id": "g-1174",
@@ -14102,7 +14735,7 @@
  },
  {
   "id": "g-1177",
-  "de": "Service (Sg.)",
+  "de": "Service",
   "artikel": "der",
   "plural": null,
   "konj": null,
@@ -14110,11 +14743,12 @@
   "bsp": "Ich bin mit dem Service in der Werkstatt sehr zufrieden.",
   "bsp_en": "I am very satisfied with the service at the workshop.",
   "ko": "서비스",
-  "extras_auto": true
+  "extras_auto": true,
+  "numerus": "sg"
  },
  {
   "id": "g-1178",
-  "de": "setzen (sich)",
+  "de": "sich setzen",
   "artikel": null,
   "plural": null,
   "konj": "setzt",
@@ -14122,7 +14756,8 @@
   "bsp": "Setz dich doch!",
   "bsp_en": "Sit down!",
   "ko": "앉다",
-  "extras_auto": true
+  "extras_auto": true,
+  "reflexiv": true
  },
  {
   "id": "g-1179",
@@ -14234,7 +14869,7 @@
  },
  {
   "id": "g-1188",
-  "de": "Spaß (Sg.)",
+  "de": "Spaß",
   "artikel": "der",
   "plural": null,
   "konj": null,
@@ -14242,7 +14877,8 @@
   "bsp": "Meine Arbeit macht mir Spaß.",
   "bsp_en": "My work is fun.",
   "ko": "재미",
-  "extras_auto": true
+  "extras_auto": true,
+  "numerus": "sg"
  },
  {
   "id": "g-1189",
@@ -14294,7 +14930,7 @@
  },
  {
   "id": "g-1193",
-  "de": "Sport (Sg.)",
+  "de": "Sport",
   "artikel": "der",
   "plural": null,
   "konj": null,
@@ -14302,7 +14938,9 @@
   "bsp": "Ich mache viel Sport.",
   "bsp_en": "I do a lot of sports.",
   "ko": "운동",
-  "extras_auto": true
+  "extras_auto": true,
+  "numerus": "sg",
+  "aus": true
  },
  {
   "id": "g-1194",
@@ -14474,7 +15112,7 @@
  },
  {
   "id": "g-1208",
-  "de": "streiten (sich)",
+  "de": "sich streiten",
   "artikel": null,
   "plural": null,
   "konj": "streitet",
@@ -14482,7 +15120,8 @@
   "bsp": "Die Kinder streiten (sich) oft.",
   "bsp_en": "The children often argue.",
   "ko": "다투다",
-  "extras_auto": true
+  "extras_auto": true,
+  "reflexiv": true
  },
  {
   "id": "g-1209",
@@ -14498,7 +15137,7 @@
  },
  {
   "id": "g-1210",
-  "de": "Stress (Sg.)",
+  "de": "Stress",
   "artikel": "der",
   "plural": null,
   "konj": null,
@@ -14506,7 +15145,8 @@
   "bsp": "Ich habe bei der Arbeit viel Stress.",
   "bsp_en": "I have a lot of stress at work.",
   "ko": "스트레스",
-  "extras_auto": true
+  "extras_auto": true,
+  "numerus": "sg"
  },
  {
   "id": "g-1211",
@@ -14534,7 +15174,7 @@
  },
  {
   "id": "g-1213",
-  "de": "Studium (Sg.)",
+  "de": "Studium",
   "artikel": "das",
   "plural": null,
   "konj": null,
@@ -14542,7 +15182,9 @@
   "bsp": "Das Studium dauert drei Jahre.",
   "bsp_en": "The studies take three years.",
   "ko": "대학 공부",
-  "extras_auto": true
+  "extras_auto": true,
+  "numerus": "sg",
+  "aus": true
  },
  {
   "id": "g-1214",
@@ -14678,7 +15320,7 @@
  },
  {
   "id": "g-1225",
-  "de": "Taschengeld (Sg.)",
+  "de": "Taschengeld",
   "artikel": "das",
   "plural": null,
   "konj": null,
@@ -14686,7 +15328,8 @@
   "bsp": "Wie viel Taschengeld bekommen deine Kinder?",
   "bsp_en": "How much pocket money do your children get?",
   "ko": "용돈",
-  "extras_auto": true
+  "extras_auto": true,
+  "numerus": "sg"
  },
  {
   "id": "g-1226",
@@ -14702,7 +15345,7 @@
  },
  {
   "id": "g-1227",
-  "de": "(aus)tauschen",
+  "de": "austauschen",
   "artikel": null,
   "plural": null,
   "konj": "tauscht (aus)",
@@ -14762,7 +15405,7 @@
  },
  {
   "id": "g-1232",
-  "de": "Tennis (Sg.)",
+  "de": "Tennis",
   "artikel": "das",
   "plural": null,
   "konj": null,
@@ -14770,7 +15413,8 @@
   "bsp": "Steffi spielt sehr gut Tennis.",
   "bsp_en": "Steffi plays tennis very well.",
   "ko": "테니스",
-  "extras_auto": true
+  "extras_auto": true,
+  "numerus": "sg"
  },
  {
   "id": "g-1233",
@@ -14978,7 +15622,7 @@
  },
  {
   "id": "g-1250",
-  "de": "treffen (sich)",
+  "de": "sich treffen",
   "artikel": null,
   "plural": null,
   "konj": "trifft",
@@ -14986,7 +15630,8 @@
   "bsp": "Ich treffe in der Stadt einen Kollegen.",
   "bsp_en": "I meet a colleague in the city.",
   "ko": "만나다",
-  "extras_auto": true
+  "extras_auto": true,
+  "reflexiv": true
  },
  {
   "id": "g-1251",
@@ -15182,7 +15827,7 @@
  },
  {
   "id": "g-1267",
-  "de": "unterhalten (sich)",
+  "de": "sich unterhalten",
   "artikel": null,
   "plural": null,
   "konj": "unterhält",
@@ -15190,7 +15835,8 @@
   "bsp": "Andreas und Nessrin unterhalten sich.",
   "bsp_en": "Andreas and Nessrin are talking.",
   "ko": "대화하다",
-  "extras_auto": true
+  "extras_auto": true,
+  "reflexiv": true
  },
  {
   "id": "g-1268",
@@ -15218,7 +15864,7 @@
  },
  {
   "id": "g-1270",
-  "de": "Unterricht (Sg.)",
+  "de": "Unterricht",
   "artikel": "der",
   "plural": null,
   "konj": null,
@@ -15226,7 +15872,9 @@
   "bsp": "Der Unterricht dauert bis 19 Uhr.",
   "bsp_en": "The class lasts until 7 PM.",
   "ko": "수업",
-  "extras_auto": true
+  "extras_auto": true,
+  "numerus": "sg",
+  "aus": true
  },
  {
   "id": "g-1271",
@@ -15298,7 +15946,8 @@
   "bsp": "Hier ist Rauchen verboten.",
   "bsp_en": "Smoking is prohibited here.",
   "ko": "금지되다",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-1277",
@@ -15338,7 +15987,7 @@
  },
  {
   "id": "g-1280",
-  "de": "Verkehr (Sg.)",
+  "de": "Verkehr",
   "artikel": "der",
   "plural": null,
   "konj": null,
@@ -15346,7 +15995,8 @@
   "bsp": "Morgens gibt es hier immer viel Verkehr.",
   "bsp_en": "In the morning, there is always a lot of traffic here.",
   "ko": "교통",
-  "extras_auto": true
+  "extras_auto": true,
+  "numerus": "sg"
  },
  {
   "id": "g-1281",
@@ -15362,7 +16012,7 @@
  },
  {
   "id": "g-1282",
-  "de": "verletzen (sich)",
+  "de": "sich verletzen",
   "artikel": null,
   "plural": null,
   "konj": "verletzt",
@@ -15370,11 +16020,12 @@
   "bsp": "Sind Sie verletzt? – Ja, am Bein.",
   "bsp_en": "Are you injured? – Yes, on the leg.",
   "ko": "다치다",
-  "extras_auto": true
+  "extras_auto": true,
+  "reflexiv": true
  },
  {
   "id": "g-1283",
-  "de": "verlieben (sich)",
+  "de": "sich verlieben",
   "artikel": null,
   "plural": null,
   "konj": "verliebt",
@@ -15382,7 +16033,8 @@
   "bsp": "Ich bin total verliebt.",
   "bsp_en": "I am totally in love.",
   "ko": "사랑에 빠지다",
-  "extras_auto": true
+  "extras_auto": true,
+  "reflexiv": true
  },
  {
   "id": "g-1284",
@@ -15566,7 +16218,7 @@
  },
  {
   "id": "g-1299",
-  "de": "vorn(e)",
+  "de": "vorn",
   "artikel": null,
   "plural": null,
   "konj": null,
@@ -15602,7 +16254,7 @@
  },
  {
   "id": "g-1302",
-  "de": "vorstellen (sich)",
+  "de": "sich vorstellen",
   "artikel": null,
   "plural": null,
   "konj": "vorgestellt",
@@ -15610,7 +16262,8 @@
   "bsp": "Wir wollen uns kennenlernen. Können Sie sich bitte vorstellen?",
   "bsp_en": "We want to get to know each other. Can you please introduce yourself?",
   "ko": "소개하다",
-  "extras_auto": true
+  "extras_auto": true,
+  "reflexiv": true
  },
  {
   "id": "g-1303",
@@ -15722,7 +16375,7 @@
  },
  {
   "id": "g-1312",
-  "de": "waschen (sich)",
+  "de": "sich waschen",
   "artikel": null,
   "plural": null,
   "konj": "wäscht",
@@ -15730,11 +16383,12 @@
   "bsp": "Wo kann ich mir die Hände waschen?",
   "bsp_en": "Where can I wash my hands?",
   "ko": "씻다",
-  "extras_auto": true
+  "extras_auto": true,
+  "reflexiv": true
  },
  {
   "id": "g-1313",
-  "de": "Wasser (Sg.)",
+  "de": "Wasser",
   "artikel": "das",
   "plural": null,
   "konj": null,
@@ -15742,7 +16396,9 @@
   "bsp": "Ein Glas Wasser, bitte.",
   "bsp_en": "A glass of water, please.",
   "ko": "물",
-  "extras_auto": true
+  "extras_auto": true,
+  "numerus": "sg",
+  "aus": true
  },
  {
   "id": "g-1314",
@@ -15790,7 +16446,8 @@
   "bsp": "Meine Brille ist weg. Ich finde sie nicht mehr.",
   "bsp_en": "My glasses are gone. I can't find them anymore.",
   "ko": "없어진",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-1318",
@@ -15910,7 +16567,8 @@
   "bsp": "Wer ist das?",
   "bsp_en": "Who is that?",
   "ko": "누구",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-1328",
@@ -15938,7 +16596,7 @@
  },
  {
   "id": "g-1330",
-  "de": "Wetter (Sg.)",
+  "de": "Wetter",
   "artikel": "das",
   "plural": null,
   "konj": null,
@@ -15946,7 +16604,9 @@
   "bsp": "Heute ist das Wetter gut: Es ist sonnig und warm.",
   "bsp_en": "The weather is good today: It's sunny and warm.",
   "ko": "날씨",
-  "extras_auto": true
+  "extras_auto": true,
+  "numerus": "sg",
+  "aus": true
  },
  {
   "id": "g-1331",
@@ -16185,7 +16845,8 @@
   "stufe": "A2",
   "bsp": "Ich ziehe (mir) eine Jacke an.",
   "bsp_en": "I am putting on a jacket.",
-  "ko": null
+  "ko": null,
+  "aus": true
  },
  {
   "id": "g-1351",
@@ -16237,7 +16898,7 @@
  },
  {
   "id": "g-1355",
-  "de": "Zucker (Sg.)",
+  "de": "Zucker",
   "artikel": "der",
   "plural": null,
   "konj": null,
@@ -16245,7 +16906,8 @@
   "bsp": "Trinken Sie den Tee mit oder ohne Zucker?",
   "bsp_en": "Do you drink tea with or without sugar?",
   "ko": "설탕",
-  "extras_auto": true
+  "extras_auto": true,
+  "numerus": "sg"
  },
  {
   "id": "g-1356",
@@ -16317,7 +16979,8 @@
   "bsp": "Fahrt ihr nach der Party zurück nach Hause?",
   "bsp_en": "Are you driving back home after the party?",
   "ko": "돌아가다",
-  "extras_auto": true
+  "extras_auto": true,
+  "aus": true
  },
  {
   "id": "g-1362",
