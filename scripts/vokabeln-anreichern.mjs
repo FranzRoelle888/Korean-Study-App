@@ -200,6 +200,9 @@ const handFelder = (w) => (Array.isArray(w?.hand) ? w.hand.map(String) : [])
 
 /* ---------- Prüfung der Modellantwort ---------- */
 const pruefliste = []
+/* Eigene englische Bedeutungen, an denen der Prüfer zweifelt — nur
+   gemeldet, nie geändert (Franz 09.09.) */
+const eigenePruefliste = []
 
 function pruefeText(s, min, max, muster) {
   if (typeof s !== 'string') return null
@@ -307,7 +310,8 @@ const SYSTEM = [
 const SYSTEM_PRUEF = [
   'You are the second pair of eyes for a Korean vocabulary deck of a German beginner (A1-A2). For each line "id | korean | pos | usage hint | english gloss | german gloss" judge ONLY this: are the English and the German gloss correct, natural, everyday renderings of the MAIN sense(s) of this Korean word for a beginner, and do both glosses express the same senses?',
   'Be strict about wrong or rare senses (정도 as "degree/Grad" is wrong — "about, roughly / extent" is right; 병 as "sickness" is fine; 천 as "cloth" for the number 1000 is wrong). Accept stylistic variants and fair simplifications — do not nitpick.',
-  'Return ONLY a JSON array: [{"id":"...","ok":true|false,"grund":"<short German reason when not ok, else null>","en":"<better English gloss when not ok, else null>","de":"<better German gloss when not ok, else null>"}]. One object per id, never leave one out.',
+  'Judge the two glosses SEPARATELY — an English gloss written by the learner himself is often kept even when it is off, and the German one still has to be right.',
+  'Return ONLY a JSON array: [{"id":"...","en_ok":true|false,"de_ok":true|false,"grund":"<short German reason when something is not ok, else null>","en":"<better English gloss when en_ok is false, else null>","de":"<better German gloss when de_ok is false, else null>"}]. One object per id, never leave one out.',
 ].join('\n')
 
 const zeile = (e, notiz = '') =>
@@ -324,8 +328,8 @@ const zeile = (e, notiz = '') =>
   ].join(' | ')
 
 /* ---------- Ein Stapel Wörter anreichern (mit Prüfung) ----------
-   Rückgabe: Map id -> Felder; Felder.geprueft sagt, ob Opus die
-   Bedeutungen abgenommen hat. */
+   Rückgabe: Map id -> Felder; Felder.enOk / Felder.deOk sagen, ob
+   Opus die englische bzw. die deutsche Bedeutung abgenommen hat. */
 async function reichereAn(eintraege) {
   const ergebnis = new Map()
   const notizen = new Map() /* id -> Einwand des Prüfers */
@@ -359,7 +363,9 @@ async function reichereAn(eintraege) {
           ex: e.brauchtSatz ? pruefeSatz(a.ex, e.ko, pos) : null,
           ex_tr: e.brauchtSatz ? pruefeText(a.ex_tr, 3, 140) : null,
           hanja: null,
-          geprueft: false,
+          /* getrennte Abnahme: enOk = englische Bedeutung, deOk = deutsche */
+          enOk: false,
+          deOk: false,
         }
         if (!felder.zaehlwort) felder.zahlsystem = null
         if (e.brauchtSatz && !(felder.ex && felder.ex_tr)) {
@@ -381,7 +387,10 @@ async function reichereAn(eintraege) {
      durchgefallenen Einträge (Einwände landen in `notizen`). */
   async function pruefRunde(liste) {
     const durchgefallen = []
-    const zuPruefen = liste.filter((e) => ergebnis.get(e.id)?.en && ergebnis.get(e.id)?.de)
+    const zuPruefen = liste.filter((e) => {
+      const f = ergebnis.get(e.id)
+      return f?.en && f?.de && !(f.enOk && f.deOk)
+    })
     for (let von = 0; von < zuPruefen.length; von += 25) {
       const teil = zuPruefen.slice(von, von + 25)
       let urteile
@@ -405,12 +414,21 @@ async function reichereAn(eintraege) {
         const e = teil.find((x) => x.id === u?.id)
         if (!e) continue
         const f = ergebnis.get(e.id)
-        if (u.ok === true) {
-          f.geprueft = true
-        } else {
-          const grund = pruefeText(u.grund, 2, 200) || 'Bedeutung passt nicht'
-          const besser = [u.en ? `en: ${u.en}` : '', u.de ? `de: ${u.de}` : ''].filter(Boolean).join(', ')
-          notizen.set(e.id, `${grund}${besser ? ` (Vorschlag ${besser})` : ''}`)
+        f.enOk = u.en_ok !== false
+        f.deOk = u.de_ok !== false
+        if (f.enOk && f.deOk) continue
+        const grund = pruefeText(u.grund, 2, 200) || 'Bedeutung passt nicht'
+        const besser = [u.en ? `en: ${u.en}` : '', u.de ? `de: ${u.de}` : ''].filter(Boolean).join(', ')
+        const notiz = `${grund}${besser ? ` (Vorschlag ${besser})` : ''}`
+        /* Die englische Bedeutung ist SEINE — sie wird nie überschrieben.
+           Stimmt sie nicht, kommt sie nur auf die Prüfliste; das Deutsche
+           darf trotzdem geschrieben werden (Franz 09.09.). */
+        if (!f.enOk && e.enFest) {
+          eigenePruefliste.push(`${e.ko}: deine Bedeutung „${e.enAlt}" — ${notiz}`)
+          f.enOk = true
+        }
+        if (!f.enOk || !f.deOk) {
+          notizen.set(e.id, notiz)
           durchgefallen.push(e)
         }
       }
@@ -541,11 +559,9 @@ async function bestandAnreichern() {
     const v = e.vorhanden
     if (f) {
       const darf = (feld) => !e.hand.includes(feld)
-      /* Bedeutungen nur nach Abnahme durch den Prüfer */
-      if (f.geprueft) {
-        if (!e.enFest && f.en && f.en !== v.en && darf('en')) patch.en = f.en
-        if (f.de && (e.neu || !v.de) && f.de !== v.de && darf('de')) patch.de = f.de
-      }
+      /* Jede Bedeutung nur nach ihrer eigenen Abnahme durch den Prüfer */
+      if (f.enOk && !e.enFest && f.en && f.en !== v.en && darf('en')) patch.en = f.en
+      if (f.deOk && f.de && (e.neu || !v.de) && f.de !== v.de && darf('de')) patch.de = f.de
       if (f.nuance && (e.neu || !v.nuance) && darf('nuance')) patch.nuance = f.nuance
       if (f.info && (e.neu || !v.info) && darf('info')) patch.info = f.info
       if (!v.pos && !patch.pos && f.pos) patch.pos = f.pos
@@ -640,14 +656,14 @@ async function vorratFuellen() {
     const alt = e.alt ?? {}
     const ex = alt.ex || f.ex || null
     const exTr = alt.ex ? alt.ex_tr : f.ex_tr || null
-    const komplett = !!(f.geprueft && f.en && f.de && f.pos && ex && exTr)
+    const komplett = !!(f.enOk && f.deOk && f.en && f.de && f.pos && ex && exTr)
     if (komplett) bereit++
     zeilen.push({
       inv_id: e.id,
       profile: PROFIL,
       ko: e.ko,
-      en: (f.geprueft && f.en) || alt.en || e.inv.en,
-      de: (f.geprueft && f.de) || null,
+      en: (f.enOk && f.en) || alt.en || e.inv.en,
+      de: (f.deOk && f.de) || null,
       pos: f.pos ?? e.inv.pos ?? null,
       rang: e.inv.rang == null || e.inv.rang >= 99999 ? null : e.inv.rang,
       ex,
@@ -662,7 +678,7 @@ async function vorratFuellen() {
          geantwortet hat — sonst beim nächsten Lauf erneut versuchen */
       anreicherung: erg.has(e.id) ? METHODE : (alt.anreicherung ?? 0),
     })
-    if (!komplett) console.log(`  unvollständig (bleibt bereit=false): ${e.ko}${f.geprueft ? '' : ' [Bedeutung nicht abgenommen]'}`)
+    if (!komplett) console.log(`  unvollständig (bleibt bereit=false): ${e.ko}${f.enOk && f.deOk ? '' : ' [Bedeutung nicht abgenommen]'}`)
     if (PROBE) console.log(`  [probe] ${JSON.stringify(zeilen.at(-1))}`)
   }
   for (let von = 0; von < zeilen.length; von += 50) await upserteVorrat(zeilen.slice(von, von + 50))
@@ -841,6 +857,10 @@ if (NUR_AUDIO) {
   if (pruefliste.length) {
     console.log(`\n=== PRÜFLISTE (${pruefliste.length}) — bitte von Hand ansehen ===`)
     for (const p of pruefliste) console.log('  ' + p)
+  }
+  if (eigenePruefliste.length) {
+    console.log(`\n=== DEINE EIGENEN BEDEUTUNGEN (${eigenePruefliste.length}) — unverändert, nur ein Hinweis ===`)
+    for (const p of eigenePruefliste) console.log('  ' + p)
   }
   console.log(`\nModell: ${tokensRein} Tokens rein, ${tokensRaus} raus -> grob ${kostenUsd.toFixed(2)} $.`)
 }
