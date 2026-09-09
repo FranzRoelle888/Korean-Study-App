@@ -166,6 +166,14 @@ function wordFromRow(r) {
     hanja: Array.isArray(r.hanja) && r.hanja.length ? r.hanja : null,
     invId: r.inv_id || null,
     rang: r.rang ?? null,
+    /* Vokabel-Qualität (Migration 016): Infotext „Gut zu wissen",
+       Bedeutungsfamilie, Zählwort + Zahlensystem, von Hand geänderte
+       Felder (die der Anreicherungslauf nie mehr anfasst) */
+    info: r.info || null,
+    familie: r.familie || null,
+    zaehlwort: !!r.zaehlwort,
+    zahlsystem: r.zahlsystem || null,
+    hand: Array.isArray(r.hand) && r.hand.length ? r.hand : null,
     createdAt: new Date(r.created_at).getTime(),
   }
 }
@@ -196,7 +204,21 @@ function wordToRow(w) {
   if (w.hanja) row.hanja = w.hanja
   if (w.invId) row.inv_id = w.invId
   if (w.rang != null) row.rang = w.rang
+  /* Vokabel-Qualität (Migration 016) — nur wenn befüllt */
+  if (w.info) row.info = w.info
+  if (w.familie) row.familie = w.familie
+  if (w.zaehlwort) row.zaehlwort = true
+  if (w.zahlsystem) row.zahlsystem = w.zahlsystem
+  if (w.hand) row.hand = w.hand
   return row
+}
+/* Spalten aus Migration 016 — fehlt die Migration noch, lehnt die DB
+   das Anlegen ab; dann ohne diese Spalten erneut versuchen */
+const SPALTEN_016 = ['info', 'familie', 'zaehlwort', 'zahlsystem', 'hand']
+function ohneSpalten016(row) {
+  const r = { ...row }
+  for (const s of SPALTEN_016) delete r[s]
+  return r
 }
 function cardFromRow(r) {
   return {
@@ -260,6 +282,12 @@ export async function ergaenzeWortInhalte(id, felder) {
   if (felder.pos) patch.pos = felder.pos
   if (felder.invId) patch.inv_id = felder.invId
   if (felder.rang != null) patch.rang = felder.rang
+  /* Vokabel-Qualität (Migration 016) */
+  if (felder.info) patch.info = felder.info
+  if (felder.zaehlwort) {
+    patch.zaehlwort = true
+    patch.zahlsystem = felder.zahlsystem || null
+  }
   if (!Object.keys(patch).length) return
   const { error } = await mine(supabase.from('words').update(patch).eq('id', id))
   if (error) throw error
@@ -385,7 +413,7 @@ export async function flushPending() {
       else if (op.t === 'card') await persistCard(op.card)
       else if (op.t === 'newcard') await persistNewCard(op.card)
       else if (op.t === 'delcard') await deleteCardCloud(op.id)
-      else if (op.t === 'edit') await updateWordCloud(op.id, op.en, op.ko, op.pos, op.clearExtras, op.de)
+      else if (op.t === 'edit') await updateWordCloud(op.id, op.en, op.ko, op.pos, op.clearExtras, op.de, op.hand)
       else if (op.t === 'del') await deleteWordCloud(op.id)
     } catch (e) {
       /* Sonderfall: Der Eintrag ist schon in der Cloud (der erste
@@ -486,6 +514,11 @@ function vorratFromRow(r) {
     exTr: r.ex_tr || null,
     nuance: r.nuance || null,
     hanja: Array.isArray(r.hanja) && r.hanja.length ? r.hanja : null,
+    /* Vokabel-Qualität (Migration 016) */
+    info: r.info || null,
+    familie: r.familie || null,
+    zaehlwort: !!r.zaehlwort,
+    zahlsystem: r.zahlsystem || null,
     bereit: !!r.bereit,
     audioOk: !!r.audio_ok,
     uebersprungen: !!r.uebersprungen,
@@ -609,6 +642,9 @@ export function validateNewWord(words, en, ko, pos) {
     en: cleanEn,
     ko: cleanKo,
     pos: pos || null,
+    /* Hand-Schutz: die Bedeutung hat der Lerner selbst getippt —
+       der Anreicherungslauf darf sie nie umschreiben */
+    hand: ['en'],
     createdAt: Date.now(),
   }
   /* Franz: nur die Erkennen-Karte (c1 = null), Produktion per Warmstart */
@@ -620,7 +656,12 @@ export function validateNewWord(words, en, ko, pos) {
 
 /* ---------- In die Cloud schreiben ---------- */
 export async function persistNewWord(word, c1, c2) {
-  const we = await supabase.from('words').insert(stamp(wordToRow(word)))
+  let we = await supabase.from('words').insert(stamp(wordToRow(word)))
+  /* Migration 016 noch nicht ausgeführt? Dann ohne die neuen Spalten
+     erneut — das Wort darf daran nie scheitern */
+  if (we.error && /column/i.test(we.error.message || '')) {
+    we = await supabase.from('words').insert(stamp(ohneSpalten016(wordToRow(word))))
+  }
   if (we.error) throw we.error
   /* Vokabel-Motor: ein neues Wort startet nur mit der Erkennen-Karte
      (c1 = null); die Produktions-Karte kommt spaeter per Warmstart */
@@ -666,7 +707,7 @@ export function validateEdit(words, id, en, ko, pos) {
   return { en: cleanEn, ko: cleanKo, pos: pos || null }
 }
 
-export async function updateWordCloud(id, en, ko, pos, clearExtras, de) {
+export async function updateWordCloud(id, en, ko, pos, clearExtras, de, hand) {
   const patch = { en, ko, pos: pos || null }
   /* Vokabel-Motor: deutsche Bedeutung nur mitschicken, wenn sie
      beim Bearbeiten in Klammern angegeben wurde */
@@ -680,7 +721,17 @@ export async function updateWordCloud(id, en, ko, pos, clearExtras, de) {
     patch.conj = null
     patch.extras_auto = false
   }
-  const { error } = await mine(supabase.from('words').update(patch).eq('id', id))
+  /* Hand-Schutz (Franz 09.09.): welche Felder er selbst geändert
+     hat — der Anreicherungslauf fasst die nie mehr an. Nur senden,
+     wenn es etwas zu merken gibt (Spalte kommt mit Migration 016). */
+  if (Array.isArray(hand) && hand.length) patch.hand = hand
+  const speichern = (p) => mine(supabase.from('words').update(p).eq('id', id))
+  let { error } = await speichern(patch)
+  /* Migration 016 fehlt noch -> ohne hand erneut */
+  if (error && patch.hand && /column/i.test(error.message || '')) {
+    const { hand: _weg, ...rest } = patch
+    ;({ error } = await speichern(rest))
+  }
   if (error) throw error
 }
 
@@ -955,6 +1006,12 @@ export function dueCards(words, cards) {
       hanja: byId[c.wordId].hanja || null,
       pos: byId[c.wordId].pos || null,
       invId: byId[c.wordId].invId || null,
+      /* Vokabel-Qualität: Infotext, Familie (Erkennen: jedes Mitglied
+         zählt), Zählwort-Chip */
+      info: byId[c.wordId].info || null,
+      familie: byId[c.wordId].familie || null,
+      zaehlwort: !!byId[c.wordId].zaehlwort,
+      zahlsystem: byId[c.wordId].zahlsystem || null,
       /* 해인: Plural neben dem Nomen, Verb-Chips aus der Konjugation */
       plural: byId[c.wordId].plural || null,
       conj: byId[c.wordId].conj || null,
@@ -1145,6 +1202,12 @@ export function makeVorratWord(v) {
     hanja: v.hanja || null,
     invId: v.invId || null,
     rang: v.rang ?? null,
+    /* Vokabel-Qualität: Infotext, Familie, Zählwort kommen mit */
+    info: v.info || null,
+    familie: v.familie || null,
+    zaehlwort: !!v.zaehlwort,
+    zahlsystem: v.zahlsystem || null,
+    hand: null,
     createdAt: Date.now(),
   }
   return { word, c1: null, c2: { ...newCard(word.id, 'ko'), modus: 'text', hoerFehler: 0, erfolge: 0 } }

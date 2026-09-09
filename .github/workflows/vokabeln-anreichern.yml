@@ -13,7 +13,9 @@
 #   4. Audio-Check: vorrat.audio_ok setzen, wenn beides im Cache liegt.
 #   5. Bericht: Wortart-Verteilung der nächsten 300 Vorratswörter.
 #
-# Voraussetzung: Migration 015 ist ausgeführt.
+# Voraussetzung: Migrationen 015 und 016 sind ausgeführt.
+# Verfahren 2 (09.09.): Bedeutungen aus dem Koreanischen, Opus prüft,
+# Infotexte, Familien — Details im Kopf von scripts/vokabeln-anreichern.mjs.
 # Secrets: ANTHROPIC_API_KEY, OPENAI_API_KEY, SUPABASE_SERVICE_KEY.
 # Ein zweiter Lauf ist gefahrlos: gefüllte Felder bleiben, bereite
 # Vorratswörter werden nicht erneut angefragt.
@@ -39,6 +41,10 @@ on:
         description: 'Trockenlauf (alle Wörter anfragen, nichts schreiben, kein TTS)'
         type: boolean
         default: false
+      zahlen_loeschen:
+        description: 'NUR Zahlwörter/Ableitungen aus der Bibliothek löschen (Karten gehen mit) — sonst werden sie nur gelistet'
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -59,7 +65,9 @@ jobs:
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: |
           set -o pipefail
-          if [ "${{ inputs.nur_nuancen }}" = "true" ]; then
+          if [ "${{ inputs.zahlen_loeschen }}" = "true" ]; then
+            node scripts/vokabeln-anreichern.mjs --zahlen-loeschen 2>&1 | tee lauf.log
+          elif [ "${{ inputs.nur_nuancen }}" = "true" ]; then
             node scripts/vokabeln-anreichern.mjs --nuancen 2>&1 | tee lauf.log
           elif [ "${{ inputs.probe }}" = "true" ]; then
             node scripts/vokabeln-anreichern.mjs --probe 2>&1 | tee lauf.log
@@ -70,7 +78,7 @@ jobs:
           fi
 
       - name: TTS für Wörter und Sätze
-        if: ${{ inputs.dry != true && inputs.probe != true && inputs.nur_nuancen != true }}
+        if: ${{ inputs.dry != true && inputs.probe != true && inputs.nur_nuancen != true && inputs.zahlen_loeschen != true }}
         env:
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
@@ -79,7 +87,7 @@ jobs:
           node scripts/baue-tts.mjs --profil ko 2>&1 | tee tts.log
 
       - name: Audio-Check
-        if: ${{ inputs.dry != true && inputs.probe != true && inputs.nur_nuancen != true }}
+        if: ${{ inputs.dry != true && inputs.probe != true && inputs.nur_nuancen != true && inputs.zahlen_loeschen != true }}
         env:
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: |
@@ -91,7 +99,7 @@ jobs:
         run: |
           echo '## Anreicherung' >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
-          tail -n 80 lauf.log >> $GITHUB_STEP_SUMMARY || true
+          tail -n 160 lauf.log >> $GITHUB_STEP_SUMMARY || true
           echo '```' >> $GITHUB_STEP_SUMMARY
           if [ -f tts.log ]; then
             echo '## TTS' >> $GITHUB_STEP_SUMMARY

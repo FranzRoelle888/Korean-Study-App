@@ -222,6 +222,50 @@ export function WortVergleich({ eingabe, richtig, lang, t }) {
 }
 
 /* Drei Punkte je Wort: Erkennen · Produktion · Hören */
+/* ---------- Vokabel-Qualität (Franz 09.09.) ----------
+   InfoText   „Gut zu wissen": 2-5 Zeilen, jede beginnt mit einem
+              fetten Stichwort (**Gebrauch:** …) — ausklappbar, damit
+              die Karte kompakt bleibt (Motto: das Auge isst mit)
+   ZaehlChip  kleiner Chip „Zählwort" mit Zahlensystem als Titel */
+function infoZeilen(info) {
+  return String(info || '')
+    .split(/\r?\n/)
+    .map((z) => z.trim())
+    .filter(Boolean)
+    .map((z) => {
+      const m = z.match(/^\*\*([^*]+?):?\*\*:?\s*(.*)$/)
+      return m ? { kopf: m[1].trim(), rest: m[2] } : { kopf: '', rest: z }
+    })
+}
+export function InfoText({ info, t, offen = false, className = '' }) {
+  if (!info) return null
+  const zeilen = infoZeilen(info)
+  if (!zeilen.length) return null
+  return (
+    <details className={`info-text ${className}`.trim()} open={offen || undefined} onPointerDown={(e) => e.stopPropagation()}>
+      <summary>{t.infoLabel}</summary>
+      <ul>
+        {zeilen.map((z, i) => (
+          <li key={i}>
+            {z.kopf && <b>{z.kopf}: </b>}
+            {z.rest}
+          </li>
+        ))}
+      </ul>
+    </details>
+  )
+}
+export function ZaehlChip({ word, t, className = '' }) {
+  if (!word?.zaehlwort) return null
+  const system = word.zahlsystem && t.zahlsystem ? t.zahlsystem[word.zahlsystem] : ''
+  return (
+    <span className={`zaehl-chip ${className}`.trim()} title={system || undefined}>
+      {t.zaehlwortChip}
+      {system ? ` · ${system}` : ''}
+    </span>
+  )
+}
+
 export function StufenPunkte({ stufe, t }) {
   const s = stufe || { erkennen: 0, produktion: 0, hoeren: 0 }
   const punkt = (wert, label) => (

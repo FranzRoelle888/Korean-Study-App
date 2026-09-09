@@ -132,8 +132,22 @@ export function trainerUebersetzung({ profile, wort }) {
    eingetragenes Wort -> { de, pos, nuance, ex, exTr, hanja }.
    hanja = Zeichenvorgabe aus dem Inventar ('' wenn keine) — das
    Modell liefert dazu nur Lesung + Bedeutung, nie eigene Zeichen. */
-export function trainerVokabelAnreichern({ profile, wort, en, pos, hanja, hatSatz, hinweis }) {
-  return call({ action: 'vokabelAnreichern', profile, wort, en, pos, hanja, hatSatz, hinweis: hinweis || undefined })
+export function trainerVokabelAnreichern({ profile, wort, en, pos, hanja, hatSatz, hinweis, invHinweis, zaehlwort, zahlsystem }) {
+  return call({
+    action: 'vokabelAnreichern',
+    profile,
+    wort,
+    en,
+    pos,
+    hanja,
+    hatSatz,
+    hinweis: hinweis || undefined,
+    /* Verfahren 2 (09.09.): Inventar-Hinweis, Zählwort-Vorgabe ->
+       zurück kommen zusätzlich info, zaehlwort, zahlsystem */
+    invHinweis: invHinweis || undefined,
+    zaehlwort: zaehlwort || undefined,
+    zahlsystem: zahlsystem || undefined,
+  })
 }
 
 /* Vokabel-Motor V2 (nur ko): gleichbedeutende Wörter unterscheidbar

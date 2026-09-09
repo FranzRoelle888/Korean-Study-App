@@ -62,7 +62,20 @@ export function vorschlaege(words, eingabe, max = 5) {
     id: w.id,
     text: w.de ? `${w.en} (${w.de})` : w.en,
     nuance: w.nuance || null,
+    /* Bedeutungsfamilie (Franz 09.09.): beim Erkennen zählt jedes
+       Mitglied — die Karte braucht dafür Familie und Wort */
+    familie: w.familie || null,
+    ko: w.ko,
   }))
+}
+
+/* Erkennen/Hören: getroffen ist der Eintrag selbst ODER ein Mitglied
+   derselben Bedeutungsfamilie (때/시간, 진짜/정말) — erkannt hat man
+   die Bedeutung, die Unterscheidung übt die Produktions-Karte */
+export function trifftBedeutung(vorschlag, card) {
+  if (!vorschlag || !card) return false
+  if (vorschlag.id === card.wordId) return true
+  return !!card.familie && vorschlag.familie === card.familie
 }
 
 /* Anzeige-Bedeutung auf der Karte: `water (Wasser)` — Englisch

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { SuccessMark, MoonIcon } from '../../shared/icons'
 import ClearableInput from '../../shared/ClearableInput'
 import { SpeakButton, speak, prewarmSpeech } from '../../shared/tts'
-import { HanjaZeile, Bedeutung, WortVergleich, DeutschZeile } from '../../shared/motorTeile'
+import { HanjaZeile, Bedeutung, WortVergleich, DeutschZeile, InfoText, ZaehlChip } from '../../shared/motorTeile'
 import { useTastaturZu } from '../../shared/tastatur'
 import { istRichtig } from '../../core/vergleich'
 
@@ -148,6 +148,7 @@ function Einfuehrung({ candidates, onIntroduce, onExit, profile, t }) {
           ) : (
             <HanjaZeile hanja={entry.hanja} ko={entry.ko} className="verbergbar einf-hanja" />
           )}
+          <ZaehlChip word={entry} t={t} className="verbergbar" />
 
           {/* Die Bedeutung bleibt immer stehen */}
           <Bedeutung word={entry} className="daily-en" />
@@ -161,6 +162,8 @@ function Einfuehrung({ candidates, onIntroduce, onExit, profile, t }) {
               <span className="daily-example-en">{entry.exTr}</span>
             </div>
           )}
+          {/* Gut zu wissen: in der Schau-Phase offen, beim Tippen weg */}
+          <InfoText info={entry.info} t={t} offen className="verbergbar" />
           {tippt && <span className="einf-zeigen-hinweis">{t.einfZeigen}</span>}
         </div>
 

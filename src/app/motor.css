@@ -972,3 +972,74 @@
   font-size: 13px;
   font-weight: 600;
 }
+
+/* ---------- Vokabel-Qualität (Franz 09.09.) ----------
+   Infotext „Gut zu wissen", Zählwort-Chip, Familien-Hinweis */
+.info-text {
+  margin: 8px 0 0;
+  text-align: left;
+  font-size: 0.86rem;
+  line-height: 1.4;
+  color: var(--ink-soft, #5b5566);
+}
+.info-text summary {
+  cursor: pointer;
+  list-style: none;
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 0.02em;
+  color: var(--primary, #7263b8);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.info-text summary::-webkit-details-marker { display: none; }
+.info-text summary::before {
+  content: '▸';
+  font-size: 0.75rem;
+  transition: transform 0.15s;
+}
+.info-text[open] summary::before { transform: rotate(90deg); }
+.info-text ul {
+  margin: 6px 0 0;
+  padding: 0 0 0 2px;
+  list-style: none;
+}
+.info-text li { margin: 0 0 5px; }
+.info-text li b { color: var(--ink, #2b2733); }
+.info-text li:lang(ko), .info-text li [lang="ko"] { font-family: inherit; }
+/* auf dunklen Karten (Einführung) */
+.daily-card .info-text { color: rgba(255, 255, 255, 0.85); }
+.daily-card .info-text summary { color: rgba(255, 255, 255, 0.95); }
+.daily-card .info-text li b { color: #fff; }
+
+.zaehl-chip {
+  display: inline-block;
+  margin: 4px 0 0;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  background: var(--primary-soft, #ece8f7);
+  color: var(--primary, #7263b8);
+}
+.daily-card .zaehl-chip { background: rgba(255, 255, 255, 0.18); color: #fff; }
+
+.familie-hinweis {
+  margin: 8px 0 0;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--primary-soft, #ece8f7);
+  font-size: 0.82rem;
+  line-height: 1.4;
+  text-align: left;
+}
+.familie-hinweis .familie-titel {
+  display: block;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.familie-hinweis .familie-zeile { display: block; }
+.familie-hinweis .familie-zeile b { font-weight: 700; }

@@ -152,7 +152,9 @@
   "pos": "noun",
   "hanja": "年",
   "hinweis": "2015년",
-  "rang": 26
+  "rang": 26,
+  "zaehlwort": true,
+  "zahlsystem": "sino"
  },
  {
   "id": "t-18",
@@ -161,7 +163,8 @@
   "pos": "determiner",
   "hanja": null,
   "hinweis": "한 명",
-  "rang": 27
+  "rang": 27,
+  "zahl": true
  },
  {
   "id": "t-19",
@@ -397,7 +400,8 @@
   "hanja": null,
   "hinweis": "숫자",
   "rang": 63,
-  "extras_auto": true
+  "extras_auto": true,
+  "zahl": true
  },
  {
   "id": "t-45",
@@ -469,7 +473,9 @@
   "pos": "noun",
   "hanja": null,
   "hinweis": "천 원; 화폐 단위",
-  "rang": 74
+  "rang": 74,
+  "zaehlwort": true,
+  "zahlsystem": "sino"
  },
  {
   "id": "t-53",
@@ -496,7 +502,9 @@
   "pos": "noun",
   "hanja": "名",
   "hinweis": "한 ~; 한 명",
-  "rang": 77
+  "rang": 77,
+  "zaehlwort": true,
+  "zahlsystem": "native"
  },
  {
   "id": "t-56",
@@ -523,7 +531,8 @@
   "pos": "determiner",
   "hanja": null,
   "hinweis": "다른 나라",
-  "rang": 82
+  "rang": 82,
+  "ableitung": "t-120"
  },
  {
   "id": "t-59",
@@ -550,7 +559,9 @@
   "pos": "noun",
   "hanja": "個",
   "hinweis": "한 개",
-  "rang": 85
+  "rang": 85,
+  "zaehlwort": true,
+  "zahlsystem": "native"
  },
  {
   "id": "t-62",
@@ -669,7 +680,9 @@
   "pos": "noun",
   "hanja": "時間",
   "hinweis": "이 걸리다",
-  "rang": 99
+  "rang": 99,
+  "zaehlwort": true,
+  "zahlsystem": "native"
  },
  {
   "id": "t-75",
@@ -795,7 +808,8 @@
   "pos": "number",
   "hanja": null,
   "hinweis": "숫자",
-  "rang": 119
+  "rang": 119,
+  "zahl": true
  },
  {
   "id": "t-89",
@@ -849,7 +863,9 @@
   "pos": "noun",
   "hanja": null,
   "hinweis": "몇; 한 ~",
-  "rang": 129
+  "rang": 129,
+  "zaehlwort": true,
+  "zahlsystem": "native"
  },
  {
   "id": "t-95",
@@ -903,7 +919,9 @@
   "pos": "noun",
   "hanja": "番",
   "hinweis": "첫째 번",
-  "rang": 138
+  "rang": 138,
+  "zaehlwort": true,
+  "zahlsystem": "native"
  },
  {
   "id": "t-101",
@@ -1291,7 +1309,9 @@
   "pos": "noun",
   "hanja": "時",
   "hinweis": "몇 시/태어난 시",
-  "rang": 193
+  "rang": 193,
+  "zaehlwort": true,
+  "zahlsystem": "native"
  },
  {
   "id": "t-144",
@@ -2008,7 +2028,9 @@
   "pos": "noun",
   "hanja": null,
   "hinweis": "10시 20~; 60분",
-  "rang": 302
+  "rang": 302,
+  "zaehlwort": true,
+  "zahlsystem": "beide"
  },
  {
   "id": "t-223",
@@ -2307,7 +2329,8 @@
   "pos": "interjection",
   "hanja": null,
   "hinweis": "대답",
-  "rang": 357
+  "rang": 357,
+  "zahl": true
  },
  {
   "id": "t-256",
@@ -2686,7 +2709,8 @@
   "pos": "determiner",
   "hanja": null,
   "hinweis": "~ 권; 숫자",
-  "rang": 413
+  "rang": 413,
+  "zahl": true
  },
  {
   "id": "t-298",
@@ -3164,7 +3188,9 @@
   "pos": "noun",
   "hanja": "學年",
   "hinweis": "새 학년",
-  "rang": 512
+  "rang": 512,
+  "zaehlwort": true,
+  "zahlsystem": "sino"
  },
  {
   "id": "t-351",
@@ -3383,7 +3409,8 @@
   "hanja": null,
   "hinweis": "숫자",
   "rang": 575,
-  "extras_auto": true
+  "extras_auto": true,
+  "zahl": true
  },
  {
   "id": "t-375",
@@ -3401,7 +3428,9 @@
   "pos": "noun",
   "hanja": null,
   "hinweis": "세 살; 한 ~",
-  "rang": 581
+  "rang": 581,
+  "zaehlwort": true,
+  "zahlsystem": "native"
  },
  {
   "id": "t-377",
@@ -3645,7 +3674,9 @@
   "pos": "noun",
   "hanja": null,
   "hinweis": "다음 달",
-  "rang": 620
+  "rang": 620,
+  "zaehlwort": true,
+  "zahlsystem": "native"
  },
  {
   "id": "t-404",
@@ -4438,7 +4469,9 @@
   "pos": "noun",
   "hanja": "番-",
   "hinweis": "세 번째",
-  "rang": 774
+  "rang": 774,
+  "zaehlwort": true,
+  "zahlsystem": "native"
  },
  {
   "id": "t-492",
@@ -4538,7 +4571,9 @@
   "pos": "noun",
   "hanja": "個月",
   "hinweis": "삼 개월",
-  "rang": 799
+  "rang": 799,
+  "zaehlwort": true,
+  "zahlsystem": "sino"
  },
  {
   "id": "t-503",
@@ -4655,7 +4690,9 @@
   "pos": "noun",
   "hanja": null,
   "hinweis": "meter; 백 미터",
-  "rang": 843
+  "rang": 843,
+  "zaehlwort": true,
+  "zahlsystem": "sino"
  },
  {
   "id": "t-516",
@@ -4827,7 +4864,9 @@
   "pos": "noun",
   "hanja": "盞",
   "hinweis": "커피 잔",
-  "rang": 884
+  "rang": 884,
+  "zaehlwort": true,
+  "zahlsystem": "native"
  },
  {
   "id": "t-535",
@@ -4980,7 +5019,9 @@
   "pos": "noun",
   "hanja": "層",
   "hinweis": "10층 건물",
-  "rang": 922
+  "rang": 922,
+  "zaehlwort": true,
+  "zahlsystem": "sino"
  },
  {
   "id": "t-552",
@@ -5080,7 +5121,9 @@
   "pos": "noun",
   "hanja": null,
   "hinweis": "centimeter; 단위",
-  "rang": 956
+  "rang": 956,
+  "zaehlwort": true,
+  "zahlsystem": "sino"
  },
  {
   "id": "t-563",
@@ -5865,7 +5908,9 @@
   "pos": "noun",
   "hanja": null,
   "hinweis": "한 마리",
-  "rang": 1168
+  "rang": 1168,
+  "zaehlwort": true,
+  "zahlsystem": "native"
  },
  {
   "id": "t-650",
@@ -6001,7 +6046,9 @@
   "pos": "noun",
   "hanja": "度",
   "hinweis": "영상 일 도",
-  "rang": 1198
+  "rang": 1198,
+  "zaehlwort": true,
+  "zahlsystem": "sino"
  },
  {
   "id": "t-665",
@@ -7063,7 +7110,9 @@
   "pos": "noun",
   "hanja": "號",
   "hinweis": "사월 호 잡지",
-  "rang": 1544
+  "rang": 1544,
+  "zaehlwort": true,
+  "zahlsystem": "sino"
  },
  {
   "id": "t-782",
@@ -7081,7 +7130,9 @@
   "pos": "noun",
   "hanja": null,
   "hinweis": "에 담다",
-  "rang": 1563
+  "rang": 1563,
+  "zaehlwort": true,
+  "zahlsystem": "native"
  },
  {
   "id": "t-784",
@@ -7390,7 +7441,8 @@
   "hanja": null,
   "hinweis": "둘째 딸",
   "rang": 1660,
-  "extras_auto": true
+  "extras_auto": true,
+  "zahl": true
  },
  {
   "id": "t-818",
@@ -7417,7 +7469,9 @@
   "pos": "noun",
   "hanja": "卷",
   "hinweis": "책 한 권",
-  "rang": 1672
+  "rang": 1672,
+  "zaehlwort": true,
+  "zahlsystem": "native"
  },
  {
   "id": "t-821",
@@ -7535,7 +7589,8 @@
   "pos": "determiner",
   "hanja": null,
   "hinweis": "한두 명",
-  "rang": 1712
+  "rang": 1712,
+  "zahl": true
  },
  {
   "id": "t-834",
@@ -7589,7 +7644,8 @@
   "pos": "number",
   "hanja": null,
   "hinweis": "첫째 시간",
-  "rang": 1728
+  "rang": 1728,
+  "zahl": true
  },
  {
   "id": "t-840",
@@ -8527,7 +8583,9 @@
   "pos": "noun",
   "hanja": "週",
   "hinweis": "이번 주",
-  "rang": 2183
+  "rang": 2183,
+  "zaehlwort": true,
+  "zahlsystem": "sino"
  },
  {
   "id": "t-944",
@@ -8941,7 +8999,8 @@
   "pos": "determiner",
   "hanja": "百",
   "hinweis": "숫자",
-  "rang": 2410
+  "rang": 2410,
+  "zahl": true
  },
  {
   "id": "t-990",
@@ -9620,7 +9679,8 @@
   "pos": "number",
   "hanja": null,
   "hinweis": "숫자",
-  "rang": 2771
+  "rang": 2771,
+  "zahl": true
  },
  {
   "id": "t-1065",
@@ -9656,7 +9716,9 @@
   "pos": "noun",
   "hanja": null,
   "hinweis": "kilogram; 단위",
-  "rang": 2784
+  "rang": 2784,
+  "zaehlwort": true,
+  "zahlsystem": "sino"
  },
  {
   "id": "t-1069",
@@ -9729,7 +9791,8 @@
   "pos": "number",
   "hanja": null,
   "hinweis": "숫자",
-  "rang": 2834
+  "rang": 2834,
+  "zahl": true
  },
  {
   "id": "t-1077",
@@ -10082,7 +10145,8 @@
   "pos": "determiner",
   "hanja": "千",
   "hinweis": "숫자",
-  "rang": 3090
+  "rang": 3090,
+  "zahl": true
  },
  {
   "id": "t-1116",
@@ -10289,7 +10353,8 @@
   "pos": "determiner",
   "hanja": null,
   "hinweis": "서너 개",
-  "rang": 3240
+  "rang": 3240,
+  "zahl": true
  },
  {
   "id": "t-1139",
@@ -10893,7 +10958,8 @@
   "pos": "determiner",
   "hanja": "萬",
   "hinweis": "숫자",
-  "rang": 3865
+  "rang": 3865,
+  "zahl": true
  },
  {
   "id": "t-1206",
@@ -11073,7 +11139,8 @@
   "pos": "determiner",
   "hanja": null,
   "hinweis": "숫자",
-  "rang": 4078
+  "rang": 4078,
+  "zahl": true
  },
  {
   "id": "t-1226",
@@ -11769,7 +11836,9 @@
   "pos": "noun",
   "hanja": null,
   "hinweis": "옷 한 ~; 옷 한 벌",
-  "rang": 4898
+  "rang": 4898,
+  "zaehlwort": true,
+  "zahlsystem": "native"
  },
  {
   "id": "t-1303",
@@ -12088,7 +12157,8 @@
   "pos": "determiner",
   "hanja": null,
   "hinweis": "두세 개",
-  "rang": 5473
+  "rang": 5473,
+  "zahl": true
  },
  {
   "id": "t-1338",
@@ -12315,7 +12385,8 @@
   "pos": "number",
   "hanja": "三",
   "hinweis": "삼 년",
-  "rang": 5923
+  "rang": 5923,
+  "zahl": true
  },
  {
   "id": "t-1363",
@@ -12504,7 +12575,8 @@
   "pos": "number",
   "hanja": null,
   "hinweis": "넷째 시간",
-  "rang": 6198
+  "rang": 6198,
+  "zahl": true
  },
  {
   "id": "t-1384",
@@ -12776,7 +12848,9 @@
   "pos": "noun",
   "hanja": "月",
   "hinweis": "몇 월",
-  "rang": 6854
+  "rang": 6854,
+  "zaehlwort": true,
+  "zahlsystem": "sino"
  },
  {
   "id": "t-1414",
@@ -12812,7 +12886,8 @@
   "pos": "number",
   "hanja": null,
   "hinweis": "숫자",
-  "rang": 6980
+  "rang": 6980,
+  "zahl": true
  },
  {
   "id": "t-1418",
@@ -13037,7 +13112,8 @@
   "pos": "number",
   "hanja": null,
   "hinweis": "다섯 개",
-  "rang": 7476
+  "rang": 7476,
+  "zahl": true
  },
  {
   "id": "t-1443",
@@ -13677,7 +13753,8 @@
   "pos": "number",
   "hanja": null,
   "hinweis": "마흔 개",
-  "rang": 9548
+  "rang": 9548,
+  "zahl": true
  },
  {
   "id": "t-1514",
@@ -13758,7 +13835,8 @@
   "pos": "number",
   "hanja": null,
   "hinweis": "숫자",
-  "rang": 10126
+  "rang": 10126,
+  "zahl": true
  },
  {
   "id": "t-1523",
@@ -13912,7 +13990,8 @@
   "pos": "number",
   "hanja": "九",
   "hinweis": "숫자",
-  "rang": 10999
+  "rang": 10999,
+  "zahl": true
  },
  {
   "id": "t-1540",
@@ -14039,7 +14118,8 @@
   "pos": "number",
   "hanja": "四",
   "hinweis": "숫자",
-  "rang": 11837
+  "rang": 11837,
+  "zahl": true
  },
  {
   "id": "t-1554",
@@ -14130,7 +14210,8 @@
   "pos": "number",
   "hanja": null,
   "hinweis": "숫자",
-  "rang": 12580
+  "rang": 12580,
+  "zahl": true
  },
  {
   "id": "t-1564",
@@ -14139,7 +14220,8 @@
   "pos": "number",
   "hanja": null,
   "hinweis": "숫자",
-  "rang": 12669
+  "rang": 12669,
+  "zahl": true
  },
  {
   "id": "t-1565",
@@ -14230,7 +14312,8 @@
   "pos": "number",
   "hanja": null,
   "hinweis": "숫자",
-  "rang": 13584
+  "rang": 13584,
+  "zahl": true
  },
  {
   "id": "t-1575",
@@ -14248,7 +14331,8 @@
   "pos": "number",
   "hanja": null,
   "hinweis": "숫자",
-  "rang": 13695
+  "rang": 13695,
+  "zahl": true
  },
  {
   "id": "t-1577",
@@ -14302,7 +14386,8 @@
   "pos": "number",
   "hanja": "七",
   "hinweis": "숫자",
-  "rang": 14947
+  "rang": 14947,
+  "zahl": true
  },
  {
   "id": "t-1583",
@@ -14329,7 +14414,8 @@
   "pos": "number",
   "hanja": null,
   "hinweis": "다섯째 사람",
-  "rang": 15360
+  "rang": 15360,
+  "zahl": true
  },
  {
   "id": "t-1586",
@@ -14347,7 +14433,8 @@
   "pos": "number",
   "hanja": "四十",
   "hinweis": "숫자",
-  "rang": 15648
+  "rang": 15648,
+  "zahl": true
  },
  {
   "id": "t-1588",
@@ -14446,7 +14533,8 @@
   "pos": "number",
   "hanja": null,
   "hinweis": "숫자",
-  "rang": 17283
+  "rang": 17283,
+  "zahl": true
  },
  {
   "id": "t-1599",
@@ -14455,7 +14543,8 @@
   "pos": "number",
   "hanja": "六",
   "hinweis": "숫자",
-  "rang": 17406
+  "rang": 17406,
+  "zahl": true
  },
  {
   "id": "t-1600",
@@ -14464,7 +14553,8 @@
   "pos": "number",
   "hanja": null,
   "hinweis": "숫자",
-  "rang": 17461
+  "rang": 17461,
+  "zahl": true
  },
  {
   "id": "t-1601",
@@ -14501,7 +14591,8 @@
   "pos": "number",
   "hanja": "三十",
   "hinweis": "숫자",
-  "rang": 18764
+  "rang": 18764,
+  "zahl": true
  },
  {
   "id": "t-1605",
@@ -14528,7 +14619,8 @@
   "pos": "number",
   "hanja": "五十",
   "hinweis": "숫자",
-  "rang": 19100
+  "rang": 19100,
+  "zahl": true
  },
  {
   "id": "t-1608",
@@ -14546,7 +14638,8 @@
   "pos": "number",
   "hanja": "七十",
   "hinweis": "숫자",
-  "rang": 19607
+  "rang": 19607,
+  "zahl": true
  },
  {
   "id": "t-1610",
@@ -14591,7 +14684,8 @@
   "pos": "number",
   "hanja": null,
   "hinweis": "숫자",
-  "rang": 21340
+  "rang": 21340,
+  "zahl": true
  },
  {
   "id": "t-1615",
@@ -14600,7 +14694,8 @@
   "pos": "number",
   "hanja": "五",
   "hinweis": "숫자",
-  "rang": 21348
+  "rang": 21348,
+  "zahl": true
  },
  {
   "id": "t-1616",
@@ -14636,7 +14731,8 @@
   "pos": "number",
   "hanja": "十",
   "hinweis": "숫자",
-  "rang": 24036
+  "rang": 24036,
+  "zahl": true
  },
  {
   "id": "t-1620",
@@ -14654,7 +14750,8 @@
   "pos": "number",
   "hanja": null,
   "hinweis": "숫자",
-  "rang": 27846
+  "rang": 27846,
+  "zahl": true
  },
  {
   "id": "t-1622",
@@ -14672,7 +14769,8 @@
   "pos": "number",
   "hanja": "六十",
   "hinweis": "숫자",
-  "rang": 28580
+  "rang": 28580,
+  "zahl": true
  },
  {
   "id": "t-1624",
@@ -14681,7 +14779,8 @@
   "pos": "number",
   "hanja": "八十",
   "hinweis": "숫자",
-  "rang": 29719
+  "rang": 29719,
+  "zahl": true
  },
  {
   "id": "t-1625",
@@ -14699,7 +14798,8 @@
   "pos": "number",
   "hanja": "億",
   "hinweis": "숫자",
-  "rang": 34770
+  "rang": 34770,
+  "zahl": true
  },
  {
   "id": "t-1627",
@@ -14708,7 +14808,8 @@
   "pos": "number",
   "hanja": null,
   "hinweis": "숫자",
-  "rang": 34841
+  "rang": 34841,
+  "zahl": true
  },
  {
   "id": "t-1628",
@@ -14744,7 +14845,8 @@
   "pos": "number",
   "hanja": null,
   "hinweis": "숫자",
-  "rang": 49265
+  "rang": 49265,
+  "zahl": true
  },
  {
   "id": "t-1632",
@@ -14753,7 +14855,8 @@
   "pos": "number",
   "hanja": "二十",
   "hinweis": "숫자",
-  "rang": 51771
+  "rang": 51771,
+  "zahl": true
  },
  {
   "id": "t-1633",
@@ -14847,7 +14950,8 @@
   "pos": "determiner",
   "hanja": null,
   "hinweis": "구십 살",
-  "rang": 99999
+  "rang": 99999,
+  "zahl": true
  },
  {
   "id": "t-1643",
@@ -15031,7 +15135,9 @@
   "pos": "noun",
   "hanja": null,
   "hinweis": "차 한 대",
-  "rang": 99999
+  "rang": 99999,
+  "zaehlwort": true,
+  "zahlsystem": "native"
  },
  {
   "id": "t-1662",
@@ -15216,7 +15322,8 @@
   "hanja": null,
   "hinweis": "백만 개",
   "rang": 99999,
-  "extras_auto": true
+  "extras_auto": true,
+  "zahl": true
  },
  {
   "id": "t-1681",
@@ -15490,7 +15597,8 @@
   "hanja": null,
   "hinweis": "숫자",
   "rang": 99999,
-  "extras_auto": true
+  "extras_auto": true,
+  "zahl": true
  },
  {
   "id": "t-1709",
@@ -15724,7 +15832,9 @@
   "pos": "noun",
   "hanja": null,
   "hinweis": "삼 인분",
-  "rang": 99999
+  "rang": 99999,
+  "zaehlwort": true,
+  "zahlsystem": "sino"
  },
  {
   "id": "t-1733",
@@ -15811,7 +15921,9 @@
   "pos": "noun",
   "hanja": null,
   "hinweis": "한 장",
-  "rang": 99999
+  "rang": 99999,
+  "zaehlwort": true,
+  "zahlsystem": "native"
  },
  {
   "id": "t-1742",
@@ -15967,7 +16079,8 @@
   "hanja": null,
   "hinweis": "숫자",
   "rang": 99999,
-  "extras_auto": true
+  "extras_auto": true,
+  "zahl": true
  },
  {
   "id": "t-1758",
@@ -16046,7 +16159,9 @@
   "hanja": null,
   "hinweis": "한 켤레",
   "rang": 99999,
-  "extras_auto": true
+  "extras_auto": true,
+  "zaehlwort": true,
+  "zahlsystem": "native"
  },
  {
   "id": "t-1766",

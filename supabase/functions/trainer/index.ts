@@ -148,6 +148,13 @@ async function buildProfile(profile: string) {
   }
 }
 
+/* ---------- Zahlen-Wissen (Franz 09.09.) ----------
+   Franz beherrscht alle Zahlen in beiden Systemen. Sie stehen absichtlich
+   NICHT in seinen Vokabeln — der Trainer soll sie als bekannt behandeln,
+   frei benutzen und nie erklären. */
+const ZAHLEN_KO =
+  'NUMBERS: Franz already knows ALL Korean numbers in both systems (Sino-Korean 일, 이, 삼 … and native 하나/한, 둘/두, 셋/세 …), including prices, clock times (시/분), dates and ages (살). Treat numbers as known vocabulary: use them freely, never teach, gloss or mark them as new.'
+
 /* ---------- System-Prompts ---------- */
 function chatSystem(profile: string, mode: string, scenario: string, p: Awaited<ReturnType<typeof buildProfile>>) {
   const learnsKorean = profile === 'ko'
@@ -165,6 +172,7 @@ function chatSystem(profile: string, mode: string, scenario: string, p: Awaited<
     `Fresh vocabulary (use sparingly, they are still learning these): ${p.fresh.join(', ') || '(none)'}`,
     `RECENTLY LEARNED (important: a word needs 8-10 encounters to stick — naturally weave 2-4 of these into this conversation): ${p.frischGelernt.join(', ') || '(none)'}`,
     `Grammar the learner knows: ${p.skills.join('; ') || '(nothing recorded yet — assume bare basics: polite present tense, simple statements and questions)'}`,
+    learnsKorean ? ZAHLEN_KO : '',
     p.journal.length ? `Recent sessions:\n${p.journal.join('\n')}` : '',
     p.errors.length ? `Recurring mistakes to gently work on: ${p.errors.join('; ')}` : '',
     '',
@@ -210,6 +218,7 @@ function tutorSystem(p: Awaited<ReturnType<typeof buildProfile>>) {
     `Shaky vocabulary: ${p.shaky.join(', ') || '(none)'}`,
     `Fresh / recently learned: ${[...p.fresh, ...p.frischGelernt].join(', ') || '(none)'}`,
     `Grammar he has ticked as mastered: ${p.skills.join('; ') || '(nothing yet — assume bare basics)'}`,
+    ZAHLEN_KO,
     p.journal.length ? `Recent trainer sessions:\n${p.journal.join('\n')}` : '',
     p.errors.length ? `Recurring mistakes: ${p.errors.join('; ')}` : '',
     '',
@@ -991,6 +1000,11 @@ Deno.serve(async (req) => {
          Richtung, nicht Wortlaut. Das Modell formuliert sie schoener
          und ersetzt sie nur bei klarem Irrtum. */
       const hinweis = typeof body.hinweis === 'string' ? body.hinweis.trim().slice(0, 120) : ''
+      /* Verfahren 2 (Franz 09.09.): Inventar-Hinweis (Kollokation) und
+         Zählwort-Vorgabe kommen aus dem Inventar mit */
+      const invHinweis = typeof body.invHinweis === 'string' ? body.invHinweis.trim().slice(0, 60) : ''
+      const zaehlwortVorgabe = body.zaehlwort === true
+      const zahlsystemVorgabe = ['native', 'sino', 'beide'].includes(body.zahlsystem) ? body.zahlsystem : null
       if (!wort) return json({ error: 'empty' }, 400)
 
       const hinweisRegel = hinweis
@@ -999,16 +1013,20 @@ Deno.serve(async (req) => {
       const out = await callModel(
         lerntKoreanisch
           ? [
-              'You enrich ONE Korean vocabulary entry for a German learner (native German, fluent English; English is the primary gloss).',
-              'Input line: korean | english gloss (may be empty) | pos (may be empty) | hanja characters (or "-") | needsExample (yes/no).',
+              'You enrich ONE Korean vocabulary entry for a German adult beginner (native German, fluent English; English is the primary gloss on his cards, German in parentheses).',
+              'Input line: korean | english gloss the LEARNER wrote himself (keep it — it tells you which sense he means; may be empty) | pos (may be empty) | usage hint from the TOPIK list (a collocation showing the sense; may be empty) | hanja characters (or "-") | needsExample (yes/no).',
+              'Work from the KOREAN word. The German gloss is written directly from Korean (not translated from the English), for the SAME sense(s) as the English gloss, 1-2 senses separated by " / " when both matter for a beginner.',
               'Reply with ONLY this JSON object:',
-              '{"de":"<German gloss, 1-3 everyday words, nouns WITHOUT article>",',
+              '{"de":"<German gloss, 1-3 everyday words per sense, nouns WITHOUT article>",',
               ' "pos":"<one of noun, verb, adj, adv, pronoun, determiner, interjection, phrase; copy if given>",',
-              ' "nuance":<null in most cases; only a NEEDED usage restriction, politeness level or classic confusion, max 60 chars, German>,',
+              ' "nuance":<null in most cases; only a NEEDED usage restriction, politeness level or classic confusion, max 60 chars, German; for counters: which number system, e.g. "mit koreanischen Zahlen: 한, 두, 세 마리">,',
+              ' "info":<a short "good to know" text in GERMAN or null: 2-5 lines separated by "\\n", EVERY line starting with a bold keyword in the exact form **Stichwort:** (Gebrauch, Typisch, Achtung, Ähnlich, Register, Zählen, Merke), Korean examples inline with German translation in parentheses, e.g. 어느 정도 (wie sehr). Cover typical patterns/collocations, contrast to a similar word, register, for counters the number system and 한/두/세 + counter, classic beginner mistakes. Be GENEROUS — only trivially concrete nouns (나무, 사과) get null. Max 200 characters per line>,',
+              ' "zaehlwort":<true if the word is a counter/measure word (개, 명, 마리, 잔 …), else false>,',
+              ' "zahlsystem":<for counters "native", "sino" or "beide"; else null>,',
               ' "ex":<only when needsExample is yes: ONE natural Korean sentence in polite 해요체 (ends with 요/죠/까), 4-9 words, beginner grammar, contains the word (conjugated is fine); else null>,',
               ' "ex_tr":<English translation of ex, or null>,',
               ' "hanja":<only when characters were given: array with one object PER GIVEN CHARACTER in the same order {"z":"<character as given>","les":"<its reading as ONE Hangul syllable as it appears in this word>","de":"<meaning, 1-2 German words>"}; else null>}',
-              'Be conservative: if unsure about a field, use null. Never invent readings or add characters.',
+              'For hanja, ex and nuance: if unsure, use null. Never invent readings or add characters. For de and info give your best everyday rendering.',
               hinweisRegel,
             ].join('\n')
           : [
@@ -1025,8 +1043,15 @@ Deno.serve(async (req) => {
               'Be conservative: if unsure about a field, use null.',
               hinweisRegel,
             ].join('\n'),
-        [{ role: 'user', content: `${wort} | ${en} | ${posGegeben} | ${zeichen.join('') || '-'} | ${brauchtSatz ? 'yes' : 'no'}` }],
-        1500
+        [
+          {
+            role: 'user',
+            content: lerntKoreanisch
+              ? `${wort} | ${en} | ${posGegeben} | ${invHinweis} | ${zeichen.join('') || '-'} | ${brauchtSatz ? 'yes' : 'no'}`
+              : `${wort} | ${en} | ${posGegeben} | - | ${brauchtSatz ? 'yes' : 'no'}`,
+          },
+        ],
+        3000
       )
 
       const POS_OK = ['noun', 'verb', 'adj', 'adv', 'pronoun', 'determiner', 'interjection', 'phrase', 'other']
@@ -1071,14 +1096,31 @@ Deno.serve(async (req) => {
       let de: string | null = null
       let pos: string | null = null
       let nuance: string | null = null
+      let info: string | null = null
+      let zaehlwort = zaehlwortVorgabe
+      let zahlsystem: string | null = zahlsystemVorgabe
       let ex: string | null = null
       let exTr: string | null = null
       let hanja: { z: string; les: string; de: string; i: number }[] | null = null
+      /* Infotext: 2-5 Zeilen, jede mit fettem Stichwort **Wort:** */
+      const pruefeInfo = (s: unknown): string | null => {
+        if (typeof s !== 'string') return null
+        const zeilen = s.split(/\r?\n/).map((z) => z.trim()).filter(Boolean)
+        if (zeilen.length < 2 || zeilen.length > 5) return null
+        if (!zeilen.every((z) => /^\*\*[^*]{2,24}:\*\*\s*\S/.test(z) && z.length <= 220)) return null
+        return zeilen.join('\n')
+      }
       try {
         const j = JSON.parse(out.text.replace(/^```(?:json)?/m, '').replace(/```\s*$/m, '').trim())
-        de = text(j.de, 1, 40)
+        de = text(j.de, 1, 60)
         pos = POS_OK.includes(j.pos) ? j.pos : POS_OK.includes(posGegeben) ? posGegeben : null
         nuance = j.nuance == null ? null : text(j.nuance, 3, 80)
+        if (lerntKoreanisch) {
+          info = pruefeInfo(j.info)
+          if (j.zaehlwort === true) zaehlwort = true
+          if (!zahlsystem && ['native', 'sino', 'beide'].includes(j.zahlsystem)) zahlsystem = j.zahlsystem
+          if (!zaehlwort) zahlsystem = null
+        }
         if (brauchtSatz && !lerntKoreanisch) {
           const satz = text(j.ex, 4, 120)
           const tr = text(j.ex_tr, 2, 140)
@@ -1134,7 +1176,7 @@ Deno.serve(async (req) => {
         input_tokens: out.inputTokens,
         output_tokens: out.outputTokens,
       })
-      return json({ de, pos, nuance, ex, exTr, hanja })
+      return json({ de, pos, nuance, ex, exTr, hanja, info, zaehlwort, zahlsystem })
     }
 
     /* ---------- Nuancen bei gleicher Bedeutung (Vokabel-Motor, nur Franz) ----------
@@ -1264,6 +1306,10 @@ Deno.serve(async (req) => {
         '이', '가', '은', '는', '을', '를', '에', '에서', '도', '와', '과', '하고', '의', '로', '으로',
         '부터', '까지', '만', '저', '나', '우리', '너', '이거', '그거', '저거', '여기', '거기', '저기',
         '네', '아니요', '그리고', '그래서', '하지만', '그런데', '아주', '많이', '좀', '잘', '안', '못',
+        /* Zahlen beider Systeme + Uhrzeit/Alter (Franz kann sie alle, 09.09.) */
+        '하나', '둘', '셋', '넷', '다섯', '여섯', '일곱', '여덟', '아홉', '열', '스물', '서른', '마흔', '쉰',
+        '한', '두', '세', '네', '스무', '일', '이', '삼', '사', '오', '육', '칠', '팔', '구', '십', '백', '천', '만',
+        '시', '분', '살',
       ])
       const funktionswort = (w: string) => (lerntKo ? FUNKTION_KO.has(w) : FUNKTION_DE.has(w.toLowerCase()))
       const stufe =
@@ -1277,7 +1323,7 @@ Deno.serve(async (req) => {
       const out = await callModel(
         [
           `You write a translation exercise for a beginner (A1-A2) learning ${zielSprache}. You give a sentence in ${promptSprache}; the learner writes it in ${zielSprache}.`,
-          `HARD CONSTRAINT: every content word of your ${zielSprache} sentences must come from the WORD LIST below (dictionary forms; inflection, conjugation, polite endings, particles and articles are fine), and the grammar only from the PATTERN LIST. No proper nouns, no numbers. If a sentence would need any other content word, do not write it.`,
+          `HARD CONSTRAINT: every content word of your ${zielSprache} sentences must come from the WORD LIST below (dictionary forms; inflection, conjugation, polite endings, particles and articles are fine), and the grammar only from the PATTERN LIST. ${lerntKo ? 'No proper nouns. Numbers are fine (the learner knows both number systems, clock times, prices, ages) — but a COUNTER word (개, 명, 마리 …) must be on the word list.' : 'No proper nouns, no numbers.'} If a sentence would need any other content word, do not write it.`,
           `GRAMMATICAL FUNCTION WORDS are always allowed and are NOT content words: articles, pronouns, possessives, negation, prepositions, conjunctions, question words, auxiliary verbs (${lerntKo ? '있다/없다/이다' : 'sein, haben, werden'}) and modal verbs. Use them freely to make the sentences natural, and do NOT put them into the "woerter" array — list only real content words there.`,
           lerntKo
             ? 'Polite 해요체 unless a pattern requires otherwise.'

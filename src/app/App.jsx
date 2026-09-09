@@ -473,6 +473,10 @@ function App() {
       hanja: inv?.hanja || '',
       hatSatz: !!word.ex,
       hinweis,
+      /* Verfahren 2 (09.09.): Kollokation + Zählwort-Vorgabe aus dem Inventar */
+      invHinweis: inv?.hinweis || '',
+      zaehlwort: !!inv?.zaehlwort,
+      zahlsystem: inv?.zahlsystem || null,
     })
       .catch(() => ({}))
       .then((res) => {
@@ -485,6 +489,12 @@ function App() {
            schoener formulieren (res.nuance kommt dann daraus) */
         if (res.nuance) felder.nuance = res.nuance
         if (res.hanja) felder.hanja = res.hanja
+        /* Vokabel-Qualität (09.09.): Infotext + Zählwort */
+        if (res.info) felder.info = res.info
+        if (res.zaehlwort) {
+          felder.zaehlwort = true
+          felder.zahlsystem = res.zahlsystem || null
+        }
         if (!word.ex && res.ex) {
           felder.ex = res.ex
           felder.exTr = res.exTr || null
@@ -542,17 +552,24 @@ function App() {
        den Plural des ALTEN Wortes. */
     const clearExtras =
       !!alt && alt.ko.trim() !== res.ko.trim() && !!(alt.plural || alt.conj || alt.pluralNote)
+    /* Hand-Schutz (Franz 09.09.): Was er hier selbst umschreibt, darf
+       der Anreicherungslauf nie mehr überschreiben. Gemerkt wird nur,
+       was sich wirklich geändert hat. */
+    const hand = new Set(alt?.hand || [])
+    if (alt && alt.en !== res.en) hand.add('en')
+    if (de && alt && alt.de !== de) hand.add('de')
+    const handListe = hand.size ? [...hand] : null
     const newWords = words.map((w) =>
       w.id === id
         ? clearExtras
-          ? { ...w, en: res.en, ko: res.ko, pos: res.pos, plural: null, pluralNote: null, conj: null, extrasAuto: false, ...(de ? { de } : {}) }
-          : { ...w, en: res.en, ko: res.ko, pos: res.pos, ...(de ? { de } : {}) }
+          ? { ...w, en: res.en, ko: res.ko, pos: res.pos, plural: null, pluralNote: null, conj: null, extrasAuto: false, hand: handListe, ...(de ? { de } : {}) }
+          : { ...w, en: res.en, ko: res.ko, pos: res.pos, hand: handListe, ...(de ? { de } : {}) }
         : w
     )
     setWords(newWords)
     writeWordsCache(newWords)
-    updateWordCloud(id, res.en, res.ko, res.pos, clearExtras, de).catch((err) => {
-      queueFailed({ t: 'edit', id, en: res.en, ko: res.ko, pos: res.pos, clearExtras, de })
+    updateWordCloud(id, res.en, res.ko, res.pos, clearExtras, de, handListe).catch((err) => {
+      queueFailed({ t: 'edit', id, en: res.en, ko: res.ko, pos: res.pos, clearExtras, de, hand: handListe })
       setOffline(true)
       console.warn('Cloud save (edit) failed:', err?.message || err)
     })

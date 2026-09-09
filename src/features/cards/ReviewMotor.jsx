@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react'
 import { previewInterval, formatInterval, hoerKarteMitText } from '../../core/storage'
-import { vorschlaege } from '../../core/motor'
+import { vorschlaege, trifftBedeutung } from '../../core/motor'
 import { istRichtig } from '../../core/vergleich'
 import Confetti from '../../shared/Confetti'
 import { MoonIcon, CardRidge, CardSkyline } from '../../shared/icons'
 import ClearableInput from '../../shared/ClearableInput'
 import { SpeakButton, speak, prewarmSpeech } from '../../shared/tts'
-import { HanjaZeile, Bedeutung, WortVergleich, DeutschZeile } from '../../shared/motorTeile'
+import { HanjaZeile, Bedeutung, WortVergleich, DeutschZeile, InfoText, ZaehlChip } from '../../shared/motorTeile'
 import { useTastaturZu } from '../../shared/tastatur'
 
 /* ============================================================
@@ -49,6 +49,9 @@ function ReviewMotor({ initialQueue, words, onRate, onUndo, onExit, profile, t, 
   const [typed, setTyped] = useState('')
   const [checked, setChecked] = useState(false)
   const [correct, setCorrect] = useState(false)
+  /* Familien-Treffer (Franz 09.09.): angetipptes Geschwisterwort,
+     damit die Rückseite beide Nuancen gegenüberstellen kann */
+  const [gewaehlt, setGewaehlt] = useState(null)
   const [tippt, setTippt] = useState(false)
   const [flash, setFlash] = useState(null)
   const [exiting, setExiting] = useState(false)
@@ -117,6 +120,7 @@ function ReviewMotor({ initialQueue, words, onRate, onUndo, onExit, profile, t, 
     setTyped('')
     setChecked(false)
     setCorrect(false)
+    setGewaehlt(null)
     setTippt(false)
     setFlash(null)
     setExiting(false)
@@ -190,9 +194,13 @@ function ReviewMotor({ initialQueue, words, onRate, onUndo, onExit, profile, t, 
     urteil(istRichtig(typed, card.ko, lang))
   }
 
-  /* Erkennen/Hören: nur das Antippen des richtigen Eintrags zählt */
+  /* Erkennen/Hören: der richtige Eintrag zählt — oder ein Mitglied
+     derselben Bedeutungsfamilie (Franz 09.09.): erkannt ist erkannt,
+     der Unterschied wird danach kurz gezeigt */
   function waehle(v) {
-    urteil(v.id === card.wordId)
+    const ok = trifftBedeutung(v, card)
+    setGewaehlt(ok && v.id !== card.wordId ? v : null)
+    urteil(ok)
   }
 
   const liste = art !== 'produktion' && !checked ? vorschlaege(words, typed) : []
@@ -239,6 +247,7 @@ function ReviewMotor({ initialQueue, words, onRate, onUndo, onExit, profile, t, 
               ) : (
                 <HanjaZeile hanja={card.hanja} ko={card.ko} className="verbergbar" />
               )}
+              <ZaehlChip word={card} t={t} className="verbergbar" />
               {card.modus === 'audio' && (
                 <span className="hoer-hinweis verbergbar">{t.hoerMitText}</span>
               )}
@@ -299,6 +308,20 @@ function ReviewMotor({ initialQueue, words, onRate, onUndo, onExit, profile, t, 
                   {card.exTr && <span className="card-example-tr">{card.exTr}</span>}
                 </span>
               )}
+              {/* Geschwisterwort angetippt: beide Nuancen nebeneinander */}
+              {gewaehlt && (
+                <span className="familie-hinweis">
+                  <span className="familie-titel">{t.familieTreffer}</span>
+                  <span className="familie-zeile">
+                    <b lang={lang}>{card.ko}</b> – {card.nuance || t.familieOhneNuance}
+                  </span>
+                  <span className="familie-zeile">
+                    <b lang={lang}>{gewaehlt.ko}</b> – {gewaehlt.nuance || t.familieOhneNuance}
+                  </span>
+                </span>
+              )}
+              {art === 'produktion' && <ZaehlChip word={card} t={t} />}
+              <InfoText info={card.info} t={t} />
             </div>
           )}
         </div>

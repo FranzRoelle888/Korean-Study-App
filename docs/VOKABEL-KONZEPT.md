@@ -381,3 +381,43 @@ Bericht mit Strg+F-Selbstchecks für die Handgriffe.
   Inhalte vorab für alle bestehenden + nächste 300 inkl. TTS.
 - Mengen 5 / 130 / 100 + manueller Schalter.
 - Abend-Check und Sitzungs-Leiter: noch nicht.
+
+## 11. Verfahren 2 — Vokabel-Qualität (09.09.)
+
+Anlass (Franz): vorkonjugierte Formen (다른), Zahlen (한, 두) und
+falsche Bedeutungen (정도 = „Grad") im Nachziehstapel; fast gleiche
+Übersetzungen (그런/이런) beim Erkennen nervig; Zählwörter unmarkiert;
+Wunsch nach Infotexten.
+
+- **Bedeutungen aus dem Koreanischen.** Der Lauf gibt dem Modell Wort,
+  Wortart und den Inventar-Hinweis (Kollokation); die englische
+  Inventar-Glosse steht nur als unzuverlässiger Hinweis dabei. Englisch
+  und Deutsch werden getrennt vom Koreanischen gebildet, bis zu zwei
+  Hauptbedeutungen mit „ / ".
+- **Vier-Augen-Prinzip.** Sonnet schreibt, Opus prüft nur die Glossen.
+  Bei Widerspruch eine Nachbesserung, dann Prüfliste im Protokoll
+  (Vorrat bereit=false; Bestand: alte Bedeutung bleibt).
+- **Infotext** `info` („Gut zu wissen"): 2-5 Zeilen, jede mit fettem
+  Stichwort, Deutsch mit koreanischen Beispielen inline. Anzeige:
+  Einführung (offen, in der Schau-Phase), Kartenrückseite (zugeklappt),
+  Bibliothek.
+- **Bedeutungsfamilien** `familie`: gleiche Bedeutung (때/시간,
+  진짜/정말) -> unterscheidende Nuancen + gemeinsame Familie. Erkennen:
+  jedes Mitglied zählt, danach beide Nuancen nebeneinander. Produktion
+  bleibt streng. Familien werden bei jedem Lauf frisch gerechnet.
+- **Zahlen und Ableitungen** sind im Inventar markiert (`zahl`,
+  `ableitung`) und kommen nie in den Vorrat. Franz kann alle Zahlen
+  beider Systeme; der Trainer weiß das (ZAHLEN_KO) und die
+  Satz-Challenge darf sie frei benutzen. Zahlen in der Bibliothek löscht
+  nur der Workflow-Schalter `zahlen_loeschen`.
+- **Zählwörter** `zaehlwort` + `zahlsystem` (native/sino/beide):
+  Chip auf der Karte, Nuance nennt das Zahlensystem.
+- **Hand-Schutz** `hand`: Felder, die Franz selbst getippt oder in der
+  Bibliothek geändert hat (en beim Eintragen, en/de beim Bearbeiten),
+  fasst der Lauf nie an. Wörter von vor dem Motor (words_backup_v2)
+  gelten für en ebenfalls als seine.
+- **Verfahrensnummer** `anreicherung`: alles unter 2 wird einmalig neu
+  erzeugt (Bestand + alter Vorrat); Beispielsätze bleiben (schon vertont).
+- Migration 016, Skript scripts/vokabeln-anreichern.mjs, Edge Function
+  vokabelAnreichern gleichgezogen. Kosten grob 2-3 $ je Lauf mit 300
+  Vorratswörtern.
