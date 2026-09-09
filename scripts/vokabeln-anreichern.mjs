@@ -218,14 +218,17 @@ const GLOSSE_DE = /^[A-Za-zÄÖÜäöüß][A-Za-zÄÖÜäöüß' ,./()-]*$/
 
 /* Infotext: 2-5 Zeilen, jede mit fettem Stichwort **Wort:** */
 function pruefeInfo(s) {
-  if (typeof s !== 'string') return null
-  const zeilen = s
-    .split(/\r?\n/)
-    .map((z) => z.trim())
-    .filter(Boolean)
+  /* Liste bevorzugt; ein einzelner String mit Umbrüchen geht auch */
+  const roh = Array.isArray(s) ? s : typeof s === 'string' ? s.split(/\r?\n/) : null
+  if (!roh) return null
+  const zeilen = roh.map((z) => String(z ?? '').trim()).filter(Boolean)
   if (zeilen.length < 2 || zeilen.length > 5) return null
-  if (!zeilen.every((z) => /^\*\*[^*]{2,24}:\*\*\s*\S/.test(z) && z.length <= 220)) return null
-  return zeilen.join('\n')
+  /* Doppelpunkt innerhalb oder außerhalb der Sterne zulassen — sonst
+     fielen brauchbare Texte durch (Fund 09.09.) */
+  const gut = zeilen.every((z) => /^\*\*[^*]{2,24}\*\*:?\s*\S/.test(z) && z.length <= 220)
+  if (!gut) return null
+  /* einheitlich als **Stichwort:** speichern */
+  return zeilen.map((z) => z.replace(/^\*\*([^*]+?):?\*\*:?/, '**$1:**')).join('\n')
 }
 
 function pruefeSatz(ex, ko, pos) {
@@ -296,7 +299,7 @@ const SYSTEM = [
   '  "de": German gloss with the SAME senses in the SAME order, written directly from the Korean word (not translated from "en"), each 1-3 everyday words, nouns WITHOUT article, senses separated by " / " (e.g. "ungefähr, etwa / Ausmaß").',
   '  "pos": one of noun, verb, adj, adv, pronoun, determiner, interjection, phrase. If pos was given, copy it.',
   '  "nuance": null in most cases. Only when a learner NEEDS it: a usage restriction, politeness level, or a classic confusion — max 60 characters, German, no full sentence needed ("nur Trinkwasser, nicht Gewässer"). For counters: which number system, e.g. "mit koreanischen Zahlen: 한, 두, 세 마리". Otherwise null.',
-  '  "info": a short "good to know" text in GERMAN, or null. 2-5 lines separated by "\\n". EVERY line starts with a bold keyword in the exact form **Stichwort:** (choose from Gebrauch, Typisch, Achtung, Ähnlich, Register, Zählen, Merke). Korean examples inline with a German translation in parentheses, e.g. 어느 정도 (wie sehr, in welchem Maß). Cover what actually matters for this word: typical patterns and collocations, contrast to a similar word a beginner confuses it with, register/politeness, for counters the number system and the pattern 한/두/세 + counter, classic beginner mistakes. Be GENEROUS: write info for almost every word; only trivially concrete nouns (나무, 사과, 의자) get null. Max 200 characters per line.',
+  '  "info": a short "good to know" text in GERMAN, or null. An ARRAY of 2-5 strings, one per line — never one string with line breaks in it. EVERY line starts with a bold keyword in the exact form **Stichwort:** (choose from Gebrauch, Typisch, Achtung, Ähnlich, Register, Zählen, Merke). Korean examples inline with a German translation in parentheses, e.g. 어느 정도 (wie sehr, in welchem Maß). Cover what actually matters for this word: typical patterns and collocations, contrast to a similar word a beginner confuses it with, register/politeness, for counters the number system and the pattern 한/두/세 + counter, classic beginner mistakes. Be GENEROUS: write info for almost every word; only trivially concrete nouns (나무, 사과, 의자) get null. Max 200 characters per line.',
   '  "zaehlwort": true if the word is a counter/measure word (개, 명, 마리, 잔, 살, 번 …), else false.',
   '  "zahlsystem": for counters: "native" (하나/한, 둘/두, 셋/세 …), "sino" (일, 이, 삼 …) or "beide"; else null.',
   '  "ex": ONLY when needsExample is yes, else null. ONE natural Korean sentence in polite 해요체 (ends with 요/죠/까), 4-9 words, beginner grammar only (present tense, simple past, basic connectors), everyday situation, contains the word (conjugated is fine) in its MAIN sense.',
@@ -337,15 +340,18 @@ async function reichereAn(eintraege) {
   async function schreibRunde(liste) {
     for (let von = 0; von < liste.length; von += BATCH) {
       const teil = liste.slice(von, von + BATCH)
-      let antwort
-      try {
-        antwort = await frage(SYSTEM, teil.map((e) => zeile(e, notizen.get(e.id) || '')).join('\n'))
-      } catch (e) {
-        console.error(`  Modellanfrage fehlgeschlagen: ${e.message}`)
-        continue
+      let antwort = null
+      for (let versuch = 1; versuch <= 2 && !Array.isArray(antwort); versuch++) {
+        try {
+          antwort = await frage(SYSTEM, teil.map((e) => zeile(e, notizen.get(e.id) || '')).join('\n'))
+          if (!Array.isArray(antwort)) console.error('  Antwort war kein Array')
+        } catch (e) {
+          console.error(`  Modellanfrage fehlgeschlagen (Versuch ${versuch}): ${e.message}`)
+          antwort = null
+        }
       }
       if (!Array.isArray(antwort)) {
-        console.error('  Antwort war kein Array — Teil übersprungen')
+        console.error(`  Stapel übersprungen — die ${teil.length} Wörter bleiben für den nächsten Lauf offen`)
         continue
       }
       for (const a of antwort) {
@@ -743,7 +749,8 @@ async function familienBilden() {
 
   const SYSTEM_FAMILIE = [
     'Several Korean words in a learner\'s deck share a gloss (English or German), so they look identical in the app. Input: groups, each line "groupId | korean | english | german | example sentence".',
-    'For EACH group decide: is this a real MEANING FAMILY — words a beginner reasonably treats as the same meaning (때/시간 "time", 진짜/정말 "really", 묻다/물어보다 "to ask")? Then "familie": true. If they merely share a word in the gloss but mean different things (병 "bottle" vs 병 "illness", 배 "stomach" vs 배 "ship" vs 배 "pear"), "familie": false.',
+    'For EACH group decide: is this a real MEANING FAMILY — words a beginner reasonably treats as the same meaning (진짜/정말 "really", 묻다/물어보다 "to ask", 함께/같이 "together")? Then "familie": true. If they merely share a word in the gloss but mean different things (병 "bottle" vs 병 "illness", 배 "stomach" vs "ship" vs "pear"), "familie": false.',
+    'Answer false as well whenever the words differ in something the learner MUST get right and would stop noticing if the app accepted either one: pointing words that differ by distance or speaker (이/그/저 and everything built on them — 이것/그것, 여기/거기, 이날/그날), direction (들어가다 in vs 들어오다 out, 가다 vs 오다), plain negation vs inability (안 vs 못), opposites of any kind, and pairs where one word asks a question and the other states an amount (얼마 vs 적다). Word class alone (verb vs its noun, 공부하다/공부) does NOT make them different — those stay a family.',
     'And for EACH word write a short DISTINGUISHING note in German (max 60 characters, no full sentence needed) that says what makes THIS word different from the others in its group — usage, register, nuance, typical context. Examples: 때 -> "Zeitpunkt/Moment (als, wenn) – nicht Dauer"; 시간 -> "Zeit als Dauer oder Uhrzeit, messbar"; 물어보다 -> "höflicher/alltäglicher: mal nachfragen"; 묻다 -> "neutral fragen, auch schriftlich".',
     'Return ONLY a JSON array: [{"groupId":"...","familie":true|false,"woerter":[{"ko":"...","nuance":"..."}]}] — one object per group, every word included, notes within a group must differ.',
   ].join('\n')

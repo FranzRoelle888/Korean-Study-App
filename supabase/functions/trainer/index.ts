@@ -1020,7 +1020,7 @@ Deno.serve(async (req) => {
               '{"de":"<German gloss, 1-3 everyday words per sense, nouns WITHOUT article>",',
               ' "pos":"<one of noun, verb, adj, adv, pronoun, determiner, interjection, phrase; copy if given>",',
               ' "nuance":<null in most cases; only a NEEDED usage restriction, politeness level or classic confusion, max 60 chars, German; for counters: which number system, e.g. "mit koreanischen Zahlen: 한, 두, 세 마리">,',
-              ' "info":<a short "good to know" text in GERMAN or null: 2-5 lines separated by "\\n", EVERY line starting with a bold keyword in the exact form **Stichwort:** (Gebrauch, Typisch, Achtung, Ähnlich, Register, Zählen, Merke), Korean examples inline with German translation in parentheses, e.g. 어느 정도 (wie sehr). Cover typical patterns/collocations, contrast to a similar word, register, for counters the number system and 한/두/세 + counter, classic beginner mistakes. Be GENEROUS — only trivially concrete nouns (나무, 사과) get null. Max 200 characters per line>,',
+              ' "info":<a short "good to know" text in GERMAN or null: an ARRAY of 2-5 strings, one line each (never one string with line breaks), EVERY line starting with a bold keyword in the exact form **Stichwort:** (Gebrauch, Typisch, Achtung, Ähnlich, Register, Zählen, Merke), Korean examples inline with German translation in parentheses, e.g. 어느 정도 (wie sehr). Cover typical patterns/collocations, contrast to a similar word, register, for counters the number system and 한/두/세 + counter, classic beginner mistakes. Be GENEROUS — only trivially concrete nouns (나무, 사과) get null. Max 200 characters per line>,',
               ' "zaehlwort":<true if the word is a counter/measure word (개, 명, 마리, 잔 …), else false>,',
               ' "zahlsystem":<for counters "native", "sino" or "beide"; else null>,',
               ' "ex":<only when needsExample is yes: ONE natural Korean sentence in polite 해요체 (ends with 요/죠/까), 4-9 words, beginner grammar, contains the word (conjugated is fine); else null>,',
@@ -1104,11 +1104,12 @@ Deno.serve(async (req) => {
       let hanja: { z: string; les: string; de: string; i: number }[] | null = null
       /* Infotext: 2-5 Zeilen, jede mit fettem Stichwort **Wort:** */
       const pruefeInfo = (s: unknown): string | null => {
-        if (typeof s !== 'string') return null
-        const zeilen = s.split(/\r?\n/).map((z) => z.trim()).filter(Boolean)
+        const roh = Array.isArray(s) ? s : typeof s === 'string' ? s.split(/\r?\n/) : null
+        if (!roh) return null
+        const zeilen = roh.map((z) => String(z ?? '').trim()).filter(Boolean)
         if (zeilen.length < 2 || zeilen.length > 5) return null
-        if (!zeilen.every((z) => /^\*\*[^*]{2,24}:\*\*\s*\S/.test(z) && z.length <= 220)) return null
-        return zeilen.join('\n')
+        if (!zeilen.every((z) => /^\*\*[^*]{2,24}\*\*:?\s*\S/.test(z) && z.length <= 220)) return null
+        return zeilen.map((z) => z.replace(/^\*\*([^*]+?):?\*\*:?/, '**$1:**')).join('\n')
       }
       try {
         const j = JSON.parse(out.text.replace(/^```(?:json)?/m, '').replace(/```\s*$/m, '').trim())
