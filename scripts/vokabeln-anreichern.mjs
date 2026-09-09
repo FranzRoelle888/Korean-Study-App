@@ -146,6 +146,13 @@ async function upserteVorrat(zeilen) {
   if (!r.ok) throw new Error(`UPSERT vorrat: ${r.status} ${await r.text()}`)
 }
 
+/* Ein hartes Limit („You have reached your specified API usage
+   limits") wird durch Wiederholen nie besser. Der Lauf bricht dann
+   sofort ab, statt jeden Stapel zweimal gegen die Wand zu fahren
+   (Fund 09.09.). */
+class LimitErreicht extends Error {}
+const istLimit = (text) => /usage limits|credit balance|billing/i.test(String(text))
+
 /* ---------- Modell ---------- */
 let tokensRein = 0
 let tokensRaus = 0
@@ -168,7 +175,11 @@ async function frage(system, nutzer, { maxTokens = 16000, modell = MODELL_SCHREI
       messages: [{ role: 'user', content: nutzer }],
     }),
   })
-  if (!r.ok) throw new Error(`Anthropic ${r.status}: ${(await r.text()).slice(0, 200)}`)
+  if (!r.ok) {
+    const text = await r.text()
+    if (r.status === 400 && istLimit(text)) throw new LimitErreicht(text.slice(0, 200))
+    throw new Error(`Anthropic ${r.status}: ${text.slice(0, 200)}`)
+  }
   const daten = await r.json()
   const rein = daten.usage?.input_tokens ?? 0
   const raus = daten.usage?.output_tokens ?? 0
@@ -346,6 +357,7 @@ async function reichereAn(eintraege) {
           antwort = await frage(SYSTEM, teil.map((e) => zeile(e, notizen.get(e.id) || '')).join('\n'))
           if (!Array.isArray(antwort)) console.error('  Antwort war kein Array')
         } catch (e) {
+          if (e instanceof LimitErreicht) throw e
           console.error(`  Modellanfrage fehlgeschlagen (Versuch ${versuch}): ${e.message}`)
           antwort = null
         }
@@ -412,6 +424,7 @@ async function reichereAn(eintraege) {
           { maxTokens: 8000, modell: MODELL_PRUEFT, effort: 'medium' }
         )
       } catch (err) {
+        if (err instanceof LimitErreicht) throw err
         console.error(`  Prüfanfrage fehlgeschlagen: ${err.message}`)
         continue
       }
@@ -580,9 +593,11 @@ async function bestandAnreichern() {
         patch.ex_tr = f.ex_tr
       }
       if (!v.hanja && f.hanja) patch.hanja = f.hanja
-      /* Verfahren erledigt — auch wenn die Bedeutung in der Prüfliste
-         steht (die wird von Hand gelöst, nicht bei jedem Lauf neu) */
-      if (e.neu) patch.anreicherung = METHODE
+      /* Verfahren erledigt — aber nur, wenn der Prüfer die Bedeutungen
+         auch wirklich beurteilt hat. Fällt die Prüfung ganz aus (Limit,
+         Netz), bliebe das Wort sonst mit alter Bedeutung abgehakt
+         liegen (Fund 09.09.). */
+      if (e.neu && f.enOk && f.deOk) patch.anreicherung = METHODE
     }
     if (!Object.keys(patch).length) continue
     try {
@@ -766,6 +781,7 @@ async function familienBilden() {
     try {
       antwort = await frage(SYSTEM_FAMILIE, text, { maxTokens: 5000, effort: 'medium' })
     } catch (e) {
+      if (e instanceof LimitErreicht) throw e
       console.error(`  Modellanfrage fehlgeschlagen: ${e.message}`)
       continue
     }
@@ -847,6 +863,8 @@ async function bericht() {
 }
 
 /* ---------- Hauptlauf ---------- */
+let limitErreicht = false
+try {
 if (NUR_AUDIO) {
   await audioPruefen()
 } else if (NUR_BERICHT) {
@@ -871,4 +889,12 @@ if (NUR_AUDIO) {
   }
   console.log(`\nModell: ${tokensRein} Tokens rein, ${tokensRaus} raus -> grob ${kostenUsd.toFixed(2)} $.`)
 }
-console.log('ok')
+} catch (e) {
+  if (!(e instanceof LimitErreicht)) throw e
+  limitErreicht = true
+  console.error('')
+  console.error('=== ABBRUCH: Guthaben-/Nutzungslimit erreicht ===')
+  console.error(`  ${e.message}`)
+  console.error('  Alles bis hierher ist gespeichert. Der naechste Lauf macht genau dort weiter.')
+}
+console.log(limitErreicht ? 'abgebrochen (Limit) — Rest beim naechsten Lauf' : 'ok')

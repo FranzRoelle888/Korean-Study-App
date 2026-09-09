@@ -122,6 +122,13 @@ async function patche(tabelle, filter, felder) {
   )
 }
 
+/* Ein hartes Limit („You have reached your specified API usage
+   limits") wird durch Wiederholen nie besser. Der Lauf bricht dann
+   sofort ab, statt jeden Stapel zweimal gegen die Wand zu fahren
+   (Fund 09.09.). */
+class LimitErreicht extends Error {}
+const istLimit = (text) => /usage limits|credit balance|billing/i.test(String(text))
+
 /* ---------- Modell ---------- */
 let tokensRein = 0
 let tokensRaus = 0
@@ -143,7 +150,11 @@ async function frage(system, nutzer, { maxTokens = 16000, modell = MODELL_SCHREI
       messages: [{ role: 'user', content: nutzer }],
     }),
   })
-  if (!r.ok) throw new Error(`Anthropic ${r.status}: ${(await r.text()).slice(0, 200)}`)
+  if (!r.ok) {
+    const text = await r.text()
+    if (r.status === 400 && istLimit(text)) throw new LimitErreicht(text.slice(0, 200))
+    throw new Error(`Anthropic ${r.status}: ${text.slice(0, 200)}`)
+  }
   const daten = await r.json()
   const rein = daten.usage?.input_tokens ?? 0
   const raus = daten.usage?.output_tokens ?? 0
@@ -329,6 +340,7 @@ async function reichereAn(eintraege) {
           antwort = await frage(SYSTEM, teil.map((e) => zeile(e, notizen.get(e.id) || '')).join('\n'))
           if (!Array.isArray(antwort)) console.error('  Antwort war kein Array')
         } catch (e) {
+          if (e instanceof LimitErreicht) throw e
           console.error(`  Modellanfrage fehlgeschlagen (Versuch ${versuch}): ${e.message}`)
           antwort = null
         }
@@ -380,6 +392,7 @@ async function reichereAn(eintraege) {
           { maxTokens: 8000, modell: MODELL_PRUEFT, effort: 'medium' }
         )
       } catch (err) {
+        if (err instanceof LimitErreicht) throw err
         console.error(`  Prüfanfrage fehlgeschlagen: ${err.message}`)
         continue
       }
@@ -517,10 +530,12 @@ async function dateiAnreichern() {
 
   const kandidaten = datei
     .filter((e) => !e.aus && !FUNKTIONSWORT.has(e.id))
-    .filter((e) => (e.anr ?? 0) < METHODE)
+    /* Auch abgehakte Wörter ohne Bedeutung kommen wieder dran —
+       so heilt sich ein abgebrochener Lauf von selbst */
+    .filter((e) => (e.anr ?? 0) < METHODE || !e.en)
     .sort((a, b) => (RANG[a.id] ?? 99999) - (RANG[b.id] ?? 99999))
     .slice(0, PROBE ? 5 : ANZAHL)
-  const fertig = datei.filter((e) => (e.anr ?? 0) >= METHODE).length
+  const fertig = datei.filter((e) => (e.anr ?? 0) >= METHODE && e.en).length
   console.log(`Schon angereichert: ${fertig} · jetzt dran: ${kandidaten.length}`)
   if (!kandidaten.length) return
 
@@ -562,7 +577,11 @@ async function dateiAnreichern() {
     if (f.kasus) ziel.kasus = f.kasus
     if (f.nuance) ziel.nuance = f.nuance
     if (f.info) ziel.info = f.info
-    ziel.anr = METHODE
+    /* Als erledigt gilt ein Wort NUR mit geprüfter Bedeutung. Sonst
+       bliebe es mit einer ungeprüften Bedeutung liegen und käme nie
+       wieder dran (Fund 09.09.: der Lauf lief ins Monatslimit, die
+       Prüfung fiel aus, 144 Wörter waren fälschlich abgehakt). */
+    if (ziel.en && ziel.ko) ziel.anr = METHODE
     gesetzt++
     if (PROBE) console.log(`  [probe] ${JSON.stringify(ziel)}`)
     else {
@@ -711,7 +730,7 @@ async function familienBilden() {
      eine „Familie" mit sich selbst (Fund im Probelauf 09.09.) */
   const inBibliothek = new Set(woerter.map((w) => norm(w.ko)))
   const ausDatei = datei
-    .filter((e) => !e.aus && (e.anr ?? 0) >= METHODE && !inBibliothek.has(norm(wortVon(e))))
+    .filter((e) => !e.aus && (e.anr ?? 0) >= METHODE && e.en && !inBibliothek.has(norm(wortVon(e))))
     .map((e) => ({
       key: e.id,
       quelle: 'datei',
@@ -779,6 +798,7 @@ async function familienBilden() {
     try {
       antwort = await frage(SYSTEM_FAMILIE, text, { maxTokens: 5000, effort: 'medium' })
     } catch (e) {
+      if (e instanceof LimitErreicht) throw e
       console.error(`  Modellanfrage fehlgeschlagen: ${e.message}`)
       continue
     }
@@ -827,7 +847,7 @@ async function familienBilden() {
 
 /* ---------- Bericht ---------- */
 function bericht() {
-  const fertig = datei.filter((e) => (e.anr ?? 0) >= METHODE)
+  const fertig = datei.filter((e) => (e.anr ?? 0) >= METHODE && e.en)
   console.log(`\n=== Stand der Goethe-Datei ===`)
   console.log(`  angereichert: ${fertig.length} von ${datei.filter((e) => !e.aus).length} brauchbaren Einträgen`)
   console.log(`  mit Infotext: ${fertig.filter((e) => e.info).length}`)
@@ -840,17 +860,28 @@ function bericht() {
 /* Immer zuerst: die Stichwörter der Liste aufräumen */
 stichwoerterRaeumen()
 
-if (NUR_NUANCEN) {
-  await familienBilden()
-} else if (NUR_DATEI) {
-  await dateiAnreichern()
-  bericht()
-} else if (NUR_BESTAND) {
-  await bestandAnreichern()
-} else {
-  await dateiAnreichern()
-  await bestandAnreichern()
-  await familienBilden()
+let limitErreicht = false
+try {
+  if (NUR_NUANCEN) {
+    await familienBilden()
+  } else if (NUR_DATEI) {
+    await dateiAnreichern()
+    bericht()
+  } else if (NUR_BESTAND) {
+    await bestandAnreichern()
+  } else {
+    await dateiAnreichern()
+    await bestandAnreichern()
+    await familienBilden()
+    bericht()
+  }
+} catch (e) {
+  if (!(e instanceof LimitErreicht)) throw e
+  limitErreicht = true
+  console.error(`\n=== ABBRUCH: Guthaben-/Nutzungslimit erreicht ===`)
+  console.error(`  ${e.message}`)
+  console.error('  Alles bis hierher ist gespeichert. Der nächste Lauf macht genau dort weiter.')
+  dateiSchreiben()
   bericht()
 }
 if (pruefliste.length) {
@@ -862,4 +893,4 @@ if (eigenePruefliste.length) {
   for (const p of eigenePruefliste) console.log('  ' + p)
 }
 console.log(`\nModell: ${tokensRein} Tokens rein, ${tokensRaus} raus -> grob ${kostenUsd.toFixed(2)} $.`)
-console.log('ok')
+console.log(limitErreicht ? 'abgebrochen (Limit) — Rest beim nächsten Lauf' : 'ok')

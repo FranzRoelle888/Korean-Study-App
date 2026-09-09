@@ -500,3 +500,22 @@ zeigt), fehlen als 결석하다.
   einheitlich für alle solchen Paare.
 - Nicht gebaut (Franz 09.09., „zu viel auf einmal"): Wortbausteine
   für Komposita als Gegenstück zu den Hanja-Chips.
+
+### Abbruch und Selbstheilung (Fund 09.09.)
+
+Der erste echte Lauf auf ihrer Seite lief nach 144 Wörtern ins
+Monats-Limit von Anthropic. Zwei Fehler wurden dadurch sichtbar:
+
+- Ein 400 „You have reached your specified API usage limits" wurde wie
+  ein normaler Fehler behandelt und jeder Stapel zweimal dagegen
+  gefahren. Solche Antworten werden jetzt erkannt, der Lauf bricht
+  sofort sauber ab, speichert das Erreichte und sagt es im Protokoll.
+- Schwerer: Ein Wort galt als erledigt (`anr = 2`), sobald das
+  Schreibmodell geantwortet hatte — auch wenn die PRÜFUNG ausgefallen
+  war und die Bedeutung deshalb gar nicht geschrieben wurde. Die 144
+  Wörter hatten Infotext, Kasus und Konjugation, aber die alte falsche
+  Bedeutung, und wären nie wieder drangekommen.
+  Jetzt gilt: erledigt nur mit geprüfter Bedeutung. Zusätzlich greift
+  die Auswahl jedes Wort wieder auf, das als erledigt markiert ist,
+  aber keine englische Bedeutung hat — ein abgebrochener Lauf heilt
+  sich damit von selbst. Dieselbe Kur in beiden Skripten.
