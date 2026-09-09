@@ -466,6 +466,18 @@ zeigt), fehlen als 결석하다.
   Schrägstrich-Varianten — bekommen `aus: true` (81 Stück).
   Ihre Bibliothekswörter werden genauso aufgeräumt, sonst greift die
   Dublettensperre gegen den Vorrat nicht mehr.
+- **Doppelgänger zusammenlegen** (Fund 09.09.): Das Aufräumen führt
+  Einträge zusammen, die vorher verschieden hießen — „(sich) freuen"
+  und „freuen (sich)" werden beide zu „sich freuen", „mit (+ mitbringen
+  …)" wird zu „mit". 45 solche Paare. Behalten wird eines je Stichwort:
+  bevorzugt das als Funktionswort markierte (das wird ohnehin nie
+  angeboten), sonst das mit den meisten Angaben.
+- **Zahlwörter**: In der Goethe-Liste steht keines. Falls 해인 selbst
+  welche eingetragen hat, meldet der Lauf sie — gelöscht wird nichts.
+  Ihr Trainer weiß seit 09.09., dass sie alle Zahlen kann (ZAHLEN_DE);
+  die Bauweise zusammengesetzter Zahlen (einundzwanzig) und die
+  Endungen der Ordnungszahlen bleiben Grammatik und dürfen korrigiert
+  werden.
 - **Familien** wie bei Franz, zusätzlich über die koreanische Seite
   der Bedeutung gruppiert.
 - **Hand-Schutz, genauer als bei Franz**: Ihre Bedeutung bleibt, wenn

@@ -154,6 +154,12 @@ async function buildProfile(profile: string) {
    frei benutzen und nie erklären. */
 const ZAHLEN_KO =
   'NUMBERS: Franz already knows ALL Korean numbers in both systems (Sino-Korean 일, 이, 삼 … and native 하나/한, 둘/두, 셋/세 …), including prices, clock times (시/분), dates and ages (살). Treat numbers as known vocabulary: use them freely, never teach, gloss or mark them as new.'
+/* 해인 kann die deutschen Zahlen ebenfalls (Franz 09.09.). Zahlen sind
+   damit bekannter Wortschatz — die BAUWEISE zusammengesetzter Zahlen
+   („einundzwanzig") und die Endungen der Ordnungszahlen bleiben aber
+   Grammatik und dürfen korrigiert werden. */
+const ZAHLEN_DE =
+  'NUMBERS: 해인 already knows ALL German numbers, including prices, clock times, dates and ages. Treat numbers as known vocabulary: use them freely, never teach them, never gloss them and never mark them as new. Two things stay ordinary grammar you may correct when she gets them wrong: the reversed order of compound numbers (einundzwanzig) and the endings of ordinals (am dritten Mai).'
 
 /* ---------- System-Prompts ---------- */
 function chatSystem(profile: string, mode: string, scenario: string, p: Awaited<ReturnType<typeof buildProfile>>) {
@@ -172,7 +178,7 @@ function chatSystem(profile: string, mode: string, scenario: string, p: Awaited<
     `Fresh vocabulary (use sparingly, they are still learning these): ${p.fresh.join(', ') || '(none)'}`,
     `RECENTLY LEARNED (important: a word needs 8-10 encounters to stick — naturally weave 2-4 of these into this conversation): ${p.frischGelernt.join(', ') || '(none)'}`,
     `Grammar the learner knows: ${p.skills.join('; ') || '(nothing recorded yet — assume bare basics: polite present tense, simple statements and questions)'}`,
-    learnsKorean ? ZAHLEN_KO : '',
+    learnsKorean ? ZAHLEN_KO : ZAHLEN_DE,
     p.journal.length ? `Recent sessions:\n${p.journal.join('\n')}` : '',
     p.errors.length ? `Recurring mistakes to gently work on: ${p.errors.join('; ')}` : '',
     '',

@@ -222,6 +222,8 @@ function pruefeKonj(erForm, perfekt) {
 function konjKaputt(konj) {
   const t = String(konj ?? '').trim()
   if (!t) return false
+  /* „fliegt (ab)" — die Vorsilbe gehoert ans Wort, nicht in Klammern */
+  if (/[()]/.test(t)) return true
   const m = t.match(/(hat|ist)\s+(\S+)$/i)
   if (!m) return false
   return !/(t|en)$/i.test(m[2])
@@ -475,10 +477,37 @@ function stichwoerterRaeumen() {
     if (r.numerus && !e.numerus) e.numerus = r.numerus
     if (r.reflexiv && !e.reflexiv) e.reflexiv = true
   }
-  if (geraeumt || ausgeblendet)
-    console.log(`Stichwörter aufgeräumt: ${geraeumt} · endgültig ausgeblendet: ${ausgeblendet}`)
-  if (geraeumt) dateiSchreiben()
-  return { geraeumt, ausgeblendet }
+
+  /* Doppelgänger: Das Aufräumen führt Einträge zusammen, die vorher
+     verschieden hießen. Wir behalten EINEN je Stichwort — bevorzugt
+     den, der als Funktionswort markiert ist (der wird ohnehin nicht
+     angeboten), sonst den mit den meisten Angaben. */
+  const nachWort = new Map()
+  for (const e of datei) {
+    if (e.aus) continue
+    const k = norm(wortVon(e))
+    if (!nachWort.has(k)) nachWort.set(k, [])
+    nachWort.get(k).push(e)
+  }
+  let doppelt = 0
+  for (const [k, gruppe] of nachWort) {
+    if (gruppe.length < 2) continue
+    const punkte = (e) => (FUNKTIONSWORT.has(e.id) ? 100 : 0) + (e.konj ? 2 : 0) + (e.plural ? 2 : 0) + (e.ko ? 1 : 0)
+    const behalten = gruppe.reduce((a, b) => (punkte(b) > punkte(a) ? b : a))
+    for (const e of gruppe) {
+      if (e === behalten) continue
+      e.aus = true
+      doppelt++
+    }
+    console.log(`  doppelt: „${k}" — behalten ${behalten.id}, ausgeblendet ${gruppe.filter((e) => e !== behalten).map((e) => e.id).join(', ')}`)
+  }
+
+  if (geraeumt || ausgeblendet || doppelt)
+    console.log(
+      `Stichwörter aufgeräumt: ${geraeumt} · doppelt zusammengelegt: ${doppelt} · endgültig ausgeblendet: ${ausgeblendet}`
+    )
+  if (geraeumt || doppelt) dateiSchreiben()
+  return { geraeumt, ausgeblendet, doppelt }
 }
 
 /* ---------- Schritt 1: Die Goethe-Datei ---------- */
@@ -562,6 +591,18 @@ async function bestandAnreichern() {
     throw e
   }
   console.log(`Wörter: ${woerter.length}`)
+
+  /* Zahlwörter gehören nicht in die Vokabeln (해인 kann sie, wie
+     Franz seine). Die Goethe-Liste enthält keine — sie kann aber
+     selbst welche eingetragen haben. Nur melden, nie löschen. */
+  const ZAHLWORT =
+    /^(null|eins?|zwei|drei|vier|fünf|sechs|sieben|acht|neun|zehn|elf|zwölf|dreizehn|vierzehn|fünfzehn|sechzehn|siebzehn|achtzehn|neunzehn|zwanzig|dreißig|vierzig|fünfzig|sechzig|siebzig|achtzig|neunzig|hundert|tausend|million(en)?|milliarde(n)?)$|^\d+$|^(einund|zweiund|dreiund|vierund|fünfund|sechsund|siebenund|achtund|neunund)\w+zig$/i
+  const zahlen = woerter.filter((w) => ZAHLWORT.test(String(w.ko).replace(/^(der|die|das)\s+/i, '').trim()))
+  if (zahlen.length) {
+    console.log(`\n  Zahlwörter in ihrer Bibliothek (${zahlen.length}) — nur gemeldet, nichts gelöscht:`)
+    for (const w of zahlen) console.log(`    ${w.ko} (${w.en})`)
+    console.log('    Wenn sie raus sollen: sag Bescheid, dann bekommt der Lauf einen Schalter dafür.')
+  }
 
   const nachWort = dateiNachWort()
   const offen = []
