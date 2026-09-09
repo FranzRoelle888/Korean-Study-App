@@ -16318,5 +16318,77 @@
   "bsp_en": "Are you driving back home after the party?",
   "ko": "돌아가다",
   "extras_auto": true
+ },
+ {
+  "id": "g-1362",
+  "de": "zurückkommen",
+  "artikel": null,
+  "plural": null,
+  "konj": "kommt zurück, ist zurückgekommen",
+  "stufe": "A1",
+  "bsp": "Wann kommst du zurück?",
+  "bsp_en": "When are you coming back?",
+  "ko": "돌아오다",
+  "extras_auto": true
+ },
+ {
+  "id": "g-1363",
+  "de": "zurückgehen",
+  "artikel": null,
+  "plural": null,
+  "konj": "geht zurück, ist zurückgegangen",
+  "stufe": "A1",
+  "bsp": "Wir gehen jetzt zurück zum Hotel.",
+  "bsp_en": "We are going back to the hotel now.",
+  "ko": "되돌아가다",
+  "extras_auto": true
+ },
+ {
+  "id": "g-1364",
+  "de": "zurückgeben",
+  "artikel": null,
+  "plural": null,
+  "konj": "gibt zurück, hat zurückgegeben",
+  "stufe": "A2",
+  "bsp": "Ich gebe dir das Buch morgen zurück.",
+  "bsp_en": "I will give the book back to you tomorrow.",
+  "ko": "돌려주다",
+  "extras_auto": true
+ },
+ {
+  "id": "g-1365",
+  "de": "zurückfahren",
+  "artikel": null,
+  "plural": null,
+  "konj": "fährt zurück, ist zurückgefahren",
+  "stufe": "A2",
+  "bsp": "Wir fahren morgen zurück.",
+  "bsp_en": "We are driving back tomorrow.",
+  "ko": "타고 돌아가다",
+  "extras_auto": true
+ },
+ {
+  "id": "g-1366",
+  "de": "zurücklaufen",
+  "artikel": null,
+  "plural": null,
+  "konj": "läuft zurück, ist zurückgelaufen",
+  "stufe": "A2",
+  "bsp": "Ich laufe zu Fuß zurück.",
+  "bsp_en": "I will walk back.",
+  "ko": "걸어서 돌아가다",
+  "extras_auto": true
+ },
+ {
+  "id": "g-1367",
+  "de": "mitspielen",
+  "artikel": null,
+  "plural": null,
+  "konj": "spielt mit, hat mitgespielt",
+  "stufe": "A1",
+  "bsp": "Darf ich mitspielen?",
+  "bsp_en": "May I join in?",
+  "ko": "같이 놀다, 함께 하다",
+  "extras_auto": true
  }
 ]

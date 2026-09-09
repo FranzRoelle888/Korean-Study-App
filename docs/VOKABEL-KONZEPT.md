@@ -472,6 +472,14 @@ zeigt), fehlen als 결석하다.
   …)" wird zu „mit". 45 solche Paare. Behalten wird eines je Stichwort:
   bevorzugt das als Funktionswort markierte (das wird ohnehin nie
   angeboten), sonst das mit den meisten Angaben.
+- **Sammel-Stichwörter der Quelle** (Fund 09.09.): Die Goethe-Liste
+  führt trennbare Verben teils als EINEN Eintrag —
+  „zurück- (fahren, geben, gehen, kommen, laufen)" und
+  „mit (+ mitbringen/-kommen/-machen/-nehmen/-spielen)". Beim Einlesen
+  wurde daraus ein unbrauchbarer Eintrag. Die vier mit-Verben standen
+  zufällig auch einzeln drin und sind unberührt; die fünf zurück-Verben
+  und mitspielen fehlten ganz und wurden als eigene Einträge ergänzt
+  (g-1362 bis g-1367, Rang am Grundverb orientiert).
 - **Zahlwörter**: In der Goethe-Liste steht keines. Falls 해인 selbst
   welche eingetragen hat, meldet der Lauf sie — gelöscht wird nichts.
   Ihr Trainer weiß seit 09.09., dass sie alle Zahlen kann (ZAHLEN_DE);
