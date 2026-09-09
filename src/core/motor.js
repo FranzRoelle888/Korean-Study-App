@@ -28,13 +28,16 @@ export const PRODUKTION_INTERVALL = 14
    Bereit + vertont, nicht übersprungen, kein Zahlwort, nach Rang
    (ohne Rang ganz hinten). Pflichtprüfung gegen die Bibliothek
    doppelt: Inventar-Id UND koreanisches Wort. */
+/* Nur zum Vergleichen: Satzzeichen am Wortende zaehlen nicht mit
+   (어디? in der Bibliothek == 어디 im Vorrat, Fund 09.09.) */
+const vergleichKo = (s) => normKo(s).replace(/[?!.…~]+$/, '')
 export function vorratKandidaten(vorrat, words, n) {
   if (!Array.isArray(vorrat) || n <= 0) return []
-  const habenKo = new Set(words.map((w) => normKo(w.ko)))
+  const habenKo = new Set(words.map((w) => vergleichKo(w.ko)))
   const habenInv = new Set(words.map((w) => w.invId).filter(Boolean))
   return vorrat
     .filter((v) => v.bereit && v.audioOk && !v.uebersprungen && v.pos !== 'number')
-    .filter((v) => !habenKo.has(normKo(v.ko)) && !habenInv.has(v.invId))
+    .filter((v) => !habenKo.has(vergleichKo(v.ko)) && !habenInv.has(v.invId))
     .sort((a, b) => (a.rang ?? 99999) - (b.rang ?? 99999))
     .slice(0, n)
 }

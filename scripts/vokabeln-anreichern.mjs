@@ -184,6 +184,11 @@ async function frage(system, nutzer, { maxTokens = 16000, modell = MODELL_SCHREI
 
 /* ---------- Hilfen ---------- */
 const norm = (s) => String(s ?? '').normalize('NFC').trim().replace(/\s+/g, ' ')
+/* Nur zum VERGLEICHEN Bibliothek <-> Vorrat: Satzzeichen am Wortende
+   weg (Fund 09.09.: Franz hat 어디?, 뭐?, 누구? eingetragen — sonst
+   bietet der Vorrat 어디, 뭐, 누구 als "neu" noch einmal an). Die
+   gespeicherten Woerter bleiben unangetastet. */
+const vergleichKo = (s) => norm(s).replace(/[?!.…~]+$/, '')
 const silben = (s) => [...norm(s)].filter((c) => /[가-힣]/.test(c))
 const istHangul = (c) => /^[가-힣]$/.test(c)
 const hanjaZeichen = (vorgabe) =>
@@ -509,9 +514,10 @@ async function bestandAnreichern() {
       offen.push({
         ...eintragAus(w, inv, {
           brauchtSatz: !w.ex,
-          /* Englisch ist seins: Wörter von vor dem Motor und alles,
-             was er ausdrücklich von Hand geändert hat */
-          enFest: altbestand.has(w.id) || hand.includes('en'),
+          /* Englisch ist seins: Wörter von vor dem Motor, alles, was er
+             ausdrücklich von Hand geändert hat, und alles, was gar nicht
+             im Inventar steht (dann kann es nur ein Hand-Eintrag sein) */
+          enFest: altbestand.has(w.id) || hand.includes('en') || !inv,
         }),
         vorhanden: w,
         hand,
@@ -569,7 +575,7 @@ async function bestandAnreichern() {
       console.error(`  Schreiben fehlgeschlagen (${e.ko}): ${err.message}`)
     }
   }
-  console.log(`Bestand: ${gesetzt} Wörter ergänzt.`)
+  console.log(`Bestand: ${gesetzt} Wörter ergänzt${TROCKEN ? ' (Trockenlauf — NICHTS gespeichert)' : ''}.`)
 }
 
 /* ---------- Schritt 2: Vorrat ---------- */
@@ -579,13 +585,13 @@ async function vorratFuellen() {
     hole(`words?profile=eq.${PROFIL}&select=ko,inv_id`),
     hole(`vorrat?profile=eq.${PROFIL}&select=inv_id,ko,en,de,pos,rang,ex,ex_tr,nuance,hanja,info,bereit,uebersprungen,anreicherung`),
   ])
-  const bibliothekKo = new Set(woerter.map((w) => norm(w.ko)))
+  const bibliothekKo = new Set(woerter.map((w) => vergleichKo(w.ko)))
   const bibliothekInv = new Set(woerter.map((w) => w.inv_id).filter(Boolean))
   const imVorrat = new Map(vorrat.map((v) => [v.inv_id, v]))
 
   for (const v of vorrat) {
     if (v.uebersprungen) continue
-    const grund = bibliothekKo.has(norm(v.ko)) || bibliothekInv.has(v.inv_id)
+    const grund = bibliothekKo.has(vergleichKo(v.ko)) || bibliothekInv.has(v.inv_id)
       ? 'bibliothek'
       : ausgeschlossen(invNachId.get(v.inv_id))
     if (grund) {
@@ -605,7 +611,7 @@ async function vorratFuellen() {
   const fehlen = Math.max(0, ANZAHL - bereitsBereit)
   const kandidaten = inventar
     .filter((e) => e.pos !== 'number' && !ausgeschlossen(e))
-    .filter((e) => !bibliothekKo.has(norm(e.ko)) && !bibliothekInv.has(e.id))
+    .filter((e) => !bibliothekKo.has(vergleichKo(e.ko)) && !bibliothekInv.has(e.id))
     .filter((e) => !imVorrat.has(e.id))
     .sort((a, b) => (a.rang ?? 99999) - (b.rang ?? 99999))
     .slice(0, fehlen)
@@ -714,6 +720,10 @@ async function familienBilden() {
      allgemein, z. B. "thing") */
   const liste = [...gruppen.values()].filter((g) => g.length >= 2 && g.length <= 6)
   console.log(`Gruppen mit gleicher Bedeutung: ${liste.length}`)
+  if (PROBE) {
+    liste.splice(8)
+    console.log('  [probe] nur die ersten 8 Gruppen')
+  }
 
   const SYSTEM_FAMILIE = [
     'Several Korean words in a learner\'s deck share a gloss (English or German), so they look identical in the app. Input: groups, each line "groupId | korean | english | german | example sentence".',
@@ -772,7 +782,7 @@ async function familienBilden() {
       console.error(`  Familie nicht gespeichert (${w.ko}): ${err.message}`)
     }
   }
-  console.log(`Nuancen gesetzt: ${nuancenGesetzt} · Familien geändert: ${famGesetzt}`)
+  console.log(`Nuancen gesetzt: ${nuancenGesetzt} · Familien geändert: ${famGesetzt}${TROCKEN ? ' (Trockenlauf — NICHTS gespeichert)' : ''}`)
 }
 
 /* ---------- Schritt 3: Audio-Check ---------- */
