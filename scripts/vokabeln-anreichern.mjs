@@ -957,7 +957,7 @@ async function nachtragLauf() {
       `vorrat?profile=eq.${PROFIL}&uebersprungen=is.false&select=inv_id,ko,en,de,pos,register,register_partner,haeyo,unregel,kasus,extras_stand,rang&order=rang.asc.nullslast`
     )
   } catch (e) {
-    if (/register|haeyo|unregel|extras_stand/.test(e.message)) {
+    if (/register|haeyo|unregel|extras_stand|kasus/.test(e.message)) {
       console.error('Spalten fehlen — bitte zuerst Migration 018 ausführen.')
       process.exit(1)
     }

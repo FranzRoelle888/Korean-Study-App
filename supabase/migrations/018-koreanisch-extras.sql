@@ -55,19 +55,22 @@ alter table vorrat add column if not exists register         text;
 alter table vorrat add column if not exists register_partner text;
 alter table vorrat add column if not exists haeyo            text;
 alter table vorrat add column if not exists unregel          text;
+-- kasus kam mit 017 nur auf words (dort brauchte es 해인s Bibliothek).
+-- Franz' Vorrat ist eine TABELLE und traegt die Partikel ebenfalls.
+alter table vorrat add column if not exists kasus            text;
 -- Nachtrag-Verfahren: getrennt von anreicherung gezählt, damit die
 -- teure Bedeutungs-Anreicherung nicht erneut laufen muss.
-alter table words  add column if not exists extras_stand integer not null default 0;
+alter table words add column if not exists extras_stand integer not null default 0;
 alter table vorrat add column if not exists extras_stand integer not null default 0;
 
 -- ---------- Kontrolle ----------
--- Erwartet: je 5 Zeilen für words und vorrat, dazu die Sicherungszahl.
+-- Erwartet: 5 Zeilen für words, 6 für vorrat, dazu die Sicherungszahl.
 select 'words' as tabelle, column_name from information_schema.columns
   where table_name = 'words'
     and column_name in ('register','register_partner','haeyo','unregel','extras_stand')
 union all
 select 'vorrat', column_name from information_schema.columns
   where table_name = 'vorrat'
-    and column_name in ('register','register_partner','haeyo','unregel','extras_stand')
+    and column_name in ('register','register_partner','haeyo','unregel','extras_stand','kasus')
 union all
 select 'backup_ko3', count(*)::text from words_backup_ko3;
