@@ -876,7 +876,10 @@ async function audioPruefen() {
    für regelmäßige Verben selbst nach. Weicht die Antwort ab, MUSS
    das Modell eine Klasse nennen — sonst fällt das Feld durch. */
 
-const EXTRAS = 1
+/* 2 seit 10.09.: die erste Runde hatte drei Fehler — 15 richtige
+   해요-Formen fielen durch, Gegenteile landeten im Partner-Feld, und
+   viele Partikel-Muster kamen ohne Nomen ("을 듣다"). */
+const EXTRAS = 2
 const REGISTER = ['hoeflich', 'bescheiden', 'neutral', 'locker']
 const UNREGEL = ['ㅂ', 'ㄷ', 'ㅅ', '르', 'ㅎ', '으', 'ㄹ']
 /* Partikel, die eine Angabe überhaupt erst nützlich machen */
@@ -891,32 +894,90 @@ function silbe(c) {
 }
 const baueSilbe = (l, v, t) => String.fromCodePoint(HANGUL_START + l * 588 + v * 28 + t)
 
-/* Batchim, die eine Unregelmäßigkeit auslösen KÖNNEN (덥다 -> 더워요,
-   aber 입다 -> 입어요). Bei denen rechnen wir nicht mit. */
-const UNSICHER_BATCHIM = new Set([7, 17, 19, 27]) /* ㄷ ㅂ ㅅ ㅎ */
+/* Batchim, bei denen eine Unregelmäßigkeit möglich IST — 덥다 wird zu
+   더워요, 입다 aber regelmäßig zu 입어요. Die Liste sagt also nur, ob
+   eine Abweichung von der Regelform glaubhaft ist. */
+const UNSICHER_BATCHIM = new Map([
+  [7, 'ㄷ'],
+  [17, 'ㅂ'],
+  [19, 'ㅅ'],
+  [27, 'ㅎ'],
+])
+/* Ein paar Wörter folgen gar keiner Regel */
+const HAEYO_SONDERFALL = { 아니다: '아니에요', 이다: '이에요' }
 
-/* Die regelmäßige 해요-Form, oder null wenn nicht sicher berechenbar */
+/* Die haeufigen unregelmaessigen Verben und Adjektive auf A1/A2-Niveau.
+   Warum diese Liste noetig ist: 덥다 und 입다 sehen mechanisch gleich
+   aus (Batchim ㅂ), aber 덥다 wird zu 더워요 und 입다 zu 입어요. Ohne
+   Wortwissen laesst sich das nicht unterscheiden — die naive Regelform
+   덥어요 wuerde sonst als richtig durchgehen. Wer hier steht, MUSS mit
+   Klasse gemeldet werden. Woerter ausserhalb der Liste glaubt die
+   Pruefung dem Modell. */
+const IRREGULAER = {
+  /* ㅂ */ 덥다: 'ㅂ', 춥다: 'ㅂ', 쉽다: 'ㅂ', 어렵다: 'ㅂ', 가깝다: 'ㅂ', 무겁다: 'ㅂ',
+  가볍다: 'ㅂ', 맵다: 'ㅂ', 아름답다: 'ㅂ', 반갑다: 'ㅂ', 즐겁다: 'ㅂ', 새롭다: 'ㅂ',
+  귀엽다: 'ㅂ', 눕다: 'ㅂ', 돕다: 'ㅂ', 굽다: 'ㅂ', 흥미롭다: 'ㅂ', 시끄럽다: 'ㅂ',
+  더럽다: 'ㅂ', 무섭다: 'ㅂ', 부럽다: 'ㅂ', 외롭다: 'ㅂ',
+  /* ㄷ */ 듣다: 'ㄷ', 걷다: 'ㄷ', 묻다: 'ㄷ', 싣다: 'ㄷ', 깨닫다: 'ㄷ',
+  /* ㅅ */ 짓다: 'ㅅ', 낫다: 'ㅅ', 잇다: 'ㅅ', 붓다: 'ㅅ',
+  /* ㅎ */ 그렇다: 'ㅎ', 어떻다: 'ㅎ', 이렇다: 'ㅎ', 저렇다: 'ㅎ', 하얗다: 'ㅎ',
+  빨갛다: 'ㅎ', 노랗다: 'ㅎ', 파랗다: 'ㅎ', 까맣다: 'ㅎ',
+}
+
+/* Die REGELMÄSSIGE 해요-Form. Wird immer gerechnet, auch bei den
+   unsicheren Batchim — nur so lässt sich erkennen, ob eine Antwort
+   ohne Klasse (입어요) richtig ist. null nur, wenn die Form ohne
+   Kenntnis der Klasse gar nicht bestimmbar ist (ㅡ am Stammende). */
 function regelHaeyo(ko) {
   let stamm = norm(ko)
+  if (HAEYO_SONDERFALL[stamm]) return HAEYO_SONDERFALL[stamm]
   if (!stamm.endsWith('다')) return null
   stamm = stamm.slice(0, -1)
   if (!stamm) return null
   /* 하다 -> 해요 (공부하다 -> 공부해요) */
   if (stamm.endsWith('하')) return stamm.slice(0, -1) + '해요'
-  const letzte = stamm.at(-1)
-  const d = silbe(letzte)
+  const d = silbe(stamm.at(-1))
   if (!d) return null
   const vorne = stamm.slice(0, -1)
   if (d.t !== 0) {
-    if (UNSICHER_BATCHIM.has(d.t)) return null
     /* ㅏ oder ㅗ -> 아요, sonst 어요 */
     return stamm + (d.v === 0 || d.v === 8 ? '아요' : '어요')
   }
-  /* ohne Batchim: die Endung verschmilzt mit dem Vokal */
-  const verschmelzung = { 0: null, 4: null, 1: null, 5: null, 8: 9, 13: 14, 20: 6, 11: 10 }
-  if (!(d.v in verschmelzung)) return null /* ㅡ und Exoten: 으/르-Regel */
-  const neu = verschmelzung[d.v]
-  return (neu === null ? stamm : vorne + baueSilbe(d.l, neu, 0)) + '요'
+  /* Ohne Batchim verschmilzt die Endung mit dem Vokal.
+     'zu' = Endung anhängen, sonst der neue Vokal der letzten Silbe. */
+  const ENDVOKAL = {
+    0: 'zu', /* ㅏ  가 -> 가요 */
+    1: 'zu', /* ㅐ  보내 -> 보내요 */
+    2: 'zu', /* ㅑ */
+    4: 'zu', /* ㅓ  서 -> 서요 */
+    5: 'zu', /* ㅔ  세 -> 세요 */
+    6: 'zu', /* ㅕ  켜 -> 켜요 */
+    8: 9, /* ㅗ -> ㅘ  오 -> 와요 */
+    11: 10, /* ㅚ -> ㅙ  되 -> 돼요 */
+    13: 14, /* ㅜ -> ㅝ  주 -> 줘요 */
+    16: 'lang', /* ㅟ  쉬 -> 쉬어요 */
+    19: 'lang', /* ㅢ */
+    20: 6, /* ㅣ -> ㅕ  마시 -> 마셔요 */
+  }
+  const regel = ENDVOKAL[d.v]
+  if (regel === undefined) return null /* ㅡ: 으/르-Regel, braucht die Klasse */
+  if (regel === 'zu') return stamm + '요'
+  if (regel === 'lang') return stamm + '어요'
+  return vorne + baueSilbe(d.l, regel, 0) + '요'
+}
+
+/* Passt die gemeldete Klasse überhaupt zur Wortform? Ein ㅂ-불규칙
+   braucht ein ㅂ am Stammende, ein 르-불규칙 ein 르. */
+function klassePasst(klasse, ko) {
+  const stamm = norm(ko).replace(/다$/, '')
+  if (!stamm) return false
+  const d = silbe(stamm.at(-1))
+  if (!d) return false
+  if (klasse === '르') return stamm.endsWith('르')
+  if (klasse === '으') return d.v === 18 && d.t === 0
+  if (klasse === 'ㄹ') return d.t === 8
+  const batchim = UNSICHER_BATCHIM.get(d.t)
+  return batchim === klasse
 }
 
 /* Anlaut der ersten Silbe — grober Plausibilitätstest (덥다 -> 더워요
@@ -930,9 +991,17 @@ function pruefeHaeyo(form, klasse, ko) {
   if (sil.length < 2 || sil.length > 7) return null
   if (anlaut(t) !== anlaut(norm(ko))) return null
   const regel = regelHaeyo(ko)
-  if (regel && t === regel) return { haeyo: t, unregel: null }
-  /* Weicht sie ab, muss eine Klasse genannt sein */
-  if (!UNREGEL.includes(klasse)) return null
+  /* Stimmt die Antwort mit der Regelform überein, ist sie regelmäßig —
+     eine trotzdem gemeldete Klasse wird verworfen (Fund 10.09.: 15
+     völlig richtige Formen wie 입어요 und 좋아요 fielen durch, weil das
+     Modell korrekt KEINE Klasse nannte). */
+  const pflicht = IRREGULAER[norm(ko)]
+  if (regel && t === regel && !pflicht) return { haeyo: t, unregel: null }
+  /* Bekanntes unregelmaessiges Wort: die passende Klasse ist Pflicht,
+     sonst waere 덥어요 „regelmaessig" und damit falsch durchgewinkt */
+  if (pflicht) return klasse === pflicht ? { haeyo: t, unregel: pflicht } : null
+  /* Weicht sie ab, muss eine Klasse genannt sein, die zur Wortform passt */
+  if (!UNREGEL.includes(klasse) || !klassePasst(klasse, ko)) return null
   return { haeyo: t, unregel: klasse }
 }
 
@@ -995,8 +1064,9 @@ async function nachtragLauf() {
     '     "bescheiden" ONLY for humble words used about MYSELF toward someone above me: 드리다, 여쭈다, 뵙다, 저, 제, 저희.',
     '     "locker" ONLY for words that would sound too casual toward a stranger or an elder: 뭐, 거, 걔, 대박, 짱, 헐, 야.',
     '     Everything else: "neutral".',
-    '  "partner": the counterpart word on the other level, in Korean, or null. On 먹다 that is 드시다; on 드시다 it is 먹다; on 주다 it is 드리다; on 사람 it is 분; on 이름 it is 성함; on 뭐 it is 무엇. Only a real, common counterpart — null when there is none.',
-    '  "partikel": ONLY for verbs and adjectives, else null. The particle pattern the word takes, written so the learner can copy it: "친구를 만나다 (를)", "버스를 타다 (를)", "커피가 좋다 (가)", "~에게 ~을 주다", "학교에 가다 (에)", "시간이 필요하다 (가)". Give the pattern that differs from German/English intuition where there is one. Null when the word takes no object at all.',
+    '  "partner": the counterpart of this word on a DIFFERENT politeness level, in Korean, or null. On 먹다 that is 드시다; on 드시다 it is 먹다; on 주다 it is 드리다; on 사람 it is 분; on 이름 it is 성함; on 뭐 it is 무엇. This is NOT the opposite of the word: 사다 and 팔다, 입다 and 벗다 are opposites, not politeness partners — return null there.',
+    '  "partner_register": the level of that partner, same four values. It MUST differ from "register" — otherwise the pair is not a politeness pair and you return null for both.',
+    '  "partikel": ONLY for verbs and adjectives, else null. The particle pattern, written as a SHORT REAL PHRASE the learner can copy — always with a concrete everyday noun, never a bare particle: "친구를 만나다 (를)", "버스를 타다 (를)", "커피가 좋다 (가)", "음악을 듣다 (을)", "학교에 가다 (에)", "시간이 필요하다 (가)", "~에게 ~을 주다". Never write "을 듣다" or "이/가 있다" — a pattern without a noun teaches nothing. Choose the noun that shows the word in its most typical use, and prefer the pattern where Korean differs from German/English. Null when the word takes no object at all.',
     '  "haeyo": ONLY for verbs and adjectives (dictionary form ending in 다), else null. The polite 해요 form: 먹다 -> "먹어요", 덥다 -> "더워요", 듣다 -> "들어요", 모르다 -> "몰라요", 그렇다 -> "그래요", 쓰다 -> "써요", 공부하다 -> "공부해요". Write it exactly, never guess.',
     '  "unregel": the irregular class when the 해요 form does NOT follow the plain rule: one of "ㅂ", "ㄷ", "ㅅ", "르", "ㅎ", "으", "ㄹ". When the word is regular, null.',
     'If you are unsure about a field, use null. A wrong 해요 form is worse than none.',
@@ -1037,8 +1107,14 @@ async function nachtragLauf() {
         patch.register = register
         mitRegister++
       }
+      /* Nur ein echter Ebenenwechsel zählt. Ohne diese Prüfung schrieb
+         das Modell Gegenteile ins Feld: 사다 -> 팔다, 입다 -> 벗다
+         (Fund 10.09.). */
       const partner = pruefeText(a.partner, 1, 20, /^[가-힣][가-힣\s]*$/)
-      if (partner && norm(partner) !== norm(e.ko)) patch.register_partner = partner
+      const partnerEbene = REGISTER.includes(a.partner_register) ? a.partner_register : null
+      if (partner && partnerEbene && partnerEbene !== register && norm(partner) !== norm(e.ko)) {
+        patch.register_partner = partner
+      }
       const beugbar = (e.pos === 'verb' || e.pos === 'adj') && norm(e.ko).endsWith('다')
       if (beugbar) {
         const p = pruefePartikel(a.partikel)

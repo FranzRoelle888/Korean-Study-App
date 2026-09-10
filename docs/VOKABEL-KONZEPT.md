@@ -555,3 +555,29 @@ Migration 018, eigener Durchgang `--nachtrag`.
 - **Nicht gebaut:** die geschlechtsabhängigen Anredewörter als eigenes
   Feld. Es betrifft nur 형/오빠 und 누나/언니, das gehört in den
   Infotext dieser vier Wörter (Franz 10.09.).
+
+### Drei Fehler der ersten Nachtrag-Runde (10.09.)
+
+- **Der Workflow verschluckte den Probe-Haken.** Der Zweig für
+  `nachtrag` war eine if/elif-Kette und rief das Skript ohne
+  `--probe` auf. Ein gedachter Trockenlauf lief dadurch scharf und
+  schrieb 530 Einträge. Beide Workflows SAMMELN die Schalter jetzt in
+  einer Variablen, so wie es der deutsche schon tat.
+- **15 völlig richtige 해요-Formen fielen durch** (좋아요, 입어요,
+  받아요 …). Ursache: Bei den Batchim ㄷ, ㅂ, ㅅ, ㅎ hatte das Skript
+  gar nicht erst gerechnet und deshalb eine Unregelmäßigkeits-Klasse
+  verlangt — die das Modell zu Recht nicht nannte. Jetzt wird die
+  Regelform IMMER gerechnet. Damit dabei nicht 덥어요 durchrutscht
+  (mechanisch sieht es aus wie 입어요), gibt es eine Liste der
+  häufigen unregelmäßigen Wörter auf A1/A2-Niveau: wer dort steht,
+  MUSS mit passender Klasse gemeldet werden. Zusätzlich wird geprüft,
+  ob die gemeldete Klasse überhaupt zur Wortform passt (ein 르-불규칙
+  braucht ein 르 am Stammende).
+- **Gegenteile landeten im Partner-Feld:** 사다 → 팔다, 입다 → 벗다.
+  Das Feld ist für den Höflichkeits-Partner gedacht. Das Modell nennt
+  jetzt auch die EBENE des Partners, und ein Partner wird nur
+  übernommen, wenn seine Ebene sich von der des Wortes unterscheidet.
+- Dazu geschärft: Partikel-Muster müssen ein echtes Nomen enthalten.
+  In der ersten Runde kam oft „을 듣다" statt „음악을 듣다".
+- `EXTRAS` steht deshalb auf 2 — die 530 Einträge werden einmal neu
+  gerechnet, das kostet rund 0,60 $.
