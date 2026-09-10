@@ -904,7 +904,13 @@ const UNSICHER_BATCHIM = new Map([
   [27, 'ㅎ'],
 ])
 /* Ein paar Wörter folgen gar keiner Regel */
-const HAEYO_SONDERFALL = { 아니다: '아니에요', 이다: '이에요' }
+const HAEYO_SONDERFALL = {
+  아니다: '아니에요',
+  이다: '이에요',
+  /* Kurzformen, die sich wie ihre Langform beugen (Fund 10.09.) */
+  갖다: '가져요',
+  데리다: '데려요',
+}
 
 /* Die haeufigen unregelmaessigen Verben und Adjektive auf A1/A2-Niveau.
    Warum diese Liste noetig ist: 덥다 und 입다 sehen mechanisch gleich
@@ -1033,18 +1039,24 @@ async function nachtragLauf() {
     throw e
   }
 
+  /* Ein Verb oder Adjektiv ohne 해요-Form ist unfertig, egal was der
+     Stand sagt — so holt der nächste Lauf die paar Ausreißer nach,
+     ohne dass alles neu gerechnet werden muss (Fund 10.09.). */
+  const unfertig = (e) =>
+    (e.extras_stand ?? 0) < EXTRAS ||
+    ((e.pos === 'verb' || e.pos === 'adj') && String(e.ko ?? '').endsWith('다') && !e.haeyo)
   const offen = [
     ...woerter
-      .filter((w) => (w.extras_stand ?? 0) < EXTRAS)
+      .filter(unfertig)
       .map((w) => ({ key: w.id, quelle: 'words', ko: w.ko, en: w.en, de: w.de, pos: w.pos })),
     ...vorrat
-      .filter((v) => (v.extras_stand ?? 0) < EXTRAS)
+      .filter(unfertig)
       .slice(0, ANZAHL)
       .map((v) => ({ key: v.inv_id, quelle: 'vorrat', ko: v.ko, en: v.en, de: v.de, pos: v.pos })),
   ]
   console.log(
-    `Bibliothek: ${woerter.length} (offen ${woerter.filter((w) => (w.extras_stand ?? 0) < EXTRAS).length}) · ` +
-      `Vorrat: ${vorrat.length} (offen ${vorrat.filter((v) => (v.extras_stand ?? 0) < EXTRAS).length}, davon jetzt ${Math.min(ANZAHL, vorrat.filter((v) => (v.extras_stand ?? 0) < EXTRAS).length)})`
+    `Bibliothek: ${woerter.length} (offen ${woerter.filter(unfertig).length}) · ` +
+      `Vorrat: ${vorrat.length} (offen ${vorrat.filter(unfertig).length}, davon jetzt ${Math.min(ANZAHL, vorrat.filter(unfertig).length)})`
   )
   if (PROBE) offen.splice(8)
   if (!offen.length) {
