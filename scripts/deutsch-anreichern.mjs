@@ -577,11 +577,11 @@ async function dateiAnreichern() {
     if (f.kasus) ziel.kasus = f.kasus
     if (f.nuance) ziel.nuance = f.nuance
     if (f.info) ziel.info = f.info
-    /* Als erledigt gilt ein Wort NUR mit geprüfter Bedeutung. Sonst
-       bliebe es mit einer ungeprüften Bedeutung liegen und käme nie
-       wieder dran (Fund 09.09.: der Lauf lief ins Monatslimit, die
-       Prüfung fiel aus, 144 Wörter waren fälschlich abgehakt). */
-    if (ziel.en && ziel.ko) ziel.anr = METHODE
+    /* Als erledigt gilt ein Wort NUR, wenn der Prüfer BEIDE Bedeutungen
+       in DIESEM Lauf abgenommen hat. Vorher reichte es, dass die Felder
+       irgendwie gefüllt waren — dadurch blieb „zurück" mit der alten,
+       beanstandeten Bedeutung abgehakt liegen (Fund 10.09.). */
+    if (f.enOk && f.koOk) ziel.anr = METHODE
     gesetzt++
     if (PROBE) console.log(`  [probe] ${JSON.stringify(ziel)}`)
     else {

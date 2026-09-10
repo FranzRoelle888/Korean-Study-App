@@ -173,8 +173,15 @@ function wordFromRow(r) {
     familie: r.familie || null,
     zaehlwort: !!r.zaehlwort,
     zahlsystem: r.zahlsystem || null,
-    /* Kasus des Verbs, 해인s Seite (Migration 017): jdm. helfen (D) */
+    /* Kasus bzw. Partikel des Verbs (Migration 017/018):
+       „jdm. helfen (D)" bei ihr, „친구를 만나다 (를)" bei ihm */
     kasus: r.kasus || null,
+    /* Franz' Seite (Migration 018): Formalitätsgrad mit Gegenstück,
+       해요-Form und Unregelmäßigkeits-Klasse */
+    register: r.register || null,
+    registerPartner: r.register_partner || null,
+    haeyo: r.haeyo || null,
+    unregel: r.unregel || null,
     hand: Array.isArray(r.hand) && r.hand.length ? r.hand : null,
     createdAt: new Date(r.created_at).getTime(),
   }
@@ -212,12 +219,16 @@ function wordToRow(w) {
   if (w.zaehlwort) row.zaehlwort = true
   if (w.zahlsystem) row.zahlsystem = w.zahlsystem
   if (w.kasus) row.kasus = w.kasus
+  if (w.register) row.register = w.register
+  if (w.registerPartner) row.register_partner = w.registerPartner
+  if (w.haeyo) row.haeyo = w.haeyo
+  if (w.unregel) row.unregel = w.unregel
   if (w.hand) row.hand = w.hand
   return row
 }
 /* Spalten aus Migration 016 — fehlt die Migration noch, lehnt die DB
    das Anlegen ab; dann ohne diese Spalten erneut versuchen */
-const SPALTEN_016 = ['info', 'familie', 'zaehlwort', 'zahlsystem', 'hand', 'kasus']
+const SPALTEN_016 = ['info', 'familie', 'zaehlwort', 'zahlsystem', 'hand', 'kasus', 'register', 'register_partner', 'haeyo', 'unregel']
 function ohneSpalten016(row) {
   const r = { ...row }
   for (const s of SPALTEN_016) delete r[s]
@@ -292,6 +303,10 @@ export async function ergaenzeWortInhalte(id, felder) {
     patch.zahlsystem = felder.zahlsystem || null
   }
   if (felder.kasus) patch.kasus = felder.kasus
+  if (felder.register) patch.register = felder.register
+  if (felder.registerPartner) patch.register_partner = felder.registerPartner
+  if (felder.haeyo) patch.haeyo = felder.haeyo
+  if (felder.unregel) patch.unregel = felder.unregel
   if (!Object.keys(patch).length) return
   const { error } = await mine(supabase.from('words').update(patch).eq('id', id))
   if (error) throw error
@@ -524,6 +539,10 @@ function vorratFromRow(r) {
     zaehlwort: !!r.zaehlwort,
     zahlsystem: r.zahlsystem || null,
     kasus: r.kasus || null,
+    register: r.register || null,
+    registerPartner: r.register_partner || null,
+    haeyo: r.haeyo || null,
+    unregel: r.unregel || null,
     bereit: !!r.bereit,
     audioOk: !!r.audio_ok,
     uebersprungen: !!r.uebersprungen,
@@ -1018,6 +1037,10 @@ export function dueCards(words, cards) {
       zaehlwort: !!byId[c.wordId].zaehlwort,
       zahlsystem: byId[c.wordId].zahlsystem || null,
       kasus: byId[c.wordId].kasus || null,
+      register: byId[c.wordId].register || null,
+      registerPartner: byId[c.wordId].registerPartner || null,
+      haeyo: byId[c.wordId].haeyo || null,
+      unregel: byId[c.wordId].unregel || null,
       /* 해인: Plural neben dem Nomen, Verb-Chips aus der Konjugation */
       plural: byId[c.wordId].plural || null,
       conj: byId[c.wordId].conj || null,
@@ -1214,6 +1237,10 @@ export function makeVorratWord(v) {
     zaehlwort: !!v.zaehlwort,
     zahlsystem: v.zahlsystem || null,
     kasus: v.kasus || null,
+    register: v.register || null,
+    registerPartner: v.registerPartner || null,
+    haeyo: v.haeyo || null,
+    unregel: v.unregel || null,
     hand: null,
     createdAt: Date.now(),
   }

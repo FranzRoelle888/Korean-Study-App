@@ -519,3 +519,39 @@ Monats-Limit von Anthropic. Zwei Fehler wurden dadurch sichtbar:
   die Auswahl jedes Wort wieder auf, das als erledigt markiert ist,
   aber keine englische Bedeutung hat — ein abgebrochener Lauf heilt
   sich damit von selbst. Dieselbe Kur in beiden Skripten.
+
+## 13. Formalität, Partikel und 해요-Form (Franz, 10.09.)
+
+Drei Angaben, die Franz seinen koreanischen Karten nicht ansieht.
+Migration 018, eigener Durchgang `--nachtrag`.
+
+- **Formalitätsgrad** `register` + `register_partner`. Wichtig ist der
+  Vorbehalt: Im Koreanischen sitzt die Höflichkeit meistens in der
+  ENDUNG, nicht im Wort. Der Chip erscheint deshalb nur dort, wo die
+  Ebene im Stamm steckt — 드시다, 계시다, 주무시다, 분, 성함 (höflich),
+  드리다, 여쭈다, 저 (bescheiden), 뭐, 거, 대박 (locker). Alles andere
+  ist neutral und bekommt KEINEN Chip. `register_partner` hält das
+  Gegenstück: auf 먹다 steht 드시다, auf 드시다 steht 먹다. Das war
+  Franz' eigentlicher Wunsch nach „Alternativen der anderen Seite".
+- **Partikel** in der vorhandenen Spalte `kasus` — das Gegenstück zum
+  Kasus auf 해인s Seite, keine neue Spalte. Wertvoll dort, wo
+  Koreanisch anders baut: 친구를 만나다 (를) statt 에게,
+  버스를 타다 (를) statt 에, 커피가 좋다 (가) gegen 커피를 좋아하다 (를).
+  Die Chip-Farbe teilt sich die Klassen mit dem deutschen Kasus, weil
+  die Rolle dieselbe ist: Empfänger wie Dativ, Objekt wie Akkusativ;
+  Subjekt (이/가) bekommt eine eigene Farbe.
+- **해요-Form** `haeyo` + Klasse `unregel` — das Gegenstück zu Plural
+  und Konjugation bei ihr. Aus 덥다 wird 더워요, nicht 덥어요.
+  Das Skript rechnet die regelmäßige Form SELBST nach (Hangul-Arithmetik
+  inklusive der Verschmelzungen 오+아→와, 주+어→줘, 시+어→셔, 되+어→돼).
+  Stimmt die Antwort damit überein, gilt sie als regelmäßig. Weicht sie
+  ab, MUSS das Modell eine Klasse nennen (ㅂ ㄷ ㅅ 르 ㅎ 으 ㄹ), sonst
+  fällt das Feld durch. Bei den Batchim ㄷ, ㅂ, ㅅ, ㅎ wird gar nicht
+  erst gerechnet, weil dort beides möglich ist (입다 → 입어요 regelmäßig,
+  덥다 → 더워요 nicht).
+- **Warum ein eigener Durchgang:** Bedeutung und Infotext stehen schon
+  in geprüfter Qualität da. Sie neu zu erzeugen würde das Vierfache
+  kosten. `extras_stand` zählt getrennt von `anreicherung`.
+- **Nicht gebaut:** die geschlechtsabhängigen Anredewörter als eigenes
+  Feld. Es betrifft nur 형/오빠 und 누나/언니, das gehört in den
+  Infotext dieser vier Wörter (Franz 10.09.).

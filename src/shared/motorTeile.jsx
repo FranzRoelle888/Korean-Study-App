@@ -255,19 +255,74 @@ export function InfoText({ info, t, offen = false, className = '' }) {
     </details>
   )
 }
+/* Welche Farbe der Chip bekommt. Deutsch nennt den Fall im Klartext
+   („(D)", „(D + A)"), Koreanisch zeigt die Partikel — dieselbe Rolle,
+   also dieselbe Farbe: Objekt (을/를) wie Akkusativ, Empfänger
+   (에게/한테/께) wie Dativ, Subjekt (이/가) bekommt eine eigene.
+   Achtung: 가 steckt auch in 가다, deshalb wird zuerst der Hinweis in
+   der Klammer am Ende gelesen und nur sonst der ganze Text. */
+function kasusFarbe(text) {
+  if (/\(D \+ A\)|\(A \+ D\)/.test(text)) return 'beide'
+  if (/\(D\)|\+\s?D\b/.test(text)) return 'dativ'
+  if (/\(A\)|\+\s?A\b/.test(text)) return 'akkusativ'
+  const klammer = text.match(/\(([^()]*)\)\s*$/)
+  const suche = klammer ? klammer[1] : text
+  const empfaenger = /에게|한테|께/.test(suche)
+  const objekt = klammer ? /[을를]/.test(suche) : /~[을를]/.test(suche)
+  if (empfaenger && objekt) return 'beide'
+  if (empfaenger) return 'dativ'
+  if (objekt) return 'akkusativ'
+  if (klammer ? /^[이가]$/.test(suche.trim()) : /~[이가]\s/.test(suche)) return 'subjekt'
+  return 'neutral'
+}
+
 /* Kasus eines deutschen Verbs (jdm. helfen (D)). Dativ und
    Akkusativ bekommen je eine eigene Farbe, damit der Fall am Blick
    erkennbar ist und nicht erst beim Lesen (Franz 09.09.). */
 export function KasusChip({ word, t, className = '' }) {
   if (!word?.kasus) return null
   const text = String(word.kasus)
-  /* Beide Fälle im Muster -> zweifarbig gestreift über die Klasse */
-  const hatD = /\(D\b|\bD \+ A|\+\s?D\b/.test(text)
-  const hatA = /\(A\b|D \+ A\)|\+\s?A\b/.test(text)
-  const fall = hatD && hatA ? 'beide' : hatD ? 'dativ' : hatA ? 'akkusativ' : 'neutral'
+  const fall = kasusFarbe(text)
   return (
     <span className={`kasus-chip kasus-${fall} ${className}`.trim()} lang="de" title={t.kasusLabel}>
       {text}
+    </span>
+  )
+}
+
+/* Formalitätsgrad, nur Franz' Seite (Migration 018). Neutral bekommt
+   KEINEN Chip — sonst trüge fast jede Karte einen. Das Gegenstück auf
+   der anderen Ebene steht daneben, das war Franz' eigentlicher Wunsch:
+   „bei extrem formellen Ausdrücken Alternativen der anderen Seite". */
+export function RegisterChip({ word, t, className = '' }) {
+  const stufe = word?.register
+  const partner = word?.registerPartner
+  if (!stufe && !partner) return null
+  const label = stufe && t.registerStufen ? t.registerStufen[stufe] : null
+  return (
+    <span className={`register-zeile ${className}`.trim()}>
+      {label && <span className={`register-chip register-${stufe}`}>{label}</span>}
+      {partner && (
+        <span className="register-partner">
+          {t.registerAuch}{' '}
+          <b lang="ko">{partner}</b>
+        </span>
+      )}
+    </span>
+  )
+}
+
+/* Die 해요-Form — das Gegenstück zu Plural und Konjugation auf 해인s
+   Seite. 덥다 wird zu 더워요, und das kann man nicht ableiten, wenn
+   man die Unregelmäßigkeits-Klasse nicht kennt. */
+export function HaeyoZeile({ word, t, className = '' }) {
+  if (!word?.haeyo) return null
+  return (
+    <span className={`haeyo-zeile ${className}`.trim()}>
+      <span className="haeyo-form" lang="ko">
+        {word.haeyo}
+      </span>
+      {word.unregel && <span className="haeyo-chip">{t.unregelChip(word.unregel)}</span>}
     </span>
   )
 }

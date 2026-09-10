@@ -42,7 +42,7 @@
 
    Aufruf: node scripts/vokabeln-anreichern.mjs
              [--dry] [--probe] [--anzahl 300] [--profil ko] [--audio]
-             [--bericht] [--nuancen] [--zahlen-loeschen]
+             [--bericht] [--nuancen] [--zahlen-loeschen] [--nachtrag]
    Secrets: ANTHROPIC_API_KEY, SUPABASE_SERVICE_KEY (nur in Actions).
    ============================================================ */
 import { readFileSync } from 'node:fs'
@@ -67,6 +67,8 @@ const NUR_AUDIO = process.argv.includes('--audio')
 const NUR_BERICHT = process.argv.includes('--bericht')
 const NUR_NUANCEN = process.argv.includes('--nuancen')
 const ZAHLEN_LOESCHEN = process.argv.includes('--zahlen-loeschen')
+/* Schmaler Zusatz-Durchgang: nur Formalität, Partikel, 해요-Form */
+const NACHTRAG = process.argv.includes('--nachtrag')
 const ANZAHL = Number(argWert('--anzahl') ?? 300)
 const PROFIL = argWert('--profil') ?? 'ko'
 if (PROFIL !== 'ko') {
@@ -848,6 +850,234 @@ async function audioPruefen() {
   console.log(`Audio komplett: ${ok} von ${offen.length} offenen Vorratswörtern.`)
 }
 
+/* ---------- NACHTRAG: Formalität, Partikel, 해요-Form ----------
+   (Franz 10.09.) Ein schmaler, billiger Durchgang NUR für die vier
+   neuen Angaben. Bedeutung und Infotext bleiben unangetastet — die
+   stehen schon in geprüfter Qualität da, und sie neu zu erzeugen
+   würde das Vierfache kosten.
+
+   register   Die Höflichkeit steckt im Koreanischen meistens in der
+              ENDUNG, nicht im Wort. Nur wo sie im Stamm sitzt, ist
+              die Angabe eine Hilfe: 드시다, 계시다, 주무시다 (höflich
+              über eine Respektsperson), 드리다, 여쭈다 (bescheiden
+              über mich selbst), 뭐, 거, 대박 (locker). Alles andere
+              ist neutral und bekommt keinen Chip.
+   register_partner  Das Gegenstück: auf 먹다 steht 드시다, auf
+              드시다 steht 먹다.
+   kasus      Die Partikel, die das Verb verlangt — das Gegenstück
+              zum Kasus auf 해인s Seite. Gerade dort wertvoll, wo
+              Koreanisch anders baut als Deutsch: 친구를 만나다 (를),
+              버스를 타다 (를), 커피가 좋다 (가).
+   haeyo      Die 해요-Form, das Gegenstück zu Plural/Konjugation bei
+              ihr. 덥다 wird zu 더워요, nicht 덥어요.
+   unregel    Die Unregelmäßigkeits-Klasse (ㅂ ㄷ ㅅ 르 ㅎ 으 ㄹ).
+
+   Geprüft wird ohne zweites Modell: die 해요-Form rechnet das Skript
+   für regelmäßige Verben selbst nach. Weicht die Antwort ab, MUSS
+   das Modell eine Klasse nennen — sonst fällt das Feld durch. */
+
+const EXTRAS = 1
+const REGISTER = ['hoeflich', 'bescheiden', 'neutral', 'locker']
+const UNREGEL = ['ㅂ', 'ㄷ', 'ㅅ', '르', 'ㅎ', '으', 'ㄹ']
+/* Partikel, die eine Angabe überhaupt erst nützlich machen */
+const PARTIKEL = ['을', '를', '이', '가', '에게', '한테', '에서', '에', '와', '과', '하고', '으로', '로', '의', '도', '만', '부터', '까지', '보다']
+
+/* ---- Hangul-Rechnung für die 해요-Form ---- */
+const HANGUL_START = 0xac00
+function silbe(c) {
+  const x = String(c ?? '').codePointAt(0) - HANGUL_START
+  if (x < 0 || x > 11171) return null
+  return { l: Math.floor(x / 588), v: Math.floor((x % 588) / 28), t: x % 28 }
+}
+const baueSilbe = (l, v, t) => String.fromCodePoint(HANGUL_START + l * 588 + v * 28 + t)
+
+/* Batchim, die eine Unregelmäßigkeit auslösen KÖNNEN (덥다 -> 더워요,
+   aber 입다 -> 입어요). Bei denen rechnen wir nicht mit. */
+const UNSICHER_BATCHIM = new Set([7, 17, 19, 27]) /* ㄷ ㅂ ㅅ ㅎ */
+
+/* Die regelmäßige 해요-Form, oder null wenn nicht sicher berechenbar */
+function regelHaeyo(ko) {
+  let stamm = norm(ko)
+  if (!stamm.endsWith('다')) return null
+  stamm = stamm.slice(0, -1)
+  if (!stamm) return null
+  /* 하다 -> 해요 (공부하다 -> 공부해요) */
+  if (stamm.endsWith('하')) return stamm.slice(0, -1) + '해요'
+  const letzte = stamm.at(-1)
+  const d = silbe(letzte)
+  if (!d) return null
+  const vorne = stamm.slice(0, -1)
+  if (d.t !== 0) {
+    if (UNSICHER_BATCHIM.has(d.t)) return null
+    /* ㅏ oder ㅗ -> 아요, sonst 어요 */
+    return stamm + (d.v === 0 || d.v === 8 ? '아요' : '어요')
+  }
+  /* ohne Batchim: die Endung verschmilzt mit dem Vokal */
+  const verschmelzung = { 0: null, 4: null, 1: null, 5: null, 8: 9, 13: 14, 20: 6, 11: 10 }
+  if (!(d.v in verschmelzung)) return null /* ㅡ und Exoten: 으/르-Regel */
+  const neu = verschmelzung[d.v]
+  return (neu === null ? stamm : vorne + baueSilbe(d.l, neu, 0)) + '요'
+}
+
+/* Anlaut der ersten Silbe — grober Plausibilitätstest (덥다 -> 더워요
+   behält ㄷ, 모르다 -> 몰라요 behält ㅁ) */
+const anlaut = (s) => silbe(String(s ?? '')[0])?.l ?? -1
+
+function pruefeHaeyo(form, klasse, ko) {
+  const t = pruefeText(form, 2, 20)
+  if (!t || !t.endsWith('요')) return null
+  const sil = [...t].filter((c) => /[가-힣]/.test(c))
+  if (sil.length < 2 || sil.length > 7) return null
+  if (anlaut(t) !== anlaut(norm(ko))) return null
+  const regel = regelHaeyo(ko)
+  if (regel && t === regel) return { haeyo: t, unregel: null }
+  /* Weicht sie ab, muss eine Klasse genannt sein */
+  if (!UNREGEL.includes(klasse)) return null
+  return { haeyo: t, unregel: klasse }
+}
+
+function pruefePartikel(s) {
+  const t = pruefeText(s, 4, 44)
+  if (!t) return null
+  if (!/[가-힣]/.test(t)) return null
+  if (!PARTIKEL.some((p) => t.includes(p))) return null
+  return t
+}
+
+/* ---- Der Durchgang ---- */
+async function nachtragLauf() {
+  console.log(`\n=== Nachtrag: Formalität, Partikel, 해요-Form (Stand ${EXTRAS}) ===`)
+  let woerter
+  let vorrat
+  try {
+    woerter = await hole(
+      `words?profile=eq.${PROFIL}&select=id,ko,en,de,pos,register,register_partner,haeyo,unregel,kasus,extras_stand&order=created_at.asc`
+    )
+    vorrat = await hole(
+      `vorrat?profile=eq.${PROFIL}&uebersprungen=is.false&select=inv_id,ko,en,de,pos,register,register_partner,haeyo,unregel,kasus,extras_stand,rang&order=rang.asc.nullslast`
+    )
+  } catch (e) {
+    if (/register|haeyo|unregel|extras_stand/.test(e.message)) {
+      console.error('Spalten fehlen — bitte zuerst Migration 018 ausführen.')
+      process.exit(1)
+    }
+    throw e
+  }
+
+  const offen = [
+    ...woerter
+      .filter((w) => (w.extras_stand ?? 0) < EXTRAS)
+      .map((w) => ({ key: w.id, quelle: 'words', ko: w.ko, en: w.en, de: w.de, pos: w.pos })),
+    ...vorrat
+      .filter((v) => (v.extras_stand ?? 0) < EXTRAS)
+      .slice(0, ANZAHL)
+      .map((v) => ({ key: v.inv_id, quelle: 'vorrat', ko: v.ko, en: v.en, de: v.de, pos: v.pos })),
+  ]
+  console.log(
+    `Bibliothek: ${woerter.length} (offen ${woerter.filter((w) => (w.extras_stand ?? 0) < EXTRAS).length}) · ` +
+      `Vorrat: ${vorrat.length} (offen ${vorrat.filter((v) => (v.extras_stand ?? 0) < EXTRAS).length}, davon jetzt ${Math.min(ANZAHL, vorrat.filter((v) => (v.extras_stand ?? 0) < EXTRAS).length)})`
+  )
+  if (PROBE) offen.splice(8)
+  if (!offen.length) {
+    console.log('Nichts zu tun.')
+    return
+  }
+  console.log(`Jetzt dran: ${offen.length}`)
+
+  const SYSTEM_NACHTRAG = [
+    'You add four small grammar facts to Korean vocabulary entries of a German adult beginner (A1-A2). The meaning is already settled and is NOT your job — do not comment on it.',
+    'Input, one entry per line: id | korean | pos | meaning.',
+    'Return ONLY a JSON array, one object per id, with exactly these keys:',
+    '  "id": copy',
+    '  "register": one of "hoeflich", "bescheiden", "neutral", "locker".',
+    '     In Korean the speech level normally sits in the ENDING, not in the word, so almost every word is "neutral" — use it generously.',
+    '     "hoeflich" ONLY for words that are honorific in themselves, used ABOUT a person you respect: 드시다, 계시다, 주무시다, 말씀하시다, 돌아가시다, 분, 성함, 연세, 댁, 진지.',
+    '     "bescheiden" ONLY for humble words used about MYSELF toward someone above me: 드리다, 여쭈다, 뵙다, 저, 제, 저희.',
+    '     "locker" ONLY for words that would sound too casual toward a stranger or an elder: 뭐, 거, 걔, 대박, 짱, 헐, 야.',
+    '     Everything else: "neutral".',
+    '  "partner": the counterpart word on the other level, in Korean, or null. On 먹다 that is 드시다; on 드시다 it is 먹다; on 주다 it is 드리다; on 사람 it is 분; on 이름 it is 성함; on 뭐 it is 무엇. Only a real, common counterpart — null when there is none.',
+    '  "partikel": ONLY for verbs and adjectives, else null. The particle pattern the word takes, written so the learner can copy it: "친구를 만나다 (를)", "버스를 타다 (를)", "커피가 좋다 (가)", "~에게 ~을 주다", "학교에 가다 (에)", "시간이 필요하다 (가)". Give the pattern that differs from German/English intuition where there is one. Null when the word takes no object at all.',
+    '  "haeyo": ONLY for verbs and adjectives (dictionary form ending in 다), else null. The polite 해요 form: 먹다 -> "먹어요", 덥다 -> "더워요", 듣다 -> "들어요", 모르다 -> "몰라요", 그렇다 -> "그래요", 쓰다 -> "써요", 공부하다 -> "공부해요". Write it exactly, never guess.',
+    '  "unregel": the irregular class when the 해요 form does NOT follow the plain rule: one of "ㅂ", "ㄷ", "ㅅ", "르", "ㅎ", "으", "ㄹ". When the word is regular, null.',
+    'If you are unsure about a field, use null. A wrong 해요 form is worse than none.',
+  ].join('\n')
+
+  const nachSchluessel = new Map(offen.map((e) => [e.key, e]))
+  let gesetzt = 0
+  let mitRegister = 0
+  let mitPartikel = 0
+  let mitHaeyo = 0
+  for (let von = 0; von < offen.length; von += 25) {
+    const teil = offen.slice(von, von + 25)
+    let antwort = null
+    for (let versuch = 1; versuch <= 2 && !Array.isArray(antwort); versuch++) {
+      try {
+        antwort = await frage(
+          SYSTEM_NACHTRAG,
+          teil.map((e) => [e.key, e.ko, e.pos || '', e.de || e.en || ''].join(' | ')).join('\n'),
+          { maxTokens: 8000, effort: 'medium' }
+        )
+        if (!Array.isArray(antwort)) console.error('  Antwort war kein Array')
+      } catch (e) {
+        if (e instanceof LimitErreicht) throw e
+        console.error(`  Modellanfrage fehlgeschlagen (Versuch ${versuch}): ${e.message}`)
+        antwort = null
+      }
+    }
+    if (!Array.isArray(antwort)) {
+      console.error(`  Stapel übersprungen — die ${teil.length} Wörter bleiben offen`)
+      continue
+    }
+    for (const a of antwort) {
+      const e = nachSchluessel.get(String(a?.id ?? ''))
+      if (!e || !teil.includes(e)) continue
+      const patch = { extras_stand: EXTRAS }
+      const register = REGISTER.includes(a.register) ? a.register : 'neutral'
+      if (register !== 'neutral') {
+        patch.register = register
+        mitRegister++
+      }
+      const partner = pruefeText(a.partner, 1, 20, /^[가-힣][가-힣\s]*$/)
+      if (partner && norm(partner) !== norm(e.ko)) patch.register_partner = partner
+      const beugbar = (e.pos === 'verb' || e.pos === 'adj') && norm(e.ko).endsWith('다')
+      if (beugbar) {
+        const p = pruefePartikel(a.partikel)
+        if (p) {
+          patch.kasus = p
+          mitPartikel++
+        }
+        const h = pruefeHaeyo(a.haeyo, a.unregel, e.ko)
+        if (h) {
+          patch.haeyo = h.haeyo
+          if (h.unregel) patch.unregel = h.unregel
+          mitHaeyo++
+        } else if (a.haeyo) {
+          pruefliste.push(`해요-Form ${e.ko}: "${a.haeyo}" (Klasse ${a.unregel ?? '—'}) nicht plausibel`)
+        }
+      }
+      try {
+        if (e.quelle === 'words') await patche('words', `id=eq.${e.key}`, patch)
+        else await patche('vorrat', `profile=eq.${PROFIL}&inv_id=eq.${e.key}`, patch)
+        gesetzt++
+        const teile = [
+          patch.register ? `Ebene ${patch.register}` : '',
+          patch.register_partner ? `Gegenstück ${patch.register_partner}` : '',
+          patch.kasus ? patch.kasus : '',
+          patch.haeyo ? `${patch.haeyo}${patch.unregel ? ` [${patch.unregel}-불규칙]` : ''}` : '',
+        ].filter(Boolean)
+        if (teile.length) console.log(`  ${TROCKEN ? '[trocken] ' : ''}${e.ko}: ${teile.join(' · ')}`)
+      } catch (err) {
+        console.error(`  Schreiben fehlgeschlagen (${e.ko}): ${err.message}`)
+      }
+    }
+    console.log(`  … ${Math.min(von + 25, offen.length)}/${offen.length}`)
+  }
+  console.log(
+    `Nachtrag: ${gesetzt} Einträge · Ebene ${mitRegister} · Partikel ${mitPartikel} · 해요-Form ${mitHaeyo}` +
+      (TROCKEN ? ' (Trockenlauf — NICHTS gespeichert)' : '')
+  )
+}
+
 /* ---------- Schritt 4: Wortart-Bericht ---------- */
 async function bericht() {
   const vorrat = await hole(
@@ -871,6 +1101,15 @@ if (NUR_AUDIO) {
   await bericht()
 } else if (NUR_NUANCEN) {
   await familienBilden()
+} else if (NACHTRAG) {
+  await nachtragLauf()
+  if (pruefliste.length) {
+    console.log(`
+=== PRUEFLISTE (${pruefliste.length}) ===`)
+    for (const q of pruefliste) console.log('  ' + q)
+  }
+  console.log(`
+Modell: ${tokensRein} Tokens rein, ${tokensRaus} raus -> grob ${kostenUsd.toFixed(2)} $.`)
 } else if (ZAHLEN_LOESCHEN) {
   const woerter = await hole(`words?profile=eq.${PROFIL}&select=id,ko,en,inv_id`)
   await zahlenInBibliothek(woerter)

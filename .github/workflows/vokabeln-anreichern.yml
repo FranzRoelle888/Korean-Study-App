@@ -41,6 +41,10 @@ on:
         description: 'Trockenlauf (alle Wörter anfragen, nichts schreiben, kein TTS)'
         type: boolean
         default: false
+      nachtrag:
+        description: 'NUR der schmale Zusatz-Durchgang: Formalitaet, Partikel, 해요-Form (guenstig, ohne Bedeutungen)'
+        type: boolean
+        default: false
       zahlen_loeschen:
         description: 'NUR Zahlwörter/Ableitungen aus der Bibliothek löschen (Karten gehen mit) — sonst werden sie nur gelistet'
         type: boolean
@@ -65,7 +69,9 @@ jobs:
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: |
           set -o pipefail
-          if [ "${{ inputs.zahlen_loeschen }}" = "true" ]; then
+          if [ "${{ inputs.nachtrag }}" = "true" ]; then
+            node scripts/vokabeln-anreichern.mjs --nachtrag --anzahl "${{ inputs.anzahl }}" 2>&1 | tee lauf.log
+          elif [ "${{ inputs.zahlen_loeschen }}" = "true" ]; then
             node scripts/vokabeln-anreichern.mjs --zahlen-loeschen 2>&1 | tee lauf.log
           elif [ "${{ inputs.nur_nuancen }}" = "true" ]; then
             node scripts/vokabeln-anreichern.mjs --nuancen 2>&1 | tee lauf.log
@@ -78,7 +84,7 @@ jobs:
           fi
 
       - name: TTS für Wörter und Sätze
-        if: ${{ inputs.dry != true && inputs.probe != true && inputs.nur_nuancen != true && inputs.zahlen_loeschen != true }}
+        if: ${{ inputs.dry != true && inputs.probe != true && inputs.nur_nuancen != true && inputs.zahlen_loeschen != true && inputs.nachtrag != true }}
         env:
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
@@ -87,7 +93,7 @@ jobs:
           node scripts/baue-tts.mjs --profil ko 2>&1 | tee tts.log
 
       - name: Audio-Check
-        if: ${{ inputs.dry != true && inputs.probe != true && inputs.nur_nuancen != true && inputs.zahlen_loeschen != true }}
+        if: ${{ inputs.dry != true && inputs.probe != true && inputs.nur_nuancen != true && inputs.zahlen_loeschen != true && inputs.nachtrag != true }}
         env:
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: |

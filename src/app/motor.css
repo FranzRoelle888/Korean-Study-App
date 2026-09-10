@@ -1083,3 +1083,79 @@
 .daily-card .kasus-akkusativ { background: rgba(245, 190, 150, 0.28); border-color: rgba(245, 190, 150, 0.6); color: #fbe6d6; }
 .daily-card .kasus-beide { background: linear-gradient(100deg, rgba(160,205,245,0.28) 0%, rgba(160,205,245,0.28) 48%, rgba(245,190,150,0.28) 52%, rgba(245,190,150,0.28) 100%); border-color: rgba(255,255,255,0.35); color: #fff; }
 .daily-card .kasus-neutral { background: rgba(255, 255, 255, 0.18); color: #fff; }
+
+/* ---------- Franz' Seite: Formalitaet und 해요-Form (10.09.) ----------
+   Die Partikel-Farben teilen sich die Klassen mit dem deutschen Kasus
+   (kasus-dativ/-akkusativ/-beide), weil die Rolle dieselbe ist:
+   Empfaenger, Objekt, beides. Subjekt (이/가) bekommt eine eigene. */
+.kasus-subjekt {
+  background: #e6f4ea;
+  border-color: #b7dfc4;
+  color: #2c6b41;
+}
+.daily-card .kasus-subjekt {
+  background: rgba(170, 225, 190, 0.28);
+  border-color: rgba(170, 225, 190, 0.6);
+  color: #e2f6e9;
+}
+
+.haeyo-zeile {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 7px;
+  margin: 5px 0 0;
+  flex-wrap: wrap;
+}
+.haeyo-form {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--primary, #7263b8);
+  letter-spacing: 0.01em;
+}
+.haeyo-chip {
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  background: #fdf1d8;
+  border: 1px solid #f0dcae;
+  color: #8a6414;
+  white-space: nowrap;
+}
+.daily-card .haeyo-form { color: #fff; }
+.daily-card .haeyo-chip {
+  background: rgba(255, 226, 160, 0.26);
+  border-color: rgba(255, 226, 160, 0.55);
+  color: #fdf0d6;
+}
+
+.register-zeile {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 5px 0 0;
+  flex-wrap: wrap;
+  font-size: 0.78rem;
+}
+.register-chip {
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.7rem;
+  letter-spacing: 0.02em;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+/* Hoeflich warm, bescheiden kuehl, locker blass — auf einen Blick
+   unterscheidbar, ohne dass es nach Ampel aussieht */
+.register-hoeflich { background: #f3e8fb; border-color: #ddc6ee; color: #6b3f8c; }
+.register-bescheiden { background: #e8eefb; border-color: #c6d3ee; color: #3f558c; }
+.register-locker { background: #f2f2f0; border-color: #dcdcd8; color: #66655f; }
+.register-partner { color: var(--ink-soft, #5b5566); }
+.register-partner b { font-weight: 700; color: var(--ink, #2b2733); }
+.daily-card .register-hoeflich { background: rgba(226, 200, 245, 0.28); border-color: rgba(226, 200, 245, 0.6); color: #f2e6fb; }
+.daily-card .register-bescheiden { background: rgba(198, 214, 245, 0.28); border-color: rgba(198, 214, 245, 0.6); color: #e6edfb; }
+.daily-card .register-locker { background: rgba(255, 255, 255, 0.16); border-color: rgba(255, 255, 255, 0.3); color: #f0efec; }
+.daily-card .register-partner { color: rgba(255, 255, 255, 0.85); }
+.daily-card .register-partner b { color: #fff; }
