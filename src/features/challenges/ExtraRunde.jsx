@@ -3,6 +3,7 @@ import ClearableInput from '../../shared/ClearableInput'
 import { SpeakButton } from '../../shared/tts'
 import { Bedeutung, WortVergleich } from '../../shared/motorTeile'
 import { istRichtig } from '../../core/vergleich'
+import { bedeutung, laengenKlasse } from '../../core/motor'
 import { ZEITRAEUME, fuerZeitraum } from '../../core/extraRunde'
 
 /* ============================================================
@@ -173,7 +174,7 @@ function ExtraRunde({ material, onDone, onExit, profile, t }) {
           <span className="card-tag">
             {grundText} · {tagText}
           </span>
-          <div className="card-front" lang={profile.knownLang}>
+          <div className={`card-front card-front-bedeutung ${laengenKlasse(bedeutung(eintrag.word))}`} lang={profile.knownLang}>
             <Bedeutung word={eintrag.word} />
           </div>
           {urteil && (

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { previewInterval, formatInterval, hoerKarteMitText } from '../../core/storage'
-import { vorschlaege, trifftBedeutung } from '../../core/motor'
+import { vorschlaege, trifftBedeutung, bedeutung, laengenKlasse } from '../../core/motor'
 import { istRichtig } from '../../core/vergleich'
 import Confetti from '../../shared/Confetti'
 import { MoonIcon, CardRidge, CardSkyline } from '../../shared/icons'
@@ -233,7 +233,12 @@ function ReviewMotor({ initialQueue, words, onRate, onUndo, onExit, profile, t, 
         </button>
       )}
 
-      <div className="review-body">
+      {/* Nach der Antwort darf der Kartenbereich scrollen, damit die
+          Bewertungsknöpfe IMMER erreichbar bleiben — auch wenn Bedeutung,
+          Beispielsatz und Chips die Karte höher machen als den Schirm
+          (Fund 해인 11.09.). Während des Tippens bleibt alles wie es war:
+          da regelt die Tastatur-Logik die Höhe, und die fasst niemand an. */}
+      <div className={checked ? 'review-body antwort-offen' : 'review-body'}>
         <div
           className={`flashcard motor-karte ${flashClass} ${exiting ? 'card-fly-right' : ''} ${tippt ? 'tippt' : ''}`}
           onClick={tippt ? zeigen : undefined}
@@ -242,8 +247,11 @@ function ReviewMotor({ initialQueue, words, onRate, onUndo, onExit, profile, t, 
           <span className="card-tag">{tag}</span>
 
           {/* ---------- Vorderseite ---------- */}
+          {/* Die Bedeutungszeile ist KEIN Stichwort: bei 해인 trägt sie
+              lang="ko" und bekäme sonst die 60 px der koreanischen
+              Vorderseite. Eigene Klasse + Schrumpfen nach Länge. */}
           {art === 'produktion' && (
-            <div className="card-front" lang={profile.knownLang}>
+            <div className={`card-front card-front-bedeutung ${laengenKlasse(bedeutung(card))}`} lang={profile.knownLang}>
               <Bedeutung word={card} />
             </div>
           )}
@@ -302,7 +310,7 @@ function ReviewMotor({ initialQueue, words, onRate, onUndo, onExit, profile, t, 
                   <WortVergleich eingabe={typed} richtig={card.ko} lang={lang} t={t} />
                 )
               ) : (
-                <span lang={profile.knownLang} className="answer-en">
+                <span lang={profile.knownLang} className={`answer-en ${laengenKlasse(bedeutung(card))}`}>
                   <Bedeutung word={card} />
                 </span>
               )}

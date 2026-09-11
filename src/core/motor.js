@@ -81,6 +81,19 @@ export function trifftBedeutung(vorschlag, card) {
   return !!card.familie && vorschlag.familie === card.familie
 }
 
+/* Wie groß darf die Bedeutungszeile auf der Karte stehen? Seit die
+   Bedeutungen zwei Sinne tragen („to look forward to / to be happy
+   about (기대하다 / 기뻐하다)"), sprengte die feste Schriftgröße die
+   Karte — 해인 kam nicht mehr an die Bewertungsknöpfe (Fund 11.09.).
+   Vier Stufen, die Schrift schrumpft mit der Länge. */
+export function laengenKlasse(text) {
+  const n = String(text ?? '').trim().length
+  if (n < 20) return 'laenge-kurz'
+  if (n < 32) return 'laenge-mittel'
+  if (n < 46) return 'laenge-lang'
+  return 'laenge-sehr-lang'
+}
+
 /* Anzeige-Bedeutung auf der Karte: `water (Wasser)` — Englisch
    bleibt Hauptanker, Deutsch in Klammern */
 export function bedeutung(word) {

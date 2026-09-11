@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { previewInterval, formatInterval } from '../../core/storage'
+import { laengenKlasse } from '../../core/motor'
 import Confetti from '../../shared/Confetti'
 import { MoonIcon, CardRidge, CardSkyline } from '../../shared/icons'
 import ClearableInput from '../../shared/ClearableInput'
@@ -163,7 +164,7 @@ function Review({ initialQueue, onRate, onUndo, onExit, profile, t, tt }) {
 
           {isTyping ? (
             <>
-              <div className="card-front" lang={profile.knownLang}>
+              <div className={`card-front card-front-bedeutung ${laengenKlasse(card.en)}`} lang={profile.knownLang}>
                 {card.en}
               </div>
               {answerShown && (
@@ -195,7 +196,7 @@ function Review({ initialQueue, onRate, onUndo, onExit, profile, t, tt }) {
               <SpeakButton text={card.ko} lang={profile.targetLang} />
               {answerShown && (
                 <div className="card-answer neutral">
-                  <span lang={profile.knownLang} className="answer-en">
+                  <span lang={profile.knownLang} className={`answer-en ${laengenKlasse(card.en)}`}>
                     {card.en}
                   </span>
                   {card.ex && (
