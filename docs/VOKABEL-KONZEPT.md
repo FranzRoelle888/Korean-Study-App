@@ -581,3 +581,35 @@ Migration 018, eigener Durchgang `--nachtrag`.
   In der ersten Runde kam oft „을 듣다" statt „음악을 듣다".
 - `EXTRAS` steht deshalb auf 2 — die 530 Einträge werden einmal neu
   gerechnet, das kostet rund 0,60 $.
+
+## 14. Drei Funde vom 14.09. (Franz)
+
+**Hör-Karte klang falsch, Sätze nicht.** Beide liefen über dieselbe
+OpenAI-Stimme — nur nicht in der Praxis: Die Hör-Karte spielte beim
+Erscheinen von selbst ab, iOS verweigert Audio ohne Fingertipp, die App
+deutete das als fehlenden Cache-Eintrag, erzeugte sinnlos neu und wich
+stumm auf die Siri-Stimme aus. Jetzt: kein Auto-Play, grosser
+Anhören-Knopf (bei Franz deutsch, bei 해인 koreanisch beschriftet, sein
+Wunsch), der NUR die Cloud-Stimme spielt; darunter „zum Text" als
+Notausgang. `speak()` unterscheidet NotAllowedError von einem echten
+Fehltreffer. Dazu bekommen Einzelwörter einen eigenen Cache-Raum (v2)
+und eine eigene Sprech-Anweisung — Regel identisch in tts.jsx,
+speech/index.ts, baue-tts.mjs, vokabeln-anreichern.mjs.
+
+**Tages-Challenge „offline" trotz Netz, 만나다 in jeder Runde.** Die Bank
+wurde nur vom Telefon live gefüllt (Safari-Limit, zweistufige Abnahme,
+weniger als drei Sätze = nichts). Jetzt legt der erste eingeschaltete
+Nachtlauf (`scripts/baue-satzchallenge.mjs`, satzchallenge.yml, 03:00
+UTC) je Seite drei Challenges auf Vorrat. Er weist sich bei der
+trainer-Function mit dem Service-Schlüssel aus und nutzt dieselbe
+Erzeugungslogik. Fokus aus dem Lernstand statt Zufall: 3 neu / 3
+wackelig / 2 reif-ungenutzt, acht Wörter, für das Modell Pflicht.
+Harte Rotation: Wörter der letzten 14 Tage dürfen nicht Hauptverb oder
+Hauptnomen sein; Ergebnisse mit über 50 % Überlappung werden verworfen.
+Die App meldet ehrlich („noch nicht bereit") und bietet einen zweiten
+Versuch. Schwierigkeit bleibt „mittel" (Rückfrage unbeantwortet).
+
+**Homonyme.** Duplikat = gleiche Schreibweise UND gleiche Bedeutung;
+andere Bedeutung wird nach Rückfrage als Homonym eingetragen. Erkennen
+und Hören verlangen ALLE Bedeutungen, hart (Entscheidung Franz). Der
+Vorrat sperrt nur noch Schreibweise + Bedeutung.

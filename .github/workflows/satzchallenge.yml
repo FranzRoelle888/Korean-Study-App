@@ -1,0 +1,66 @@
+# ============================================================
+# Tages-Challenge nachts vorbereiten (Franz 14.09.)
+#
+# Laeuft jede Nacht um 03:00 UTC (05:00 deutscher Sommerzeit) und
+# legt je Seite drei Challenges auf Vorrat in die Aufgaben-Bank.
+# Das Telefon liest dann nur noch — keine 40-Sekunden-Live-Erzeugung
+# mehr, kein "offline und nichts vorbereitet" trotz Netz.
+#
+# Der ERSTE eingeschaltete Nachtlauf dieser App (Entscheidung Franz
+# 14.09.). Kosten grob fuenf Cent pro Nacht fuer beide Seiten.
+#
+# Von Hand: Actions -> "Tages-Challenge vorbereiten" -> Run workflow.
+# Secrets: SUPABASE_SERVICE_KEY (Datenbank UND Ausweis fuer die
+# trainer-Function, die den Anthropic-Schluessel haelt).
+# ============================================================
+name: Tages-Challenge vorbereiten
+
+on:
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+    inputs:
+      profil:
+        description: 'Welche Seite'
+        type: choice
+        options: [beide, ko, de]
+        default: beide
+      anzahl:
+        description: 'Wie viele Challenges sollen je Seite auf Vorrat liegen'
+        type: number
+        default: 3
+      dry:
+        description: 'Trockenlauf (erzeugen und anzeigen, nichts speichern)'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  vorbereiten:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Challenges erzeugen
+        env:
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          set -o pipefail
+          FLAGS="--profil ${{ inputs.profil || 'beide' }} --anzahl ${{ inputs.anzahl || 3 }}"
+          if [ "${{ inputs.dry }}" = "true" ]; then FLAGS="$FLAGS --dry"; fi
+          echo "Schalter: $FLAGS"
+          node scripts/baue-satzchallenge.mjs $FLAGS 2>&1 | tee lauf.log
+
+      - name: Protokoll anzeigen
+        if: always()
+        run: |
+          echo '## Tages-Challenge' >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          tail -n 120 lauf.log >> $GITHUB_STEP_SUMMARY || true
+          echo '```' >> $GITHUB_STEP_SUMMARY

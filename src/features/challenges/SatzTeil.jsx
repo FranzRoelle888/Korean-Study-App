@@ -22,20 +22,30 @@ function SatzTeil({ profile, words, onFertig, onKeineSaetze, t }) {
   const [laedt, setLaedt] = useState(false)
   const [fehler, setFehler] = useState('')
 
+  /* Laden — beim Start und auf Knopfdruck (Franz 14.09.: statt einer
+     falschen „offline"-Meldung ein ehrlicher Text und ein zweiter
+     Versuch; die Saetze kommen seit dem Nachtlauf meist aus der Bank) */
+  const [laedtNeu, setLaedtNeu] = useState(false)
+  function laden(weg) {
+    setLaedtNeu(true)
+    ladeTagesChallenge(words)
+      .then((d) => {
+        if (weg && weg.ist) return
+        setCh(d)
+        if (d) {
+          setAntworten(d.saetze.map((s, i) => d.antworten?.[i] ?? ''))
+          setBewertet(!!d.bewertung)
+        } else if (onKeineSaetze) {
+          onKeineSaetze()
+        }
+      })
+      .finally(() => setLaedtNeu(false))
+  }
   useEffect(() => {
-    let weg = false
-    ladeTagesChallenge(words).then((d) => {
-      if (weg) return
-      setCh(d)
-      if (d) {
-        setAntworten(d.saetze.map((s, i) => d.antworten?.[i] ?? ''))
-        setBewertet(!!d.bewertung)
-      } else if (onKeineSaetze) {
-        onKeineSaetze()
-      }
-    })
+    const weg = { ist: false }
+    laden(weg)
     return () => {
-      weg = true
+      weg.ist = true
     }
   }, [profile.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -62,7 +72,17 @@ function SatzTeil({ profile, words, onFertig, onKeineSaetze, t }) {
   }
 
   if (ch === undefined) return <p className="tc-hinweis">{t.loading}</p>
-  if (ch === null) return <p className="tc-hinweis">{t.challengeKeineSaetze}</p>
+  if (ch === null) {
+    const wirklichOffline = typeof navigator !== 'undefined' && navigator.onLine === false
+    return (
+      <div className="tc-leer">
+        <p className="tc-hinweis">{wirklichOffline ? t.challengeKeineSaetze : t.challengeErzeugungFehlt}</p>
+        <button type="button" className="check-btn" onClick={() => laden(null)} disabled={laedtNeu}>
+          {laedtNeu ? t.loading : t.challengeNochmal}
+        </button>
+      </div>
+    )
+  }
 
   const urteilVon = (nr) => ch.bewertung?.ergebnisse?.find((e) => e.nr === nr)
   /* Die Aufgabe steht in der bekannten Sprache, die Antwort in der

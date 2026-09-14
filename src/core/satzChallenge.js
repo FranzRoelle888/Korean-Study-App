@@ -7,6 +7,8 @@
       (exercise_bank, typ 'satzchallenge'). Die Bank hält immer einen
       Satz auf Vorrat, damit auch ein Tag ohne Netz einen bekommt.
    3. Ist die Bank leer: beim Trainer erzeugen lassen (ein Aufruf) —
+      seit 14.09. der Ausnahmefall: der Nachtlauf
+      (scripts/baue-satzchallenge.mjs) haelt drei Stueck auf Vorrat —
       mit ALLEN Bibliothekswörtern, den abgehakten Grammatikpunkten
       und der Rotationsliste (Wörter/Muster der letzten 14 Tage).
    4. Nach dem Adoptieren im Hintergrund den Vorrat auffüllen.
@@ -19,6 +21,11 @@ import { getActiveProfile, todayStr } from './storage'
 import { TOPIK1_GRAMMATIK } from './inventare/topik1-grammatik'
 import { GER_GRAMMATIK } from './inventare/ger-grammatik'
 import { trainerSatzChallengeErzeugen } from '../features/trainer/trainerApi'
+import { mischeListe, zufallsSzenen } from './szenen'
+
+/* Schauplaetze liegen seit 14.09. in szenen.js, damit der Nachtlauf
+   dieselbe Liste nutzen kann; hier nur durchgereicht */
+export { zufallsSzenen }
 
 const KEY = () => `satzchallenge:${getActiveProfile()}`
 const TYP = 'satzchallenge'
@@ -82,27 +89,7 @@ export async function nutzbareGrammatik(profileId, mindestens = 12) {
    Das Modell greift von sich aus immer zu denselben Szenen („im
    Restaurant"). Deshalb wuerfelt die APP je Runde die Schauplaetze und
    eine Handvoll Fokus-Woerter aus — beides geht als Vorgabe mit. */
-const SZENEN = [
-  'at home', 'in the kitchen', 'at a café', 'on the bus or subway', 'at work', 'talking about the weather',
-  'weekend plans', 'family', 'grocery shopping', "at the doctor's", 'on the phone', 'studying',
-  'sport and exercise', 'a trip', 'clothes and shopping', 'a hobby', 'meeting a friend', 'the morning routine',
-  'in the evening', 'money and paying', 'the post office', 'the library', 'cinema or TV', 'in a park',
-  'a birthday', 'the neighbours', 'a pet', 'cooking dinner', 'something got lost', 'making an appointment',
-  'being late', 'a small argument', 'the new flat', 'music', 'a photo', 'the weather got cold',
-]
-
-function mische(liste) {
-  const a = [...liste]
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[a[i], a[j]] = [a[j], a[i]]
-  }
-  return a
-}
-
-export function zufallsSzenen(n) {
-  return mische(SZENEN).slice(0, Math.max(1, n))
-}
+const mische = mischeListe
 
 /* Fokus-Woerter: eine Zufallsauswahl aus der Bibliothek, damit nicht
    immer dieselben paar Woerter benutzt werden. Sehr neue Woerter

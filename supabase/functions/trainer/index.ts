@@ -412,10 +412,18 @@ Deno.serve(async (req) => {
        Schlüssel fällt hier durch. */
     const auth = req.headers.get('Authorization') ?? ''
     const userToken = auth.startsWith('Bearer ') ? auth.slice(7) : ''
-    const wer = await fetch(`${SB_URL}/auth/v1/user`, {
-      headers: { apikey: SB_SERVICE, Authorization: `Bearer ${userToken}` },
-    })
-    if (!wer.ok) return json({ error: 'auth' }, 401)
+    /* Der Nachtlauf (scripts/baue-satzchallenge.mjs, GitHub Actions)
+       weist sich mit dem Service-Schluessel aus. Der liegt nur in
+       GitHub-Secrets und in dieser Function — nie im Client. So kann
+       der Lauf dieselbe Erzeugungslogik nutzen wie die App, statt sie
+       zu kopieren (Franz 14.09.). */
+    const istNachtlauf = !!userToken && !!SB_SERVICE && userToken === SB_SERVICE
+    if (!istNachtlauf) {
+      const wer = await fetch(`${SB_URL}/auth/v1/user`, {
+        headers: { apikey: SB_SERVICE, Authorization: `Bearer ${userToken}` },
+      })
+      if (!wer.ok) return json({ error: 'auth' }, 401)
+    }
 
     const body = await req.json()
     const { action, profile, mode, scenario, messages } = body
@@ -1351,11 +1359,17 @@ Deno.serve(async (req) => {
             ? `Use these settings, ONE per sentence, in this order: ${szenen.map((s: string, i: number) => `(${i + 1}) ${s}`).join('  ')}. Do not invent other settings, and do not fall back to restaurants or cafés unless listed.`
             : 'Use a different everyday setting for every sentence.',
           fokus.length
-            ? `Build the sentences around these FOCUS WORDS — each sentence must contain at least one of them, and use as many different ones as you can: ${fokus.join(', ')}.`
+            ? fokus.length <= 10
+              ? `FOCUS WORDS (mandatory — these are the words the learner needs to practise right now): ${fokus.join(', ')}. EVERY focus word must appear in at least one sentence, and every sentence must contain at least one focus word. Build the sentences around them.`
+              : `Build the sentences around these FOCUS WORDS — each sentence must contain at least one of them, and use as many different ones as you can: ${fokus.join(', ')}.`
             : '',
           'Vary the subject too (I / you / we / he / she / people), not every sentence in first person.',
           wunsch ? `LEARNER'S WISH for this round (follow it as far as the lists allow): "${wunsch}"` : '',
-          `Also avoid these recently used words unless unavoidable: ${vermWoerter.slice(0, 60).join(', ') || '(none)'}`,
+          /* Harte Rotation (Franz 14.09.): frueher nur eine Bitte, und
+             만나다 kam in fast jeder Runde */
+          vermWoerter.length
+            ? `USED IN THE LAST TWO WEEKS — do NOT make any of these the main verb or the main noun of a sentence (they may appear only as a minor supporting word, and preferably not at all): ${vermWoerter.slice(0, 120).join(', ')}`
+            : '',
           vermMuster.length ? `Recently used patterns: ${vermMuster.join(', ')}` : '',
           '',
           `WORD LIST (${zielSprache.toLowerCase()} = meaning):`,
