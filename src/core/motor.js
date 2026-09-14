@@ -33,11 +33,23 @@ export const PRODUKTION_INTERVALL = 14
 const vergleichKo = (s) => normKo(s).replace(/[?!.…~]+$/, '')
 export function vorratKandidaten(vorrat, words, n) {
   if (!Array.isArray(vorrat) || n <= 0) return []
-  const habenKo = new Set(words.map((w) => vergleichKo(w.ko)))
+  /* Schreibweise -> Bedeutungen, die er dazu schon hat. Ein Vorratswort
+     mit gleicher Schreibweise, aber ANDERER Bedeutung (새 „neu" neben
+     seinem 새 „Vogel") darf angeboten werden (Homonyme, Franz 14.09.). */
+  const habenKo = new Map()
+  for (const w of words) {
+    const k = vergleichKo(w.ko)
+    if (!habenKo.has(k)) habenKo.set(k, new Set())
+    habenKo.get(k).add(bedeutungsKey(w.en))
+  }
   const habenInv = new Set(words.map((w) => w.invId).filter(Boolean))
+  const schonDa = (v) => {
+    const bed = habenKo.get(vergleichKo(v.ko))
+    return !!bed && (bed.has(bedeutungsKey(v.en)) || bed.has(bedeutungsKey(v.de)))
+  }
   return vorrat
     .filter((v) => v.bereit && v.audioOk && !v.uebersprungen && v.pos !== 'number')
-    .filter((v) => !habenKo.has(vergleichKo(v.ko)) && !habenInv.has(v.invId))
+    .filter((v) => !schonDa(v) && !habenInv.has(v.invId))
     .sort((a, b) => (a.rang ?? 99999) - (b.rang ?? 99999))
     .slice(0, n)
 }
@@ -70,6 +82,16 @@ export function vorschlaege(words, eingabe, max = 5) {
     familie: w.familie || null,
     ko: w.ko,
   }))
+}
+
+/* Homonyme in der Bibliothek: andere Woerter mit derselben
+   Schreibweise (새 „neu" / 새 „Vogel"). Beim Erkennen und Hoeren muessen
+   ALLE angetippt werden — hart, ein Fehltipp zaehlt als falsch
+   (Entscheidung Franz 14.09.: zwingt dazu, sich die Gleichheit zu merken). */
+export function homonyme(words, card) {
+  if (!card) return []
+  const k = vergleichKo(card.ko)
+  return words.filter((w) => w.id !== card.wordId && vergleichKo(w.ko) === k)
 }
 
 /* Erkennen/Hören: getroffen ist der Eintrag selbst ODER ein Mitglied

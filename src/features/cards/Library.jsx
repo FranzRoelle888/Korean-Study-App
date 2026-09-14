@@ -158,6 +158,9 @@ function Library({ vocab, cards, onAdd, onEdit, onDelete, trickyIds, profile, t,
   const [ko, setKo] = useState('')
   const [error, setError] = useState('')
   const [justAdded, setJustAdded] = useState('')
+  /* Homonym (Franz 14.09.): gleiche Schreibweise, andere Bedeutung ->
+     erst nachfragen, dann eintragen */
+  const [homonym, setHomonym] = useState(null)
   const [query, setQuery] = useState('')
   const [sort, setSort] = useState('newest') // 'newest' | 'alpha'
   const [pos, setPos] = useState('') // Wortart des neuen Wortes
@@ -216,9 +219,15 @@ function Library({ vocab, cards, onAdd, onEdit, onDelete, trickyIds, profile, t,
     return () => clearTimeout(timer)
   }, [ko, en, profile.id])
 
-  function handleSubmit(e) {
-    e.preventDefault()
-    const result = onAdd(en, ko, pos, notiz)
+  function eintragen(homonymOk) {
+    const result = onAdd(en, ko, pos, notiz, homonymOk)
+    if (result.error === 'homonym') {
+      setHomonym(result)
+      setError('')
+      setJustAdded('')
+      return
+    }
+    setHomonym(null)
     if (result.error) {
       setError(result.error === 'duplicate' ? t.duplicate(result.word) : t[result.error])
       setJustAdded('')
@@ -230,6 +239,11 @@ function Library({ vocab, cards, onAdd, onEdit, onDelete, trickyIds, profile, t,
     setEn('')
     setKo('')
     setPos('')
+  }
+
+  function handleSubmit(e) {
+    e.preventDefault()
+    eintragen(false)
   }
 
   /* Vokabel-Motor V2 (Franz): Stufen-Punkte je Wort aus den Karten */
@@ -361,6 +375,14 @@ function Library({ vocab, cards, onAdd, onEdit, onDelete, trickyIds, profile, t,
         />
 
         {error && <p className="add-msg add-error">{error}</p>}
+        {homonym && (
+          <div className="add-msg homonym-frage">
+            <p>{t.homonymFrage(homonym.word, homonym.vorhanden.join(', '))}</p>
+            <button type="button" className="homonym-ja" onClick={() => eintragen(true)}>
+              {t.homonymJa}
+            </button>
+          </div>
+        )}
         {justAdded && <p className="add-msg add-ok">{justAdded}</p>}
 
         <button type="submit" className="add-btn">

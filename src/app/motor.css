@@ -1245,3 +1245,35 @@
   max-width: 260px;
   text-align: center;
 }
+
+/* ---------- Homonyme (14.09.) ---------- */
+.homonym-hinweis {
+  margin: 0 0 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--primary, #7263b8);
+  text-align: center;
+}
+.homonym-alle {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.9rem;
+  color: var(--text-soft);
+}
+.homonym-frage {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: left;
+}
+.homonym-frage p { margin: 0; }
+.homonym-ja {
+  align-self: flex-start;
+  padding: 8px 14px;
+  border-radius: 10px;
+  background: var(--primary, #7263b8);
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+  border: none;
+}

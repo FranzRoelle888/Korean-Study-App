@@ -624,13 +624,26 @@ async function vorratFuellen() {
     hole(`words?profile=eq.${PROFIL}&select=ko,inv_id`),
     hole(`vorrat?profile=eq.${PROFIL}&select=inv_id,ko,en,de,pos,rang,ex,ex_tr,nuance,hanja,info,bereit,uebersprungen,anreicherung`),
   ])
-  const bibliothekKo = new Set(woerter.map((w) => vergleichKo(w.ko)))
+  /* Schreibweise -> Bedeutungen in der Bibliothek. Gleiche Schreibweise
+     mit ANDERER Bedeutung ist ein Homonym und bleibt anbietbar
+     (Franz 14.09.: 새 „neu" neben 새 „Vogel"). */
+  const bedKey = (s) => String(s ?? '').toLowerCase().replace(/(.*?)/g, '').replace(/^to /, '').replace(/[^a-z0-9가-힣äöüß ]/g, '').trim()
+  const bibliothekKo = new Map()
+  for (const w of woerter) {
+    const k = vergleichKo(w.ko)
+    if (!bibliothekKo.has(k)) bibliothekKo.set(k, new Set())
+    bibliothekKo.get(k).add(bedKey(w.en))
+  }
+  const schonInBibliothek = (ko, en, de) => {
+    const bed = bibliothekKo.get(vergleichKo(ko))
+    return !!bed && (bed.has(bedKey(en)) || bed.has(bedKey(de)))
+  }
   const bibliothekInv = new Set(woerter.map((w) => w.inv_id).filter(Boolean))
   const imVorrat = new Map(vorrat.map((v) => [v.inv_id, v]))
 
   for (const v of vorrat) {
     if (v.uebersprungen) continue
-    const grund = bibliothekKo.has(vergleichKo(v.ko)) || bibliothekInv.has(v.inv_id)
+    const grund = schonInBibliothek(v.ko, v.en, v.de) || bibliothekInv.has(v.inv_id)
       ? 'bibliothek'
       : ausgeschlossen(invNachId.get(v.inv_id))
     if (grund) {
@@ -650,7 +663,7 @@ async function vorratFuellen() {
   const fehlen = Math.max(0, ANZAHL - bereitsBereit)
   const kandidaten = inventar
     .filter((e) => e.pos !== 'number' && !ausgeschlossen(e))
-    .filter((e) => !bibliothekKo.has(vergleichKo(e.ko)) && !bibliothekInv.has(e.id))
+    .filter((e) => !schonInBibliothek(e.ko, e.en, null) && !bibliothekInv.has(e.id))
     .filter((e) => !imVorrat.has(e.id))
     .sort((a, b) => (a.rang ?? 99999) - (b.rang ?? 99999))
     .slice(0, fehlen)

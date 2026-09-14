@@ -423,8 +423,8 @@ function App() {
     setNumberState((s) => ({ ...s, saetzeDone: true }))
   }
 
-  function handleAdd(en, ko, pos, notiz) {
-    const res = validateNewWord(words, en, ko, pos)
+  function handleAdd(en, ko, pos, notiz, homonymOk = false) {
+    const res = validateNewWord(words, en, ko, pos, homonymOk)
     if (res.error) return res
     /* Franz' Seite: `water (Wasser)` -> Englisch + Deutsch getrennt.
        (해인s Bedeutung ist `English (한국어)` — die Klammer bleibt.) */

@@ -642,9 +642,27 @@ function newCard(wordId, front) {
 }
 
 /* ---------- Duplikat-Sperre (auf Wortebene) ---------- */
+/* ---------- Homonyme (Franz 14.09.) ----------
+   새 heisst „neu" UND „Vogel", 배 „Schiff" UND „Bauch". Bisher galt jede
+   gleiche Schreibweise als Duplikat — die zweite Bedeutung liess sich
+   gar nicht eintragen. Jetzt: gleiche Schreibweise UND gleiche Bedeutung
+   ist ein Duplikat; gleiche Schreibweise mit anderer Bedeutung ist ein
+   Homonym und erlaubt (nach Rueckfrage in der Bibliothek). */
+const schreibweise = (s) => String(s ?? '').normalize('NFC').trim().replace(/[?!.…~]+$/, '')
+/* grob normalisierte Bedeutung: „to eat" == „eat", Klammern weg */
+export const bedeutungsSchluessel = (s) =>
+  String(s ?? '')
+    .toLowerCase()
+    .replace(/\(.*?\)/g, '')
+    .replace(/^to /, '')
+    .replace(/[^a-z0-9가-힣äöüß ]/g, '')
+    .trim()
+export function gleicheSchreibweise(words, ko, ausserId = null) {
+  const k = schreibweise(ko)
+  return words.filter((w) => w.id !== ausserId && schreibweise(w.ko) === k)
+}
 export function isDuplicate(words, ko) {
-  const needle = ko.trim()
-  return words.some((w) => w.ko.trim() === needle)
+  return gleicheSchreibweise(words, ko).length > 0
 }
 
 /* ---------- Vokabel anlegen (rein, ohne Speichern) ----------
@@ -652,14 +670,18 @@ export function isDuplicate(words, ko) {
    Gibt { error } zurück oder { word, c1, c2 }. */
 /* Fehler kommen als Kürzel zurück, nicht als fertiger Satz — die
    Oberfläche übersetzt sie in die jeweilige Menüsprache. */
-export function validateNewWord(words, en, ko, pos) {
+export function validateNewWord(words, en, ko, pos, homonymOk = false) {
   const cleanEn = en.trim()
   const cleanKo = ko.trim()
   if (!cleanEn || !cleanKo) {
     return { error: 'fillBoth' }
   }
-  if (isDuplicate(words, cleanKo)) {
-    return { error: 'duplicate', word: cleanKo }
+  const gleiche = gleicheSchreibweise(words, cleanKo)
+  if (gleiche.length) {
+    const gleicheBedeutung = gleiche.some((w) => bedeutungsSchluessel(w.en) === bedeutungsSchluessel(cleanEn))
+    if (gleicheBedeutung) return { error: 'duplicate', word: cleanKo }
+    /* andere Bedeutung: erst nachfragen, dann als Homonym eintragen */
+    if (!homonymOk) return { error: 'homonym', word: cleanKo, vorhanden: gleiche.map((w) => w.en) }
   }
   const word = {
     id: crypto.randomUUID(),
@@ -724,7 +746,11 @@ export function validateEdit(words, id, en, ko, pos) {
   if (!cleanEn || !cleanKo) {
     return { error: 'fillBoth' }
   }
-  const dup = words.some((w) => w.id !== id && w.ko.trim() === cleanKo)
+  /* Beim Bearbeiten: nur gleiche Schreibweise MIT gleicher Bedeutung
+     ist ein Duplikat — ein Homonym darf entstehen */
+  const dup = gleicheSchreibweise(words, cleanKo, id).some(
+    (w) => bedeutungsSchluessel(w.en) === bedeutungsSchluessel(cleanEn)
+  )
   if (dup) {
     return { error: 'duplicate', word: cleanKo }
   }

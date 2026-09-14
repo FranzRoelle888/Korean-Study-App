@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { previewInterval, formatInterval, hoerKarteMitText } from '../../core/storage'
-import { vorschlaege, trifftBedeutung, bedeutung, laengenKlasse } from '../../core/motor'
+import { vorschlaege, trifftBedeutung, bedeutung, laengenKlasse, homonyme } from '../../core/motor'
 import { istRichtig } from '../../core/vergleich'
 import Confetti from '../../shared/Confetti'
 import { MoonIcon, CardRidge, CardSkyline } from '../../shared/icons'
@@ -65,6 +65,9 @@ function ReviewMotor({ initialQueue, words, onRate, onUndo, onExit, profile, t, 
   /* Hoer-Karte (Franz 14.09.): kein automatisches Abspielen mehr —
      iOS blockte es und die App wich stumm auf die Siri-Stimme aus.
      Jetzt ein grosser Anhoeren-Knopf; im Notfall „zum Text". */
+  /* Homonym-Sammelmodus (Franz 14.09.): welche Bedeutungen schon
+     getroffen sind */
+  const [getroffen, setGetroffen] = useState([])
   const [textErzwungen, setTextErzwungen] = useState(false)
   const [audioFehlt, setAudioFehlt] = useState(false)
   const [tippt, setTippt] = useState(false)
@@ -137,6 +140,7 @@ function ReviewMotor({ initialQueue, words, onRate, onUndo, onExit, profile, t, 
     setChecked(false)
     setCorrect(false)
     setGewaehlt(null)
+    setGetroffen([])
     setTextErzwungen(false)
     setAudioFehlt(false)
     setTippt(false)
@@ -216,12 +220,25 @@ function ReviewMotor({ initialQueue, words, onRate, onUndo, onExit, profile, t, 
      derselben Bedeutungsfamilie (Franz 09.09.): erkannt ist erkannt,
      der Unterschied wird danach kurz gezeigt */
   function waehle(v) {
+    if (soll.length) {
+      /* Homonym, HART: jede Bedeutung muss kommen, ein Fehltipp ist falsch */
+      const treffer = soll.includes(v.id) ? v.id : trifftBedeutung(v, card) ? card.wordId : null
+      if (!treffer) return urteil(false)
+      const neu = getroffen.includes(treffer) ? getroffen : [...getroffen, treffer]
+      setGetroffen(neu)
+      setTyped('')
+      if (neu.length >= soll.length) urteil(true)
+      return
+    }
     const ok = trifftBedeutung(v, card)
     setGewaehlt(ok && v.id !== card.wordId ? v : null)
     urteil(ok)
   }
 
   const liste = art !== 'produktion' && !checked ? vorschlaege(words, typed) : []
+  /* Homonyme dieser Karte: dieselbe Schreibweise, andere Bedeutung */
+  const geschwister = card && art !== 'produktion' ? homonyme(words, card) : []
+  const soll = geschwister.length ? [card.wordId, ...geschwister.map((w) => w.id)] : []
   const flashClass = flash === 'ok' ? 'flash-ok' : flash === 'bad' ? 'flash-bad' : ''
   const tag = card.festiger
     ? t.festigerTag(card.festiger)
@@ -360,6 +377,13 @@ function ReviewMotor({ initialQueue, words, onRate, onUndo, onExit, profile, t, 
                   </span>
                 </span>
               )}
+              {/* Homonym: alle Bedeutungen dieser Schreibweise zeigen */}
+              {geschwister.length > 0 && (
+                <span className="homonym-alle">
+                  {t.homonymAuch}{' '}
+                  {geschwister.map((w) => bedeutung(w)).join(' · ')}
+                </span>
+              )}
               {art === 'produktion' && <ZaehlChip word={card} t={t} />}
               {/* Bauwissen gehört auf die Rückseite: erst die Bedeutung,
                   dann wie man das Wort benutzt */}
@@ -396,6 +420,11 @@ function ReviewMotor({ initialQueue, words, onRate, onUndo, onExit, profile, t, 
             {/* Vorschläge ÜBER dem Feld: so bleiben sie bei offener
                 Tastatur sichtbar (Franz 06.09.), die Karte schrumpft
                 derweil (.motor-karte.tippt) */}
+            {soll.length > 0 && (
+              <p className="homonym-hinweis">
+                {getroffen.length ? t.homonymFortschritt(getroffen.length, soll.length) : t.homonymHinweis(soll.length)}
+              </p>
+            )}
             {liste.length > 0 ? (
               <ul className="vorschlaege">
                 {liste.map((v) => (
