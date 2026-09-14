@@ -26,7 +26,21 @@
 import { SUPABASE_URL, SUPABASE_KEY } from '../core/supabaseClient'
 import { accessToken } from '../core/auth'
 
-const CACHE_VERSION = 'v1'
+/* Einzelwort oder Satz? Einzelwoerter bekommen einen eigenen
+   Cache-Raum (v2) und eine eigene Sprech-Anweisung — das Modell
+   spricht ein isoliertes Wort sonst deutlich schlechter als im Satz
+   (Fund Franz 14.09.). Regel in tts.jsx, speech/index.ts, baue-tts.mjs
+   und vokabeln-anreichern.mjs identisch halten. */
+function istEinzelwort(text) {
+  const t = String(text ?? '').trim()
+  if (t.length > 20 || /[.!?…]$/.test(t)) return false
+  const teile = t.split(/s+/).length
+  if (teile > 2) return false
+  /* zweiwortiger koreanischer Satz (물 마셔요) endet auf 요/까/죠 */
+  if (teile === 2 && /[가-힣]/.test(t) && /[요까죠]$/.test(t)) return false
+  return true
+}
+const ttsVersion = (text) => (istEinzelwort(text) ? 'v2' : 'v1')
 const VOICES = { ko: 'nova', de: 'echo' }
 const LANG_TAGS = { ko: 'ko-KR', de: 'de-DE', en: 'en-US' }
 
@@ -39,7 +53,7 @@ const SILENT =
 let player = null
 let entsperrt = false
 
-function entsperren() {
+export function entsperren() {
   if (!player) player = new Audio()
   if (entsperrt) return
   player.src = SILENT
@@ -55,7 +69,7 @@ async function sha256Hex(s) {
 async function cacheUrlFuer(text, lang, voice) {
   const hash = await sha256Hex(text)
   const stimme = voice || VOICES[lang]
-  return `${SUPABASE_URL}/storage/v1/object/public/tts-cache/${CACHE_VERSION}/${lang}/${stimme}/${hash}.mp3`
+  return `${SUPABASE_URL}/storage/v1/object/public/tts-cache/${ttsVersion(text)}/${lang}/${stimme}/${hash}.mp3`
 }
 
 /* Die Funktion erzeugt den Satz einmalig und gibt die Cache-URL zurück */
@@ -106,10 +120,16 @@ function browserStimme(text, lang) {
 }
 
 /* ---------- Stufe 1: Cloud-Stimme mit Cache ---------- */
-export async function speak(text, lang) {
+/* notnagel=false: NIE die Browser-Stimme (Hoer-Karte, Franz 14.09.:
+   eine falsche Aussprache ist schlimmer als keine). Rueckgabe true =
+   Cloud-Stimme lief, false = nichts lief. */
+export async function speak(text, lang, { notnagel = true } = {}) {
   const t = (text || '').trim()
-  if (!t) return
-  if (!VOICES[lang]) return browserStimme(t, lang)
+  if (!t) return false
+  if (!VOICES[lang]) {
+    if (notnagel) browserStimme(t, lang)
+    return false
+  }
   if (!player) player = new Audio()
 
   try {
@@ -117,12 +137,20 @@ export async function speak(text, lang) {
     try {
       /* Normalfall: liegt schon im Cache — sofort los */
       await abspielen(url)
-    } catch {
+      return true
+    } catch (e) {
+      /* iOS hat das Abspielen verweigert (kein Fingertipp davor) —
+         das ist KEIN fehlender Cache-Eintrag. Frueher wurde hier
+         sinnlos neu erzeugt und danach die Siri-Stimme gespielt
+         (Fund Franz 14.09.). */
+      if (e && e.name === 'NotAllowedError') throw e
       /* Fehltreffer: einmalig erzeugen, dann abspielen */
       await abspielen(await erzeugen(t, lang))
+      return true
     }
   } catch {
-    browserStimme(t, lang)
+    if (notnagel) browserStimme(t, lang)
+    return false
   }
 }
 

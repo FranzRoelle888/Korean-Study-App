@@ -48,6 +48,27 @@ const INSTRUCTIONS = {
   ko: 'Speak this Korean text clearly and naturally, at a comfortable pace for a language learner. Standard Seoul pronunciation.',
   de: 'Speak this German text clearly and naturally, at a comfortable pace for a language learner. Standard High German pronunciation.',
 }
+/* Fuer Einzelwoerter: das Modell soll ein Woerterbuchwort sprechen,
+   nicht einen Satzanfang raten */
+const WORT_INSTRUCTIONS = {
+  ko: 'This is a single Korean dictionary word spoken in isolation, as a citation form. Pronounce it clearly and completely in standard Seoul Korean with natural pitch. Say only this word — no extra words, no trailing sounds.',
+  de: 'This is a single German dictionary word (possibly with its article) spoken in isolation. Pronounce it clearly and completely in standard High German. Say only this word — no extra words.',
+}
+/* Einzelwort oder Satz? Einzelwoerter bekommen einen eigenen
+   Cache-Raum (v2) und eine eigene Sprech-Anweisung — das Modell
+   spricht ein isoliertes Wort sonst deutlich schlechter als im Satz
+   (Fund Franz 14.09.). Regel in tts.jsx, speech/index.ts, baue-tts.mjs
+   und vokabeln-anreichern.mjs identisch halten. */
+function istEinzelwort(text) {
+  const t = String(text ?? '').trim()
+  if (t.length > 20 || /[.!?…]$/.test(t)) return false
+  const teile = t.split(/s+/).length
+  if (teile > 2) return false
+  /* zweiwortiger koreanischer Satz (물 마셔요) endet auf 요/까/죠 */
+  if (teile === 2 && /[가-힣]/.test(t) && /[요까죠]$/.test(t)) return false
+  return true
+}
+const ttsVersion = (text) => (istEinzelwort(text) ? 'v2' : 'v1')
 const GLEICHZEITIG = 4 /* parallele Erzeugungen — schonend fürs OpenAI-Limit */
 
 const dbKopf = { apikey: DB_KEY, Authorization: `Bearer ${DB_KEY}` }
@@ -172,7 +193,7 @@ let fehler = 0
 let zeichen = 0
 
 async function baueEinen(text, lang, voice = VOICES[lang]) {
-  const pfad = `${CACHE_VERSION}/${lang}/${voice}/${await sha256Hex(text)}.mp3`
+  const pfad = `${ttsVersion(text)}/${lang}/${voice}/${await sha256Hex(text)}.mp3`
   const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/tts-cache/${pfad}`
 
   const kopf = await fetch(publicUrl, { method: 'HEAD' })
@@ -194,7 +215,7 @@ async function baueEinen(text, lang, voice = VOICES[lang]) {
       voice,
       input: text,
       response_format: 'mp3',
-      instructions: INSTRUCTIONS[lang],
+      instructions: istEinzelwort(text) ? WORT_INSTRUCTIONS[lang] : INSTRUCTIONS[lang],
     }),
   })
   if (!r.ok) throw new Error(`OpenAI ${r.status}: ${(await r.text()).slice(0, 120)}`)

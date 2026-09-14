@@ -5,7 +5,7 @@ import { istRichtig } from '../../core/vergleich'
 import Confetti from '../../shared/Confetti'
 import { MoonIcon, CardRidge, CardSkyline } from '../../shared/icons'
 import ClearableInput from '../../shared/ClearableInput'
-import { SpeakButton, speak, prewarmSpeech } from '../../shared/tts'
+import { SpeakButton, speak, prewarmSpeech, entsperren } from '../../shared/tts'
 import {
   HanjaZeile,
   Bedeutung,
@@ -62,6 +62,11 @@ function ReviewMotor({ initialQueue, words, onRate, onUndo, onExit, profile, t, 
   /* Familien-Treffer (Franz 09.09.): angetipptes Geschwisterwort,
      damit die Rückseite beide Nuancen gegenüberstellen kann */
   const [gewaehlt, setGewaehlt] = useState(null)
+  /* Hoer-Karte (Franz 14.09.): kein automatisches Abspielen mehr —
+     iOS blockte es und die App wich stumm auf die Siri-Stimme aus.
+     Jetzt ein grosser Anhoeren-Knopf; im Notfall „zum Text". */
+  const [textErzwungen, setTextErzwungen] = useState(false)
+  const [audioFehlt, setAudioFehlt] = useState(false)
   const [tippt, setTippt] = useState(false)
   const [flash, setFlash] = useState(null)
   const [exiting, setExiting] = useState(false)
@@ -73,7 +78,7 @@ function ReviewMotor({ initialQueue, words, onRate, onUndo, onExit, profile, t, 
      Dann folgen nach der Bewertung zwei Festiger-Durchgaenge. */
   const heuteNeu = (c) => c && c.reps === 0 && !c.lastReviewed && (c.createdAt || 0) >= Date.now() - 20 * 3600 * 1000
   const lang = profile.targetLang
-  const art = card ? artVon(card) : null
+  const art = card ? (textErzwungen && artVon(card) === 'hoeren' ? 'erkennen' : artVon(card)) : null
 
   /* Tastatur eingeklappt (iOS ohne blur) -> Karte wieder komplett zeigen */
   useTastaturZu(() => setTippt(false))
@@ -82,12 +87,13 @@ function ReviewMotor({ initialQueue, words, onRate, onUndo, onExit, profile, t, 
     setTippt(false)
   }
 
-  /* Stimme vorwärmen; Hör-Karte spielt von selbst */
+  /* Stimme vorwärmen. Die Hör-Karte spielt NICHT mehr von selbst:
+     ohne Fingertipp verweigert iOS das Abspielen, und der alte
+     Notnagel (Siri-Stimme) sprach die Wörter falsch (Franz 14.09.). */
   useEffect(() => {
     if (!card) return
     prewarmSpeech(card.ko, lang)
     if (card.ex) prewarmSpeech(card.ex, lang)
-    if (art === 'hoeren') speak(card.ko, lang)
   }, [card && card.id])
 
   if (!card) {
@@ -131,6 +137,8 @@ function ReviewMotor({ initialQueue, words, onRate, onUndo, onExit, profile, t, 
     setChecked(false)
     setCorrect(false)
     setGewaehlt(null)
+    setTextErzwungen(false)
+    setAudioFehlt(false)
     setTippt(false)
     setFlash(null)
     setExiting(false)
@@ -275,18 +283,32 @@ function ReviewMotor({ initialQueue, words, onRate, onUndo, onExit, profile, t, 
             </>
           )}
           {art === 'hoeren' && !checked && (
-            <button
-              type="button"
-              className="hoer-knopf verbergbar"
-              onClick={() => speak(card.ko, lang)}
-              aria-label={t.nochmalHoeren}
-            >
-              <svg viewBox="0 0 24 24" width="44" height="44" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M11 5 6.5 9H3v6h3.5L11 19z" fill="currentColor" stroke="none" />
-                <path d="M15 9a4 4 0 0 1 0 6M17.5 6.5a8 8 0 0 1 0 11" />
-              </svg>
-              <span className="hoer-knopf-text">{t.nochmalHoeren}</span>
-            </button>
+            <div className="hoer-block verbergbar">
+              {/* entsperren() SYNCHRON im Tipp — der iOS-Türöffner. Danach
+                  nur die Cloud-Stimme, nie der Browser-Notnagel. */}
+              <button
+                type="button"
+                className="hoer-knopf hoer-knopf-gross"
+                onClick={() => {
+                  entsperren()
+                  setAudioFehlt(false)
+                  speak(card.ko, lang, { notnagel: false }).then((ok) => {
+                    if (!ok) setAudioFehlt(true)
+                  })
+                }}
+                aria-label={t.anhoeren}
+              >
+                <svg viewBox="0 0 24 24" width="56" height="56" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M11 5 6.5 9H3v6h3.5L11 19z" fill="currentColor" stroke="none" />
+                  <path d="M15 9a4 4 0 0 1 0 6M17.5 6.5a8 8 0 0 1 0 11" />
+                </svg>
+                <span className="hoer-knopf-text">{t.anhoeren}</span>
+              </button>
+              {audioFehlt && <span className="hoer-fehlt">{t.audioFehlt}</span>}
+              <button type="button" className="hoer-zum-text" onClick={() => setTextErzwungen(true)}>
+                {t.zumText}
+              </button>
+            </div>
           )}
           {art === 'hoeren' && checked && (
             <>

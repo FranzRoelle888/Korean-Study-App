@@ -831,8 +831,23 @@ async function sha256Hex(s) {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s))
   return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('')
 }
+/* Einzelwort oder Satz? Einzelwoerter bekommen einen eigenen
+   Cache-Raum (v2) und eine eigene Sprech-Anweisung — das Modell
+   spricht ein isoliertes Wort sonst deutlich schlechter als im Satz
+   (Fund Franz 14.09.). Regel in tts.jsx, speech/index.ts, baue-tts.mjs
+   und vokabeln-anreichern.mjs identisch halten. */
+function istEinzelwort(text) {
+  const t = String(text ?? '').trim()
+  if (t.length > 20 || /[.!?…]$/.test(t)) return false
+  const teile = t.split(/s+/).length
+  if (teile > 2) return false
+  /* zweiwortiger koreanischer Satz (물 마셔요) endet auf 요/까/죠 */
+  if (teile === 2 && /[가-힣]/.test(t) && /[요까죠]$/.test(t)) return false
+  return true
+}
+const ttsVersion = (text) => (istEinzelwort(text) ? 'v2' : 'v1')
 async function imCache(text) {
-  const pfad = `${CACHE_VERSION}/ko/${STIMME_KO}/${await sha256Hex(text.trim())}.mp3`
+  const pfad = `${ttsVersion(text)}/ko/${STIMME_KO}/${await sha256Hex(text.trim())}.mp3`
   const r = await fetch(`${SUPABASE_URL}/storage/v1/object/public/tts-cache/${pfad}`, { method: 'HEAD' })
   return r.ok
 }

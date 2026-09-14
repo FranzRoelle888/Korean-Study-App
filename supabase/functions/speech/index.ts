@@ -43,6 +43,25 @@ const ALLOWED_VOICES = ['alloy', 'ash', 'ballad', 'coral', 'echo', 'fable', 'nov
    Pfade). Bei einem Modellwechsel v1 -> v2 hochzählen, dann
    entsteht ein frischer Cache. */
 const CACHE_VERSION = 'v1'
+/* Einzelwort oder Satz? Einzelwoerter bekommen einen eigenen
+   Cache-Raum (v2) und eine eigene Sprech-Anweisung — das Modell
+   spricht ein isoliertes Wort sonst deutlich schlechter als im Satz
+   (Fund Franz 14.09.). Regel in tts.jsx, speech/index.ts, baue-tts.mjs
+   und vokabeln-anreichern.mjs identisch halten. */
+function istEinzelwort(text: string): boolean {
+  const t = String(text ?? '').trim()
+  if (t.length > 20 || /[.!?…]$/.test(t)) return false
+  const teile = t.split(/s+/).length
+  if (teile > 2) return false
+  /* zweiwortiger koreanischer Satz (물 마셔요) endet auf 요/까/죠 */
+  if (teile === 2 && /[가-힣]/.test(t) && /[요까죠]$/.test(t)) return false
+  return true
+}
+const ttsVersion = (text: string) => (istEinzelwort(text) ? 'v2' : CACHE_VERSION)
+const WORT_INSTRUCTIONS: Record<string, string> = {
+  ko: 'This is a single Korean dictionary word spoken in isolation, as a citation form. Pronounce it clearly and completely in standard Seoul Korean with natural pitch. Say only this word — no extra words, no trailing sounds.',
+  de: 'This is a single German dictionary word (possibly with its article) spoken in isolation. Pronounce it clearly and completely in standard High German. Say only this word — no extra words.',
+}
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -112,7 +131,7 @@ Deno.serve(async (req) => {
       if (!text) return json({ error: 'empty' }, 400)
 
       const hash = await sha256Hex(text)
-      const pfad = `${CACHE_VERSION}/${lang}/${voice}/${hash}.mp3`
+      const pfad = `${ttsVersion(text)}/${lang}/${voice}/${hash}.mp3`
       const publicUrl = `${SB_URL}/storage/v1/object/public/tts-cache/${pfad}`
 
       /* Falls es die Datei doch schon gibt (z. B. zwei Geräte
@@ -133,9 +152,11 @@ Deno.serve(async (req) => {
           voice,
           input: text,
           response_format: 'mp3',
-          /* Für Lernende: deutlich und in natürlichem Tempo */
-          instructions:
-            lang === 'ko'
+          /* Für Lernende: deutlich und in natürlichem Tempo —
+             Einzelwörter mit eigener Anweisung (Fund 14.09.) */
+          instructions: istEinzelwort(text)
+            ? WORT_INSTRUCTIONS[lang]
+            : lang === 'ko'
               ? 'Speak this Korean text clearly and naturally, at a comfortable pace for a language learner. Standard Seoul pronunciation.'
               : 'Speak this German text clearly and naturally, at a comfortable pace for a language learner. Standard High German pronunciation.',
         }),
