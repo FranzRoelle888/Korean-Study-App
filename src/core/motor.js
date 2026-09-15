@@ -33,23 +33,20 @@ export const PRODUKTION_INTERVALL = 14
 const vergleichKo = (s) => normKo(s).replace(/[?!.…~]+$/, '')
 export function vorratKandidaten(vorrat, words, n) {
   if (!Array.isArray(vorrat) || n <= 0) return []
-  /* Schreibweise -> Bedeutungen, die er dazu schon hat. Ein Vorratswort
-     mit gleicher Schreibweise, aber ANDERER Bedeutung (새 „neu" neben
-     seinem 새 „Vogel") darf angeboten werden (Homonyme, Franz 14.09.). */
-  const habenKo = new Map()
-  for (const w of words) {
-    const k = vergleichKo(w.ko)
-    if (!habenKo.has(k)) habenKo.set(k, new Set())
-    habenKo.get(k).add(bedeutungsKey(w.en))
-  }
+  /* Gleiche Schreibweise in der Bibliothek = schon da, egal wie die
+     Bedeutung formuliert ist. Ein Tag lang (14.09.) galt hier „gleiche
+     Schreibweise UND gleiche Bedeutung" — und 해인 bekam kommen, gehen
+     und machen als neue Woerter, weil ihre Hand-Bedeutung „to come (오다)"
+     anders klingt als die angereicherte „to come / to be from (…)".
+     Die Lockerung war sinnlos: weder die Goethe- noch die TOPIK-Liste
+     enthaelt zwei Eintraege mit gleicher Schreibweise (geprueft 15.09.).
+     Echte Homonyme (배 Schiff/Bauch) kommen nur per Hand-Eintrag, und da
+     fragt die Bibliothek nach. */
+  const habenKo = new Set(words.map((w) => vergleichKo(w.ko)))
   const habenInv = new Set(words.map((w) => w.invId).filter(Boolean))
-  const schonDa = (v) => {
-    const bed = habenKo.get(vergleichKo(v.ko))
-    return !!bed && (bed.has(bedeutungsKey(v.en)) || bed.has(bedeutungsKey(v.de)))
-  }
   return vorrat
     .filter((v) => v.bereit && v.audioOk && !v.uebersprungen && v.pos !== 'number')
-    .filter((v) => !schonDa(v) && !habenInv.has(v.invId))
+    .filter((v) => !habenKo.has(vergleichKo(v.ko)) && !habenInv.has(v.invId))
     .sort((a, b) => (a.rang ?? 99999) - (b.rang ?? 99999))
     .slice(0, n)
 }

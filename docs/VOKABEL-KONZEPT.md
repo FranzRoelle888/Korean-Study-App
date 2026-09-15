@@ -611,5 +611,9 @@ Versuch. Schwierigkeit bleibt „mittel" (Rückfrage unbeantwortet).
 
 **Homonyme.** Duplikat = gleiche Schreibweise UND gleiche Bedeutung;
 andere Bedeutung wird nach Rückfrage als Homonym eingetragen. Erkennen
-und Hören verlangen ALLE Bedeutungen, hart (Entscheidung Franz). Der
-Vorrat sperrt nur noch Schreibweise + Bedeutung.
+und Hören verlangen ALLE Bedeutungen, hart (Entscheidung Franz).
+Der Vorrat bleibt streng: gleiche Schreibweise = schon da. Einen Tag lang
+sperrte er nur Schreibweise + Bedeutung, und 해인 bekam kommen/gehen/machen
+als „neu", weil ihre Hand-Bedeutung anders formuliert war (Fund 15.09.).
+Beide Inventare haben keine zwei Einträge gleicher Schreibweise (Schloss,
+Bank, Gericht je einmal, ein Sinn) — Homonyme entstehen nur per Hand.
