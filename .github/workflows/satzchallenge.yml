@@ -1,7 +1,7 @@
 # ============================================================
 # Tages-Challenge nachts vorbereiten (Franz 14.09.)
 #
-# Laeuft jede Nacht um 03:00 UTC (05:00 deutscher Sommerzeit) und
+# Laeuft jede Nacht um 02:23 UTC (04:23 deutscher Sommerzeit) und
 # legt je Seite drei Challenges auf Vorrat in die Aufgaben-Bank.
 # Das Telefon liest dann nur noch — keine 40-Sekunden-Live-Erzeugung
 # mehr, kein "offline und nichts vorbereitet" trotz Netz.
@@ -17,7 +17,9 @@ name: Tages-Challenge vorbereiten
 
 on:
   schedule:
-    - cron: '0 3 * * *'
+    # Krumme Minute: zur vollen Stunde stauen sich bei GitHub die
+    # Zeitplaene, der Lauf startete zuletzt jeden Tag erst gegen 08:00 UTC
+    - cron: '23 2 * * *'
   workflow_dispatch:
     inputs:
       profil:

@@ -44,30 +44,49 @@ function UebersetzenSpiel({ profile, words, onExit, t }) {
       /* Safari kappt eine Anfrage nach ~60 s. Zehn schwere Saetze in
          EINEM Aufruf dauerten laenger — deshalb in Haelften parallel
          (Franz 07.09.). Doppelte Saetze werden danach aussortiert. */
-      const teile = anzahl > 5 ? [Math.ceil(anzahl / 2), Math.floor(anzahl / 2)] : [anzahl]
+      /* Seit 24.09. schon ab 5 Saetzen geteilt (3 + 2): kuerzere Antwort
+         je Aufruf, also weniger Gefahr, in Safaris 60 Sekunden zu laufen
+         (Franz: „klappt nur in 50 % der Faelle") */
+      const teile = anzahl >= 5 ? [Math.ceil(anzahl / 2), Math.floor(anzahl / 2)] : [anzahl]
       /* Jede Haelfte bekommt EIGENE Schauplaetze und Fokus-Woerter —
          sonst schreiben beide Aufrufe dieselben Saetze (Franz 08.09.) */
-      const antwortenTeile = await Promise.all(
-        teile.map((n) =>
-          trainerSatzChallengeErzeugen({
-            profile: profile.id,
-            woerter,
-            grammatik,
-            vermeiden: { woerter: [], grammatik: [] },
-            anzahl: n,
-            schwierigkeit: stufe,
-            wunsch: wunsch.trim(),
-            szenen: zufallsSzenen(n + 2),
-            fokus: zufallsWoerter(words),
-          })
-        )
+      const hole = (n) =>
+        trainerSatzChallengeErzeugen({
+          profile: profile.id,
+          woerter,
+          grammatik,
+          vermeiden: { woerter: [], grammatik: [] },
+          anzahl: n,
+          schwierigkeit: stufe,
+          wunsch: wunsch.trim(),
+          szenen: zufallsSzenen(n + 2),
+          fokus: zufallsWoerter(words),
+        })
+      /* Frueher riss EIN gescheiterter Teil die ganze Runde mit
+         (Promise.all). Jetzt: was da ist, wird genommen; ein leerer
+         oder gescheiterter Teil bekommt genau einen zweiten Versuch. */
+      const gruende = []
+      const ersteRunde = await Promise.allSettled(teile.map(hole))
+      const ergebnisse = await Promise.all(
+        ersteRunde.map(async (r, i) => {
+          if (r.status === 'fulfilled' && (r.value?.saetze || []).length) return r.value
+          gruende.push(r.status === 'rejected' ? r.reason?.message || 'fehler' : r.value?.grund || 'leer')
+          if (r.status === 'rejected' && r.reason?.message === 'rate-limit') throw r.reason
+          try {
+            return await hole(teile[i])
+          } catch (e) {
+            gruende.push(e?.message || 'fehler')
+            return null
+          }
+        })
       )
       const gesehen = new Set()
       const alle = []
       let verworfen = 0
-      for (const res of antwortenTeile) {
+      for (const res of ergebnisse) {
         verworfen += (res?.verworfen || []).length
         if (!(res?.saetze || []).length) {
+          gruende.push(res?.grund || 'leer')
           console.warn('Uebersetzungsspiel leer:', res?.grund || 'unbekannt', (res?.verworfen || []).slice(0, 3))
         }
         for (const s of res?.saetze || []) {
@@ -77,15 +96,28 @@ function UebersetzenSpiel({ profile, words, onExit, t }) {
         }
       }
       const liste = alle.slice(0, anzahl).map((s, i) => ({ nr: i + 1, ...s }))
-      if (!liste.length) throw new Error(verworfen ? 'verworfen' : 'leer')
+      if (!liste.length) {
+        /* Der Grund wandert in die Meldung — bisher stand bei jedem
+           Fehler derselbe Satz, und niemand konnte sagen, WAS schiefging */
+        const grund = [...new Set(gruende)].join(', ')
+        throw new Error(verworfen && !alle.length && gruende.every((g) => g === 'leer' || g === 'alle-verworfen') ? 'verworfen' : `leer:${grund}`)
+      }
       setSaetze(liste)
       setAntworten(liste.map(() => ''))
       setAudios(liste.map(() => null))
       setBewertung(null)
       setPhase('antworten')
     } catch (e) {
+      const msg = e?.message || ''
+      const grund = msg.startsWith('leer:') ? msg.slice(5) : msg.startsWith('trainer ') ? msg : ''
       setFehler(
-        e && e.message === 'rate-limit' ? t.challengeLimit : e && e.message === 'verworfen' ? t.spielVerworfen : t.spielFehler
+        msg === 'rate-limit'
+          ? t.challengeLimit
+          : msg === 'verworfen'
+            ? t.spielVerworfen
+            : grund
+              ? `${t.spielFehler} (${grund})`
+              : t.spielFehler
       )
       setPhase('setup')
     }

@@ -330,7 +330,12 @@ function App() {
   const due = dueCards(words, cards)
   /* Vokabel-Motor (Franz): Vorrat statt Pool, Neu-Stopp bei > 100 fälligen */
   const motor = istMotor(profileId)
-  const daily = dailyStatus(words, { vorrat, faellig: due.faelligGesamt ?? due.length })
+  /* faellig erst melden, wenn die Karten geladen sind (Fund Franz 24.09.):
+     beim allerersten Render ist cards noch leer, faellig also 0 — und
+     dailyStatus fror die Tageszahl fuer heute bei 10 ein. Der Stau
+     (> 100 faellig) wirkte dann nur live: sobald er unter die Schwelle
+     kam, war der Knopf wieder da. null heisst: noch nicht bekannt. */
+  const daily = dailyStatus(words, { vorrat, faellig: loading ? null : (due.faelligGesamt ?? due.length) })
   /* Extra-Runde (Franz 08.09.): sie hat keinen eigenen Knopf — sind die
      neuen Tageswoerter durch, fuehrt der TAGESWORT-Knopf in die Runde.
      Seit 08.09. auf beiden Seiten. */

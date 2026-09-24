@@ -1176,6 +1176,20 @@ export function dailyStatus(words, extra = {}) {
      Wort die Zahl fuer heute wieder druecken. */
   let tagesZahl = dailyNew()
   if (tz.autoTempo) {
+    /* Stau ist fuer den ganzen Tag entschieden (Franz 24.09.): Liegen
+       vor dem ersten neuen Wort des Tages mehr als neuStopp Karten an,
+       bleibt die Tageszahl 0 — auch wenn die eingefrorene Zahl anders
+       lautete (z. B. aus einem Render vor dem Laden). Heilt zugleich
+       den heute schon falsch gemerkten Wert. */
+    const stauJetzt = extra.faellig != null && extra.faellig > tz.neuStopp && introduced === 0
+    if (stauJetzt && fortschritt.tempo !== 0) {
+      fortschritt.tempo = 0
+      try {
+        localStorage.setItem(DAILY_KEY(), JSON.stringify({ ...fortschritt, date: todayStr(), tempo: 0 }))
+      } catch {
+        /* egal */
+      }
+    }
     if (fortschritt.tempo != null) tagesZahl = fortschritt.tempo
     else if (extra.faellig != null) {
       tagesZahl = autoTempoZahl(extra.faellig)
@@ -1203,7 +1217,7 @@ export function dailyStatus(words, extra = {}) {
      die Startseite sagt es so, dass man es sofort durchblickt */
   let grund = null
   if (fortschritt.pause) grund = 'pause'
-  else if ((left > 0 || (tz.autoTempo && tagesZahl === 0 && introduced === 0)) && (extra.faellig ?? 0) > tz.neuStopp)
+  else if ((left > 0 && (extra.faellig ?? 0) > tz.neuStopp) || (tz.autoTempo && tagesZahl === 0 && introduced === 0))
     grund = 'stau'
   if (grund) left = 0
   const candidates = vorratKandidaten(extra.vorrat || [], words, left)
