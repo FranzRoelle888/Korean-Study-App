@@ -35,6 +35,7 @@ import {
   last7Days,
   loadPartnerLog,
   todayStr,
+  morgen,
   writeWordsCache,
   writeCardsCache,
   ergaenzeWortInhalte,
@@ -442,6 +443,14 @@ function App() {
        auf der Karte und geht dem Modell als Richtung mit */
     const hinweis = String(notiz ?? '').trim().slice(0, 120)
     if (hinweis) res.word.nuance = hinweis
+    /* Tag schon abgehakt? Dann werden die neuen Karten erst MORGEN
+       faellig (Franz 24.09.): Sonst sprang der Wiederholen-Knopf nach
+       jedem nachgetragenen Wort wieder auf orange und der erledigte
+       Tag sah wieder offen aus. Das Wort steht sofort in der Bibliothek. */
+    const heute = todayStr()
+    if (dailyLog.some((r) => r.day === heute && r.done)) {
+      for (const c of [res.c1, res.c2]) if (c) c.due = morgen(heute)
+    }
     const newWords = [res.word, ...words]
     const newCards = [res.c1, res.c2].filter(Boolean).concat(cards)
     setWords(newWords)

@@ -327,6 +327,9 @@ export function todayStr() {
   if (d.getHours() < 4) d.setDate(d.getDate() - 1)
   return toISO(d)
 }
+/* Der Folgetag als ISO-Datum — fuer Karten, die den heutigen,
+   schon abgehakten Tag nicht mehr aufreissen sollen */
+export const morgen = (iso) => addDays(iso, 1)
 function addDays(iso, n) {
   const d = new Date(iso + 'T00:00:00')
   d.setDate(d.getDate() + n)

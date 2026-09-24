@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { ladeTagesChallenge, sichereTagesChallenge } from '../../core/satzChallenge'
+import { ladeTagesChallenge, sichereTagesChallenge, schreibePuffer } from '../../core/satzChallenge'
 import { trainerSatzChallengeBewerten } from '../trainer/trainerApi'
 
 /* ============================================================
@@ -133,6 +133,12 @@ function SatzTeil({ profile, words, onFertig, onKeineSaetze, t }) {
                       const next = [...antworten]
                       next[i] = e.target.value
                       setAntworten(next)
+                      /* Entwurf sofort in den Tagespuffer (Franz 24.09.):
+                         wer die Challenge verlaesst, findet das Getippte
+                         wieder. Der Puffer traegt das Datum — mit der
+                         neuen Aufgabe am naechsten Tag ist er von selbst
+                         leer. */
+                      schreibePuffer({ ...ch, antworten: next })
                     }}
                     autoCapitalize="none"
                     autoCorrect="off"
