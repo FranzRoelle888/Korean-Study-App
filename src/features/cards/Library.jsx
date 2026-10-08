@@ -6,6 +6,7 @@ import { SpeakButton, prewarmSpeech } from '../../shared/tts'
 import { trainerUebersetzung } from '../trainer/trainerApi'
 import { HanjaZeile, StufenPunkte, InfoText, ZaehlChip, KasusChip, RegisterChip, HaeyoZeile } from '../../shared/motorTeile'
 import { istMotor, stufenFuer, bedeutung } from '../../core/motor'
+import { haeyoVon } from '../../core/haeyo'
 
 /* ============================================================
    LIBRARY
@@ -36,7 +37,7 @@ function WordExtras({ vocab, t, lang }) {
   const hatNuance = !!vocab.nuance
   /* Vokabel-Qualität: Infotext + Zählwort-Chip */
   const hatInfo =
-    !!vocab.info || !!vocab.zaehlwort || !!vocab.kasus || !!vocab.haeyo || !!vocab.register || !!vocab.registerPartner
+    !!vocab.info || !!vocab.zaehlwort || !!vocab.kasus || !!haeyoVon(vocab) || !!vocab.register || !!vocab.registerPartner
 
   /* Sobald das Info-Feld aufklappt, den Beispielsatz im
      Hintergrund vorwärmen — beim Tipp aufs Lautsprecher-Symbol
@@ -585,7 +586,7 @@ function VocabRow({ vocab, onEdit, onDelete, tricky, stufe, profile, t }) {
     !!vocab.info ||
     !!vocab.zaehlwort ||
     !!vocab.kasus ||
-    !!vocab.haeyo ||
+    !!haeyoVon(vocab) ||
     !!vocab.register
 
   return (
