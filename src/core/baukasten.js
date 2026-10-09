@@ -223,12 +223,15 @@ export function baueBaukasten({ words, cards, zuletzt = new Set(), anzahl = 5, s
    -> { erlaubt: [{ muster, name, beispiel }], plan: [[muster, …], …] } */
 export function waehleMuster({ grammatik, saetze = 6, schwierigkeit = 'mittel', musterZuletzt = new Map(), letztePflicht = new Set(), sprache = 'ko' }) {
   const { fundament: FUNDAMENT, niePflicht: NIE_PFLICHT, verbinder: VERBINDER, leicht: LEICHT } = GRAMMATIK[sprache === 'de' ? 'de' : 'ko']
-  /* Erlaubt ist, was abgehakt ist — bei weniger als 12 wird mit dem
-     Anfang des Kanons aufgefüllt (Regel vom 08.09.) — plus Fundament */
+  /* Erlaubt ist NUR, was in der Grammatik-Liste abgehakt ist — auf
+     beiden Seiten (Entscheidung Franz 09.10.). Kein Auffüllen mit
+     nicht abgehakten Mustern mehr, auch das Fundament nicht von selbst.
+     Einzige Ausnahme: ist noch GAR NICHTS abgehakt, gilt das Fundament,
+     damit die Tagesaufgabe nie leer ausgeht (Regel 3). Sind wenige
+     Muster abgehakt, wiederholen sie sich eben öfter — wer mehr
+     Abwechslung will, hakt in der Liste mehr ab. */
   const sicher = grammatik.filter((g) => g.sicher)
-  const dazu = sicher.length >= 12 ? [] : grammatik.filter((g) => !g.sicher).slice(0, 12 - sicher.length)
-  const erlaubtSet = new Set([...sicher, ...dazu, ...grammatik.filter((g) => FUNDAMENT.has(g.id))])
-  const erlaubt = grammatik.filter((g) => erlaubtSet.has(g))
+  const erlaubt = sicher.length ? sicher : grammatik.filter((g) => FUNDAMENT.has(g.id))
 
   /* Reihenfolge der Kandidaten: gesperrte nach hinten, dann das am
      längsten nicht Geübte zuerst (nie geübt = ganz vorn) */
@@ -250,7 +253,13 @@ export function waehleMuster({ grammatik, saetze = 6, schwierigkeit = 'mittel', 
   const plan = Array.from({ length: saetze }, () => [])
   const benutzt = new Set()
   const naechstes = (filter = () => true) => {
-    const g = reihe.find((x) => !benutzt.has(x) && filter(x)) ?? reihe.find((x) => filter(x))
+    let g = reihe.find((x) => !benutzt.has(x) && filter(x))
+    /* alle einmal dran gewesen (wenige Muster abgehakt): von vorn —
+       reihum, nicht dreimal dasselbe */
+    if (!g && reihe.some((x) => filter(x))) {
+      benutzt.clear()
+      g = reihe.find((x) => filter(x))
+    }
     if (g) benutzt.add(g)
     return g
   }

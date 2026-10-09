@@ -281,8 +281,11 @@ export function ladeVor({ profile, words, anzahl, stufe }) {
     /* egal */
   }
   laedtVor = true
-  /* niemand wartet darauf -> der gründliche Gang */
-  baukastenRunde({ profile, words, anzahl, schwierigkeit: stufe, merken: true, gruendlich: true })
+  /* Das Spiel läuft im SCHNELLEN Gang (Entscheidung Franz 09.10.) —
+     der gründliche bleibt der Tages-Challenge aus dem Nachtlauf
+     vorbehalten. Vorgeladen wird trotzdem: dann steht die nächste
+     Runde beim Tipp auf den Knopf schon da. */
+  baukastenRunde({ profile, words, anzahl, schwierigkeit: stufe, merken: true })
     .then((r) => {
       if (r.saetze.length >= Math.min(3, anzahl)) {
         localStorage.setItem(VOR_KEY(profile), JSON.stringify({ t: Date.now(), anzahl, stufe, saetze: r.saetze }))

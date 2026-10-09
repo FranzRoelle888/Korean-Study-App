@@ -1565,11 +1565,15 @@ Deno.serve(async (req) => {
       /* Kennung dieser Fassung — steht in Diagnose UND Fehlermeldung,
          damit im Protokoll sichtbar ist, welcher Stand der Function
          gerade deployt ist (zweimal war das beim Testen unklar) */
-      const FASSUNG = 6
+      const FASSUNG = 7
       const satzZahl = plan.length
       const topf = [...new Set(plan.flatMap((p: { muster: string[] }) => p.muster))] as string[]
       const jeSatz = Math.max(1, ...plan.map((p: { muster: string[] }) => p.muster.length))
       if (!topf.length) return json({ error: 'empty' }, 400)
+      /* Nur abgehakte Muster (Franz 09.10.): Hat jemand wenige abgehakt,
+         ist der Topf kleiner als die Zahl der Sätze — dann dürfen sich
+         Muster wiederholen, statt dass das Modell fremde dazunimmt. */
+      const topfReicht = topf.length >= satzZahl * jeSatz
       const nummernListe = { type: 'array', items: { type: 'integer' } }
       /* LISTEN statt fester Fächer s1…s6 (Fassung 6): Mit festen Fächern
          steht jede Satz-Form sechsfach in der Antwortform, und die API
@@ -1610,7 +1614,7 @@ Deno.serve(async (req) => {
             kit_nummern: nummernListe,
             deutsch: { type: 'string', description: 'The German sentence (nouns with correct article and case).' },
             neue_woerter: neueWoerter,
-            koreanisch: { type: 'string', description: 'Exactly that sentence in Korean (Hangul, polite 해요체).' },
+            koreanisch: { type: 'string', description: 'Exactly that sentence in natural Korean (Hangul). The speech level may follow the German: informal for "du" is fine.' },
             englisch: { type: 'string', description: 'Exactly that sentence in English.' },
           }
 
@@ -1628,7 +1632,7 @@ Deno.serve(async (req) => {
             ? '- Always free and NOT kit words (never list them in neue_woerter): particles, pronouns, question words, negation, numbers of both systems with clock times, prices and ages, 있다/없다/이다/하다/되다, and the short connectors 그리고/그래서/하지만/그런데.'
             : '- Always free and NOT kit words (never list them in neue_woerter): articles, pronouns, possessives, negation, prepositions, conjunctions, question words, numbers, sein/haben/werden and the modal verbs.',
           '- REQUIRED words: every sentence contains at least one required word, and no required word is used twice. Place as many as fit naturally — leaving one out is better than forcing it.',
-          `- PATTERN POOL: every sentence visibly uses its pattern(s) from the pool, and no pool pattern is used twice. Besides that, only grammar from the ALLOWED PATTERNS list. ${lerntKoB ? 'Polite 해요체 throughout.' : 'Everyday spoken German; nouns always with the right article.'}`,
+          `- PATTERN POOL: every sentence visibly uses its pattern(s) from the pool${topfReicht ? ', and no pool pattern is used twice' : '; the pool is small, so patterns may repeat — but use every pool pattern at least once'}. Besides that, only grammar from the ALLOWED PATTERNS list. ${lerntKoB ? 'Polite 해요체 throughout — the learner always answers in the 요 form.' : 'Everyday spoken German; nouns always with the right article. Address people with "du" (she learns the informal form first) — use "Sie" only when the pattern itself is about it.'}`,
           '- ONE sentence per slot (two short clauses only when the pattern itself joins clauses). Vary the subject (I / you / we / he / she / people).',
           `- The translation says EXACTLY what the ${zielB} sentence says — same meaning, same tense, same subject. If your ${zielB} came out different from what you intended, translate it as it stands.`,
           /* Musterlösungen einfach halten (Franz 04.09.) — hier eigens
@@ -1656,7 +1660,7 @@ Deno.serve(async (req) => {
               'KIT RING 2 — OPTIONAL WORDS (use where they fit):',
               auswahl.length ? auswahl.map(ab(grundstock.length + pflicht.length)).join('; ') : '(none)',
               '',
-              `PATTERN POOL (${jeSatz} per sentence, each at most once):`,
+              `PATTERN POOL (${jeSatz} per sentence${topfReicht ? ', each at most once' : ', repeats allowed'}):`,
               topf.join('  |  '),
               '',
               `Write EXACTLY ${satzZahl} sentences, numbered "nr" 1…${satzZahl}. Both lists below must have exactly ${satzZahl} entries — never stop early. HOW TO ANSWER — work in this order:`,
@@ -2490,6 +2494,6 @@ Deno.serve(async (req) => {
     console.error(e)
     /* stand: welche Fassung des Satz-Baukastens deployt ist — bei
        Fehlersuche über das Nachtlauf-Protokoll sonst nicht erkennbar */
-    return json({ error: 'internal', stand: 'baukasten-6', detail: String(e) }, 500)
+    return json({ error: 'internal', stand: 'baukasten-7', detail: String(e) }, 500)
   }
 })
