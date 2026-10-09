@@ -328,7 +328,7 @@ async function erzeugeBaukasten(profil, words, cards, grammatik, verlaufZeilen, 
   const d = res?.diagnose
   if (d) {
     console.log(
-      `    Gang: ${d.gang ?? '?'} · Modell: ${d.rein} Tokens rein (+ ${d.zwischenspeicher ?? '?'} im Zwischenspeicher), ${d.raus} raus · Ende: ${d.stop}` +
+      `    Function-Fassung ${d.fassung ?? '?'} · Gang: ${d.gang ?? '?'} · Modell: ${d.rein} Tokens rein (+ ${d.zwischenspeicher ?? '?'} im Zwischenspeicher), ${d.raus} raus · Ende: ${d.stop}` +
         (d.ohneDeutsch ? ` · ${d.ohneDeutsch} Saetze ohne deutsche Aufgabe verworfen` : '') +
         (d.anfang ? ` · Antwort-Anfang: ${JSON.stringify(d.anfang)}` : '')
     )

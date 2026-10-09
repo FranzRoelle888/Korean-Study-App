@@ -1562,16 +1562,29 @@ Deno.serve(async (req) => {
       const lerntKoB = profile === 'ko'
       const zielB = lerntKoB ? 'Korean' : 'German'
       const hilfsSprache = lerntKoB ? 'German' : 'Korean'
-      const faecher = plan.map((_p: unknown, i: number) => `s${i + 1}`)
+      /* Kennung dieser Fassung — steht in Diagnose UND Fehlermeldung,
+         damit im Protokoll sichtbar ist, welcher Stand der Function
+         gerade deployt ist (zweimal war das beim Testen unklar) */
+      const FASSUNG = 6
+      const satzZahl = plan.length
       const topf = [...new Set(plan.flatMap((p: { muster: string[] }) => p.muster))] as string[]
       const jeSatz = Math.max(1, ...plan.map((p: { muster: string[] }) => p.muster.length))
       if (!topf.length) return json({ error: 'empty' }, 400)
       const nummernListe = { type: 'array', items: { type: 'integer' } }
-      const fachObjekt = (inhalt: unknown) => ({
-        type: 'object',
-        properties: Object.fromEntries(faecher.map((f: string) => [f, inhalt])),
-        required: faecher,
-        additionalProperties: false,
+      /* LISTEN statt fester Fächer s1…s6 (Fassung 6): Mit festen Fächern
+         steht jede Satz-Form sechsfach in der Antwortform, und die API
+         lehnte sie ab („compiled grammar is too large") — auch nach dem
+         Verkleinern. Eine Liste beschreibt den Satz nur EINMAL. Dass
+         genug Sätze kommen, sichert jetzt die Nummer (nr 1…N) zusammen
+         mit dem Verteil-Schritt davor; gezählt wird unten im Code. */
+      const listeVon = (felder: Record<string, unknown>) => ({
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: { nr: { type: 'integer' }, ...felder },
+          required: ['nr', ...Object.keys(felder)],
+          additionalProperties: false,
+        },
       })
       const ersteP = grundstock.length + 1
       const letzteP = grundstock.length + pflicht.length
@@ -1646,7 +1659,7 @@ Deno.serve(async (req) => {
               `PATTERN POOL (${jeSatz} per sentence, each at most once):`,
               topf.join('  |  '),
               '',
-              `Write ${faecher.length} sentences (${faecher[0]}…${faecher[faecher.length - 1]}). HOW TO ANSWER — work in this order:`,
+              `Write EXACTLY ${satzZahl} sentences, numbered "nr" 1…${satzZahl}. Both lists below must have exactly ${satzZahl} entries — never stop early. HOW TO ANSWER — work in this order:`,
               `1. "verteilung": for every sentence, choose ${jeSatz === 1 ? 'ONE pattern' : `${jeSatz} patterns`} from the pool and the required word(s) (numbers ${ersteP}-${letzteP}) that go NATURALLY with it — think of a concrete everyday sentence for each pairing before you commit.`,
               lerntKoB
                 ? '2. "saetze": for every sentence, first "kit_nummern" = the numbers of ALL kit words the sentence uses, then "koreanisch" = the Korean sentence, then "neue_woerter" = its non-kit content words as "word = meaning; word = meaning" (usually an empty string), then "deutsch" = exactly that sentence in GERMAN (Latin letters; this is what the learner reads; it must never contain Korean).'
@@ -1667,24 +1680,13 @@ Deno.serve(async (req) => {
           schema: {
             type: 'object',
             properties: {
-              verteilung: fachObjekt({
-                type: 'object',
-                properties: {
-                  /* ohne enum: die feste Auswahlliste in jedem Fach bläht die
-                     Antwortform auf (bei „schwer" 12 Muster × 6 Fächer).
-                     Geprüft wird unten im Code gegen den Topf. */
-                  muster: { type: 'array', items: { type: 'string' }, description: 'Pattern(s) for this sentence, copied exactly from the pattern pool.' },
-                  pflicht_nummern: nummernListe,
-                },
-                required: ['muster', 'pflicht_nummern'],
-                additionalProperties: false,
+              verteilung: listeVon({
+                /* ohne feste Auswahlliste — geprüft wird unten im Code
+                   gegen den Topf */
+                muster: { type: 'array', items: { type: 'string' }, description: 'Pattern(s) for this sentence, copied exactly from the pattern pool.' },
+                pflicht_nummern: nummernListe,
               }),
-              saetze: fachObjekt({
-                type: 'object',
-                properties: satzFelder,
-                required: Object.keys(satzFelder),
-                additionalProperties: false,
-              }),
+              saetze: listeVon(satzFelder),
             },
             required: ['verteilung', 'saetze'],
             additionalProperties: false,
@@ -1703,8 +1705,13 @@ Deno.serve(async (req) => {
       const kurz = (x: unknown, max: number) => (typeof x === 'string' ? x.normalize('NFC').trim().slice(0, max) : '')
       try {
         const j = JSON.parse(out.text.replace(/^```(?:json)?/m, '').replace(/```\s*$/m, '').trim())
-        faecher.forEach((f: string, i: number) => {
-          const s = j?.saetze?.[f]
+        const roh = Array.isArray(j?.saetze) ? j.saetze.slice(0, satzZahl) : []
+        const verteilt = Array.isArray(j?.verteilung) ? j.verteilung : []
+        roh.forEach((s: Record<string, unknown>, i: number) => {
+          /* die Nummer des Modells gilt, wenn sie plausibel ist — sonst
+             die Position in der Liste */
+          const gemeldet = Number(s?.nr)
+          const nr = Number.isInteger(gemeldet) && gemeldet >= 1 && gemeldet <= satzZahl ? gemeldet : i + 1
           const deutsch = kurz(s?.deutsch, 200)
           const koreanisch = kurz(s?.koreanisch, 200)
           if (!deutsch || !koreanisch) return
@@ -1719,7 +1726,7 @@ Deno.serve(async (req) => {
             : []
           const woerter = [...new Set(nummern.map((n: number) => alle[n - 1].ko))] as string[]
           /* welches Muster das Modell diesem Satz gegeben hat */
-          const gewaehlt = j?.verteilung?.[f]?.muster
+          const gewaehlt = (verteilt.find((v: { nr?: unknown }) => Number(v?.nr) === nr) ?? verteilt[i])?.muster
           const muster = (Array.isArray(gewaehlt) ? gewaehlt.map(String).filter((m: string) => topf.includes(m)) : []).slice(0, jeSatz)
           /* „소금 = Salz; 공원 = Park" -> [{ wort, bedeutung }] */
           const hilfe = kurz(s?.neue_woerter, 300)
@@ -1731,8 +1738,8 @@ Deno.serve(async (req) => {
             .filter((h: { wort: string; bedeutung: string }) => h.wort && h.bedeutung)
             .slice(0, 4)
           const satz: SatzB = lerntKoB
-            ? { nr: i + 1, de: deutsch, ko: koreanisch, woerter, muster, hilfe }
-            : { nr: i + 1, de: koreanisch, ko: deutsch, woerter, muster, hilfe }
+            ? { nr, de: deutsch, ko: koreanisch, woerter, muster, hilfe }
+            : { nr, de: koreanisch, ko: deutsch, woerter, muster, hilfe }
           const englisch = lerntKoB ? '' : kurz(s?.englisch, 200)
           if (englisch) satz.en = englisch
           saetzeB.push(satz)
@@ -1753,6 +1760,7 @@ Deno.serve(async (req) => {
         saetze: saetzeB,
         grund: grundB,
         diagnose: {
+          fassung: FASSUNG,
           gang: gruendlich ? 'gruendlich' : 'schnell',
           stop: out.stopReason,
           rein: out.inputTokens,
@@ -2454,6 +2462,8 @@ Deno.serve(async (req) => {
     return json({ error: 'bad-action' }, 400)
   } catch (e) {
     console.error(e)
-    return json({ error: 'internal', detail: String(e) }, 500)
+    /* stand: welche Fassung des Satz-Baukastens deployt ist — bei
+       Fehlersuche über das Nachtlauf-Protokoll sonst nicht erkennbar */
+    return json({ error: 'internal', stand: 'baukasten-6', detail: String(e) }, 500)
   }
 })
