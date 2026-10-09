@@ -50,17 +50,30 @@ const TAGES_ZAHLEN = {
   /* handEintragNurErkennen (Franz 06.09.): ein von Hand eingetragenes
      Wort startet wie ein Ritual-Wort nur mit der Erkennen-Karte —
      Produktion kommt per Warmstart. 해인 behaelt beide Karten. */
-  /* autoTempo (Franz 07.09.): neue Woerter je nach Lage — unter 40
-     faellig und < 10 % Again in 7 Tagen: 10, unter 70: 8, unter 100: 5,
-     darueber 0. neueProTag ist dann nur noch die Obergrenze. */
-  ko: { neueProTag: 10, deckel: 130, neuStopp: 100, ziel: 0.93, hartDeckel: 0.5, motor: true, vorratTabelle: true, handEintragNurErkennen: true, autoTempo: true },
+  /* NEUES TAGESPENSUM (Franz 09.10.) — auf BEIDEN Seiten gleich:
+       unter 60 faellige Karten   -> 5 neue Woerter
+       60 bis 79                  -> 3 neue Woerter
+       ab 80                      -> keine neuen (neuStopp)
+       Deckel 100 Wiederholungen  (reine Sicherung fuer Ausreisser-Tage)
+     Vorher: Franz 10/8/5 mit Deckel 130, 해인 fest 3.
+     Warum diese Zahlen: Eine Simulation ueber 18 Monate mit dem echten
+     FSRS und dem Karten-Lebenslauf (Erkennen -> Produktion -> Hoeren)
+     und Franz' Antwort-Mix (35 % Easy, 50 % Good, 15 % Barely) ergab:
+     jedes neue Wort pro Tag kostet auf Dauer 17-19 Wiederholungen pro
+     Tag (93 %-Ziel) bzw. 15-16 (90 %). Mit dieser Regel pendelt sich
+     die Sitzung bei 70-85 Wiederholungen ein, 9 von 10 Tagen unter 90,
+     bei rund 1.600-1.900 neuen Woertern im Jahr (Hand-Eintraege
+     eingerechnet). Die alte Regel lag bei 95-105 am Tag.
+     tempoStufen: [Grenze, neue Woerter] — die erste Grenze, unter der
+     die Faelligkeit liegt, gilt. HIER drehen, nirgends sonst. */
+  ko: { neueProTag: 5, deckel: 100, neuStopp: 80, tempoStufen: [[60, 5], [80, 3]], ziel: 0.93, hartDeckel: 0.5, motor: true, vorratTabelle: true, handEintragNurErkennen: true, autoTempo: true },
   /* 해인 (Franz 06.09.): derselbe Motor wie bei Franz — 3 neue Woerter
      (sie traegt viel von Hand ein), Deckel 130, Neu-Stopp bei > 100,
      90 % Ziel (Deutsch ist ableitbar), Barely-Deckel. Ihr Vorrat liegt
      in Dateien (deutschVorrat.js), nicht in der Datenbank. */
-  de: { neueProTag: 3, deckel: 130, neuStopp: 100, ziel: 0.9, hartDeckel: 0.5, motor: true, vorratTabelle: false },
+  de: { neueProTag: 5, deckel: 100, neuStopp: 80, tempoStufen: [[60, 5], [80, 3]], ziel: 0.9, hartDeckel: 0.5, motor: true, vorratTabelle: false, autoTempo: true },
   /* Sandbox verhält sich wie die de-Seite */
-  sb: { neueProTag: 3, deckel: 130, neuStopp: 100, ziel: 0.9, hartDeckel: 0.5, motor: true, vorratTabelle: false },
+  sb: { neueProTag: 5, deckel: 100, neuStopp: 80, tempoStufen: [[60, 5], [80, 3]], ziel: 0.9, hartDeckel: 0.5, motor: true, vorratTabelle: false, autoTempo: true },
 }
 const tagesZahlen = () => TAGES_ZAHLEN[activeProfile] ?? TAGES_ZAHLEN.ko
 const dailyNew = () => tagesZahlen().neueProTag
@@ -473,7 +486,6 @@ export async function loadInitial() {
     writeWordsCache(words)
     writeCardsCache(cards)
     const vorrat = await ladeVorrat()
-    await ladeAgainQuote()
     return { words, cards, vorrat, online: true }
   } catch (e) {
     // Kein Internet oder Tabellen fehlen -> Puffer benutzen
@@ -482,41 +494,16 @@ export async function loadInitial() {
   }
 }
 
-/* ---------- Again-Quote der letzten 7 Tage (Auto-Tempo) ----------
-   Aus der Antwort-Historie (review_log). Wird beim Start geladen und
-   fuer die Tagesplanung benutzt; ohne Netz gilt der letzte Wert. */
-let againQuote = 0
-async function ladeAgainQuote() {
-  if (!tagesZahlen().autoTempo) return
-  try {
-    const seit = new Date(Date.now() - 7 * 86400000).toISOString()
-    const { data, error } = await mine(
-      supabase.from('review_log').select('rating').gte('created_at', seit).limit(3000)
-    )
-    if (error || !data) return
-    const n = data.length
-    if (n >= 20) againQuote = data.filter((r) => r.rating === 'again').length / n
-    try {
-      localStorage.setItem(cacheKey('againQuote'), String(againQuote))
-    } catch {
-      /* egal */
-    }
-  } catch {
-    try {
-      againQuote = Number(localStorage.getItem(cacheKey('againQuote'))) || 0
-    } catch {
-      /* egal */
-    }
-  }
-}
-
-/* Auto-Tempo (Franz 07.09.): wie viele neue Woerter heute? */
+/* Auto-Tempo: wie viele neue Woerter heute? Nur noch nach der Zahl
+   der faelligen Karten (tempoStufen oben) — die Again-Quote der alten
+   Regel spielt keine Rolle mehr (Franz 09.10.). */
 function autoTempoZahl(faellig) {
   const tz = tagesZahlen()
-  if (faellig > tz.neuStopp) return 0
-  if (faellig < 40 && againQuote < 0.1) return Math.min(10, tz.neueProTag)
-  if (faellig < 70) return Math.min(8, tz.neueProTag)
-  return Math.min(5, tz.neueProTag)
+  if (faellig >= tz.neuStopp) return 0
+  for (const [grenze, neue] of tz.tempoStufen || []) {
+    if (faellig < grenze) return Math.min(neue, tz.neueProTag)
+  }
+  return 0
 }
 
 /* ---------- Vorrat (Vokabel-Motor V2, Migration 015) ----------
@@ -1184,7 +1171,7 @@ export function dailyStatus(words, extra = {}) {
        bleibt die Tageszahl 0 — auch wenn die eingefrorene Zahl anders
        lautete (z. B. aus einem Render vor dem Laden). Heilt zugleich
        den heute schon falsch gemerkten Wert. */
-    const stauJetzt = extra.faellig != null && extra.faellig > tz.neuStopp && introduced === 0
+    const stauJetzt = extra.faellig != null && extra.faellig >= tz.neuStopp && introduced === 0
     if (stauJetzt && fortschritt.tempo !== 0) {
       fortschritt.tempo = 0
       try {
@@ -1220,7 +1207,7 @@ export function dailyStatus(words, extra = {}) {
      die Startseite sagt es so, dass man es sofort durchblickt */
   let grund = null
   if (fortschritt.pause) grund = 'pause'
-  else if ((left > 0 && (extra.faellig ?? 0) > tz.neuStopp) || (tz.autoTempo && tagesZahl === 0 && introduced === 0))
+  else if ((left > 0 && (extra.faellig ?? 0) >= tz.neuStopp) || (tz.autoTempo && tagesZahl === 0 && introduced === 0))
     grund = 'stau'
   if (grund) left = 0
   const candidates = vorratKandidaten(extra.vorrat || [], words, left)
