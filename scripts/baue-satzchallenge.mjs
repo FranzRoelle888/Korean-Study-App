@@ -276,14 +276,13 @@ async function erzeugeBaukasten(profil, words, cards, grammatik, verlaufZeilen, 
     musterZuletzt: verlauf.musterZuletzt,
     letztePflicht: verlauf.letztePflicht,
   })
-  const szenen = mische(SZENEN).slice(0, 6)
   console.log(`  Baukasten ${nr}: Pflicht ${kit.pflicht.length} · Auswahl ${kit.auswahl.length} · Grundstock ${kit.grundstock.length}`)
   console.log(`    Pflicht-Woerter: ${kit.pflicht.map((w) => w.ko).join(', ')}`)
   console.log(`    Pflicht-Muster:  ${musterWahl.plan.map((m) => m.join(' + ')).join(' | ')}`)
   const start = Date.now()
   let res
   try {
-    res = await trainer(baueAnfrage({ profile: profil, kit, musterWahl, szenen, anzahl: 5, schwierigkeit: 'mittel' }))
+    res = await trainer(baueAnfrage({ profile: profil, kit, musterWahl, anzahl: 5, schwierigkeit: 'mittel' }))
   } catch (e) {
     if (e instanceof Fatal) throw e
     if (/^trainer 400/.test(e.message)) throw new AlteFunction(e.message)
@@ -298,14 +297,20 @@ async function erzeugeBaukasten(profil, words, cards, grammatik, verlaufZeilen, 
     `    ${sekunden} s · ${(res?.saetze || []).length} geschrieben · ${saetze.length} genommen · Pflicht-Woerter drin ${pflichtDrin}/${kit.pflicht.length}`
   )
   const d = res?.diagnose
-  if (d) console.log(`    Modell: ${d.rein} Tokens rein, ${d.raus} raus · Ende: ${d.stop}${d.anfang ? ` · Antwort-Anfang: ${JSON.stringify(d.anfang)}` : ''}`)
+  if (d) {
+    console.log(
+      `    Modell: ${d.rein} Tokens rein (+ ${d.zwischenspeicher ?? '?'} im Zwischenspeicher), ${d.raus} raus · Ende: ${d.stop}` +
+        (d.ohneDeutsch ? ` · ${d.ohneDeutsch} Saetze ohne deutsche Aufgabe verworfen` : '') +
+        (d.anfang ? ` · Antwort-Anfang: ${JSON.stringify(d.anfang)}` : '')
+    )
+  }
   for (const v of verworfen) console.log(`    fremdes Wort: ${v}`)
   for (const s of saetze) console.log(`    ${s.de}\n      -> ${s.ko}   [${s.grammatik.join(' + ')}]`)
   if (saetze.length < 3) {
     console.warn(`  Baukasten ${nr}: nur ${saetze.length} brauchbare Saetze (${res?.grund ?? '?'}) — nichts gelegt`)
     return null
   }
-  const payload = { saetze, verworfen, pflicht: kit.pflicht.map((w) => w.ko), szenen, quelle: 'baukasten' }
+  const payload = { saetze, verworfen, pflicht: kit.pflicht.map((w) => w.ko), quelle: 'baukasten' }
   const zeile = await lege({ profile: profil, typ: TYP, payload, status: 'neu' })
   /* fuer die naechste Challenge desselben Laufs zaehlt das schon als benutzt */
   verlaufZeilen.unshift({ payload, created_at: new Date().toISOString() })

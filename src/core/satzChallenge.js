@@ -225,7 +225,7 @@ export async function baukastenRunde({ profile, words, anzahl = 5, schwierigkeit
   })
   if (kit.pflicht.length + kit.auswahl.length + kit.grundstock.length < 15) throw new Error('zu-wenig-woerter')
 
-  const anfrage = baueAnfrage({ profile, kit, musterWahl, szenen: zufallsSzenen(anzahl + 1), anzahl, schwierigkeit, wunsch })
+  const anfrage = baueAnfrage({ profile, kit, musterWahl, anzahl, schwierigkeit, wunsch })
   let res
   try {
     res = await trainerSatzBaukasten(anfrage)

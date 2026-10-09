@@ -353,6 +353,9 @@ async function callModel(
     outputTokens: data.usage?.output_tokens ?? 0,
     /* 'max_tokens' = abgeschnitten — für die Fehlersuche */
     stopReason: String(data.stop_reason ?? ''),
+    /* was aus dem Zwischenspeicher kam bzw. hineingeschrieben wurde —
+       steht NICHT in input_tokens */
+    cacheTokens: (data.usage?.cache_read_input_tokens ?? 0) + (data.usage?.cache_creation_input_tokens ?? 0),
   }
 }
 
@@ -1539,18 +1542,43 @@ Deno.serve(async (req) => {
             ? 'HARD: 9-13 words per sentence. Each sentence uses BOTH of its required patterns and has at least two of {time, place, object, reason}. At least one question and one negation in the round.'
             : 'MEDIUM: 6-8 words per sentence. Besides the required pattern you MAY add one more pattern from the allowed list where it is natural. At least one question in the round.'
 
+      /* ZWEITE FASSUNG nach der Probe vom 09.10. Ohne Vor-Denken war der
+         Lauf schnell (4-5 s), aber: einmal kam nur EIN Satz, die
+         „deutsche" Zeile war Koreanisch, nur 5-6 von 8 Pflicht-Wörtern
+         kamen vor und es rutschten Fremdwörter hinein. Ein Modell, das
+         nicht vordenken darf, braucht die Denkschritte in der ANTWORT:
+           1. erst „verteilung": welche Pflicht-Wörter in welchen Satz
+           2. je Satz erst die Wort-Nummern, DANN der koreanische Satz
+              aus genau diesen Wörtern, DANN die deutsche Übersetzung
+         Die Antwortform hat dafür feste Fächer s1…sN (genau so viele
+         Sätze wie Plan-Zeilen — „nur einer" ist nicht mehr möglich) und
+         sprechende Feldnamen (koreanisch / deutsch).
+         Die Schauplätze je Satz sind gestrichen: Pflicht-Wort + Muster +
+         Schauplatz war eine Vorgabe zu viel und erzeugte erzwungene
+         Sätze („Ich gehe ins Krankenhaus, um Hunde-Erfahrung zu
+         sammeln"). */
+      const faecher = plan.map((_p: unknown, i: number) => `s${i + 1}`)
+      const nummernListe = { type: 'array', items: { type: 'integer' } }
+      const fachObjekt = (inhalt: unknown) => ({
+        type: 'object',
+        properties: Object.fromEntries(faecher.map((f: string) => [f, inhalt])),
+        required: faecher,
+        additionalProperties: false,
+      })
+      const ersteP = grundstock.length + 1
+      const letzteP = grundstock.length + pflicht.length
+
       const out = await callModel(
         [
-          'You write translation exercises for a German adult learning Korean (A1-A2). You give a sentence in German; he writes it in Korean.',
-          'You get a small KIT of numbered Korean words in three rings, and a PLAN with one line per sentence. Write exactly one sentence per plan line.',
+          'You write translation exercises for a German adult learning Korean (A1-A2). He reads a German sentence and writes it in Korean.',
+          'You get a small KIT of numbered Korean words in three rings, and a PLAN that names the grammar pattern of each sentence. You write one Korean sentence per plan line plus its German translation.',
           'RULES:',
-          '- Every content word of the Korean sentence must be a kit word (any ring). Conjugation, polite endings and particles are fine. No proper nouns.',
+          '- Every content word of the Korean sentence must be a kit word (any ring). Conjugation, polite endings and particles are fine. No proper nouns. If the sentence you have in mind needs a word that is not in the kit, write a different sentence — never add the word.',
           '- Always free and NOT kit words: particles, pronouns, question words, negation, numbers of both systems with clock times, prices and ages, 있다/없다/이다/하다/되다, and the short connectors 그리고/그래서/하지만/그런데.',
-          '- REQUIRED words must be used: every required word appears in at least one sentence, and every sentence contains at least one required word. Build each sentence around its required word.',
-          '- Each sentence must clearly use the pattern(s) named on its plan line, and plays in the setting named there.',
-          '- Besides that, only grammar from the ALLOWED PATTERNS list. Polite 해요체 throughout.',
-          '- Natural everyday Korean that a native speaker would actually say — if a combination would sound forced, pick other kit words. Vary the subject (I / you / we / he / she / people).',
-          '- The German sentence is the exact meaning of the Korean one, in plain everyday German.',
+          '- REQUIRED words: every required word appears in exactly one sentence, and every sentence contains at least one required word.',
+          '- Each sentence clearly uses the pattern(s) of its plan line. Besides that, only grammar from the ALLOWED PATTERNS list. Polite 해요체 throughout.',
+          '- ONE sentence per plan line (two short clauses only when the pattern itself joins clauses). Each sentence must make sense on its own: a plain, plausible everyday statement or question that a Korean would actually say. Sense comes first — never combine words into something odd just to use them.',
+          '- Vary the subject (I / you / we / he / she / people).',
           '',
           'ALLOWED PATTERNS:',
           erlaubt.map((g: { muster: string; name: string; beispiel: string }) => `${g.muster} (${g.name}) e.g. ${g.beispiel}`).join('\n'),
@@ -1565,7 +1593,7 @@ Deno.serve(async (req) => {
               `DIFFICULTY — ${laenge}`,
               wunschB ? `LEARNER'S WISH for this round (follow it as far as the kit allows): "${wunschB}"` : '',
               '',
-              'KIT RING 1 — REQUIRED WORDS:',
+              `KIT RING 1 — REQUIRED WORDS (numbers ${ersteP}-${letzteP}):`,
               pflicht.map(ab(grundstock.length)).join('; '),
               '',
               'KIT RING 2 — OPTIONAL WORDS (use where they fit):',
@@ -1573,10 +1601,12 @@ Deno.serve(async (req) => {
               '',
               'PLAN:',
               plan
-                .map((p: { muster: string[]; szene: string }, i: number) => `${i + 1}. setting: ${p.szene || 'everyday life'} — required pattern: ${p.muster.join(' AND ') || 'free choice from the allowed list'}`)
+                .map((p: { muster: string[] }, i: number) => `s${i + 1}: pattern ${p.muster.join(' AND ') || '(free choice from the allowed list)'}`)
                 .join('\n'),
               '',
-              `Reply with ONLY this JSON, ${plan.length} sentences: {"saetze":[{"nr":1,"de":"<German task sentence>","ko":"<Korean model answer>","w":[<numbers of ALL kit words used>]}, ...]}`,
+              'HOW TO ANSWER — work in this order:',
+              `1. "verteilung": for every sentence ${faecher[0]}…${faecher[faecher.length - 1]}, the numbers of the REQUIRED words (${ersteP}-${letzteP}) you put into it. Spread ALL required words over the sentences, each number exactly once, and give each sentence the required word(s) that go naturally with its pattern.`,
+              '2. "saetze": for every sentence, first "kit_nummern" = the numbers of ALL kit words the sentence will use (its required words from step 1 plus basic/optional words), then "koreanisch" = the Korean sentence built from exactly these words, then "deutsch" = the same sentence in GERMAN (German words in Latin letters — this is what the learner reads; it must never contain Korean).',
             ]
               .filter((z) => z !== '')
               .join('\n'),
@@ -1593,22 +1623,19 @@ Deno.serve(async (req) => {
           schema: {
             type: 'object',
             properties: {
-              saetze: {
-                type: 'array',
-                items: {
-                  type: 'object',
-                  properties: {
-                    nr: { type: 'integer' },
-                    de: { type: 'string' },
-                    ko: { type: 'string' },
-                    w: { type: 'array', items: { type: 'integer' } },
-                  },
-                  required: ['nr', 'de', 'ko', 'w'],
-                  additionalProperties: false,
+              verteilung: fachObjekt(nummernListe),
+              saetze: fachObjekt({
+                type: 'object',
+                properties: {
+                  kit_nummern: nummernListe,
+                  koreanisch: { type: 'string', description: 'The Korean sentence, in Hangul.' },
+                  deutsch: { type: 'string', description: 'The same sentence translated into German. Latin letters only, no Hangul.' },
                 },
-              },
+                required: ['kit_nummern', 'koreanisch', 'deutsch'],
+                additionalProperties: false,
+              }),
             },
-            required: ['saetze'],
+            required: ['verteilung', 'saetze'],
             additionalProperties: false,
           },
         }
@@ -1617,19 +1644,27 @@ Deno.serve(async (req) => {
       type SatzB = { nr: number; de: string; ko: string; woerter: string[] }
       const saetzeB: SatzB[] = []
       let grundB = 'ok'
+      let ohneDeutsch = 0
       try {
         const j = JSON.parse(out.text.replace(/^```(?:json)?/m, '').replace(/```\s*$/m, '').trim())
-        const roh = Array.isArray(j?.saetze) ? j.saetze : []
-        if (!roh.length) grundB = 'keine-saetze'
-        roh.forEach((s: { nr?: unknown; de?: unknown; ko?: unknown; w?: unknown }, i: number) => {
-          const de = typeof s?.de === 'string' ? s.de.trim().slice(0, 200) : ''
-          const ko = typeof s?.ko === 'string' ? s.ko.normalize('NFC').trim().slice(0, 200) : ''
-          if (!de || !ko) return
-          const nummern = Array.isArray(s?.w) ? s.w.map((n: unknown) => Number(n)).filter((n: number) => Number.isInteger(n) && n >= 1 && n <= alle.length) : []
+        faecher.forEach((f: string, i: number) => {
+          const s = j?.saetze?.[f]
+          const de = typeof s?.deutsch === 'string' ? s.deutsch.trim().slice(0, 200) : ''
+          const ko = typeof s?.koreanisch === 'string' ? s.koreanisch.normalize('NFC').trim().slice(0, 200) : ''
+          if (!de || !ko || !/[가-힣]/.test(ko)) return
+          /* Die Aufgabe muss DEUTSCH sein — in der ersten Probe stand
+             dort der koreanische Satz noch einmal */
+          if (/[가-힣]/.test(de)) {
+            ohneDeutsch++
+            return
+          }
+          const nummern = Array.isArray(s?.kit_nummern)
+            ? s.kit_nummern.map((n: unknown) => Number(n)).filter((n: number) => Number.isInteger(n) && n >= 1 && n <= alle.length)
+            : []
           const woerter = [...new Set(nummern.map((n: number) => alle[n - 1].ko))] as string[]
-          const nr = Number(s?.nr)
-          saetzeB.push({ nr: Number.isInteger(nr) && nr >= 1 && nr <= plan.length ? nr : i + 1, de, ko, woerter })
+          saetzeB.push({ nr: i + 1, de, ko, woerter })
         })
+        if (!saetzeB.length) grundB = ohneDeutsch ? 'aufgabe-nicht-deutsch' : 'keine-saetze'
       } catch {
         grundB = 'kein-json'
       }
@@ -1647,7 +1682,9 @@ Deno.serve(async (req) => {
         diagnose: {
           stop: out.stopReason,
           rein: out.inputTokens,
+          zwischenspeicher: out.cacheTokens,
           raus: out.outputTokens,
+          ohneDeutsch,
           ...(grundB === 'ok' ? {} : { anfang: out.text.slice(0, 200) }),
         },
       })

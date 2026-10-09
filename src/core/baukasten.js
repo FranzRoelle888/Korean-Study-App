@@ -99,7 +99,10 @@ export function baueBaukasten({ words, cards, zuletzt = new Set(), anzahl = 5, s
     const ko = norm(w.ko)
     const s = stand.get(w.id)
     if (!ko || !s || (s.reps === 0 && s.lapses === 0)) continue
-    if (w.pos === 'number' || w.pos === 'phrase' || [...ko].length > 10 || /[?!.,]/.test(ko)) continue
+    if (w.pos === 'number' || w.pos === 'phrase' || w.pos === 'interjection' || [...ko].length > 10 || /[?!.,]/.test(ko)) continue
+    /* Was ohnehin immer erlaubt ist (어디, 같이, 너 …), braucht keinen
+       Platz im Baukasten — und taugt nicht als Pflicht-Wort (Probe 09.10.) */
+    if (FREI.includes(ko)) continue
     if (gesehen.has(ko)) continue
     gesehen.add(ko)
     brauchbar.push({ ko, en: String(w.en ?? '').slice(0, 60), pos: w.pos || null, rang: w.rang ?? 99999, neu: Date.now() - (w.createdAt || 0) < 7 * 86400000, ...s })
@@ -233,7 +236,10 @@ export function waehleMuster({ grammatik, saetze = 6, schwierigkeit = 'mittel', 
 }
 
 /* ---------- Die Anfrage an die Trainer-Function ---------- */
-export function baueAnfrage({ profile, kit, musterWahl, szenen, anzahl, schwierigkeit, wunsch = '' }) {
+/* Schauplätze je Satz gibt es hier bewusst NICHT mehr (Probe 09.10.):
+   Pflicht-Wort + Muster + Schauplatz war eine Vorgabe zu viel und
+   erzeugte erzwungene Sätze. Die Abwechslung kommt aus den Wörtern. */
+export function baueAnfrage({ profile, kit, musterWahl, anzahl, schwierigkeit, wunsch = '' }) {
   return {
     action: 'satzBaukasten',
     profile,
@@ -245,7 +251,7 @@ export function baueAnfrage({ profile, kit, musterWahl, szenen, anzahl, schwieri
     auswahl: kit.auswahl.map(({ ko, en }) => ({ ko, en })),
     erlaubt: musterWahl.erlaubt,
     /* ein Satz mehr als gebraucht — die eine Reserve */
-    plan: musterWahl.plan.slice(0, anzahl + 1).map((muster, i) => ({ muster, szene: szenen[i] ?? '' })),
+    plan: musterWahl.plan.slice(0, anzahl + 1).map((muster) => ({ muster })),
   }
 }
 
@@ -346,7 +352,8 @@ export function pruefeSaetze({ saetze, kit, plan = [], anzahl }) {
   const knapp = []
   const verworfen = []
   for (const s of saetze || []) {
-    if (!s?.de || !s?.ko) continue
+    /* die Aufgabe muss in der bekannten Sprache stehen, nicht auf Koreanisch */
+    if (!s?.de || !s?.ko || /[가-힣]/.test(s.de)) continue
     const fremd = fremdIn(s.ko)
     const satz = {
       de: s.de,
