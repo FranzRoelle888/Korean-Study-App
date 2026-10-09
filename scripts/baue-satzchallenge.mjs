@@ -267,6 +267,7 @@ async function erzeugeBaukasten(profil, words, cards, grammatik, verlaufZeilen, 
     cards: cards.map((c) => ({ wordId: c.word_id, stab: c.stab, lapses: c.lapses, reps: c.reps })),
     zuletzt: verlauf.woerter,
     anzahl: 5,
+    schwierigkeit: 'mittel',
   })
   const musterWahl = waehleMuster({
     grammatik,

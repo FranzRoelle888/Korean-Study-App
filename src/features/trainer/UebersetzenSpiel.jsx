@@ -15,7 +15,7 @@ import Sprachantwort from '../../shared/Sprachantwort'
 /* ============================================================
    ÜBERSETZUNGSSPIEL (Trainer, Franz 07.09.)
 
-   Vorab wählen: 3 / 5 / 10 Sätze, leicht / mittel / schwer, dazu ein
+   Vorab wählen: 3 / 5 Sätze, leicht / mittel / schwer, dazu ein
    freier Wunsch („mit Vergangenheit", „Essen"). Dann erzeugt der
    Trainer deutsche Sätze AUSSCHLIESSLICH aus den Bibliothekswörtern
    und den abgehakten Grammatikpunkten — ohne Glossen, nur der Satz.
@@ -24,7 +24,8 @@ import Sprachantwort from '../../shared/Sprachantwort'
    Nichts wird gespeichert außer dem Journal-Eintrag der Bewertung.
    ============================================================ */
 
-const ANZAHLEN = [3, 5, 10]
+/* 10 gestrichen (Franz 09.10.): 3 oder 5 — ein Aufruf, schnelle Runde */
+const ANZAHLEN = [3, 5]
 const STUFEN = ['leicht', 'mittel', 'schwer']
 /* Antworten tippen oder sprechen (Franz 08.09.) */
 const MODI = ['text', 'audio']

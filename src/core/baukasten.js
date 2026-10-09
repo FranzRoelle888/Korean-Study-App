@@ -29,7 +29,13 @@ import { rechneHaeyo, rechneAttributiv } from './haeyo.js'
 /* ---------- Die Stellschrauben ----------
    Startwerte vom 09.10. — nach der Probe hier drehen, nirgends sonst. */
 export const RINGE = {
-  pflichtJeSatz: 1.6 /* 5 Sätze -> 8 Pflicht-Wörter, 3 -> 5 */,
+  /* Pflicht-Wörter je Satz, nach Schwierigkeit (Übersetzungsspiel):
+     bei 5 Sätzen 5 / 8 / 10, bei 3 Sätzen 3 / 5 / 6. Die Tages-Challenge
+     läuft immer auf „mittel". */
+  pflichtJeSatz: { leicht: 1, mittel: 1.6, schwer: 2 },
+  /* „leicht" zieht die Auswahl aus den häufigeren 60 % der Bibliothek,
+     „schwer" aus den selteneren 60 % */
+  auswahlAnteil: 0.6,
   auswahlJeSatz: 6 /* 5 Sätze -> 30 Auswahl-Wörter */,
   grundstock: 100,
   grundstockFest: 60 /* die häufigsten bleiben immer drin … */,
@@ -68,11 +74,10 @@ export function mische(liste) {
    words:   [{ id, ko, en, pos, rang, createdAt (ms) }]
    cards:   [{ wordId, stab, lapses, reps }]
    zuletzt: Set der Wörter aus den letzten 14 Tagen
-   tabu:    Set — Wörter eines Geschwister-Baukastens (10er-Runde in
-            zwei Hälften), die hier nicht noch einmal vorkommen sollen
-   grundstock: schon gezogener Grundstock (zweite Hälfte teilt ihn)
+   schwierigkeit: leicht | mittel | schwer — mehr Pflicht-Wörter und
+            seltenere Auswahl, je schwerer
    -> { pflicht, auswahl, grundstock } je [{ ko, en, pos }] */
-export function baueBaukasten({ words, cards, zuletzt = new Set(), anzahl = 5, tabu = new Set(), grundstock = null, auswahlFaktor = 1 }) {
+export function baueBaukasten({ words, cards, zuletzt = new Set(), anzahl = 5, schwierigkeit = 'mittel', auswahlFaktor = 1 }) {
   /* Lernstand je Wort aus seinen Karten */
   const stand = new Map()
   for (const c of cards) {
@@ -100,15 +105,15 @@ export function baueBaukasten({ words, cards, zuletzt = new Set(), anzahl = 5, t
     brauchbar.push({ ko, en: String(w.en ?? '').slice(0, 60), pos: w.pos || null, rang: w.rang ?? 99999, neu: Date.now() - (w.createdAt || 0) < 7 * 86400000, ...s })
   }
   const schlank = (w) => ({ ko: w.ko, en: w.en, pos: w.pos })
-  const pflichtZahl = Math.max(2, Math.round(anzahl * RINGE.pflichtJeSatz))
+  const pflichtZahl = Math.max(2, Math.round(anzahl * (RINGE.pflichtJeSatz[schwierigkeit] ?? RINGE.pflichtJeSatz.mittel)))
 
   /* Kleine Bibliothek: kein Sieben, alles ist erlaubt */
   const klein = brauchbar.length <= RINGE.allesBis
 
   /* --- Grundstock: häufig UND sicher. Reicht „sicher" nicht für 100,
          wird schrittweise gelockert (Stabilität 21 -> 7 -> egal). --- */
-  let stock = grundstock
-  if (!stock) {
+  let stock
+  {
     const nachRang = [...brauchbar].sort((a, b) => a.rang - b.rang)
     const sicher = nachRang.filter((w) => w.stabMax >= 21 && !w.neu)
     const halb = nachRang.filter((w) => w.stabMax >= 7 && w.stabMax < 21 && !w.neu)
@@ -123,7 +128,7 @@ export function baueBaukasten({ words, cards, zuletzt = new Set(), anzahl = 5, t
   const imStock = new Set(stock.map((w) => w.ko))
 
   /* --- Pflicht: neu / wackelig / reif-aber-lange-nicht-dran --- */
-  const frei = brauchbar.filter((w) => !imStock.has(w.ko) && !tabu.has(w.ko))
+  const frei = brauchbar.filter((w) => !imStock.has(w.ko))
   const pflicht = []
   const nimm = (topf, n) => {
     /* erst, was in den letzten 14 Tagen NICHT dran war */
@@ -151,7 +156,16 @@ export function baueBaukasten({ words, cards, zuletzt = new Set(), anzahl = 5, t
     return { pflicht: pflicht.map(schlank), auswahl: [], grundstock: stock.length ? stock : uebrig.map(schlank) }
   }
   const auswahlZahl = Math.round(anzahl * RINGE.auswahlJeSatz * auswahlFaktor)
-  const frisch = mische(uebrig.filter((w) => !zuletzt.has(w.ko)))
+  let frischAlle = uebrig.filter((w) => !zuletzt.has(w.ko))
+  /* Schwierigkeit: „leicht" nimmt die geläufigeren Wörter, „schwer" die
+     selteneren — aber nur, wenn danach noch genug Auswahl bleibt */
+  if (schwierigkeit !== 'mittel') {
+    const nachRang = [...frischAlle].sort((a, b) => a.rang - b.rang)
+    const n = Math.ceil(nachRang.length * RINGE.auswahlAnteil)
+    const teil = schwierigkeit === 'leicht' ? nachRang.slice(0, n) : nachRang.slice(-n)
+    if (teil.length >= auswahlZahl) frischAlle = teil
+  }
+  const frisch = mische(frischAlle)
   const schonDran = mische(uebrig.filter((w) => zuletzt.has(w.ko)))
   const auswahl = []
   for (const [pos, anteil] of Object.entries(QUOTE)) {

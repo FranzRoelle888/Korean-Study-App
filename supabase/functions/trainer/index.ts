@@ -1582,9 +1582,12 @@ Deno.serve(async (req) => {
               .join('\n'),
           },
         ],
-        /* Fünf, sechs kurze Sätze sind einige hundert Tokens; 4000 ist
-           reine Reserve und kostet nichts, solange sie leer bleibt */
-        4000,
+        /* Die API verlangt eine Obergrenze — ganz weglassen geht nicht.
+           16000 ist so hoch, dass sie nie greift (Franz 09.10.: lieber
+           etwas teurer als abgeschnitten). Bezahlt wird nur, was das
+           Modell wirklich schreibt: fünf, sechs kurze Sätze sind einige
+           hundert Tokens. */
+        16000,
         {
           ohneDenken: true,
           schema: {

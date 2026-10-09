@@ -197,73 +197,48 @@ async function ladeVerlauf(profile) {
   return leseVerlauf(zeilen)
 }
 
-/* Eine Runde aus dem Baukasten. Bis 5 Sätze ein Aufruf; 10 Sätze laufen
-   als zwei Hälften nebeneinander, mit getrennten Pflicht-Wörtern und
-   Mustern (damit sich nichts doppelt) und gemeinsamem Grundstock.
-   Läuft ein Aufruf in die 25-Sekunden-Grenze oder reißt das Netz, gibt
+/* Eine Runde aus dem Baukasten: EIN Aufruf für 3 oder 5 Sätze (plus
+   ein Reserve-Satz). Die Schwierigkeit wirkt an drei Stellen — in der
+   Wortauswahl (mehr Pflicht-Wörter, seltenere Auswahl), in den Mustern
+   (leicht: eines aus Stufe 1, schwer: zwei je Satz mit Verbindungen)
+   und in der Satzlänge, die die Function vorgibt.
+   Läuft der Aufruf in die 25-Sekunden-Grenze oder reißt das Netz, gibt
    es genau EINEN zweiten Versuch — nie wegen der Satzqualität.
    -> { saetze: [{ de, ko, woerter, grammatik }], verworfen } */
 export async function baukastenRunde({ profile, words, anzahl = 5, schwierigkeit = 'mittel', wunsch = '', merken = false }) {
   const [karten, grammatik, verlauf] = await Promise.all([ladeKartenStand(profile), grammatikMitStand(profile), ladeVerlauf(profile)])
-  const haelften = anzahl > 5 ? [Math.ceil(anzahl / 2), Math.floor(anzahl / 2)] : [anzahl]
-  /* je Hälfte ein Reserve-Satz; die Muster werden in EINEM Zug verteilt,
-     damit beide Hälften verschiedene bekommen */
   const musterWahl = waehleMuster({
     grammatik,
-    saetze: haelften.reduce((s, n) => s + n + 1, 0),
+    saetze: anzahl + 1,
     schwierigkeit,
     musterZuletzt: verlauf.musterZuletzt,
     letztePflicht: verlauf.letztePflicht,
   })
-  const szenen = zufallsSzenen(musterWahl.plan.length)
-  const teile = []
-  let ab = 0
-  let erster = null
-  for (const n of haelften) {
-    const kit = baueBaukasten({
-      words,
-      cards: karten,
-      zuletzt: verlauf.woerter,
-      anzahl: n,
-      /* mit freiem Wunsch etwas mehr Auswahl, damit er erfüllbar ist */
-      auswahlFaktor: wunsch ? 1.5 : 1,
-      tabu: erster ? new Set([...erster.pflicht, ...erster.auswahl].map((w) => w.ko)) : new Set(),
-      grundstock: erster ? erster.grundstock : null,
-    })
-    if (!erster) erster = kit
-    const plan = musterWahl.plan.slice(ab, ab + n + 1)
-    teile.push({ n, kit, plan, szenen: szenen.slice(ab, ab + n + 1) })
-    ab += n + 1
-  }
-  if (erster.pflicht.length + erster.auswahl.length + erster.grundstock.length < 15) throw new Error('zu-wenig-woerter')
+  const kit = baueBaukasten({
+    words,
+    cards: karten,
+    zuletzt: verlauf.woerter,
+    anzahl,
+    schwierigkeit,
+    /* mit freiem Wunsch etwas mehr Auswahl, damit er erfüllbar ist */
+    auswahlFaktor: wunsch ? 1.5 : 1,
+  })
+  if (kit.pflicht.length + kit.auswahl.length + kit.grundstock.length < 15) throw new Error('zu-wenig-woerter')
 
-  const hole = async (teil) => {
-    const anfrage = baueAnfrage({ profile, kit: teil.kit, musterWahl: { erlaubt: musterWahl.erlaubt, plan: teil.plan }, szenen: teil.szenen, anzahl: teil.n, schwierigkeit, wunsch })
-    let res
-    try {
-      res = await trainerSatzBaukasten(anfrage)
-    } catch (e) {
-      const technisch = e?.message === 'zeit' || e?.message === 'netz' || /Failed to fetch|Load failed|trainer 5\d\d/.test(e?.message || '')
-      if (!technisch) throw e
-      res = await trainerSatzBaukasten(anfrage)
-    }
-    return pruefeSaetze({ saetze: res?.saetze, kit: teil.kit, plan: teil.plan, anzahl: teil.n })
+  const anfrage = baueAnfrage({ profile, kit, musterWahl, szenen: zufallsSzenen(anzahl + 1), anzahl, schwierigkeit, wunsch })
+  let res
+  try {
+    res = await trainerSatzBaukasten(anfrage)
+  } catch (e) {
+    const technisch = e?.message === 'zeit' || e?.message === 'netz' || /Failed to fetch|Load failed|trainer 5\d\d/.test(e?.message || '')
+    if (!technisch) throw e
+    res = await trainerSatzBaukasten(anfrage)
   }
-  const ergebnisse = await Promise.allSettled(teile.map(hole))
-  const saetze = []
-  const verworfen = []
-  for (const r of ergebnisse) {
-    if (r.status !== 'fulfilled') continue
-    saetze.push(...r.value.saetze)
-    verworfen.push(...r.value.verworfen)
-  }
-  if (!saetze.length) {
-    const grund = ergebnisse.find((r) => r.status === 'rejected')?.reason
-    throw grund || new Error('leer')
-  }
+  const { saetze, verworfen } = pruefeSaetze({ saetze: res?.saetze, kit, plan: musterWahl.plan, anzahl })
+  if (!saetze.length) throw new Error(`leer:${res?.grund || '?'}`)
   if (verworfen.length) console.warn('Baukasten: fremde Wörter in', verworfen.slice(0, 4))
   if (merken) merkeSpielRunde(profile, saetze)
-  return { saetze: saetze.slice(0, anzahl), verworfen }
+  return { saetze, verworfen }
 }
 
 /* ---------- Vorladen fürs Übersetzungsspiel ----------
