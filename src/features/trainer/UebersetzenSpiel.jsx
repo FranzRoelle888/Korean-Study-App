@@ -1,6 +1,14 @@
 import { useState } from 'react'
 import ClearableInput from '../../shared/ClearableInput'
-import { nutzbareGrammatik, zufallsSzenen, zufallsWoerter } from '../../core/satzChallenge'
+import {
+  nutzbareGrammatik,
+  zufallsSzenen,
+  zufallsWoerter,
+  hatBaukasten,
+  baukastenRunde,
+  nimmVorgeladen,
+  ladeVor,
+} from '../../core/satzChallenge'
 import { trainerSatzChallengeErzeugen, trainerSatzChallengeBewerten } from './trainerApi'
 import Sprachantwort from '../../shared/Sprachantwort'
 
@@ -35,9 +43,42 @@ function UebersetzenSpiel({ profile, words, onExit, t }) {
   const [fehler, setFehler] = useState('')
   const [laedtBewertung, setLaedtBewertung] = useState(false)
 
+  function zeigeSaetze(roh) {
+    const liste = roh.slice(0, anzahl).map((s, i) => ({ ...s, nr: i + 1 }))
+    setSaetze(liste)
+    setAntworten(liste.map(() => ''))
+    setAudios(liste.map(() => null))
+    setBewertung(null)
+    setPhase('antworten')
+  }
+
+  /* Satz-Baukasten (Franz 09.10., vorerst nur seine Seite): die App
+     wählt Wörter und Muster, das Modell schreibt nur noch. Liegt eine
+     vorgeladene Runde mit denselben Einstellungen bereit, steht sie
+     sofort da. Danach wird im Hintergrund die nächste geholt.
+     -> true, wenn die Runde steht; false, wenn die Function die neue
+     Aktion noch nicht kennt (dann läuft der alte Weg). */
+  async function starteBaukasten() {
+    const w = wunsch.trim()
+    try {
+      const vor = w ? null : nimmVorgeladen(profile.id, anzahl, stufe)
+      const roh = vor || (await baukastenRunde({ profile: profile.id, words, anzahl, schwierigkeit: stufe, wunsch: w, merken: true })).saetze
+      zeigeSaetze(roh)
+      ladeVor({ profile: profile.id, words, anzahl, stufe })
+      return true
+    } catch (e) {
+      const msg = e?.message || ''
+      if (/^trainer 400/.test(msg)) return false
+      setFehler(msg === 'rate-limit' ? t.challengeLimit : `${t.spielFehler} (${msg === 'zeit' ? 'timeout' : msg || '?'})`)
+      setPhase('setup')
+      return true
+    }
+  }
+
   async function starten() {
     setPhase('laedt')
     setFehler('')
+    if (hatBaukasten(profile.id) && (await starteBaukasten())) return
     try {
       const grammatik = await nutzbareGrammatik(profile.id)
       const woerter = words.map((w) => ({ ko: w.ko, en: w.en }))

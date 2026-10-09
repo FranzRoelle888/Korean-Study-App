@@ -20,7 +20,8 @@ import { supabase } from './supabaseClient'
 import { getActiveProfile, todayStr } from './storage'
 import { TOPIK1_GRAMMATIK } from './inventare/topik1-grammatik'
 import { GER_GRAMMATIK } from './inventare/ger-grammatik'
-import { trainerSatzChallengeErzeugen } from '../features/trainer/trainerApi'
+import { trainerSatzChallengeErzeugen, trainerSatzBaukasten } from '../features/trainer/trainerApi'
+import { RINGE, baueBaukasten, waehleMuster, baueAnfrage, pruefeSaetze, leseVerlauf } from './baukasten'
 import { mischeListe, zufallsSzenen } from './szenen'
 
 /* Schauplaetze liegen seit 14.09. in szenen.js, damit der Nachtlauf
@@ -122,8 +123,209 @@ async function zuletztBenutzt(profile) {
   return { woerter: [...woerter], grammatik: [...grammatik] }
 }
 
+/* ============================================================
+   SATZ-BAUKASTEN (Franz 09.10.) — vorerst nur Franz' Seite
+   Die Auswahl-Logik selbst steht in baukasten.js (die teilt sich die
+   App mit dem Nachtlauf). Hier nur, was Datenbank und Browser braucht:
+   Lernstand holen, Function rufen, Runde merken.
+   ============================================================ */
+export const hatBaukasten = (profileId) => profileId === 'ko'
+
+/* Der ganze Kanon mit Haken (sicher ja/nein) — baukasten.js entscheidet,
+   was erlaubt ist und was Pflicht wird */
+async function grammatikMitStand(profileId) {
+  const k = KANON.ko
+  let sicher = new Set()
+  try {
+    const { data } = await supabase
+      .from('inventory_status')
+      .select('item_id')
+      .eq('profile', profileId)
+      .eq('kind', 'grammatik')
+      .eq('status', 'sicher')
+    if (data) sicher = new Set(data.map((r) => r.item_id))
+  } catch {
+    /* ohne Netz gibt es ohnehin keine Runde */
+  }
+  return k.liste.map((g) => ({
+    id: g.id,
+    stufe: g.stufe,
+    muster: g.muster,
+    name: g.name,
+    beispiel: k.satz(g),
+    sicher: sicher.has(`${k.praefix}-${g.id}`),
+  }))
+}
+
+/* Lernstand der Karten (Stabilität, Aussetzer) — eine kleine Abfrage,
+   damit Spiel und Challenge keine Karten durchgereicht bekommen müssen */
+async function ladeKartenStand(profile) {
+  const { data, error } = await supabase.from('cards').select('word_id,stab,lapses,reps').eq('profile', profile)
+  if (error) throw error
+  return (data || []).map((c) => ({ wordId: c.word_id, stab: c.stab, lapses: c.lapses, reps: c.reps }))
+}
+
+/* Spielrunden landen nicht in der Bank — für die Rotation merkt sich
+   das Gerät die letzten 14 Tage selbst (gleiche Form wie Bank-Zeilen) */
+const SPIEL_KEY = (profile) => `baukasten-spiel:${profile}`
+function leseSpielRunden(profile) {
+  try {
+    const seit = Date.now() - RINGE.rotationTage * 86400000
+    return (JSON.parse(localStorage.getItem(SPIEL_KEY(profile))) || []).filter((r) => new Date(r.created_at).getTime() > seit)
+  } catch {
+    return []
+  }
+}
+function merkeSpielRunde(profile, saetze) {
+  try {
+    const zeile = { created_at: new Date().toISOString(), payload: { saetze: saetze.map((s) => ({ woerter: s.woerter, grammatik: s.grammatik })) } }
+    localStorage.setItem(SPIEL_KEY(profile), JSON.stringify([zeile, ...leseSpielRunden(profile)].slice(0, 40)))
+  } catch {
+    /* egal */
+  }
+}
+
+async function ladeVerlauf(profile) {
+  const seit = new Date(Date.now() - RINGE.rotationTage * 86400000).toISOString()
+  const { data } = await supabase
+    .from('exercise_bank')
+    .select('payload,created_at')
+    .eq('profile', profile)
+    .eq('typ', TYP)
+    .gte('created_at', seit)
+  const zeilen = [...(data || []), ...leseSpielRunden(profile)].sort((a, b) => (a.created_at < b.created_at ? 1 : -1))
+  return leseVerlauf(zeilen)
+}
+
+/* Eine Runde aus dem Baukasten. Bis 5 Sätze ein Aufruf; 10 Sätze laufen
+   als zwei Hälften nebeneinander, mit getrennten Pflicht-Wörtern und
+   Mustern (damit sich nichts doppelt) und gemeinsamem Grundstock.
+   Läuft ein Aufruf in die 25-Sekunden-Grenze oder reißt das Netz, gibt
+   es genau EINEN zweiten Versuch — nie wegen der Satzqualität.
+   -> { saetze: [{ de, ko, woerter, grammatik }], verworfen } */
+export async function baukastenRunde({ profile, words, anzahl = 5, schwierigkeit = 'mittel', wunsch = '', merken = false }) {
+  const [karten, grammatik, verlauf] = await Promise.all([ladeKartenStand(profile), grammatikMitStand(profile), ladeVerlauf(profile)])
+  const haelften = anzahl > 5 ? [Math.ceil(anzahl / 2), Math.floor(anzahl / 2)] : [anzahl]
+  /* je Hälfte ein Reserve-Satz; die Muster werden in EINEM Zug verteilt,
+     damit beide Hälften verschiedene bekommen */
+  const musterWahl = waehleMuster({
+    grammatik,
+    saetze: haelften.reduce((s, n) => s + n + 1, 0),
+    schwierigkeit,
+    musterZuletzt: verlauf.musterZuletzt,
+    letztePflicht: verlauf.letztePflicht,
+  })
+  const szenen = zufallsSzenen(musterWahl.plan.length)
+  const teile = []
+  let ab = 0
+  let erster = null
+  for (const n of haelften) {
+    const kit = baueBaukasten({
+      words,
+      cards: karten,
+      zuletzt: verlauf.woerter,
+      anzahl: n,
+      /* mit freiem Wunsch etwas mehr Auswahl, damit er erfüllbar ist */
+      auswahlFaktor: wunsch ? 1.5 : 1,
+      tabu: erster ? new Set([...erster.pflicht, ...erster.auswahl].map((w) => w.ko)) : new Set(),
+      grundstock: erster ? erster.grundstock : null,
+    })
+    if (!erster) erster = kit
+    const plan = musterWahl.plan.slice(ab, ab + n + 1)
+    teile.push({ n, kit, plan, szenen: szenen.slice(ab, ab + n + 1) })
+    ab += n + 1
+  }
+  if (erster.pflicht.length + erster.auswahl.length + erster.grundstock.length < 15) throw new Error('zu-wenig-woerter')
+
+  const hole = async (teil) => {
+    const anfrage = baueAnfrage({ profile, kit: teil.kit, musterWahl: { erlaubt: musterWahl.erlaubt, plan: teil.plan }, szenen: teil.szenen, anzahl: teil.n, schwierigkeit, wunsch })
+    let res
+    try {
+      res = await trainerSatzBaukasten(anfrage)
+    } catch (e) {
+      const technisch = e?.message === 'zeit' || e?.message === 'netz' || /Failed to fetch|Load failed|trainer 5\d\d/.test(e?.message || '')
+      if (!technisch) throw e
+      res = await trainerSatzBaukasten(anfrage)
+    }
+    return pruefeSaetze({ saetze: res?.saetze, kit: teil.kit, plan: teil.plan, anzahl: teil.n })
+  }
+  const ergebnisse = await Promise.allSettled(teile.map(hole))
+  const saetze = []
+  const verworfen = []
+  for (const r of ergebnisse) {
+    if (r.status !== 'fulfilled') continue
+    saetze.push(...r.value.saetze)
+    verworfen.push(...r.value.verworfen)
+  }
+  if (!saetze.length) {
+    const grund = ergebnisse.find((r) => r.status === 'rejected')?.reason
+    throw grund || new Error('leer')
+  }
+  if (verworfen.length) console.warn('Baukasten: fremde Wörter in', verworfen.slice(0, 4))
+  if (merken) merkeSpielRunde(profile, saetze)
+  return { saetze: saetze.slice(0, anzahl), verworfen }
+}
+
+/* ---------- Vorladen fürs Übersetzungsspiel ----------
+   Nach einer Runde holt die App im Hintergrund die nächste mit
+   denselben Einstellungen (ohne Wunsch). Der Knopf antwortet dann
+   sofort. Liegt auf dem Gerät, hält 7 Tage, wird beim Benutzen
+   verbraucht. */
+const VOR_KEY = (profile) => `baukasten-vor:${profile}`
+export function nimmVorgeladen(profile, anzahl, stufe) {
+  try {
+    const d = JSON.parse(localStorage.getItem(VOR_KEY(profile)))
+    if (!d || d.anzahl !== anzahl || d.stufe !== stufe || Date.now() - d.t > 7 * 86400000) return null
+    localStorage.removeItem(VOR_KEY(profile))
+    return d.saetze
+  } catch {
+    return null
+  }
+}
+let laedtVor = false
+export function ladeVor({ profile, words, anzahl, stufe }) {
+  if (laedtVor) return
+  try {
+    const d = JSON.parse(localStorage.getItem(VOR_KEY(profile)))
+    if (d && d.anzahl === anzahl && d.stufe === stufe && Date.now() - d.t < 7 * 86400000) return
+  } catch {
+    /* egal */
+  }
+  laedtVor = true
+  baukastenRunde({ profile, words, anzahl, schwierigkeit: stufe, merken: true })
+    .then((r) => {
+      if (r.saetze.length >= Math.min(3, anzahl)) {
+        localStorage.setItem(VOR_KEY(profile), JSON.stringify({ t: Date.now(), anzahl, stufe, saetze: r.saetze }))
+      }
+    })
+    .catch(() => {})
+    .finally(() => {
+      laedtVor = false
+    })
+}
+
 /* Beim Trainer erzeugen und in die Bank legen -> Bankzeile oder null */
 async function erzeugeInBank(profile, words) {
+  if (hatBaukasten(profile)) {
+    try {
+      const runde = await baukastenRunde({ profile, words, anzahl: 5, schwierigkeit: 'mittel' })
+      if (runde.saetze.length < 3) return null
+      const { data, error } = await supabase
+        .from('exercise_bank')
+        .insert({ profile, typ: TYP, payload: { saetze: runde.saetze, verworfen: runde.verworfen, quelle: 'baukasten' }, status: 'neu' })
+        .select('id,payload')
+        .single()
+      if (error) throw error
+      return data
+    } catch (e) {
+      /* 400 = die Function kennt die neue Aktion noch nicht (noch nicht
+         neu deployt) -> der alte Weg darunter springt ein */
+      if (!/^trainer 400/.test(e?.message || '')) {
+        console.warn('Baukasten-Runde gescheitert:', e?.message || e)
+        return null
+      }
+    }
+  }
   const [grammatik, vermeiden] = await Promise.all([nutzbareGrammatik(profile), zuletztBenutzt(profile)])
   const woerter = words.map((w) => ({ ko: w.ko, en: w.en }))
   const res = await trainerSatzChallengeErzeugen({

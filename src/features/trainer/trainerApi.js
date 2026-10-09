@@ -10,20 +10,33 @@ import { accessToken } from '../../core/auth'
 
 const FN_URL = `${SUPABASE_URL}/functions/v1/trainer`
 
-async function call(body) {
+async function call(body, { timeoutMs } = {}) {
   /* Seit dem Login weist sich die App mit dem Nutzer-Token aus —
      die Edge Function lehnt (bei eingeschalteter JWT-Prüfung)
      alles andere ab. */
   const token = await accessToken()
-  const r = await fetch(FN_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      apikey: SUPABASE_KEY,
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(body),
-  })
+  /* Mit timeoutMs bricht die App selbst ab, statt in Safaris stille
+     60-Sekunden-Grenze zu laufen — der Aufrufer kann dann sauber
+     neu versuchen (Fehler 'zeit'). */
+  const abbruch = timeoutMs ? new AbortController() : null
+  const wecker = abbruch ? setTimeout(() => abbruch.abort(), timeoutMs) : null
+  let r
+  try {
+    r = await fetch(FN_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(body),
+      signal: abbruch?.signal,
+    })
+  } catch (e) {
+    throw new Error(abbruch?.signal.aborted ? 'zeit' : e?.message || 'netz')
+  } finally {
+    if (wecker) clearTimeout(wecker)
+  }
   if (r.status === 429) throw new Error('rate-limit')
   if (!r.ok) throw new Error(`trainer ${r.status}`)
   return r.json()
@@ -181,6 +194,14 @@ export function trainerSatzChallengeErzeugen({
     szenen,
     fokus,
   })
+}
+
+/* Satz-Baukasten (Franz 09.10.): die App hat Wörter und Muster schon
+   ausgewählt (core/baukasten.js, baueAnfrage), das Modell schreibt nur
+   noch -> { saetze: [{nr, de, ko, woerter}], grund }. Bricht nach 25 s
+   selbst ab (Fehler 'zeit'). */
+export function trainerSatzBaukasten(anfrage) {
+  return call(anfrage, { timeoutMs: 25000 })
 }
 
 /* Antworten bewerten -> { ergebnisse: [{nr, urteil, korrektur, hinweis}], fazit } */

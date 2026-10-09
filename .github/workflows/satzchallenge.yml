@@ -64,5 +64,6 @@ jobs:
         run: |
           echo '## Tages-Challenge' >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
-          tail -n 120 lauf.log >> $GITHUB_STEP_SUMMARY || true
+          # 400 Zeilen: eine Probe mit 10 Baukasten-Challenges passt ganz hinein
+          tail -n 400 lauf.log >> $GITHUB_STEP_SUMMARY || true
           echo '```' >> $GITHUB_STEP_SUMMARY

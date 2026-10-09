@@ -37,6 +37,7 @@
 import { TOPIK1_GRAMMATIK } from '../src/core/inventare/topik1-grammatik.js'
 import { GER_GRAMMATIK } from '../src/core/inventare/ger-grammatik.js'
 import { SZENEN } from '../src/core/szenen.js'
+import { RINGE, baueBaukasten, waehleMuster, baueAnfrage, pruefeSaetze, leseVerlauf } from '../src/core/baukasten.js'
 
 const SUPABASE_URL = 'https://gkrubhwwzgekmbiltslt.supabase.co'
 const DB_KEY = process.env.SUPABASE_SERVICE_KEY
@@ -234,15 +235,91 @@ async function erzeugeEine(profil, words, grammatik, zuletzt, fokusInfo, nr) {
   return null
 }
 
+/* ============================================================
+   SATZ-BAUKASTEN (Franz 09.10.) — der neue Weg, vorerst nur ko
+
+   Die Auswahl (drei Wort-Ringe, je Satz ein Pflicht-Muster) macht
+   src/core/baukasten.js — dieselbe Logik wie in der App. Das Modell
+   schreibt nur noch. EIN Aufruf je Challenge, kein Verwerfen wegen
+   Ueberlappung, keine Wiederholversuche: die Rotation steckt in der
+   Auswahl. Kennt die Function die Aktion noch nicht (400), springt
+   der alte Weg ein.
+   ============================================================ */
+class AlteFunction extends Error {}
+
+async function grammatikMitStand(profil) {
+  const rows = await hole(`inventory_status?profile=eq.${profil}&kind=eq.grammatik&status=eq.sicher&select=item_id`)
+  const sicher = new Set(rows.map((r) => r.item_id))
+  return TOPIK1_GRAMMATIK.map((g) => ({
+    id: g.id,
+    stufe: g.stufe,
+    muster: g.muster,
+    name: g.name,
+    beispiel: g.beispiel.ko,
+    sicher: sicher.has(`tg-${g.id}`),
+  }))
+}
+
+async function erzeugeBaukasten(profil, words, cards, grammatik, verlaufZeilen, nr) {
+  const verlauf = leseVerlauf(verlaufZeilen)
+  const kit = baueBaukasten({
+    words: words.map((w) => ({ id: w.id, ko: w.ko, en: w.en, pos: w.pos, rang: w.rang, createdAt: new Date(w.created_at).getTime() })),
+    cards: cards.map((c) => ({ wordId: c.word_id, stab: c.stab, lapses: c.lapses, reps: c.reps })),
+    zuletzt: verlauf.woerter,
+    anzahl: 5,
+  })
+  const musterWahl = waehleMuster({
+    grammatik,
+    saetze: 6,
+    schwierigkeit: 'mittel',
+    musterZuletzt: verlauf.musterZuletzt,
+    letztePflicht: verlauf.letztePflicht,
+  })
+  const szenen = mische(SZENEN).slice(0, 6)
+  console.log(`  Baukasten ${nr}: Pflicht ${kit.pflicht.length} · Auswahl ${kit.auswahl.length} · Grundstock ${kit.grundstock.length}`)
+  console.log(`    Pflicht-Woerter: ${kit.pflicht.map((w) => w.ko).join(', ')}`)
+  console.log(`    Pflicht-Muster:  ${musterWahl.plan.map((m) => m.join(' + ')).join(' | ')}`)
+  const start = Date.now()
+  let res
+  try {
+    res = await trainer(baueAnfrage({ profile: profil, kit, musterWahl, szenen, anzahl: 5, schwierigkeit: 'mittel' }))
+  } catch (e) {
+    if (e instanceof Fatal) throw e
+    if (/^trainer 400/.test(e.message)) throw new AlteFunction(e.message)
+    console.error(`  Baukasten ${nr}: ${e.message}`)
+    return null
+  }
+  const sekunden = ((Date.now() - start) / 1000).toFixed(1)
+  const { saetze, verworfen } = pruefeSaetze({ saetze: res?.saetze, kit, plan: musterWahl.plan, anzahl: 5 })
+  const drin = new Set(saetze.flatMap((s) => s.woerter.map(norm)))
+  const pflichtDrin = kit.pflicht.filter((w) => drin.has(norm(w.ko))).length
+  console.log(
+    `    ${sekunden} s · ${(res?.saetze || []).length} geschrieben · ${saetze.length} genommen · Pflicht-Woerter drin ${pflichtDrin}/${kit.pflicht.length}`
+  )
+  for (const v of verworfen) console.log(`    fremdes Wort: ${v}`)
+  for (const s of saetze) console.log(`    ${s.de}\n      -> ${s.ko}   [${s.grammatik.join(' + ')}]`)
+  if (saetze.length < 3) {
+    console.warn(`  Baukasten ${nr}: nur ${saetze.length} brauchbare Saetze (${res?.grund ?? '?'}) — nichts gelegt`)
+    return null
+  }
+  const payload = { saetze, verworfen, pflicht: kit.pflicht.map((w) => w.ko), szenen, quelle: 'baukasten' }
+  const zeile = await lege({ profile: profil, typ: TYP, payload, status: 'neu' })
+  /* fuer die naechste Challenge desselben Laufs zaehlt das schon als benutzt */
+  verlaufZeilen.unshift({ payload, created_at: new Date().toISOString() })
+  return zeile
+}
+
 /* ---------- Je Profil ---------- */
 async function fuelle(profil) {
   console.log(`\n=== ${profil}: Tages-Challenges auf Vorrat (Ziel ${ZIEL}) ===`)
   const offen = await hole(`exercise_bank?profile=eq.${profil}&typ=eq.${TYP}&status=eq.neu&select=id`)
-  const fehlen = Math.max(0, ZIEL - offen.length)
+  /* Trockenlauf = Probe: immer ZIEL Stueck erzeugen und zeigen, egal
+     wie voll der Vorrat ist (gespeichert wird dabei nichts) */
+  const fehlen = TROCKEN ? ZIEL : Math.max(0, ZIEL - offen.length)
   console.log(`Auf Vorrat: ${offen.length} · fehlen: ${fehlen}`)
   if (!fehlen) return
   const [words, cards, grammatik, zuletzt] = await Promise.all([
-    hole(`words?profile=eq.${profil}&select=id,ko,en,created_at`),
+    hole(`words?profile=eq.${profil}&select=id,ko,en,pos,rang,created_at`),
     hole(`cards?profile=eq.${profil}&select=word_id,front,stab,lapses,reps`),
     nutzbareGrammatik(profil),
     zuletztBenutzt(profil),
@@ -253,7 +330,29 @@ async function fuelle(profil) {
   }
   console.log(`Bibliothek ${words.length} Woerter · Grammatik ${grammatik.length} Muster · zuletzt benutzt ${zuletzt.woerter.size} Woerter`)
   let gelegt = 0
+  /* Franz' Seite: der Baukasten. Faellt nur auf den alten Weg zurueck,
+     wenn die Function die neue Aktion noch nicht kennt. */
+  let baukasten = profil === 'ko'
+  let kanon = null
+  let verlaufZeilen = null
+  if (baukasten) {
+    const seit = new Date(Date.now() - RINGE.rotationTage * 86400000).toISOString()
+    ;[kanon, verlaufZeilen] = await Promise.all([
+      grammatikMitStand(profil),
+      hole(`exercise_bank?profile=eq.${profil}&typ=eq.${TYP}&created_at=gt.${seit}&select=payload,created_at&order=created_at.desc`),
+    ])
+  }
   for (let nr = 1; nr <= fehlen; nr++) {
+    if (baukasten) {
+      try {
+        if (await erzeugeBaukasten(profil, words, cards, kanon, verlaufZeilen, nr)) gelegt++
+        continue
+      } catch (e) {
+        if (!(e instanceof AlteFunction)) throw e
+        console.warn('  Die Function kennt den Baukasten noch nicht (nicht neu deployt) — alter Weg.')
+        baukasten = false
+      }
+    }
     const fokusInfo = fokusWaehlen(words, cards, zuletzt.woerter)
     console.log(`  Fokus (${fokusInfo.bilanz}): ${fokusInfo.fokus.join(', ')}`)
     const z = await erzeugeEine(profil, words, grammatik, zuletzt, fokusInfo, nr)

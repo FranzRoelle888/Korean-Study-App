@@ -304,7 +304,7 @@ function parseExtract(text: string) {
 /* ---------- Anthropic ---------- */
 /* content ist meist ein String, beim Foto-Upload ein Array aus
    Bild- und Textblöcken — die API akzeptiert beides. */
-async function callModel(system: string, messages: { role: string; content: unknown }[], maxTokens = 1600) {
+async function callModel(system: string, messages: { role: string; content: unknown }[], maxTokens = 1600, effort = 'medium') {
   const r = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
@@ -320,7 +320,7 @@ async function callModel(system: string, messages: { role: string; content: unkn
          komplett auf -> leere Antworten (Bug beim Übersetzungs-
          Vorschlag, 31.08.). Trainer-Arbeit braucht kein tiefes
          Grübeln — medium reicht und ist schneller. */
-      output_config: { effort: 'medium' },
+      output_config: { effort },
       max_tokens: maxTokens,
       system: [{ type: 'text', text: system, cache_control: { type: 'ephemeral' } }],
       messages,
@@ -362,7 +362,7 @@ async function overLimit(profile: string) {
   /* Nur die eigenen Aktionen zählen — die speech-Funktion führt
      ihr eigenes Limit in speech_usage */
   const rows = await dbGet(
-    `trainer_usage?profile=eq.${profile}&action=in.(chat,summary,extract,uebung,satz,schreiben,studio_erklaerung,studio_aufgaben,studio_antwort,studio_bilanz,nachfrage,a2frage,a2schreiben,a2hoeren,a2lesen,a2sprechen1,a2sprechen2,vokabelAnreichern,vokabelNuancen,satzChallengeErzeugen,satzChallengeBewerten)&created_at=gt.${oneHourAgo}&select=id`
+    `trainer_usage?profile=eq.${profile}&action=in.(chat,summary,extract,uebung,satz,schreiben,studio_erklaerung,studio_aufgaben,studio_antwort,studio_bilanz,nachfrage,a2frage,a2schreiben,a2hoeren,a2lesen,a2sprechen1,a2sprechen2,vokabelAnreichern,vokabelNuancen,satzChallengeErzeugen,satzChallengeBewerten,satzBaukasten)&created_at=gt.${oneHourAgo}&select=id`
   )
   return rows.length >= MAX_CALLS_PER_HOUR
 }
@@ -447,6 +447,7 @@ Deno.serve(async (req) => {
       action !== 'vokabelNuancen' &&
       action !== 'satzChallengeErzeugen' &&
       action !== 'satzChallengeBewerten' &&
+      action !== 'satzBaukasten' &&
       !String(action).startsWith('studio_') &&
       (!Array.isArray(messages) || messages.length > 60)
     )
@@ -1457,6 +1458,140 @@ Deno.serve(async (req) => {
         output_tokens: out.outputTokens,
       })
       return json({ saetze, verworfen: verworfen.slice(0, 12), grund })
+    }
+
+    /* ---------- Satz-Baukasten (Franz 09.10.) ----------
+       Der Nachfolger von satzChallengeErzeugen fuer Franz' Seite. Die
+       APP hat schon ausgewaehlt (src/core/baukasten.js): drei kleine
+       Wort-Ringe statt der ganzen Bibliothek und je Satz ein Pflicht-
+       Muster. Das Modell schreibt nur noch — keine Suche gegen 600
+       Woerter, ein Reserve-Satz statt zwei, wenig Nachdenken (effort
+       low). Geprueft wird der Satz danach in der App, nicht hier.
+       Der feste Teil (Regeln, Muster, Grundstock) steht im System-Text
+       vorn, damit der Zwischenspeicher greift; alles Wechselnde kommt
+       in die Nutzer-Nachricht. */
+    if (action === 'satzBaukasten') {
+      if (profile !== 'ko') return json({ error: 'bad-profile' }, 400)
+      type W = { ko: string; en: string }
+      const ring = (x: unknown, max: number): W[] =>
+        Array.isArray(x)
+          ? x
+              .slice(0, max)
+              .map((w: { ko?: unknown; en?: unknown }) => ({
+                ko: typeof w?.ko === 'string' ? w.ko.normalize('NFC').trim().slice(0, 40) : '',
+                en: typeof w?.en === 'string' ? w.en.trim().slice(0, 60) : '',
+              }))
+              .filter((w: W) => w.ko)
+          : []
+      const grundstock = ring(body.grundstock, 180)
+      const pflicht = ring(body.pflicht, 20)
+      const auswahl = ring(body.auswahl, 100)
+      const erlaubt = Array.isArray(body.erlaubt)
+        ? body.erlaubt
+            .slice(0, 80)
+            .map((g: { muster?: unknown; name?: unknown; beispiel?: unknown }) => ({
+              muster: typeof g?.muster === 'string' ? g.muster.trim().slice(0, 60) : '',
+              name: typeof g?.name === 'string' ? g.name.trim().slice(0, 60) : '',
+              beispiel: typeof g?.beispiel === 'string' ? g.beispiel.trim().slice(0, 80) : '',
+            }))
+            .filter((g: { muster: string }) => g.muster)
+        : []
+      const plan = Array.isArray(body.plan)
+        ? body.plan.slice(0, 7).map((p: { muster?: unknown; szene?: unknown }) => ({
+            muster: Array.isArray(p?.muster) ? p.muster.slice(0, 2).map((m: unknown) => String(m).trim().slice(0, 60)).filter(Boolean) : [],
+            szene: typeof p?.szene === 'string' ? p.szene.trim().slice(0, 60) : '',
+          }))
+        : []
+      const stufeB = ['leicht', 'mittel', 'schwer'].includes(body.schwierigkeit) ? body.schwierigkeit : 'mittel'
+      const wunschB = typeof body.wunsch === 'string' ? body.wunsch.trim().slice(0, 200) : ''
+      if (plan.length < 2 || grundstock.length + pflicht.length + auswahl.length < 15) return json({ error: 'empty' }, 400)
+
+      /* Ein Nummernkreis ueber alle drei Ringe: das Modell meldet die
+         benutzten Woerter als ZAHLEN — eine gebeugte Form kann so nie
+         mehr als „unbekanntes Wort" durchfallen. */
+      const alle = [...grundstock, ...pflicht, ...auswahl]
+      const zeile = (w: W, i: number) => `${i + 1} ${w.ko} = ${w.en}`
+      const ab = (n: number) => (w: W, i: number) => zeile(w, n + i)
+      const laenge =
+        stufeB === 'leicht'
+          ? 'EASY: 4-6 words per sentence, simple statements, exactly the one required pattern.'
+          : stufeB === 'schwer'
+            ? 'HARD: 9-13 words per sentence. Each sentence uses BOTH of its required patterns and has at least two of {time, place, object, reason}. At least one question and one negation in the round.'
+            : 'MEDIUM: 6-8 words per sentence. Besides the required pattern you MAY add one more pattern from the allowed list where it is natural. At least one question in the round.'
+
+      const out = await callModel(
+        [
+          'You write translation exercises for a German adult learning Korean (A1-A2). You give a sentence in German; he writes it in Korean.',
+          'You get a small KIT of numbered Korean words in three rings, and a PLAN with one line per sentence. Write exactly one sentence per plan line.',
+          'RULES:',
+          '- Every content word of the Korean sentence must be a kit word (any ring). Conjugation, polite endings and particles are fine. No proper nouns.',
+          '- Always free and NOT kit words: particles, pronouns, question words, negation, numbers of both systems with clock times, prices and ages, 있다/없다/이다/하다/되다, and the short connectors 그리고/그래서/하지만/그런데.',
+          '- REQUIRED words must be used: every required word appears in at least one sentence, and every sentence contains at least one required word. Build each sentence around its required word.',
+          '- Each sentence must clearly use the pattern(s) named on its plan line, and plays in the setting named there.',
+          '- Besides that, only grammar from the ALLOWED PATTERNS list. Polite 해요체 throughout.',
+          '- Natural everyday Korean that a native speaker would actually say — if a combination would sound forced, pick other kit words. Vary the subject (I / you / we / he / she / people).',
+          '- The German sentence is the exact meaning of the Korean one, in plain everyday German.',
+          '',
+          'ALLOWED PATTERNS:',
+          erlaubt.map((g: { muster: string; name: string; beispiel: string }) => `${g.muster} (${g.name}) e.g. ${g.beispiel}`).join('\n'),
+          '',
+          'KIT RING 3 — BASIC WORDS (the glue; use freely):',
+          grundstock.map(zeile).join('; '),
+        ].join('\n'),
+        [
+          {
+            role: 'user',
+            content: [
+              `DIFFICULTY — ${laenge}`,
+              wunschB ? `LEARNER'S WISH for this round (follow it as far as the kit allows): "${wunschB}"` : '',
+              '',
+              'KIT RING 1 — REQUIRED WORDS:',
+              pflicht.map(ab(grundstock.length)).join('; '),
+              '',
+              'KIT RING 2 — OPTIONAL WORDS (use where they fit):',
+              auswahl.length ? auswahl.map(ab(grundstock.length + pflicht.length)).join('; ') : '(none)',
+              '',
+              'PLAN:',
+              plan
+                .map((p: { muster: string[]; szene: string }, i: number) => `${i + 1}. setting: ${p.szene || 'everyday life'} — required pattern: ${p.muster.join(' AND ') || 'free choice from the allowed list'}`)
+                .join('\n'),
+              '',
+              `Reply with ONLY this JSON, ${plan.length} sentences: {"saetze":[{"nr":1,"de":"<German task sentence>","ko":"<Korean model answer>","w":[<numbers of ALL kit words used>]}, ...]}`,
+            ]
+              .filter((z) => z !== '')
+              .join('\n'),
+          },
+        ],
+        2500,
+        'low'
+      )
+
+      type SatzB = { nr: number; de: string; ko: string; woerter: string[] }
+      const saetzeB: SatzB[] = []
+      let grundB = 'ok'
+      try {
+        const j = JSON.parse(out.text.replace(/^```(?:json)?/m, '').replace(/```\s*$/m, '').trim())
+        const roh = Array.isArray(j?.saetze) ? j.saetze : []
+        if (!roh.length) grundB = 'keine-saetze'
+        roh.forEach((s: { nr?: unknown; de?: unknown; ko?: unknown; w?: unknown }, i: number) => {
+          const de = typeof s?.de === 'string' ? s.de.trim().slice(0, 200) : ''
+          const ko = typeof s?.ko === 'string' ? s.ko.normalize('NFC').trim().slice(0, 200) : ''
+          if (!de || !ko) return
+          const nummern = Array.isArray(s?.w) ? s.w.map((n: unknown) => Number(n)).filter((n: number) => Number.isInteger(n) && n >= 1 && n <= alle.length) : []
+          const woerter = [...new Set(nummern.map((n: number) => alle[n - 1].ko))] as string[]
+          const nr = Number(s?.nr)
+          saetzeB.push({ nr: Number.isInteger(nr) && nr >= 1 && nr <= plan.length ? nr : i + 1, de, ko, woerter })
+        })
+      } catch {
+        grundB = 'kein-json'
+      }
+      await dbInsert('trainer_usage', {
+        profile,
+        action: 'satzBaukasten',
+        input_tokens: out.inputTokens,
+        output_tokens: out.outputTokens,
+      })
+      return json({ saetze: saetzeB, grund: grundB })
     }
 
     /* ---------- Tages-Challenge: Antworten bewerten ----------
