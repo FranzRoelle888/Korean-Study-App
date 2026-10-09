@@ -329,7 +329,8 @@ async function erzeugeBaukasten(profil, words, cards, grammatik, verlaufZeilen, 
   if (d) {
     console.log(
       `    Function-Fassung ${d.fassung ?? '?'} · Gang: ${d.gang ?? '?'} · Modell: ${d.rein} Tokens rein (+ ${d.zwischenspeicher ?? '?'} im Zwischenspeicher), ${d.raus} raus · Ende: ${d.stop}` +
-        (d.ohneDeutsch ? ` · ${d.ohneDeutsch} Saetze ohne deutsche Aufgabe verworfen` : '') +
+        (d.ohneForm ? ' · ACHTUNG: API hat die Antwortform abgelehnt, Lauf ohne sie' : '') +
+        (d.ohneDeutsch ?` · ${d.ohneDeutsch} Saetze ohne deutsche Aufgabe verworfen` : '') +
         (d.anfang ? ` · Antwort-Anfang: ${JSON.stringify(d.anfang)}` : '')
     )
   }

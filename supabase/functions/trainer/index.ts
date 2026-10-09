@@ -1614,7 +1614,7 @@ Deno.serve(async (req) => {
             englisch: { type: 'string', description: 'Exactly that sentence in English.' },
           }
 
-      const out = await callModel(
+      const frage = (mitSchema: boolean) => callModel(
         [
           lerntKoB
             ? 'You write translation exercises for a German adult learning Korean (A1-A2). He reads a German sentence and writes it in Korean.'
@@ -1664,6 +1664,11 @@ Deno.serve(async (req) => {
               lerntKoB
                 ? '2. "saetze": for every sentence, first "kit_nummern" = the numbers of ALL kit words the sentence uses, then "koreanisch" = the Korean sentence, then "neue_woerter" = its non-kit content words as "word = meaning; word = meaning" (usually an empty string), then "deutsch" = exactly that sentence in GERMAN (Latin letters; this is what the learner reads; it must never contain Korean).'
                 : '2. "saetze": for every sentence, first "kit_nummern" = the numbers of ALL kit words the sentence uses, then "deutsch" = the German sentence, then "neue_woerter" = its non-kit content words as "word = meaning; word = meaning" (usually an empty string), then "koreanisch" and "englisch" = exactly that sentence in Korean and in English. Both are what the learner reads; they must match each other and the German exactly.',
+              /* nur im Notfall-Gang ohne erzwungene Form: die Form
+                 ausgeschrieben, damit trotzdem lesbares JSON kommt */
+              mitSchema
+                ? ''
+                : `Reply with ONLY this JSON, nothing before or after it: {"verteilung":[{"nr":1,"muster":["<pattern from the pool>"],"pflicht_nummern":[<numbers>]}, …],"saetze":[{"nr":1,"kit_nummern":[<numbers>],${lerntKoB ? '"koreanisch":"…","neue_woerter":"","deutsch":"…"' : '"deutsch":"…","neue_woerter":"","koreanisch":"…","englisch":"…"'}}, …]}`,
             ]
               .filter((z) => z !== '')
               .join('\n'),
@@ -1677,7 +1682,7 @@ Deno.serve(async (req) => {
         {
           ohneDenken: !gruendlich,
           effort: 'low',
-          schema: {
+          schema: !mitSchema ? undefined : {
             type: 'object',
             properties: {
               verteilung: listeVon({
@@ -1693,6 +1698,21 @@ Deno.serve(async (req) => {
           },
         }
       )
+      /* SICHERHEITSNETZ: Zweimal hat die API die erzwungene Antwortform
+         als zu groß abgelehnt („compiled grammar is too large") — und
+         jedes Mal brauchte es einen neuen Deploy, um das zu beheben.
+         Jetzt versucht die Function es in dem Fall selbst noch einmal
+         OHNE erzwungene Form; der Prompt schreibt die Form dann aus. */
+      let ohneForm = false
+      let out: Awaited<ReturnType<typeof frage>>
+      try {
+        out = await frage(true)
+      } catch (e) {
+        if (!/compiled grammar|output_config|json_schema|schema/i.test(String(e))) throw e
+        console.error('satzBaukasten: Antwortform abgelehnt, zweiter Versuch ohne —', String(e).slice(0, 200))
+        ohneForm = true
+        out = await frage(false)
+      }
 
       /* Rückgabe wie überall in der Satz-Challenge: "de" ist immer die
          AUFGABE (Sprache, die man kann), "ko" immer die LÖSUNG (Sprache,
@@ -1704,7 +1724,11 @@ Deno.serve(async (req) => {
       const hatHangul = (t: string) => /[가-힣]/.test(t)
       const kurz = (x: unknown, max: number) => (typeof x === 'string' ? x.normalize('NFC').trim().slice(0, max) : '')
       try {
-        const j = JSON.parse(out.text.replace(/^```(?:json)?/m, '').replace(/```\s*$/m, '').trim())
+        const text = out.text.replace(/^```(?:json)?/m, '').replace(/```\s*$/m, '').trim()
+        /* ohne erzwungene Form kann Text um das JSON stehen */
+        const von = text.indexOf('{')
+        const bis = text.lastIndexOf('}')
+        const j = JSON.parse(von >= 0 && bis > von ? text.slice(von, bis + 1) : text)
         const roh = Array.isArray(j?.saetze) ? j.saetze.slice(0, satzZahl) : []
         const verteilt = Array.isArray(j?.verteilung) ? j.verteilung : []
         roh.forEach((s: Record<string, unknown>, i: number) => {
@@ -1761,6 +1785,8 @@ Deno.serve(async (req) => {
         grund: grundB,
         diagnose: {
           fassung: FASSUNG,
+          /* true = die API hat die erzwungene Antwortform abgelehnt */
+          ohneForm,
           gang: gruendlich ? 'gruendlich' : 'schnell',
           stop: out.stopReason,
           rein: out.inputTokens,
