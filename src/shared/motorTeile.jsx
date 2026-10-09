@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { jamoDiff } from '../core/hangul'
 import { wortDiff } from '../core/vergleich'
 import { bedeutung } from '../core/motor'
-import { haeyoVon } from '../core/haeyo'
+import { haeyoVon, rechneAttributiv } from '../core/haeyo'
 
 /* ============================================================
    BAUSTEINE DES VOKABEL-MOTORS (Franz' Seite)
@@ -316,17 +316,30 @@ export function RegisterChip({ word, t, className = '' }) {
 /* Die 해요-Form — das Gegenstück zu Plural und Konjugation auf 해인s
    Seite. 덥다 wird zu 더워요, und das kann man nicht ableiten, wenn
    man die Unregelmäßigkeits-Klasse nicht kennt.
-   Fehlt die gespeicherte Form (Adjektive, frisch eingetragene
-   Wörter), rechnet haeyoVon sie aus — siehe core/haeyo.js. */
+   Fehlt die gespeicherte Form (frisch eingetragene Wörter), rechnet
+   haeyoVon sie aus — siehe core/haeyo.js.
+   Adjektive tragen daneben die Form VOR einem Nomen (빨간 + Nomen,
+   Franz 09.10.): „das rote Auto" ist 빨간 차, nicht 빨개요 차. */
 export function HaeyoZeile({ word, t, className = '' }) {
   const form = haeyoVon(word)
-  if (!form) return null
+  const vorNomen = word ? rechneAttributiv(word.ko, word.pos) : null
+  if (!form && !vorNomen) return null
   return (
     <span className={`haeyo-zeile ${className}`.trim()}>
-      <span className="haeyo-form" lang="ko">
-        {form.haeyo}
-      </span>
-      {form.unregel && <span className="haeyo-chip">{t.unregelChip(form.unregel)}</span>}
+      {form && (
+        <span className="haeyo-form" lang="ko">
+          {form.haeyo}
+        </span>
+      )}
+      {form?.unregel && <span className="haeyo-chip">{t.unregelChip(form.unregel)}</span>}
+      {vorNomen && (
+        <span className="haeyo-vor-nomen">
+          <span className="haeyo-form" lang="ko">
+            {vorNomen}
+          </span>
+          <span className="haeyo-vor-nomen-label">{t.vorNomen}</span>
+        </span>
+      )}
     </span>
   )
 }

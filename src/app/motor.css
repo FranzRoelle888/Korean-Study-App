@@ -1123,6 +1123,20 @@
   color: #8a6414;
   white-space: nowrap;
 }
+/* Adjektiv vor einem Nomen: 빨간 + Nomen — Form und kleines Etikett
+   bleiben zusammen, auch wenn die Zeile umbricht */
+.haeyo-vor-nomen {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  white-space: nowrap;
+}
+.haeyo-vor-nomen-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-soft, #6b6d85);
+}
+.daily-card .haeyo-vor-nomen-label { color: rgba(255, 255, 255, 0.78); }
 .daily-card .haeyo-form { color: #fff; }
 .daily-card .haeyo-chip {
   background: rgba(255, 226, 160, 0.26);

@@ -174,6 +174,38 @@ export function rechneHaeyo(ko, pos) {
   return regel()
 }
 
+/* ---------- Adjektiv VOR einem Nomen (관형형, Franz 09.10.) ----------
+   „Das Auto ist rot" heißt 빨개요, „das rote Auto" aber 빨간 차 — die
+   Form vor dem Nomen ist eine eigene und bei den unregelmäßigen
+   Adjektiven nicht zu erraten (덥다 -> 더운, 길다 -> 긴).
+   Nur für Adjektive: bei Verben hängt die Form von der Zeit ab
+   (먹는 / 먹은 / 먹을), das gehört in die Grammatik, nicht auf die Karte.
+   -> die Form als Text oder null */
+const T_N = 4 /* Endkonsonant ㄴ */
+export function rechneAttributiv(ko, pos) {
+  if (pos !== 'adj') return null
+  const { vorn, wort } = trenne(ko)
+  if (wort.length < 2 || !wort.endsWith('다')) return null
+  if (wort === '아니다') return vorn + '아닌'
+  const stamm = wort.slice(0, -1)
+  const d = zerlege(stamm.at(-1))
+  if (!d) return null
+  const kopf = stamm.slice(0, -1)
+  const mitN = vorn + kopf + baue(d.l, d.v, T_N)
+  /* 있다/없다 und alles, was darauf endet: 맛있는, 재미없는 */
+  if (stamm.endsWith('있') || stamm.endsWith('없')) return vorn + stamm + '는'
+  /* Vokal am Ende: ㄴ kommt unten dran (크다 -> 큰, 조용하다 -> 조용한).
+     ㄹ am Ende fällt dafür weg (길다 -> 긴). */
+  if (d.t === 0 || d.t === T_L) return mitN
+  /* ㅂ wird zu 우: 덥다 -> 더운 (auch 곱다 -> 고운) */
+  if (d.t === T_B && !REGEL_ADJ_B.has(wort)) return vorn + kopf + baue(d.l, d.v) + '운'
+  /* ㅎ fällt weg: 빨갛다 -> 빨간, 그렇다 -> 그런 — nur 좋다 bleibt (좋은) */
+  if (d.t === T_H && wort !== '좋다') return mitN
+  /* ㅅ fällt weg: 낫다 -> 나은 */
+  if (d.t === T_S && UNREGEL_VERB[wort] === 'ㅅ') return vorn + kopf + baue(d.l, d.v) + '은'
+  return vorn + stamm + '은' /* 작다 -> 작은, 많다 -> 많은 */
+}
+
 /* Was die Karte zeigt: die gespeicherte Form, sonst die gerechnete.
    -> { haeyo, unregel } oder null */
 export function haeyoVon(word) {

@@ -92,6 +92,8 @@ const en = {
   zumText: 'zum Text wechseln',
   audioFehlt: 'Kein Ton verfügbar – bitte zum Text wechseln',
   unregelChip: (k) => `${k} irregular`,
+  /* Adjektiv vor einem Nomen: 빨간 + Nomen */
+  vorNomen: '+ noun',
   zahlsystem: { native: 'native numbers: 한, 두, 세 …', sino: 'Sino-Korean numbers: 일, 이, 삼 …', beide: 'both number systems' },
   familieTreffer: 'Same meaning family – counts as right. The difference:',
   familieOhneNuance: 'no note yet',
@@ -488,6 +490,8 @@ const ko = {
   zumText: '글자로 보기',
   audioFehlt: '소리를 불러올 수 없어요 – 글자로 보기',
   unregelChip: (k) => `${k} 불규칙`,
+  /* Adjektiv vor einem Nomen: 빨간 + Nomen */
+  vorNomen: '+ 명사',
   zahlsystem: { native: '고유어 수: 한, 두, 세 …', sino: '한자어 수: 일, 이, 삼 …', beide: '두 수 체계 모두' },
   familieTreffer: '같은 뜻 가족 – 정답이에요. 차이점:',
   familieOhneNuance: '메모 없음',
@@ -925,6 +929,8 @@ const de = {
   zumText: '글자로 보기',
   audioFehlt: '소리를 불러올 수 없어요 – 글자로 보기',
   unregelChip: (k) => `${k}-unregelmäßig`,
+  /* Adjektiv vor einem Nomen: 빨간 + Nomen */
+  vorNomen: '+ Nomen',
   zahlsystem: { native: 'koreanische Zahlen: 한, 두, 세 …', sino: 'sino-koreanische Zahlen: 일, 이, 삼 …', beide: 'beide Zahlensysteme' },
   familieTreffer: 'Gleiche Bedeutungsfamilie – zählt als richtig. Der Unterschied:',
   familieOhneNuance: 'noch kein Hinweis',
