@@ -60,6 +60,37 @@ const VERBINDER = new Set([
   'weil-gi-ttaemune', 'kontext-nunde', 'bevor-gi-jeone', 'nachdem-n-hue',
 ])
 
+/* ---------- 해인s Seite (Deutsch) ----------
+   Dieselben drei Gruppen für den deutschen Kanon (ger-grammatik.js).
+   „leicht" heißt dort Stufe A1 statt Stufe 1. */
+const FUNDAMENT_DE = new Set([
+  'praesens', 'sein-haben', 'verbzweit', 'janein-frage', 'w-fragen', 'artikel-bestimmt',
+  'artikel-unbestimmt', 'plural', 'nicht', 'du-sie',
+])
+const VERBINDER_DE = new Set(['konjunktionen', 'weil', 'dass', 'wenn', 'deshalb-trotzdem', 'indirekte-frage', 'zu-infinitiv'])
+const GRAMMATIK = {
+  ko: { fundament: FUNDAMENT, niePflicht: NIE_PFLICHT, verbinder: VERBINDER, leicht: 1 },
+  de: { fundament: FUNDAMENT_DE, niePflicht: new Set(), verbinder: VERBINDER_DE, leicht: 'A1' },
+}
+/* Funktionswörter stehen bewusst NICHT in 해인s Bibliothek (Artikel,
+   Pronomen, Präpositionen, Hilfs- und Modalverben) — ein deutscher
+   Satz braucht sie trotzdem immer. Immer erlaubt, nie Baukasten-Wort. */
+const FREI_DE = new Set([
+  'der', 'die', 'das', 'den', 'dem', 'des', 'ein', 'eine', 'einen', 'einem', 'einer', 'eines',
+  'kein', 'keine', 'keinen', 'keinem', 'keiner', 'nicht', 'nein', 'ja', 'doch',
+  'ich', 'du', 'er', 'sie', 'es', 'wir', 'ihr', 'man', 'mich', 'dich', 'sich', 'uns', 'euch',
+  'mir', 'dir', 'ihm', 'ihn', 'ihnen', 'mein', 'dein', 'sein', 'unser', 'euer', 'ihre', 'ihren', 'ihrem', 'ihrer',
+  'und', 'oder', 'aber', 'denn', 'dass', 'weil', 'wenn', 'ob', 'als', 'sondern', 'deshalb', 'trotzdem',
+  'in', 'an', 'auf', 'aus', 'bei', 'bis', 'durch', 'für', 'gegen', 'mit', 'nach', 'ohne', 'seit',
+  'um', 'von', 'vor', 'zu', 'über', 'unter', 'hinter', 'neben', 'zwischen', 'wegen',
+  'am', 'im', 'ins', 'zum', 'zur', 'vom', 'beim',
+  'wer', 'was', 'wo', 'wann', 'warum', 'wie', 'welcher', 'welche', 'welches', 'wohin', 'woher',
+  'haben', 'werden', 'können', 'müssen', 'wollen', 'sollen', 'dürfen', 'mögen', 'möchten',
+  'auch', 'noch', 'schon', 'nur', 'sehr', 'immer', 'nie', 'oft', 'dann', 'hier', 'da', 'dort',
+  'jetzt', 'heute', 'morgen', 'gestern', 'mal', 'gern', 'viel', 'mehr', 'alle', 'jeder', 'etwas', 'nichts',
+])
+const ohneArtikel = (w) => String(w ?? '').normalize('NFC').trim().replace(/^(der|die|das)\s+/i, '').toLowerCase()
+
 const norm = (s) => String(s ?? '').normalize('NFC').trim().replace(/\s+/g, ' ')
 export function mische(liste) {
   const a = [...liste]
@@ -77,7 +108,8 @@ export function mische(liste) {
    schwierigkeit: leicht | mittel | schwer — mehr Pflicht-Wörter und
             seltenere Auswahl, je schwerer
    -> { pflicht, auswahl, grundstock } je [{ ko, en, pos }] */
-export function baueBaukasten({ words, cards, zuletzt = new Set(), anzahl = 5, schwierigkeit = 'mittel', auswahlFaktor = 1 }) {
+export function baueBaukasten({ words, cards, zuletzt = new Set(), anzahl = 5, schwierigkeit = 'mittel', auswahlFaktor = 1, sprache = 'ko' }) {
+  const deutsch = sprache === 'de'
   /* Lernstand je Wort aus seinen Karten */
   const stand = new Map()
   for (const c of cards) {
@@ -99,10 +131,13 @@ export function baueBaukasten({ words, cards, zuletzt = new Set(), anzahl = 5, s
     const ko = norm(w.ko)
     const s = stand.get(w.id)
     if (!ko || !s || (s.reps === 0 && s.lapses === 0)) continue
-    if (w.pos === 'number' || w.pos === 'phrase' || w.pos === 'interjection' || [...ko].length > 10 || /[?!.,]/.test(ko)) continue
+    /* zu lang für einen Baustein: Koreanisch über 10 Silben, Deutsch
+       über drei Wörter (Artikel + Nomen ist normal: „die Wohnung") */
+    const zuLang = deutsch ? ko.split(' ').length > 3 || ko.length > 32 : [...ko].length > 10
+    if (w.pos === 'number' || w.pos === 'phrase' || w.pos === 'interjection' || zuLang || /[?!.,]/.test(ko)) continue
     /* Was ohnehin immer erlaubt ist (어디, 같이, 너 …), braucht keinen
        Platz im Baukasten — und taugt nicht als Pflicht-Wort (Probe 09.10.) */
-    if (FREI.includes(ko)) continue
+    if (deutsch ? FREI_DE.has(ohneArtikel(ko)) : FREI.includes(ko)) continue
     if (gesehen.has(ko)) continue
     gesehen.add(ko)
     brauchbar.push({ ko, en: String(w.en ?? '').slice(0, 60), pos: w.pos || null, rang: w.rang ?? 99999, neu: Date.now() - (w.createdAt || 0) < 7 * 86400000, ...s })
@@ -186,7 +221,8 @@ export function baueBaukasten({ words, cards, zuletzt = new Set(), anzahl = 5, s
    musterZuletzt: Map muster -> Zeitpunkt (ms) der letzten Challenge
    letztePflicht: Set der Pflicht-Muster der letzten 3 Challenges
    -> { erlaubt: [{ muster, name, beispiel }], plan: [[muster, …], …] } */
-export function waehleMuster({ grammatik, saetze = 6, schwierigkeit = 'mittel', musterZuletzt = new Map(), letztePflicht = new Set() }) {
+export function waehleMuster({ grammatik, saetze = 6, schwierigkeit = 'mittel', musterZuletzt = new Map(), letztePflicht = new Set(), sprache = 'ko' }) {
+  const { fundament: FUNDAMENT, niePflicht: NIE_PFLICHT, verbinder: VERBINDER, leicht: LEICHT } = GRAMMATIK[sprache === 'de' ? 'de' : 'ko']
   /* Erlaubt ist, was abgehakt ist — bei weniger als 12 wird mit dem
      Anfang des Kanons aufgefüllt (Regel vom 08.09.) — plus Fundament */
   const sicher = grammatik.filter((g) => g.sicher)
@@ -203,8 +239,8 @@ export function waehleMuster({ grammatik, saetze = 6, schwierigkeit = 'mittel', 
         (musterZuletzt.get(a.muster) ?? 0) - (musterZuletzt.get(b.muster) ?? 0)
     )
   let kandidaten = erlaubt.filter((g) => !FUNDAMENT.has(g.id) && !NIE_PFLICHT.has(g.id))
-  if (schwierigkeit === 'leicht' && kandidaten.filter((g) => g.stufe === 1).length >= saetze) {
-    kandidaten = kandidaten.filter((g) => g.stufe === 1)
+  if (schwierigkeit === 'leicht' && kandidaten.filter((g) => g.stufe === LEICHT).length >= saetze) {
+    kandidaten = kandidaten.filter((g) => g.stufe === LEICHT)
   }
   const jeSatz = schwierigkeit === 'schwer' ? 2 : 1
   let reihe = ordne(kandidaten)
@@ -341,13 +377,17 @@ function beginntMit(silben, form) {
    Sauber = kein fremdes Wort. „Knapp" (genau eines) füllt nur auf,
    wenn sonst zu wenige da wären — lieber ein grenzwertiges Wort als
    gar keine Aufgabe (Regel vom 08.09.). */
-/* bibliothek: ALLE Wörter des Lerners [{ ko, pos }]. Gegen sie wird
-   geprüft, nicht gegen den Baukasten (zweite Probe 09.10.): Der
-   Baukasten LENKT das Modell, aber ein Wort wie 저녁 oder 밥, das Franz
-   längst kann, ist kein Fremdwort, nur weil es heute nicht im Kasten
-   lag. Fremd ist, was er noch nie gelernt hat. */
-export function pruefeSaetze({ saetze, kit, bibliothek = [], plan = [], anzahl }) {
-  const formen = varianten([...kit.pflicht, ...kit.auswahl, ...kit.grundstock, ...bibliothek])
+/* ---------- Die zwei Prüfer ----------
+   Jeder liefert drei Fragen an ein Wort bzw. einen Satz:
+     fremdIn(satz)   welche Wörter des Satzes kennt der Lerner nicht?
+     kennt(wort)     steht dieses Wort (Grundform) in der Bibliothek?
+     deckt(h, tok)   erklärt die Hilfe h das Satz-Wort tok?
+   Geprüft wird gegen die GANZE Bibliothek, nicht nur gegen den
+   Baukasten (zweite Probe 09.10.): Der Baukasten LENKT das Modell,
+   aber 저녁 oder 밥, die Franz längst kann, sind keine Fremdwörter, nur
+   weil sie heute nicht im Kasten lagen. */
+function prueferKo(alle) {
+  const formen = varianten(alle)
   const hilfs = HILFS.map((s) => [...s])
   const frei = new Set(FREI)
   const fremdIn = (ko) => {
@@ -362,24 +402,92 @@ export function pruefeSaetze({ saetze, kit, bibliothek = [], plan = [], anzahl }
     }
     return fremd
   }
+  return {
+    fremdIn,
+    kennt: (wort) => fremdIn(wort).length === 0,
+    deckt: (h, tok) => varianten([{ ko: h, pos: null }]).some((f) => beginntMit([...tok], f)),
+  }
+}
+
+/* Deutsch: Die Beugung lässt sich nicht so sauber ausrechnen wie die
+   koreanische (fährt, gegessen, „rufe … an"). Deshalb werden nur die
+   NOMEN geprüft — die sind großgeschrieben und damit eindeutig
+   erkennbar, und ihre Pluralformen stehen in den Daten. Verben und
+   Adjektive glaubt die Prüfung dem Modell; für die meldet es selbst
+   seine Fremdwörter (neue_woerter). */
+function prueferDe(alle) {
+  const formen = new Set()
+  for (const w of alle) {
+    for (const teil of ohneArtikel(w.ko).split(' ')) formen.add(teil)
+    if (w.plural) formen.add(ohneArtikel(w.plural))
+  }
+  const liste = [...formen].filter(Boolean)
+  /* gleich, mit kurzer Endung (Tisches, Kindern) oder Anfang eines
+     längeren Bibliothekswortes */
+  const kenntForm = (klein) =>
+    FREI_DE.has(klein) ||
+    liste.some((f) => klein === f || (f.length >= 4 && klein.startsWith(f) && klein.length - f.length <= 3) || (klein.length >= 4 && f.startsWith(klein)))
+  const fremdIn = (satz) => {
+    const fremd = []
+    let satzAnfang = true
+    for (const roh of norm(satz).split(' ')) {
+      const wort = roh.replace(/[.,!?…"'“”„‘’()\-:;]/g, '')
+      /* am Satzanfang ist alles groß — dort sagt die Schreibung nichts */
+      if (wort && !satzAnfang && /^[A-ZÄÖÜ]/.test(wort) && !kenntForm(wort.toLowerCase())) fremd.push(wort)
+      satzAnfang = /[.!?]$/.test(roh)
+    }
+    return fremd
+  }
+  const stamm = (w) => ohneArtikel(w).replace(/(en|n|e)$/, '')
+  return {
+    fremdIn,
+    kennt: (wort) => kenntForm(ohneArtikel(wort)),
+    deckt: (h, tok) => stamm(h).length >= 3 && tok.toLowerCase().startsWith(stamm(h)),
+  }
+}
+
+/* saetze: Antwort der Function [{ nr, de, en?, ko, woerter, muster, hilfe }]
+   („de" ist immer die Aufgabe, „ko" immer die Lösung in der Lernsprache)
+   -> { saetze: die besten `anzahl`, verworfen: [Text] }
+
+   FREMDWÖRTER (Franz 09.10.): in kleiner Menge erwünscht — aber nie
+   ohne Übersetzung, sonst ist die Aufgabe nicht lösbar. Das Modell
+   meldet jedes Wort außerhalb des Baukastens mit Bedeutung; hier
+   bleibt davon als „hilfe" am Satz, was der Lerner wirklich noch
+   nicht kennt. Die App zeigt die Hilfe unter der Aufgabe.
+     sauber   jedes fremde Wort ist erklärt, höchstens zwei je Satz
+     knapp    genau ein fremdes Wort OHNE Erklärung — füllt nur auf,
+              wenn sonst zu wenige Sätze da wären */
+export function pruefeSaetze({ saetze, kit, bibliothek = [], plan = [], anzahl, sprache = 'ko' }) {
+  const deutsch = sprache === 'de'
+  const alle = [...kit.pflicht, ...kit.auswahl, ...kit.grundstock, ...bibliothek]
+  const pruefer = deutsch ? prueferDe(alle) : prueferKo(alle)
+  const hatHangul = (t) => /[가-힣]/.test(t)
   const sauber = []
   const knapp = []
   const verworfen = []
   for (const s of saetze || []) {
-    /* die Aufgabe muss in der bekannten Sprache stehen, nicht auf Koreanisch */
-    if (!s?.de || !s?.ko || /[가-힣]/.test(s.de)) continue
-    const fremd = fremdIn(s.ko)
+    if (!s?.de || !s?.ko) continue
+    /* Aufgabe in der bekannten, Lösung in der Lernsprache — nie vertauscht */
+    if (deutsch ? !hatHangul(s.de) || hatHangul(s.ko) : hatHangul(s.de) || !hatHangul(s.ko)) continue
+    const fremd = pruefer.fremdIn(s.ko)
+    const hilfe = (Array.isArray(s.hilfe) ? s.hilfe : [])
+      .filter((h) => h?.wort && h?.bedeutung && !pruefer.kennt(h.wort))
+      .map((h) => ({ wort: String(h.wort), bedeutung: String(h.bedeutung) }))
+    const unerklaert = fremd.filter((tok) => !hilfe.some((h) => pruefer.deckt(h.wort, tok)))
     const satz = {
       de: s.de,
+      ...(s.en ? { en: s.en } : {}),
       ko: s.ko,
       woerter: Array.isArray(s.woerter) ? s.woerter : [],
       /* Das Muster hat das Modell dem Satz aus dem Topf zugeteilt; fehlt
          die Angabe, gilt die Reihenfolge des Plans */
       grammatik: Array.isArray(s.muster) && s.muster.length ? s.muster : (plan[(Number(s.nr) || 0) - 1] ?? []),
+      ...(hilfe.length ? { hilfe } : {}),
     }
-    if (fremd.length === 0) sauber.push(satz)
-    else if (fremd.length === 1) knapp.push(satz)
-    if (fremd.length) verworfen.push(`${s.ko} (${fremd.join(', ')})`)
+    if (unerklaert.length === 0 && hilfe.length <= 2) sauber.push(satz)
+    else if (unerklaert.length <= 1 && hilfe.length <= 3) knapp.push(satz)
+    if (unerklaert.length) verworfen.push(`${s.ko} (${unerklaert.join(', ')})`)
   }
   return { saetze: [...sauber, ...knapp].slice(0, anzahl), verworfen }
 }

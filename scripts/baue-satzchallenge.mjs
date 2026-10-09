@@ -254,19 +254,25 @@ class AlteFunction extends Error {}
 async function grammatikMitStand(profil) {
   const rows = await hole(`inventory_status?profile=eq.${profil}&kind=eq.grammatik&status=eq.sicher&select=item_id`)
   const sicher = new Set(rows.map((r) => r.item_id))
-  return TOPIK1_GRAMMATIK.map((g) => ({
+  /* beide Seiten (vierte Fassung): Franz gegen den TOPIK-Kanon, 해인
+     gegen den deutschen — dort traegt name die koreanische Anzeige,
+     das Modell bekommt die englische Fassung */
+  const ko = profil === 'ko'
+  return (ko ? TOPIK1_GRAMMATIK : GER_GRAMMATIK).map((g) => ({
     id: g.id,
     stufe: g.stufe,
     muster: g.muster,
-    name: g.name,
-    beispiel: g.beispiel.ko,
-    sicher: sicher.has(`tg-${g.id}`),
+    name: g.name_en || g.name,
+    beispiel: ko ? g.beispiel.ko : g.beispiel.de,
+    sicher: sicher.has(`${ko ? 'tg' : 'gg'}-${g.id}`),
   }))
 }
 
 async function erzeugeBaukasten(profil, words, cards, grammatik, verlaufZeilen, nr) {
   const verlauf = leseVerlauf(verlaufZeilen)
+  const sprache = profil === 'ko' ? 'ko' : 'de'
   const kit = baueBaukasten({
+    sprache,
     words: words.map((w) => ({ id: w.id, ko: w.ko, en: w.en, pos: w.pos, rang: w.rang, createdAt: new Date(w.created_at).getTime() })),
     cards: cards.map((c) => ({ wordId: c.word_id, stab: c.stab, lapses: c.lapses, reps: c.reps })),
     zuletzt: verlauf.woerter,
@@ -279,6 +285,7 @@ async function erzeugeBaukasten(profil, words, cards, grammatik, verlaufZeilen, 
     schwierigkeit: 'mittel',
     musterZuletzt: verlauf.musterZuletzt,
     letztePflicht: verlauf.letztePflicht,
+    sprache,
   })
   console.log(`  Baukasten ${nr}: Pflicht ${kit.pflicht.length} · Auswahl ${kit.auswahl.length} · Grundstock ${kit.grundstock.length}`)
   console.log(`    Pflicht-Woerter: ${kit.pflicht.map((w) => w.ko).join(', ')}`)
@@ -298,9 +305,10 @@ async function erzeugeBaukasten(profil, words, cards, grammatik, verlaufZeilen, 
     saetze: res?.saetze,
     kit,
     /* geprueft wird gegen die ganze Bibliothek, nicht nur den Baukasten */
-    bibliothek: words.map((w) => ({ ko: w.ko, pos: w.pos })),
+    bibliothek: words.map((w) => ({ ko: w.ko, pos: w.pos, plural: w.plural })),
     plan: musterWahl.plan,
     anzahl: 5,
+    sprache,
   })
   const drin = new Set(saetze.flatMap((s) => s.woerter.map(norm)))
   const pflichtDrin = kit.pflicht.filter((w) => drin.has(norm(w.ko))).length
@@ -315,7 +323,8 @@ async function erzeugeBaukasten(profil, words, cards, grammatik, verlaufZeilen, 
         (d.anfang ? ` · Antwort-Anfang: ${JSON.stringify(d.anfang)}` : '')
     )
   }
-  for (const v of verworfen) console.log(`    fremdes Wort: ${v}`)
+  for (const v of verworfen) console.log(`    Fremdwort OHNE Hilfe: ${v}`)
+  for (const s of saetze) if (s.hilfe) console.log(`    Hilfe zu „${s.ko}": ${s.hilfe.map((h) => `${h.wort} = ${h.bedeutung}`).join(' · ')}`)
   for (const s of saetze) console.log(`    ${s.de}\n      -> ${s.ko}   [${s.grammatik.join(' + ')}]`)
   if (saetze.length < 3) {
     console.warn(`  Baukasten ${nr}: nur ${saetze.length} brauchbare Saetze (${res?.grund ?? '?'}) — nichts gelegt`)
@@ -338,7 +347,7 @@ async function fuelle(profil) {
   console.log(`Auf Vorrat: ${offen.length} · fehlen: ${fehlen}`)
   if (!fehlen) return
   const [words, cards, grammatik, zuletzt] = await Promise.all([
-    hole(`words?profile=eq.${profil}&select=id,ko,en,pos,rang,created_at`),
+    hole(`words?profile=eq.${profil}&select=id,ko,en,pos,rang,plural,created_at`),
     hole(`cards?profile=eq.${profil}&select=word_id,front,stab,lapses,reps`),
     nutzbareGrammatik(profil),
     zuletztBenutzt(profil),
@@ -351,7 +360,7 @@ async function fuelle(profil) {
   let gelegt = 0
   /* Franz' Seite: der Baukasten. Faellt nur auf den alten Weg zurueck,
      wenn die Function die neue Aktion noch nicht kennt. */
-  let baukasten = profil === 'ko'
+  let baukasten = true /* seit der vierten Fassung beide Seiten */
   let kanon = null
   let verlaufZeilen = null
   if (baukasten) {

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { ladeTagesChallenge, sichereTagesChallenge, schreibePuffer } from '../../core/satzChallenge'
 import { trainerSatzChallengeBewerten } from '../trainer/trainerApi'
+import SatzHilfe from '../../shared/SatzHilfe'
 
 /* ============================================================
    SATZ-TEIL der Tages-Challenge (beide Seiten, 07./08.09.)
@@ -110,6 +111,8 @@ function SatzTeil({ profile, words, onFertig, onKeineSaetze, t }) {
                     {s.en}
                   </p>
                 )}
+                {/* fremde Wörter mit Übersetzung — sonst wäre die Aufgabe nicht lösbar */}
+                <SatzHilfe hilfe={s.hilfe} lang={antwortLang} />
                 {bewertet ? (
                   <>
                     <p className="tc-antwort" lang={antwortLang}>

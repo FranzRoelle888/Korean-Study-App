@@ -1494,7 +1494,6 @@ Deno.serve(async (req) => {
        vorn, damit der Zwischenspeicher greift; alles Wechselnde kommt
        in die Nutzer-Nachricht. */
     if (action === 'satzBaukasten') {
-      if (profile !== 'ko') return json({ error: 'bad-profile' }, 400)
       type W = { ko: string; en: string }
       const ring = (x: unknown, max: number): W[] =>
         Array.isArray(x)
@@ -1542,25 +1541,27 @@ Deno.serve(async (req) => {
             ? 'HARD: 9-13 words per sentence. Each sentence uses BOTH of its required patterns and has at least two of {time, place, object, reason}. At least one question and one negation in the round.'
             : 'MEDIUM: 6-8 words per sentence. Besides the required pattern you MAY add one more pattern from the allowed list where it is natural. At least one question in the round.'
 
-      /* DRITTE FASSUNG (nach der zweiten Probe, 09.10.).
+      /* VIERTE FASSUNG (09.10.) — beide Seiten, Fremdwörter mit Hilfe.
          Was die Proben gezeigt haben:
          1. Mit Vor-Denken und kleinem Budget: 30 s, nichts Lesbares.
-         2. Ohne Vor-Denken: schnell (6 s) und zuverlässig in der FORM,
-            aber jeder fünfte Satz war inhaltlich schwach — erzwungene
-            Paarungen („Die Toilette und der Mann warten"), Muster gar
-            nicht benutzt, einmal sagte die deutsche Aufgabe etwas
-            anderes als die koreanische Lösung.
-         Daraus zwei Änderungen:
-         a) Die App teilt die Muster nicht mehr FEST den Sätzen zu. Sie
-            gibt einen Topf von Mustern vor; das Modell paart selbst
-            Muster und Pflicht-Wörter so, dass es passt (물 mit „N 주세요"
-            statt 화장실 mit „N하고"). Die Paarung steht als erster
-            Schritt in der Antwort („verteilung").
-         b) Zwei Gangarten. gruendlich = mit Vor-Denken: für alles, worauf
-            niemand wartet (Nachtlauf, im Hintergrund vorgeladene
-            Spielrunde). Ohne = schnell: nur wenn Franz gerade auf den
-            Knopf gedrückt hat. */
+         2. Ohne Vor-Denken, Muster fest je Satz: schnell, aber jeder
+            fünfte Satz erzwungen oder falsch übersetzt.
+         3. Das Modell paart Muster und Pflicht-Wörter selbst
+            („verteilung" als erster Schritt der Antwort): schnell gut
+            brauchbar (~10 s), gründlich durchweg gut (20-60 s).
+         Zwei Gangarten: gruendlich = mit Vor-Denken, für alles, worauf
+         niemand wartet; sonst schnell.
+         Neu in dieser Fassung:
+         - 해인s Seite (de/sb) läuft über denselben Weg: Lösung Deutsch,
+           Aufgabe Koreanisch UND Englisch.
+         - Fremdwörter sind in kleiner Menge erwünscht (Franz 09.10.),
+           aber nie ohne Hilfe: das Modell meldet jedes Wort außerhalb
+           des Baukastens mit Bedeutung („neue_woerter"); die App zeigt
+           unter der Aufgabe an, was der Lerner davon noch nicht kennt. */
       const gruendlich = body.gruendlich === true
+      const lerntKoB = profile === 'ko'
+      const zielB = lerntKoB ? 'Korean' : 'German'
+      const hilfsSprache = lerntKoB ? 'German' : 'Korean'
       const faecher = plan.map((_p: unknown, i: number) => `s${i + 1}`)
       const topf = [...new Set(plan.flatMap((p: { muster: string[] }) => p.muster))] as string[]
       const jeSatz = Math.max(1, ...plan.map((p: { muster: string[] }) => p.muster.length))
@@ -1574,19 +1575,56 @@ Deno.serve(async (req) => {
       })
       const ersteP = grundstock.length + 1
       const letzteP = grundstock.length + pflicht.length
+      const neueWoerter = {
+        type: 'array',
+        description: `Every content word of the sentence that is NOT in the kit: dictionary form plus its meaning in ${hilfsSprache}. Empty when all words are kit words.`,
+        items: {
+          type: 'object',
+          properties: { wort: { type: 'string' }, bedeutung: { type: 'string' } },
+          required: ['wort', 'bedeutung'],
+          additionalProperties: false,
+        },
+      }
+      /* Die Reihenfolge der Felder ist die Reihenfolge, in der das Modell
+         schreibt: erst die Wörter festlegen, dann der Satz in der
+         Lernsprache, dann die Übersetzung(en) */
+      const satzFelder = lerntKoB
+        ? {
+            kit_nummern: nummernListe,
+            koreanisch: { type: 'string', description: 'The Korean sentence, in Hangul.' },
+            neue_woerter: neueWoerter,
+            deutsch: { type: 'string', description: 'Exactly that sentence in German. Latin letters only, no Hangul.' },
+          }
+        : {
+            kit_nummern: nummernListe,
+            deutsch: { type: 'string', description: 'The German sentence (nouns with correct article and case).' },
+            neue_woerter: neueWoerter,
+            koreanisch: { type: 'string', description: 'Exactly that sentence in Korean (Hangul, polite 해요체).' },
+            englisch: { type: 'string', description: 'Exactly that sentence in English.' },
+          }
 
       const out = await callModel(
         [
-          'You write translation exercises for a German adult learning Korean (A1-A2). He reads a German sentence and writes it in Korean.',
-          'You get a small KIT of numbered Korean words in three rings and a POOL of grammar patterns. You write Korean sentences plus their German translation.',
+          lerntKoB
+            ? 'You write translation exercises for a German adult learning Korean (A1-A2). He reads a German sentence and writes it in Korean.'
+            : 'You write translation exercises for 해인, a Korean adult learning German (A1-A2, preparing for the Goethe A2 exam). She reads a sentence in Korean and English and writes it in German.',
+          `You get a small KIT of numbered ${zielB} words in three rings and a POOL of grammar patterns. You write ${zielB} sentences plus their translation.`,
           'RULES:',
-          '- SENSE COMES FIRST. Every sentence is a plain, plausible everyday statement or question that a Korean would actually say, and it makes sense on its own. Never combine words into something odd just to use them, and never bend a pattern into a place where it does not belong.',
-          '- Every content word of the Korean sentence should be a kit word (any ring). Conjugation, polite endings and particles are fine. No proper nouns. If the sentence you have in mind needs a word that is not in the kit, write a different sentence.',
-          '- Always free and NOT kit words: particles, pronouns, question words, negation, numbers of both systems with clock times, prices and ages, 있다/없다/이다/하다/되다, and the short connectors 그리고/그래서/하지만/그런데.',
+          `- SENSE COMES FIRST. Every sentence is a plain, plausible everyday statement or question that a native speaker of ${zielB} would actually say, and it makes sense on its own. Never combine words into something odd just to use them, and never bend a pattern into a place where it does not belong.`,
+          `- Build the ${zielB} sentence from kit words (any ring). ${lerntKoB ? 'Conjugation, polite endings and particles are fine.' : 'Inflection, conjugation, plural, cases and separable prefixes are fine.'} No proper nouns${lerntKoB ? '' : ' except country and city names'}.`,
+          `- You MAY use a content word that is not in the kit when the sentence needs it to sound natural — at most ONE per sentence and at most TWO in the whole round, and only a very common everyday word. Every such word MUST be listed in "neue_woerter" with its meaning in ${hilfsSprache}; the learner sees it as a hint.`,
+          lerntKoB
+            ? '- Always free and NOT kit words (never list them in neue_woerter): particles, pronouns, question words, negation, numbers of both systems with clock times, prices and ages, 있다/없다/이다/하다/되다, and the short connectors 그리고/그래서/하지만/그런데.'
+            : '- Always free and NOT kit words (never list them in neue_woerter): articles, pronouns, possessives, negation, prepositions, conjunctions, question words, numbers, sein/haben/werden and the modal verbs.',
           '- REQUIRED words: every sentence contains at least one required word, and no required word is used twice. Place as many as fit naturally — leaving one out is better than forcing it.',
-          '- PATTERN POOL: every sentence visibly uses its pattern(s) from the pool, and no pool pattern is used twice. Besides that, only grammar from the ALLOWED PATTERNS list. Polite 해요체 throughout.',
+          `- PATTERN POOL: every sentence visibly uses its pattern(s) from the pool, and no pool pattern is used twice. Besides that, only grammar from the ALLOWED PATTERNS list. ${lerntKoB ? 'Polite 해요체 throughout.' : 'Everyday spoken German; nouns always with the right article.'}`,
           '- ONE sentence per slot (two short clauses only when the pattern itself joins clauses). Vary the subject (I / you / we / he / she / people).',
-          '- The German line says EXACTLY what the Korean line says — same meaning, same tense, same subject. If your Korean came out different from what you intended, translate the Korean as it stands.',
+          `- The translation says EXACTLY what the ${zielB} sentence says — same meaning, same tense, same subject. If your ${zielB} came out different from what you intended, translate it as it stands.`,
+          /* Musterlösungen einfach halten (Franz 04.09.) — hier eigens
+             formuliert: der Baustein MUSTER_EINFACH steht weiter unten
+             im Code und nennt feste deutsche Grammatik, die mit der
+             Muster-Liste dieser Aktion kollidieren würde */
+          '- Keep every sentence SIMPLE and reachable for an A1-A2 learner: common everyday words, short, plain but natural — not eloquent, not native-polished.',
           '',
           'ALLOWED PATTERNS:',
           erlaubt.map((g: { muster: string; name: string; beispiel: string }) => `${g.muster} (${g.name}) e.g. ${g.beispiel}`).join('\n'),
@@ -1612,7 +1650,9 @@ Deno.serve(async (req) => {
               '',
               `Write ${faecher.length} sentences (${faecher[0]}…${faecher[faecher.length - 1]}). HOW TO ANSWER — work in this order:`,
               `1. "verteilung": for every sentence, choose ${jeSatz === 1 ? 'ONE pattern' : `${jeSatz} patterns`} from the pool and the required word(s) (numbers ${ersteP}-${letzteP}) that go NATURALLY with it — think of a concrete everyday sentence for each pairing before you commit.`,
-              '2. "saetze": for every sentence, first "kit_nummern" = the numbers of ALL kit words the sentence uses, then "koreanisch" = the Korean sentence, then "deutsch" = exactly that sentence in GERMAN (Latin letters; this is what the learner reads; it must never contain Korean).',
+              lerntKoB
+                ? '2. "saetze": for every sentence, first "kit_nummern" = the numbers of ALL kit words the sentence uses, then "koreanisch" = the Korean sentence, then "neue_woerter" = its non-kit content words (usually none), then "deutsch" = exactly that sentence in GERMAN (Latin letters; this is what the learner reads; it must never contain Korean).'
+                : '2. "saetze": for every sentence, first "kit_nummern" = the numbers of ALL kit words the sentence uses, then "deutsch" = the German sentence, then "neue_woerter" = its non-kit content words (usually none), then "koreanisch" and "englisch" = exactly that sentence in Korean and in English. Both are what the learner reads; they must match each other and the German exactly.',
             ]
               .filter((z) => z !== '')
               .join('\n'),
@@ -1640,12 +1680,8 @@ Deno.serve(async (req) => {
               }),
               saetze: fachObjekt({
                 type: 'object',
-                properties: {
-                  kit_nummern: nummernListe,
-                  koreanisch: { type: 'string', description: 'The Korean sentence, in Hangul.' },
-                  deutsch: { type: 'string', description: 'Exactly that sentence in German. Latin letters only, no Hangul.' },
-                },
-                required: ['kit_nummern', 'koreanisch', 'deutsch'],
+                properties: satzFelder,
+                required: Object.keys(satzFelder),
                 additionalProperties: false,
               }),
             },
@@ -1655,21 +1691,26 @@ Deno.serve(async (req) => {
         }
       )
 
-      type SatzB = { nr: number; de: string; ko: string; woerter: string[]; muster: string[] }
+      /* Rückgabe wie überall in der Satz-Challenge: "de" ist immer die
+         AUFGABE (Sprache, die man kann), "ko" immer die LÖSUNG (Sprache,
+         die man lernt) — bei 해인 also de = Koreanisch, ko = Deutsch. */
+      type SatzB = { nr: number; de: string; en?: string; ko: string; woerter: string[]; muster: string[]; hilfe: { wort: string; bedeutung: string }[] }
       const saetzeB: SatzB[] = []
       let grundB = 'ok'
-      let ohneDeutsch = 0
+      let falscheSprache = 0
+      const hatHangul = (t: string) => /[가-힣]/.test(t)
+      const kurz = (x: unknown, max: number) => (typeof x === 'string' ? x.normalize('NFC').trim().slice(0, max) : '')
       try {
         const j = JSON.parse(out.text.replace(/^```(?:json)?/m, '').replace(/```\s*$/m, '').trim())
         faecher.forEach((f: string, i: number) => {
           const s = j?.saetze?.[f]
-          const de = typeof s?.deutsch === 'string' ? s.deutsch.trim().slice(0, 200) : ''
-          const ko = typeof s?.koreanisch === 'string' ? s.koreanisch.normalize('NFC').trim().slice(0, 200) : ''
-          if (!de || !ko || !/[가-힣]/.test(ko)) return
-          /* Die Aufgabe muss DEUTSCH sein — in der ersten Probe stand
-             dort der koreanische Satz noch einmal */
-          if (/[가-힣]/.test(de)) {
-            ohneDeutsch++
+          const deutsch = kurz(s?.deutsch, 200)
+          const koreanisch = kurz(s?.koreanisch, 200)
+          if (!deutsch || !koreanisch) return
+          /* Jede Zeile muss in IHRER Sprache stehen — in der ersten Probe
+             stand in der deutschen Zeile der koreanische Satz noch einmal */
+          if (hatHangul(deutsch) || !hatHangul(koreanisch)) {
+            falscheSprache++
             return
           }
           const nummern = Array.isArray(s?.kit_nummern)
@@ -1679,9 +1720,18 @@ Deno.serve(async (req) => {
           /* welches Muster das Modell diesem Satz gegeben hat */
           const gewaehlt = j?.verteilung?.[f]?.muster
           const muster = (Array.isArray(gewaehlt) ? gewaehlt.map(String).filter((m: string) => topf.includes(m)) : []).slice(0, jeSatz)
-          saetzeB.push({ nr: i + 1, de, ko, woerter, muster })
+          const hilfe = (Array.isArray(s?.neue_woerter) ? s.neue_woerter : [])
+            .map((h: { wort?: unknown; bedeutung?: unknown }) => ({ wort: kurz(h?.wort, 40), bedeutung: kurz(h?.bedeutung, 60) }))
+            .filter((h: { wort: string; bedeutung: string }) => h.wort && h.bedeutung)
+            .slice(0, 4)
+          const satz: SatzB = lerntKoB
+            ? { nr: i + 1, de: deutsch, ko: koreanisch, woerter, muster, hilfe }
+            : { nr: i + 1, de: koreanisch, ko: deutsch, woerter, muster, hilfe }
+          const englisch = lerntKoB ? '' : kurz(s?.englisch, 200)
+          if (englisch) satz.en = englisch
+          saetzeB.push(satz)
         })
-        if (!saetzeB.length) grundB = ohneDeutsch ? 'aufgabe-nicht-deutsch' : 'keine-saetze'
+        if (!saetzeB.length) grundB = falscheSprache ? 'falsche-sprache' : 'keine-saetze'
       } catch {
         grundB = 'kein-json'
       }
@@ -1702,7 +1752,7 @@ Deno.serve(async (req) => {
           rein: out.inputTokens,
           zwischenspeicher: out.cacheTokens,
           raus: out.outputTokens,
-          ohneDeutsch,
+          ohneDeutsch: falscheSprache,
           ...(grundB === 'ok' ? {} : { anfang: out.text.slice(0, 200) }),
         },
       })

@@ -129,12 +129,16 @@ async function zuletztBenutzt(profile) {
    App mit dem Nachtlauf). Hier nur, was Datenbank und Browser braucht:
    Lernstand holen, Function rufen, Runde merken.
    ============================================================ */
-export const hatBaukasten = (profileId) => profileId === 'ko'
+/* seit der vierten Fassung (09.10.) auf beiden Seiten und der Sandbox */
+export const hatBaukasten = (profileId) => profileId === 'ko' || profileId === 'de' || profileId === 'sb'
+/* welche Sprache gelernt wird — danach richten sich Muster-Gruppen,
+   Wort-Filter und die Prüfung am Satz */
+const spracheVon = (profileId) => (profileId === 'ko' ? 'ko' : 'de')
 
 /* Der ganze Kanon mit Haken (sicher ja/nein) — baukasten.js entscheidet,
    was erlaubt ist und was Pflicht wird */
 async function grammatikMitStand(profileId) {
-  const k = KANON.ko
+  const k = KANON[spracheVon(profileId)]
   let sicher = new Set()
   try {
     const { data } = await supabase
@@ -151,7 +155,9 @@ async function grammatikMitStand(profileId) {
     id: g.id,
     stufe: g.stufe,
     muster: g.muster,
-    name: g.name,
+    /* der deutsche Kanon trägt den Namen auf Koreanisch (für 해인s
+       Anzeige) — das Modell bekommt die englische Fassung */
+    name: g.name_en || g.name,
     beispiel: k.satz(g),
     sicher: sicher.has(`${k.praefix}-${g.id}`),
   }))
@@ -210,6 +216,7 @@ async function ladeVerlauf(profile) {
    bricht nach 25 s ab und versucht es einmal neu; der gründliche
    bekommt 55 s und keinen zweiten Versuch. */
 export async function baukastenRunde({ profile, words, anzahl = 5, schwierigkeit = 'mittel', wunsch = '', merken = false, gruendlich = false }) {
+  const sprache = spracheVon(profile)
   const [karten, grammatik, verlauf] = await Promise.all([ladeKartenStand(profile), grammatikMitStand(profile), ladeVerlauf(profile)])
   const musterWahl = waehleMuster({
     grammatik,
@@ -217,8 +224,10 @@ export async function baukastenRunde({ profile, words, anzahl = 5, schwierigkeit
     schwierigkeit,
     musterZuletzt: verlauf.musterZuletzt,
     letztePflicht: verlauf.letztePflicht,
+    sprache,
   })
   const kit = baueBaukasten({
+    sprache,
     words,
     cards: karten,
     zuletzt: verlauf.woerter,
@@ -239,7 +248,7 @@ export async function baukastenRunde({ profile, words, anzahl = 5, schwierigkeit
     if (!technisch || gruendlich) throw e
     res = await trainerSatzBaukasten(anfrage, warte)
   }
-  const { saetze, verworfen } = pruefeSaetze({ saetze: res?.saetze, kit, bibliothek: words, plan: musterWahl.plan, anzahl })
+  const { saetze, verworfen } = pruefeSaetze({ saetze: res?.saetze, kit, bibliothek: words, plan: musterWahl.plan, anzahl, sprache })
   if (!saetze.length) throw new Error(`leer:${res?.grund || '?'}`)
   if (verworfen.length) console.warn('Baukasten: fremde Wörter in', verworfen.slice(0, 4))
   if (merken) merkeSpielRunde(profile, saetze)

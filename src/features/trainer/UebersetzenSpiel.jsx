@@ -11,6 +11,7 @@ import {
 } from '../../core/satzChallenge'
 import { trainerSatzChallengeErzeugen, trainerSatzChallengeBewerten } from './trainerApi'
 import Sprachantwort from '../../shared/Sprachantwort'
+import SatzHilfe from '../../shared/SatzHilfe'
 
 /* ============================================================
    ÜBERSETZUNGSSPIEL (Trainer, Franz 07.09.)
@@ -272,6 +273,8 @@ function UebersetzenSpiel({ profile, words, onExit, t }) {
                           {s.en}
                         </p>
                       )}
+                      {/* fremde Wörter mit Übersetzung — sonst wäre die Aufgabe nicht lösbar */}
+                      <SatzHilfe hilfe={s.hilfe} lang={antwortLang} />
                       {phase === 'bewertet' ? (
                         <>
                           <p className="tc-antwort" lang={antwortLang}>

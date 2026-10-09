@@ -626,6 +626,28 @@
   color: var(--text-soft);
   line-height: 1.35;
 }
+/* Hilfe zu Wörtern, die noch nicht in der Bibliothek stehen (Franz
+   09.10.): ein Fremdwort ist erwünscht, aber nie ohne Übersetzung —
+   kleine Zettel unter der Aufgabe, je Wort einer */
+.tc-hilfe {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+}
+.tc-hilfe-wort {
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 13px;
+  line-height: 1.35;
+  color: var(--text-soft);
+  background: var(--surface-2, rgba(127, 127, 160, 0.12));
+  border: 1px solid var(--border, rgba(127, 127, 160, 0.25));
+}
+.tc-hilfe-wort b {
+  color: var(--text);
+  font-weight: 700;
+}
 
 .tc-feld {
   width: 100%;
