@@ -296,6 +296,8 @@ async function erzeugeBaukasten(profil, words, cards, grammatik, verlaufZeilen, 
   console.log(
     `    ${sekunden} s · ${(res?.saetze || []).length} geschrieben · ${saetze.length} genommen · Pflicht-Woerter drin ${pflichtDrin}/${kit.pflicht.length}`
   )
+  const d = res?.diagnose
+  if (d) console.log(`    Modell: ${d.rein} Tokens rein, ${d.raus} raus · Ende: ${d.stop}${d.anfang ? ` · Antwort-Anfang: ${JSON.stringify(d.anfang)}` : ''}`)
   for (const v of verworfen) console.log(`    fremdes Wort: ${v}`)
   for (const s of saetze) console.log(`    ${s.de}\n      -> ${s.ko}   [${s.grammatik.join(' + ')}]`)
   if (saetze.length < 3) {

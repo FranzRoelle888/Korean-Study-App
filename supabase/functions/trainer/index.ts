@@ -304,7 +304,21 @@ function parseExtract(text: string) {
 /* ---------- Anthropic ---------- */
 /* content ist meist ein String, beim Foto-Upload ein Array aus
    Bild- und Textblöcken — die API akzeptiert beides. */
-async function callModel(system: string, messages: { role: string; content: unknown }[], maxTokens = 1600, effort = 'medium') {
+/* opt (Satz-Baukasten, 09.10.):
+     ohneDenken  schaltet das unsichtbare Vor-Denken ganz ab. Die erste
+                 Probe lief 30 s und lieferte nichts Lesbares: das
+                 Denken hatte das ganze Antwort-Budget verbraucht. Für
+                 reines Schreiben aus einem fertigen Baukasten ist es
+                 unnötig — und es ist genau das, was langsam macht.
+     schema      erzwingt die Antwortform (JSON nach Schema). Das Modell
+                 KANN dann nichts anderes mehr schreiben — kein Vortext,
+                 kein Codeblock, kein „kein-json". */
+async function callModel(
+  system: string,
+  messages: { role: string; content: unknown }[],
+  maxTokens = 1600,
+  opt: { ohneDenken?: boolean; schema?: unknown } = {}
+) {
   const r = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
@@ -320,7 +334,11 @@ async function callModel(system: string, messages: { role: string; content: unkn
          komplett auf -> leere Antworten (Bug beim Übersetzungs-
          Vorschlag, 31.08.). Trainer-Arbeit braucht kein tiefes
          Grübeln — medium reicht und ist schneller. */
-      output_config: { effort },
+      output_config: {
+        effort: opt.ohneDenken ? 'low' : 'medium',
+        ...(opt.schema ? { format: { type: 'json_schema', schema: opt.schema } } : {}),
+      },
+      ...(opt.ohneDenken ? { thinking: { type: 'disabled' } } : {}),
       max_tokens: maxTokens,
       system: [{ type: 'text', text: system, cache_control: { type: 'ephemeral' } }],
       messages,
@@ -333,6 +351,8 @@ async function callModel(system: string, messages: { role: string; content: unkn
     text,
     inputTokens: data.usage?.input_tokens ?? 0,
     outputTokens: data.usage?.output_tokens ?? 0,
+    /* 'max_tokens' = abgeschnitten — für die Fehlersuche */
+    stopReason: String(data.stop_reason ?? ''),
   }
 }
 
@@ -1562,8 +1582,33 @@ Deno.serve(async (req) => {
               .join('\n'),
           },
         ],
-        2500,
-        'low'
+        /* Fünf, sechs kurze Sätze sind einige hundert Tokens; 4000 ist
+           reine Reserve und kostet nichts, solange sie leer bleibt */
+        4000,
+        {
+          ohneDenken: true,
+          schema: {
+            type: 'object',
+            properties: {
+              saetze: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    nr: { type: 'integer' },
+                    de: { type: 'string' },
+                    ko: { type: 'string' },
+                    w: { type: 'array', items: { type: 'integer' } },
+                  },
+                  required: ['nr', 'de', 'ko', 'w'],
+                  additionalProperties: false,
+                },
+              },
+            },
+            required: ['saetze'],
+            additionalProperties: false,
+          },
+        }
       )
 
       type SatzB = { nr: number; de: string; ko: string; woerter: string[] }
@@ -1591,7 +1636,18 @@ Deno.serve(async (req) => {
         input_tokens: out.inputTokens,
         output_tokens: out.outputTokens,
       })
-      return json({ saetze: saetzeB, grund: grundB })
+      /* Diagnose mitgeben: Der Nachtlauf druckt sie ins Protokoll, damit
+         ein Fehlschlag nicht wieder nur „kein-json" heißt */
+      return json({
+        saetze: saetzeB,
+        grund: grundB,
+        diagnose: {
+          stop: out.stopReason,
+          rein: out.inputTokens,
+          raus: out.outputTokens,
+          ...(grundB === 'ok' ? {} : { anfang: out.text.slice(0, 200) }),
+        },
+      })
     }
 
     /* ---------- Tages-Challenge: Antworten bewerten ----------
