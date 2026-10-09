@@ -310,7 +310,9 @@ async function erzeugeInBank(profile, words) {
     } catch (e) {
       /* 400 = die Function kennt die neue Aktion noch nicht (noch nicht
          neu deployt) -> der alte Weg darunter springt ein */
-      if (!/^trainer 400/.test(e?.message || '')) {
+      /* … und 500 = die Function ist an der Anfrage gescheitert (z. B. von
+         der API abgelehnt). Auch dann lieber der alte Weg als kein Satz. */
+      if (!/^trainer (400|500)/.test(e?.message || '')) {
         console.warn('Baukasten-Runde gescheitert:', e?.message || e)
         return null
       }

@@ -1575,15 +1575,13 @@ Deno.serve(async (req) => {
       })
       const ersteP = grundstock.length + 1
       const letzteP = grundstock.length + pflicht.length
+      /* Bewusst ein einfacher TEXT („소금 = Salz; 공원 = Park") und keine
+         Liste von Objekten: Mit der Liste in jedem der sechs Satz-Fächer
+         lehnte die API die Antwortform ab („compiled grammar is too
+         large", Probe 09.10.). Die Function zerlegt den Text selbst. */
       const neueWoerter = {
-        type: 'array',
-        description: `Every content word of the sentence that is NOT in the kit: dictionary form plus its meaning in ${hilfsSprache}. Empty when all words are kit words.`,
-        items: {
-          type: 'object',
-          properties: { wort: { type: 'string' }, bedeutung: { type: 'string' } },
-          required: ['wort', 'bedeutung'],
-          additionalProperties: false,
-        },
+        type: 'string',
+        description: `The content words of the sentence that are NOT in the kit, as "word = meaning in ${hilfsSprache}" (dictionary form), several separated by "; ". Empty string when all words are kit words.`,
       }
       /* Die Reihenfolge der Felder ist die Reihenfolge, in der das Modell
          schreibt: erst die Wörter festlegen, dann der Satz in der
@@ -1651,8 +1649,8 @@ Deno.serve(async (req) => {
               `Write ${faecher.length} sentences (${faecher[0]}…${faecher[faecher.length - 1]}). HOW TO ANSWER — work in this order:`,
               `1. "verteilung": for every sentence, choose ${jeSatz === 1 ? 'ONE pattern' : `${jeSatz} patterns`} from the pool and the required word(s) (numbers ${ersteP}-${letzteP}) that go NATURALLY with it — think of a concrete everyday sentence for each pairing before you commit.`,
               lerntKoB
-                ? '2. "saetze": for every sentence, first "kit_nummern" = the numbers of ALL kit words the sentence uses, then "koreanisch" = the Korean sentence, then "neue_woerter" = its non-kit content words (usually none), then "deutsch" = exactly that sentence in GERMAN (Latin letters; this is what the learner reads; it must never contain Korean).'
-                : '2. "saetze": for every sentence, first "kit_nummern" = the numbers of ALL kit words the sentence uses, then "deutsch" = the German sentence, then "neue_woerter" = its non-kit content words (usually none), then "koreanisch" and "englisch" = exactly that sentence in Korean and in English. Both are what the learner reads; they must match each other and the German exactly.',
+                ? '2. "saetze": for every sentence, first "kit_nummern" = the numbers of ALL kit words the sentence uses, then "koreanisch" = the Korean sentence, then "neue_woerter" = its non-kit content words as "word = meaning; word = meaning" (usually an empty string), then "deutsch" = exactly that sentence in GERMAN (Latin letters; this is what the learner reads; it must never contain Korean).'
+                : '2. "saetze": for every sentence, first "kit_nummern" = the numbers of ALL kit words the sentence uses, then "deutsch" = the German sentence, then "neue_woerter" = its non-kit content words as "word = meaning; word = meaning" (usually an empty string), then "koreanisch" and "englisch" = exactly that sentence in Korean and in English. Both are what the learner reads; they must match each other and the German exactly.',
             ]
               .filter((z) => z !== '')
               .join('\n'),
@@ -1672,7 +1670,10 @@ Deno.serve(async (req) => {
               verteilung: fachObjekt({
                 type: 'object',
                 properties: {
-                  muster: { type: 'array', items: { type: 'string', enum: topf } },
+                  /* ohne enum: die feste Auswahlliste in jedem Fach bläht die
+                     Antwortform auf (bei „schwer" 12 Muster × 6 Fächer).
+                     Geprüft wird unten im Code gegen den Topf. */
+                  muster: { type: 'array', items: { type: 'string' }, description: 'Pattern(s) for this sentence, copied exactly from the pattern pool.' },
                   pflicht_nummern: nummernListe,
                 },
                 required: ['muster', 'pflicht_nummern'],
@@ -1720,8 +1721,13 @@ Deno.serve(async (req) => {
           /* welches Muster das Modell diesem Satz gegeben hat */
           const gewaehlt = j?.verteilung?.[f]?.muster
           const muster = (Array.isArray(gewaehlt) ? gewaehlt.map(String).filter((m: string) => topf.includes(m)) : []).slice(0, jeSatz)
-          const hilfe = (Array.isArray(s?.neue_woerter) ? s.neue_woerter : [])
-            .map((h: { wort?: unknown; bedeutung?: unknown }) => ({ wort: kurz(h?.wort, 40), bedeutung: kurz(h?.bedeutung, 60) }))
+          /* „소금 = Salz; 공원 = Park" -> [{ wort, bedeutung }] */
+          const hilfe = kurz(s?.neue_woerter, 300)
+            .split(/[;\n]/)
+            .map((teil: string) => {
+              const i = teil.indexOf('=')
+              return i === -1 ? { wort: '', bedeutung: '' } : { wort: teil.slice(0, i).trim().slice(0, 40), bedeutung: teil.slice(i + 1).trim().slice(0, 60) }
+            })
             .filter((h: { wort: string; bedeutung: string }) => h.wort && h.bedeutung)
             .slice(0, 4)
           const satz: SatzB = lerntKoB

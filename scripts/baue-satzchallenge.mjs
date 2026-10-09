@@ -93,7 +93,7 @@ async function trainer(body) {
   if (r.status === 429) throw new Fatal('Stundenlimit der Function erreicht')
   if (!r.ok) {
     if (/usage limits|credit balance|billing/i.test(text)) throw new Fatal(`Anthropic-Limit: ${text.slice(0, 160)}`)
-    throw new Error(`trainer ${r.status}: ${text.slice(0, 200)}`)
+    throw new Error(`trainer ${r.status}: ${text.slice(0, 700)}`)
   }
   return JSON.parse(text)
 }
@@ -297,6 +297,16 @@ async function erzeugeBaukasten(profil, words, cards, grammatik, verlaufZeilen, 
   } catch (e) {
     if (e instanceof Fatal) throw e
     if (/^trainer 400/.test(e.message)) throw new AlteFunction(e.message)
+    /* Die API lehnt die Anfrage selbst ab (z. B. Antwortform zu gross,
+       Probe 09.10.): das wird beim naechsten Versuch nicht besser —
+       Fehler zeigen und fuer diesen Lauf auf den alten Weg wechseln,
+       damit die Nacht nicht ohne Challenge endet. */
+    if (/invalid_request_error/.test(e.message)) {
+      console.error(`  Baukasten ${nr}: ${e.message}`)
+      /* in der Probe (Trockenlauf) nur zeigen — kein teurer Umweg */
+      if (TROCKEN) return null
+      throw new AlteFunction(e.message)
+    }
     console.error(`  Baukasten ${nr}: ${e.message}`)
     return null
   }
@@ -377,7 +387,7 @@ async function fuelle(profil) {
         continue
       } catch (e) {
         if (!(e instanceof AlteFunction)) throw e
-        console.warn('  Die Function kennt den Baukasten noch nicht (nicht neu deployt) — alter Weg.')
+        console.warn('  Baukasten nicht nutzbar (Function nicht neu deployt oder Anfrage abgelehnt) — alter Weg.')
         baukasten = false
       }
     }

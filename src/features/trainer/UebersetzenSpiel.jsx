@@ -70,7 +70,9 @@ function UebersetzenSpiel({ profile, words, onExit, t }) {
       return true
     } catch (e) {
       const msg = e?.message || ''
-      if (/^trainer 400/.test(msg)) return false
+      /* 400 = Function kennt die Aktion noch nicht, 500 = sie ist an der
+         Anfrage gescheitert — beide Male springt der alte Weg ein */
+      if (/^trainer (400|500)/.test(msg)) return false
       setFehler(msg === 'rate-limit' ? t.challengeLimit : `${t.spielFehler} (${msg === 'zeit' ? 'timeout' : msg || '?'})`)
       setPhase('setup')
       return true
