@@ -1113,7 +1113,14 @@ export function dueCards(words, cards) {
   ]
   /* Wie viel WIRKLICH faellig ist (ungedeckelt) — steuert den
      Neu-Stopp; die Zahl haengt als Eigenschaft am Stapel */
-  stapel.faelligGesamt = all.filter((c) => c.reps > 0).length + again.length + fresh.length
+  /* Was HEUTE angelegt wurde, zählt hier NICHT mit (Franz 09.10.):
+     Von Hand eingetragene Wörter sollen die neuen Wörter des Tages
+     nicht verdrängen — sonst kippte ein Tag mit 70 fälligen Karten
+     nach zwölf Hand-Einträgen in den Stau, und sogar die gerade
+     eingeführten Tageswörter selbst konnten das dritte blockieren.
+     Ab morgen sind diese Karten ganz normale fällige Karten; zu viel
+     Eingetragenes regelt sich dann von selbst über die Grenzen. */
+  stapel.faelligGesamt = all.filter((c) => c.reps > 0).length + again.length + rueckstand.length
   return stapel
 }
 
