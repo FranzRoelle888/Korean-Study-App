@@ -200,8 +200,8 @@ export function trainerSatzChallengeErzeugen({
    ausgewählt (core/baukasten.js, baueAnfrage), das Modell schreibt nur
    noch -> { saetze: [{nr, de, ko, woerter}], grund }. Bricht nach 25 s
    selbst ab (Fehler 'zeit'). */
-export function trainerSatzBaukasten(anfrage) {
-  return call(anfrage, { timeoutMs: 25000 })
+export function trainerSatzBaukasten(anfrage, timeoutMs = 25000) {
+  return call(anfrage, { timeoutMs })
 }
 
 /* Antworten bewerten -> { ergebnisse: [{nr, urteil, korrektur, hinweis}], fazit } */

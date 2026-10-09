@@ -35,6 +35,10 @@ on:
         description: 'Trockenlauf (erzeugen und anzeigen, nichts speichern)'
         type: boolean
         default: false
+      schnell:
+        description: 'Baukasten im SCHNELLEN Gang (ohne Vor-Denken, wie live im Spiel) statt gruendlich'
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -56,6 +60,7 @@ jobs:
           set -o pipefail
           FLAGS="--profil ${{ inputs.profil || 'beide' }} --anzahl ${{ inputs.anzahl || 3 }}"
           if [ "${{ inputs.dry }}" = "true" ]; then FLAGS="$FLAGS --dry"; fi
+          if [ "${{ inputs.schnell }}" = "true" ]; then FLAGS="$FLAGS --schnell"; fi
           echo "Schalter: $FLAGS"
           node scripts/baue-satzchallenge.mjs $FLAGS 2>&1 | tee lauf.log
 

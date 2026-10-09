@@ -205,7 +205,11 @@ async function ladeVerlauf(profile) {
    Läuft der Aufruf in die 25-Sekunden-Grenze oder reißt das Netz, gibt
    es genau EINEN zweiten Versuch — nie wegen der Satzqualität.
    -> { saetze: [{ de, ko, woerter, grammatik }], verworfen } */
-export async function baukastenRunde({ profile, words, anzahl = 5, schwierigkeit = 'mittel', wunsch = '', merken = false }) {
+/* gruendlich = mit Vor-Denken (bessere Sätze, aber ein Vielfaches der
+   Zeit): nur für Runden, auf die niemand wartet. Der schnelle Gang
+   bricht nach 25 s ab und versucht es einmal neu; der gründliche
+   bekommt 55 s und keinen zweiten Versuch. */
+export async function baukastenRunde({ profile, words, anzahl = 5, schwierigkeit = 'mittel', wunsch = '', merken = false, gruendlich = false }) {
   const [karten, grammatik, verlauf] = await Promise.all([ladeKartenStand(profile), grammatikMitStand(profile), ladeVerlauf(profile)])
   const musterWahl = waehleMuster({
     grammatik,
@@ -225,16 +229,17 @@ export async function baukastenRunde({ profile, words, anzahl = 5, schwierigkeit
   })
   if (kit.pflicht.length + kit.auswahl.length + kit.grundstock.length < 15) throw new Error('zu-wenig-woerter')
 
-  const anfrage = baueAnfrage({ profile, kit, musterWahl, anzahl, schwierigkeit, wunsch })
+  const anfrage = baueAnfrage({ profile, kit, musterWahl, anzahl, schwierigkeit, wunsch, gruendlich })
+  const warte = gruendlich ? 55000 : 25000
   let res
   try {
-    res = await trainerSatzBaukasten(anfrage)
+    res = await trainerSatzBaukasten(anfrage, warte)
   } catch (e) {
     const technisch = e?.message === 'zeit' || e?.message === 'netz' || /Failed to fetch|Load failed|trainer 5\d\d/.test(e?.message || '')
-    if (!technisch) throw e
-    res = await trainerSatzBaukasten(anfrage)
+    if (!technisch || gruendlich) throw e
+    res = await trainerSatzBaukasten(anfrage, warte)
   }
-  const { saetze, verworfen } = pruefeSaetze({ saetze: res?.saetze, kit, plan: musterWahl.plan, anzahl })
+  const { saetze, verworfen } = pruefeSaetze({ saetze: res?.saetze, kit, bibliothek: words, plan: musterWahl.plan, anzahl })
   if (!saetze.length) throw new Error(`leer:${res?.grund || '?'}`)
   if (verworfen.length) console.warn('Baukasten: fremde Wörter in', verworfen.slice(0, 4))
   if (merken) merkeSpielRunde(profile, saetze)
@@ -267,7 +272,8 @@ export function ladeVor({ profile, words, anzahl, stufe }) {
     /* egal */
   }
   laedtVor = true
-  baukastenRunde({ profile, words, anzahl, schwierigkeit: stufe, merken: true })
+  /* niemand wartet darauf -> der gründliche Gang */
+  baukastenRunde({ profile, words, anzahl, schwierigkeit: stufe, merken: true, gruendlich: true })
     .then((r) => {
       if (r.saetze.length >= Math.min(3, anzahl)) {
         localStorage.setItem(VOR_KEY(profile), JSON.stringify({ t: Date.now(), anzahl, stufe, saetze: r.saetze }))

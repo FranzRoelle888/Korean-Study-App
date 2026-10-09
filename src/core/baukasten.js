@@ -239,10 +239,15 @@ export function waehleMuster({ grammatik, saetze = 6, schwierigkeit = 'mittel', 
 /* Schauplätze je Satz gibt es hier bewusst NICHT mehr (Probe 09.10.):
    Pflicht-Wort + Muster + Schauplatz war eine Vorgabe zu viel und
    erzeugte erzwungene Sätze. Die Abwechslung kommt aus den Wörtern. */
-export function baueAnfrage({ profile, kit, musterWahl, anzahl, schwierigkeit, wunsch = '' }) {
+/* gruendlich (dritte Fassung): mit Vor-Denken — besser, aber langsam.
+   Für alles, worauf niemand wartet (Nachtlauf, vorgeladene Runde).
+   Die Muster gehen als TOPF mit: welches Muster zu welchem Satz und
+   welchem Pflicht-Wort passt, entscheidet das Modell. */
+export function baueAnfrage({ profile, kit, musterWahl, anzahl, schwierigkeit, wunsch = '', gruendlich = false }) {
   return {
     action: 'satzBaukasten',
     profile,
+    gruendlich,
     anzahl,
     schwierigkeit,
     wunsch,
@@ -274,6 +279,10 @@ const FREI = [
   '하나', '둘', '셋', '넷', '다섯', '여섯', '일곱', '여덟', '아홉', '열', '스물', '서른', '마흔', '쉰',
   '한', '두', '세', '네', '스무', '일', '이', '삼', '사', '오', '육', '칠', '팔', '구', '십', '백', '천', '만',
   '시', '분', '살', '원', '년', '월', '개', '명', '번',
+  /* zusammengesetzte Zahlen und Kurzformen, die in der zweiten Probe
+     fälschlich als Fremdwort galten (열두 시, 뭘, 배우는 게) */
+  '열한', '열두', '열세', '열네', '열다섯', '열여섯', '열일곱', '열여덟', '열아홉',
+  '뭘', '뭐가', '게', '걸', '건', '전', '난', '이건', '그건', '저건', '여긴',
 ]
 /* Hilfsverben und Endungs-Stämme, die als eigenes Wort im Satz stehen */
 const HILFS = ['있', '없', '싶', '않', '되', '돼', '주', '하', '해', '보', '봐', '말', '같', '이에요', '예요', '아니']
@@ -332,8 +341,13 @@ function beginntMit(silben, form) {
    Sauber = kein fremdes Wort. „Knapp" (genau eines) füllt nur auf,
    wenn sonst zu wenige da wären — lieber ein grenzwertiges Wort als
    gar keine Aufgabe (Regel vom 08.09.). */
-export function pruefeSaetze({ saetze, kit, plan = [], anzahl }) {
-  const formen = varianten([...kit.pflicht, ...kit.auswahl, ...kit.grundstock])
+/* bibliothek: ALLE Wörter des Lerners [{ ko, pos }]. Gegen sie wird
+   geprüft, nicht gegen den Baukasten (zweite Probe 09.10.): Der
+   Baukasten LENKT das Modell, aber ein Wort wie 저녁 oder 밥, das Franz
+   längst kann, ist kein Fremdwort, nur weil es heute nicht im Kasten
+   lag. Fremd ist, was er noch nie gelernt hat. */
+export function pruefeSaetze({ saetze, kit, bibliothek = [], plan = [], anzahl }) {
+  const formen = varianten([...kit.pflicht, ...kit.auswahl, ...kit.grundstock, ...bibliothek])
   const hilfs = HILFS.map((s) => [...s])
   const frei = new Set(FREI)
   const fremdIn = (ko) => {
@@ -359,8 +373,9 @@ export function pruefeSaetze({ saetze, kit, plan = [], anzahl }) {
       de: s.de,
       ko: s.ko,
       woerter: Array.isArray(s.woerter) ? s.woerter : [],
-      /* Die Muster kennt die App selbst — sie hat sie dem Satz zugeteilt */
-      grammatik: plan[(Number(s.nr) || 0) - 1] ?? [],
+      /* Das Muster hat das Modell dem Satz aus dem Topf zugeteilt; fehlt
+         die Angabe, gilt die Reihenfolge des Plans */
+      grammatik: Array.isArray(s.muster) && s.muster.length ? s.muster : (plan[(Number(s.nr) || 0) - 1] ?? []),
     }
     if (fremd.length === 0) sauber.push(satz)
     else if (fremd.length === 1) knapp.push(satz)

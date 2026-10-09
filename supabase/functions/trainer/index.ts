@@ -317,7 +317,7 @@ async function callModel(
   system: string,
   messages: { role: string; content: unknown }[],
   maxTokens = 1600,
-  opt: { ohneDenken?: boolean; schema?: unknown } = {}
+  opt: { ohneDenken?: boolean; schema?: unknown; effort?: string } = {}
 ) {
   const r = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -335,7 +335,7 @@ async function callModel(
          Vorschlag, 31.08.). Trainer-Arbeit braucht kein tiefes
          Grübeln — medium reicht und ist schneller. */
       output_config: {
-        effort: opt.ohneDenken ? 'low' : 'medium',
+        effort: opt.effort ?? (opt.ohneDenken ? 'low' : 'medium'),
         ...(opt.schema ? { format: { type: 'json_schema', schema: opt.schema } } : {}),
       },
       ...(opt.ohneDenken ? { thinking: { type: 'disabled' } } : {}),
@@ -1542,22 +1542,29 @@ Deno.serve(async (req) => {
             ? 'HARD: 9-13 words per sentence. Each sentence uses BOTH of its required patterns and has at least two of {time, place, object, reason}. At least one question and one negation in the round.'
             : 'MEDIUM: 6-8 words per sentence. Besides the required pattern you MAY add one more pattern from the allowed list where it is natural. At least one question in the round.'
 
-      /* ZWEITE FASSUNG nach der Probe vom 09.10. Ohne Vor-Denken war der
-         Lauf schnell (4-5 s), aber: einmal kam nur EIN Satz, die
-         „deutsche" Zeile war Koreanisch, nur 5-6 von 8 Pflicht-Wörtern
-         kamen vor und es rutschten Fremdwörter hinein. Ein Modell, das
-         nicht vordenken darf, braucht die Denkschritte in der ANTWORT:
-           1. erst „verteilung": welche Pflicht-Wörter in welchen Satz
-           2. je Satz erst die Wort-Nummern, DANN der koreanische Satz
-              aus genau diesen Wörtern, DANN die deutsche Übersetzung
-         Die Antwortform hat dafür feste Fächer s1…sN (genau so viele
-         Sätze wie Plan-Zeilen — „nur einer" ist nicht mehr möglich) und
-         sprechende Feldnamen (koreanisch / deutsch).
-         Die Schauplätze je Satz sind gestrichen: Pflicht-Wort + Muster +
-         Schauplatz war eine Vorgabe zu viel und erzeugte erzwungene
-         Sätze („Ich gehe ins Krankenhaus, um Hunde-Erfahrung zu
-         sammeln"). */
+      /* DRITTE FASSUNG (nach der zweiten Probe, 09.10.).
+         Was die Proben gezeigt haben:
+         1. Mit Vor-Denken und kleinem Budget: 30 s, nichts Lesbares.
+         2. Ohne Vor-Denken: schnell (6 s) und zuverlässig in der FORM,
+            aber jeder fünfte Satz war inhaltlich schwach — erzwungene
+            Paarungen („Die Toilette und der Mann warten"), Muster gar
+            nicht benutzt, einmal sagte die deutsche Aufgabe etwas
+            anderes als die koreanische Lösung.
+         Daraus zwei Änderungen:
+         a) Die App teilt die Muster nicht mehr FEST den Sätzen zu. Sie
+            gibt einen Topf von Mustern vor; das Modell paart selbst
+            Muster und Pflicht-Wörter so, dass es passt (물 mit „N 주세요"
+            statt 화장실 mit „N하고"). Die Paarung steht als erster
+            Schritt in der Antwort („verteilung").
+         b) Zwei Gangarten. gruendlich = mit Vor-Denken: für alles, worauf
+            niemand wartet (Nachtlauf, im Hintergrund vorgeladene
+            Spielrunde). Ohne = schnell: nur wenn Franz gerade auf den
+            Knopf gedrückt hat. */
+      const gruendlich = body.gruendlich === true
       const faecher = plan.map((_p: unknown, i: number) => `s${i + 1}`)
+      const topf = [...new Set(plan.flatMap((p: { muster: string[] }) => p.muster))] as string[]
+      const jeSatz = Math.max(1, ...plan.map((p: { muster: string[] }) => p.muster.length))
+      if (!topf.length) return json({ error: 'empty' }, 400)
       const nummernListe = { type: 'array', items: { type: 'integer' } }
       const fachObjekt = (inhalt: unknown) => ({
         type: 'object',
@@ -1571,14 +1578,15 @@ Deno.serve(async (req) => {
       const out = await callModel(
         [
           'You write translation exercises for a German adult learning Korean (A1-A2). He reads a German sentence and writes it in Korean.',
-          'You get a small KIT of numbered Korean words in three rings, and a PLAN that names the grammar pattern of each sentence. You write one Korean sentence per plan line plus its German translation.',
+          'You get a small KIT of numbered Korean words in three rings and a POOL of grammar patterns. You write Korean sentences plus their German translation.',
           'RULES:',
-          '- Every content word of the Korean sentence must be a kit word (any ring). Conjugation, polite endings and particles are fine. No proper nouns. If the sentence you have in mind needs a word that is not in the kit, write a different sentence — never add the word.',
+          '- SENSE COMES FIRST. Every sentence is a plain, plausible everyday statement or question that a Korean would actually say, and it makes sense on its own. Never combine words into something odd just to use them, and never bend a pattern into a place where it does not belong.',
+          '- Every content word of the Korean sentence should be a kit word (any ring). Conjugation, polite endings and particles are fine. No proper nouns. If the sentence you have in mind needs a word that is not in the kit, write a different sentence.',
           '- Always free and NOT kit words: particles, pronouns, question words, negation, numbers of both systems with clock times, prices and ages, 있다/없다/이다/하다/되다, and the short connectors 그리고/그래서/하지만/그런데.',
-          '- REQUIRED words: every required word appears in exactly one sentence, and every sentence contains at least one required word.',
-          '- Each sentence clearly uses the pattern(s) of its plan line. Besides that, only grammar from the ALLOWED PATTERNS list. Polite 해요체 throughout.',
-          '- ONE sentence per plan line (two short clauses only when the pattern itself joins clauses). Each sentence must make sense on its own: a plain, plausible everyday statement or question that a Korean would actually say. Sense comes first — never combine words into something odd just to use them.',
-          '- Vary the subject (I / you / we / he / she / people).',
+          '- REQUIRED words: every sentence contains at least one required word, and no required word is used twice. Place as many as fit naturally — leaving one out is better than forcing it.',
+          '- PATTERN POOL: every sentence visibly uses its pattern(s) from the pool, and no pool pattern is used twice. Besides that, only grammar from the ALLOWED PATTERNS list. Polite 해요체 throughout.',
+          '- ONE sentence per slot (two short clauses only when the pattern itself joins clauses). Vary the subject (I / you / we / he / she / people).',
+          '- The German line says EXACTLY what the Korean line says — same meaning, same tense, same subject. If your Korean came out different from what you intended, translate the Korean as it stands.',
           '',
           'ALLOWED PATTERNS:',
           erlaubt.map((g: { muster: string; name: string; beispiel: string }) => `${g.muster} (${g.name}) e.g. ${g.beispiel}`).join('\n'),
@@ -1599,14 +1607,12 @@ Deno.serve(async (req) => {
               'KIT RING 2 — OPTIONAL WORDS (use where they fit):',
               auswahl.length ? auswahl.map(ab(grundstock.length + pflicht.length)).join('; ') : '(none)',
               '',
-              'PLAN:',
-              plan
-                .map((p: { muster: string[] }, i: number) => `s${i + 1}: pattern ${p.muster.join(' AND ') || '(free choice from the allowed list)'}`)
-                .join('\n'),
+              `PATTERN POOL (${jeSatz} per sentence, each at most once):`,
+              topf.join('  |  '),
               '',
-              'HOW TO ANSWER — work in this order:',
-              `1. "verteilung": for every sentence ${faecher[0]}…${faecher[faecher.length - 1]}, the numbers of the REQUIRED words (${ersteP}-${letzteP}) you put into it. Spread ALL required words over the sentences, each number exactly once, and give each sentence the required word(s) that go naturally with its pattern.`,
-              '2. "saetze": for every sentence, first "kit_nummern" = the numbers of ALL kit words the sentence will use (its required words from step 1 plus basic/optional words), then "koreanisch" = the Korean sentence built from exactly these words, then "deutsch" = the same sentence in GERMAN (German words in Latin letters — this is what the learner reads; it must never contain Korean).',
+              `Write ${faecher.length} sentences (${faecher[0]}…${faecher[faecher.length - 1]}). HOW TO ANSWER — work in this order:`,
+              `1. "verteilung": for every sentence, choose ${jeSatz === 1 ? 'ONE pattern' : `${jeSatz} patterns`} from the pool and the required word(s) (numbers ${ersteP}-${letzteP}) that go NATURALLY with it — think of a concrete everyday sentence for each pairing before you commit.`,
+              '2. "saetze": for every sentence, first "kit_nummern" = the numbers of ALL kit words the sentence uses, then "koreanisch" = the Korean sentence, then "deutsch" = exactly that sentence in GERMAN (Latin letters; this is what the learner reads; it must never contain Korean).',
             ]
               .filter((z) => z !== '')
               .join('\n'),
@@ -1615,21 +1621,29 @@ Deno.serve(async (req) => {
         /* Die API verlangt eine Obergrenze — ganz weglassen geht nicht.
            16000 ist so hoch, dass sie nie greift (Franz 09.10.: lieber
            etwas teurer als abgeschnitten). Bezahlt wird nur, was das
-           Modell wirklich schreibt: fünf, sechs kurze Sätze sind einige
-           hundert Tokens. */
+           Modell wirklich schreibt (und im gründlichen Gang denkt). */
         16000,
         {
-          ohneDenken: true,
+          ohneDenken: !gruendlich,
+          effort: 'low',
           schema: {
             type: 'object',
             properties: {
-              verteilung: fachObjekt(nummernListe),
+              verteilung: fachObjekt({
+                type: 'object',
+                properties: {
+                  muster: { type: 'array', items: { type: 'string', enum: topf } },
+                  pflicht_nummern: nummernListe,
+                },
+                required: ['muster', 'pflicht_nummern'],
+                additionalProperties: false,
+              }),
               saetze: fachObjekt({
                 type: 'object',
                 properties: {
                   kit_nummern: nummernListe,
                   koreanisch: { type: 'string', description: 'The Korean sentence, in Hangul.' },
-                  deutsch: { type: 'string', description: 'The same sentence translated into German. Latin letters only, no Hangul.' },
+                  deutsch: { type: 'string', description: 'Exactly that sentence in German. Latin letters only, no Hangul.' },
                 },
                 required: ['kit_nummern', 'koreanisch', 'deutsch'],
                 additionalProperties: false,
@@ -1641,7 +1655,7 @@ Deno.serve(async (req) => {
         }
       )
 
-      type SatzB = { nr: number; de: string; ko: string; woerter: string[] }
+      type SatzB = { nr: number; de: string; ko: string; woerter: string[]; muster: string[] }
       const saetzeB: SatzB[] = []
       let grundB = 'ok'
       let ohneDeutsch = 0
@@ -1662,7 +1676,10 @@ Deno.serve(async (req) => {
             ? s.kit_nummern.map((n: unknown) => Number(n)).filter((n: number) => Number.isInteger(n) && n >= 1 && n <= alle.length)
             : []
           const woerter = [...new Set(nummern.map((n: number) => alle[n - 1].ko))] as string[]
-          saetzeB.push({ nr: i + 1, de, ko, woerter })
+          /* welches Muster das Modell diesem Satz gegeben hat */
+          const gewaehlt = j?.verteilung?.[f]?.muster
+          const muster = (Array.isArray(gewaehlt) ? gewaehlt.map(String).filter((m: string) => topf.includes(m)) : []).slice(0, jeSatz)
+          saetzeB.push({ nr: i + 1, de, ko, woerter, muster })
         })
         if (!saetzeB.length) grundB = ohneDeutsch ? 'aufgabe-nicht-deutsch' : 'keine-saetze'
       } catch {
@@ -1680,6 +1697,7 @@ Deno.serve(async (req) => {
         saetze: saetzeB,
         grund: grundB,
         diagnose: {
+          gang: gruendlich ? 'gruendlich' : 'schnell',
           stop: out.stopReason,
           rein: out.inputTokens,
           zwischenspeicher: out.cacheTokens,

@@ -51,6 +51,10 @@ const argWert = (name) => {
   return i === -1 ? null : process.argv[i + 1]
 }
 const TROCKEN = process.argv.includes('--dry')
+/* Baukasten: der Nachtlauf nimmt den GRUENDLICHEN Gang (mit Vor-Denken)
+   — nachts wartet niemand. --schnell erzwingt den schnellen Gang ohne
+   Vor-Denken, wie ihn das Spiel live benutzt (zum Vergleichen). */
+const SCHNELL = process.argv.includes('--schnell')
 const PROFIL_WAHL = argWert('--profil') ?? 'beide'
 const ZIEL = Number(argWert('--anzahl') ?? 3)
 const TYP = 'satzchallenge'
@@ -278,11 +282,11 @@ async function erzeugeBaukasten(profil, words, cards, grammatik, verlaufZeilen, 
   })
   console.log(`  Baukasten ${nr}: Pflicht ${kit.pflicht.length} · Auswahl ${kit.auswahl.length} · Grundstock ${kit.grundstock.length}`)
   console.log(`    Pflicht-Woerter: ${kit.pflicht.map((w) => w.ko).join(', ')}`)
-  console.log(`    Pflicht-Muster:  ${musterWahl.plan.map((m) => m.join(' + ')).join(' | ')}`)
+  console.log(`    Muster-Topf:     ${musterWahl.plan.map((m) => m.join(' + ')).join(' | ')}`)
   const start = Date.now()
   let res
   try {
-    res = await trainer(baueAnfrage({ profile: profil, kit, musterWahl, anzahl: 5, schwierigkeit: 'mittel' }))
+    res = await trainer(baueAnfrage({ profile: profil, kit, musterWahl, anzahl: 5, schwierigkeit: 'mittel', gruendlich: !SCHNELL }))
   } catch (e) {
     if (e instanceof Fatal) throw e
     if (/^trainer 400/.test(e.message)) throw new AlteFunction(e.message)
@@ -290,7 +294,14 @@ async function erzeugeBaukasten(profil, words, cards, grammatik, verlaufZeilen, 
     return null
   }
   const sekunden = ((Date.now() - start) / 1000).toFixed(1)
-  const { saetze, verworfen } = pruefeSaetze({ saetze: res?.saetze, kit, plan: musterWahl.plan, anzahl: 5 })
+  const { saetze, verworfen } = pruefeSaetze({
+    saetze: res?.saetze,
+    kit,
+    /* geprueft wird gegen die ganze Bibliothek, nicht nur den Baukasten */
+    bibliothek: words.map((w) => ({ ko: w.ko, pos: w.pos })),
+    plan: musterWahl.plan,
+    anzahl: 5,
+  })
   const drin = new Set(saetze.flatMap((s) => s.woerter.map(norm)))
   const pflichtDrin = kit.pflicht.filter((w) => drin.has(norm(w.ko))).length
   console.log(
@@ -299,7 +310,7 @@ async function erzeugeBaukasten(profil, words, cards, grammatik, verlaufZeilen, 
   const d = res?.diagnose
   if (d) {
     console.log(
-      `    Modell: ${d.rein} Tokens rein (+ ${d.zwischenspeicher ?? '?'} im Zwischenspeicher), ${d.raus} raus · Ende: ${d.stop}` +
+      `    Gang: ${d.gang ?? '?'} · Modell: ${d.rein} Tokens rein (+ ${d.zwischenspeicher ?? '?'} im Zwischenspeicher), ${d.raus} raus · Ende: ${d.stop}` +
         (d.ohneDeutsch ? ` · ${d.ohneDeutsch} Saetze ohne deutsche Aufgabe verworfen` : '') +
         (d.anfang ? ` · Antwort-Anfang: ${JSON.stringify(d.anfang)}` : '')
     )
