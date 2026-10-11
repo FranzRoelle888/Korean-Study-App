@@ -1565,7 +1565,7 @@ Deno.serve(async (req) => {
       /* Kennung dieser Fassung — steht in Diagnose UND Fehlermeldung,
          damit im Protokoll sichtbar ist, welcher Stand der Function
          gerade deployt ist (zweimal war das beim Testen unklar) */
-      const FASSUNG = 7
+      const FASSUNG = 8
       const satzZahl = plan.length
       const topf = [...new Set(plan.flatMap((p: { muster: string[] }) => p.muster))] as string[]
       const jeSatz = Math.max(1, ...plan.map((p: { muster: string[] }) => p.muster.length))
@@ -1592,13 +1592,20 @@ Deno.serve(async (req) => {
       })
       const ersteP = grundstock.length + 1
       const letzteP = grundstock.length + pflicht.length
-      /* Bewusst ein einfacher TEXT („소금 = Salz; 공원 = Park") und keine
-         Liste von Objekten: Mit der Liste in jedem der sechs Satz-Fächer
-         lehnte die API die Antwortform ab („compiled grammar is too
-         large", Probe 09.10.). Die Function zerlegt den Text selbst. */
+      /* ALLE Inhaltswörter mit Bedeutung (Fassung 8, Franz 11.10.).
+         Vorher sollte das Modell nur die Wörter AUSSERHALB des Baukastens
+         melden — das tat es unzuverlässig, und Franz bekam Sätze mit
+         fremden Wörtern ohne Übersetzung. Jetzt meldet es schlicht jedes
+         Inhaltswort in der Grundform; ob Franz bzw. 해인 es schon kennt,
+         entscheidet die App durch einen genauen Abgleich mit der ganzen
+         Bibliothek (core/baukasten.js). Was fehlt, steht als Hilfe unter
+         der Aufgabe.
+         Bewusst ein einfacher TEXT („소금 = Salz; 넣다 = hineintun") und
+         keine Liste von Objekten — damit war die Antwortform der API zu
+         groß („compiled grammar is too large", Probe 09.10.). */
       const neueWoerter = {
         type: 'string',
-        description: `The content words of the sentence that are NOT in the kit, as "word = meaning in ${hilfsSprache}" (dictionary form), several separated by "; ". Empty string when all words are kit words.`,
+        description: `ALL content words of the sentence (nouns, verbs, adjectives, adverbs — not particles, pronouns, numbers or auxiliaries) in dictionary form${lerntKoB ? '' : ', nouns with their article'}, each as "word = meaning in ${hilfsSprache}", separated by "; ".`,
       }
       /* Die Reihenfolge der Felder ist die Reihenfolge, in der das Modell
          schreibt: erst die Wörter festlegen, dann der Satz in der
@@ -1627,10 +1634,10 @@ Deno.serve(async (req) => {
           'RULES:',
           `- SENSE COMES FIRST. Every sentence is a plain, plausible everyday statement or question that a native speaker of ${zielB} would actually say, and it makes sense on its own. Never combine words into something odd just to use them, and never bend a pattern into a place where it does not belong.`,
           `- Build the ${zielB} sentence from kit words (any ring). ${lerntKoB ? 'Conjugation, polite endings and particles are fine.' : 'Inflection, conjugation, plural, cases and separable prefixes are fine.'} No proper nouns${lerntKoB ? '' : ' except country and city names'}.`,
-          `- You MAY use a content word that is not in the kit when the sentence needs it to sound natural — at most ONE per sentence and at most TWO in the whole round, and only a very common everyday word. Every such word MUST be listed in "neue_woerter" with its meaning in ${hilfsSprache}; the learner sees it as a hint.`,
+          `- You MAY use a content word that is not in the kit when the sentence needs it to sound natural — at most ONE per sentence and at most TWO in the whole round, and only a very common everyday word. Stay inside the kit wherever you can: every word outside the learner's own list has to be shown to them as a hint.`,
           lerntKoB
-            ? '- Always free and NOT kit words (never list them in neue_woerter): particles, pronouns, question words, negation, numbers of both systems with clock times, prices and ages, 있다/없다/이다/하다/되다, and the short connectors 그리고/그래서/하지만/그런데.'
-            : '- Always free and NOT kit words (never list them in neue_woerter): articles, pronouns, possessives, negation, prepositions, conjunctions, question words, numbers, sein/haben/werden and the modal verbs.',
+            ? '- Always free and NOT kit words: particles, pronouns, question words, negation, numbers of both systems with clock times, prices and ages, 있다/없다/이다/하다/되다, and the short connectors 그리고/그래서/하지만/그런데.'
+            : '- Always free and NOT kit words: articles, pronouns, possessives, negation, prepositions, conjunctions, question words, numbers, sein/haben/werden and the modal verbs.',
           '- REQUIRED words: every sentence contains at least one required word, and no required word is used twice. Place as many as fit naturally — leaving one out is better than forcing it.',
           `- PATTERN POOL: every sentence visibly uses its pattern(s) from the pool${topfReicht ? ', and no pool pattern is used twice' : '; the pool is small, so patterns may repeat — but use every pool pattern at least once'}. Besides that, only grammar from the ALLOWED PATTERNS list. ${lerntKoB ? 'Polite 해요체 throughout — the learner always answers in the 요 form.' : 'Everyday spoken German; nouns always with the right article. Address people with "du" (she learns the informal form first) — use "Sie" only when the pattern itself is about it.'}`,
           '- ONE sentence per slot (two short clauses only when the pattern itself joins clauses). Vary the subject (I / you / we / he / she / people).',
@@ -1666,13 +1673,13 @@ Deno.serve(async (req) => {
               `Write EXACTLY ${satzZahl} sentences, numbered "nr" 1…${satzZahl}. Both lists below must have exactly ${satzZahl} entries — never stop early. HOW TO ANSWER — work in this order:`,
               `1. "verteilung": for every sentence, choose ${jeSatz === 1 ? 'ONE pattern' : `${jeSatz} patterns`} from the pool and the required word(s) (numbers ${ersteP}-${letzteP}) that go NATURALLY with it — think of a concrete everyday sentence for each pairing before you commit.`,
               lerntKoB
-                ? '2. "saetze": for every sentence, first "kit_nummern" = the numbers of ALL kit words the sentence uses, then "koreanisch" = the Korean sentence, then "neue_woerter" = its non-kit content words as "word = meaning; word = meaning" (usually an empty string), then "deutsch" = exactly that sentence in GERMAN (Latin letters; this is what the learner reads; it must never contain Korean).'
-                : '2. "saetze": for every sentence, first "kit_nummern" = the numbers of ALL kit words the sentence uses, then "deutsch" = the German sentence, then "neue_woerter" = its non-kit content words as "word = meaning; word = meaning" (usually an empty string), then "koreanisch" and "englisch" = exactly that sentence in Korean and in English. Both are what the learner reads; they must match each other and the German exactly.',
+                ? '2. "saetze": for every sentence, first "kit_nummern" = the numbers of ALL kit words the sentence uses, then "koreanisch" = the Korean sentence, then "neue_woerter" = ALL its content words in dictionary form as "word = meaning; word = meaning", then "deutsch" = exactly that sentence in GERMAN (Latin letters; this is what the learner reads; it must never contain Korean).'
+                : '2. "saetze": for every sentence, first "kit_nummern" = the numbers of ALL kit words the sentence uses, then "deutsch" = the German sentence, then "neue_woerter" = ALL its content words in dictionary form as "word = meaning; word = meaning", then "koreanisch" and "englisch" = exactly that sentence in Korean and in English. Both are what the learner reads; they must match each other and the German exactly.',
               /* nur im Notfall-Gang ohne erzwungene Form: die Form
                  ausgeschrieben, damit trotzdem lesbares JSON kommt */
               mitSchema
                 ? ''
-                : `Reply with ONLY this JSON, nothing before or after it: {"verteilung":[{"nr":1,"muster":["<pattern from the pool>"],"pflicht_nummern":[<numbers>]}, …],"saetze":[{"nr":1,"kit_nummern":[<numbers>],${lerntKoB ? '"koreanisch":"…","neue_woerter":"","deutsch":"…"' : '"deutsch":"…","neue_woerter":"","koreanisch":"…","englisch":"…"'}}, …]}`,
+                : `Reply with ONLY this JSON, nothing before or after it: {"verteilung":[{"nr":1,"muster":["<pattern from the pool>"],"pflicht_nummern":[<numbers>]}, …],"saetze":[{"nr":1,"kit_nummern":[<numbers>],${lerntKoB ? '"koreanisch":"…","neue_woerter":"word = meaning; …","deutsch":"…"' : '"deutsch":"…","neue_woerter":"word = meaning; …","koreanisch":"…","englisch":"…"'}}, …]}`,
             ]
               .filter((z) => z !== '')
               .join('\n'),
@@ -1757,14 +1764,14 @@ Deno.serve(async (req) => {
           const gewaehlt = (verteilt.find((v: { nr?: unknown }) => Number(v?.nr) === nr) ?? verteilt[i])?.muster
           const muster = (Array.isArray(gewaehlt) ? gewaehlt.map(String).filter((m: string) => topf.includes(m)) : []).slice(0, jeSatz)
           /* „소금 = Salz; 공원 = Park" -> [{ wort, bedeutung }] */
-          const hilfe = kurz(s?.neue_woerter, 300)
+          const hilfe = kurz(s?.neue_woerter, 600)
             .split(/[;\n]/)
             .map((teil: string) => {
               const i = teil.indexOf('=')
               return i === -1 ? { wort: '', bedeutung: '' } : { wort: teil.slice(0, i).trim().slice(0, 40), bedeutung: teil.slice(i + 1).trim().slice(0, 60) }
             })
             .filter((h: { wort: string; bedeutung: string }) => h.wort && h.bedeutung)
-            .slice(0, 4)
+            .slice(0, 12)
           const satz: SatzB = lerntKoB
             ? { nr, de: deutsch, ko: koreanisch, woerter, muster, hilfe }
             : { nr, de: koreanisch, ko: deutsch, woerter, muster, hilfe }
@@ -1825,27 +1832,100 @@ Deno.serve(async (req) => {
             .filter((p: { de: string }) => p.de)
         : []
       if (!paare.length) return json({ error: 'empty' }, 400)
+      /* NEUE BEWERTUNG (Franz 11.10.) — milder, ausführlicher, konstruktiv.
+         Anlass: 해인s Tages-Challenge. „Wir sind spät, weil die Reise lang
+         ist" und „Das ist sehr schwach heute" wurden gelb (Redewendung
+         bzw. Wortstellung), „Magst du …?" gelb wegen du statt Sie, und
+         bei EINEM fehlenden Wort („while") stand nur der Fehler da,
+         nicht, dass der ganze Rest stimmte. Das wirkt willkürlich — und
+         was man nicht vorher wissen kann, frustriert.
+         Die Übung prüft Grammatik und Wortschatz, NICHT Stil und
+         Redewendungen. Deshalb:
+           grün  = richtig, auch wenn man es schöner sagen könnte
+                   (der schönere Ausdruck steht dann als Tipp darunter)
+           gelb  = genau EIN kleiner echter Fehler, Rest stimmt
+           rot   = der Satzbau trägt nicht, mehrere Fehler, anderer Sinn
+         Und das Feedback nennt zuerst, was gelungen ist. */
+      const bewBeispiele = bewLerntKo
+        ? [
+            'EXAMPLES of the intended mildness (Korean answers):',
+            '- Object or subject particle dropped as people do when speaking ("저 내일 학교 가요") -> gruen, at most a tiny optional tip.',
+            '- A correct sentence with a different but fitting word, or a different order of time and place -> gruen.',
+            '- Everything right but ONE particle wrong (에 instead of 에서) -> gelb: say that vocabulary, verb form and order were right, then explain the one particle.',
+            '- The answer is not in the polite 요 form (반말 or 합니다체) but otherwise right -> gelb with a short reminder that this exercise expects 해요체.',
+          ]
+        : [
+            'EXAMPLES of the intended mildness (German answers):',
+            '- "Wir sind spät, weil die Reise lang ist." for "we come late because the trip is long" -> gruen. Tip: "Wir kommen spät" or "Wir sind spät dran" sounds a bit more natural — an option, not a mistake.',
+            '- "Das ist sehr schwach heute." -> gruen (time word at the end is fine in everyday German). At most a tip that "Heute ist das sehr schwach" is also common.',
+            '- "Magst du im Café Bier trinken?" when the model used "Sie" or "gern" -> gruen. du and Sie are both accepted; "Trinkst du gern …?" may be offered as a tip.',
+            '- "Was machst du while du in dem Krankenhaus wartest?" -> gelb: say clearly that the whole sentence is built correctly — question, verb forms, the verb at the end of the sub-clause — and only ONE word was missing: "while" is "während".',
+            '- "Wann der Gast anrufen?" -> rot: the verb is not conjugated and not in second position ("Wann ruft der Gast an?"). Still name what was right (question word, vocabulary).',
+            '- "in dem Supermarkt" instead of "im Supermarkt", "Cafe" instead of "Café", a missing full stop -> never an error.',
+          ]
       const out = await callModel(
         [
-          `You grade a beginner's (A1-A2) ${bewZiel} translations. For each pair you get: the task sentence, a model ${bewZiel} translation, and the learner's answer.`,
-          `Verdicts: "gruen" = correct (meaning and grammar fine, even if worded differently from the model); "gelb" = acceptable but with a real remark (unnatural word order, missing but optional particle, slightly off nuance, wrong register that is still understandable); "rot" = a real error (wrong particle or case, wrong conjugation or tense, wrong article, wrong word, missing required word, meaning changed). Different but correct phrasing with other known words is gruen, not rot. Do not punish spacing${bewLerntKo ? '' : ' or capitalisation'}. Empty answer = rot.`,
+          `You give feedback on a beginner's (A1-A2) ${bewZiel} translations. For each item you get the task sentence, ONE possible model translation, and the learner's answer.`,
+          'The learner is an adult practising with their own vocabulary and the grammar they have learned so far. The exercise tests GRAMMAR and VOCABULARY — not idiom, style or elegance. Be a warm, constructive tutor, not a proofreader. Feedback that feels arbitrary, or that the learner could not have known in advance, makes them give up.',
+          '',
+          'HOW TO JUDGE',
+          '- The model translation is only an example. Any answer that a native speaker would understand as saying the same thing, in correct grammar, is CORRECT — with other words, another word order, simpler or more colloquial wording.',
+          `- NEVER lower the verdict for: a different but grammatical word order; a less idiomatic but grammatical phrasing; colloquial phrasing; a near-synonym; ${bewLerntKo ? 'particles dropped the way people drop them in speech' : 'du versus Sie; uncontracted forms like "in dem" for "im"'}; spelling slips and typos that leave the word recognisable; capitalisation; punctuation; spacing; missing optional words.`,
+          `- Count as a real error ONLY: wrong conjugation or wrong verb position; a wrong ${bewLerntKo ? 'particle or ending' : 'case, article or ending'} that breaks the grammar; wrong tense; a wrong or missing word that changes the meaning; a word left in another language; a missing required part of the sentence.`,
+          '',
+          'VERDICTS',
+          '- "gruen": correct by the rules above — including answers you would phrase more nicely yourself.',
+          '- "gelb": the sentence works and is mostly right, with exactly ONE small real error (one ending, article, case or particle; or one word that is unknown, wrong or left in another language while everything else is right).',
+          '- "rot": the sentence structure does not hold (verb not conjugated or in the wrong place), OR several real errors, OR the meaning is different, OR the answer is empty.',
+          'When you are torn between two verdicts, choose the milder one.',
+          '',
+          ...bewBeispiele,
+          '',
+          `WHAT TO WRITE — in ${bewErklaer}, warm and concrete, speaking to the learner directly`,
+          '- "hinweis" for gruen: ONE short sentence. If the answer is simply right: brief praise naming something specific they got right. If there is a nicer or more idiomatic way to say it: first say the answer is correct, then offer the alternative as an OPTIONAL tip and make clear it is not a mistake.',
+          '- "hinweis" for gelb and rot: 2-3 sentences. FIRST what they did right — be specific (word order, verb form, case, vocabulary …). THEN what to fix and WHY, in plain words, with the rule in a nutshell. When only a single word was missing or wrong, say explicitly that everything else was correct.',
+          `- "korrektur" for gelb and rot: the learner's OWN sentence, minimally fixed — keep their wording and their word choices wherever these are correct, do not swap in the model's — followed by the ${bewErklaer} translation in parentheses. For gruen: an empty string.`,
+          '- "fazit": 2-3 sentences. Start with what went well overall, then ONE thing to focus on next time. Encouraging, never scolding.',
           body.gesprochen
-            ? 'The answers were SPOKEN and transcribed word for word. Ignore missing punctuation, capitalisation, filler words and obvious transcription noise. Judge grammar, word choice and word order exactly as strictly as for written answers — the learner WANTS their real mistakes to show up.'
+            ? 'The answers were SPOKEN and transcribed word for word. Ignore missing punctuation, capitalisation, filler words and obvious transcription noise; judge grammar and word choice by the same rules as above.'
             : '',
-          `For gelb and rot: "korrektur" = the learner's sentence minimally fixed (keep their wording where possible), followed by the ${bewErklaer} translation in parentheses. "hinweis" = ONE short sentence in ${bewErklaer} saying what was wrong and why. For gruen: korrektur = the answer as is, hinweis = "" or a tiny optional tip.`,
-          `Reply with ONLY this JSON: {"ergebnisse":[{"nr":1,"urteil":"gruen|gelb|rot","korrektur":"...","hinweis":"..."}, ...],"fazit":"<one or two ${bewErklaer} sentences: what to keep in mind next time>"}`,
         ]
-          .filter(Boolean)
+          .filter((z) => z !== undefined)
           .join('\n'),
         [
           {
             role: 'user',
             content: paare
-              .map((p: { nr: number; de: string; muster: string; antwort: string }) => `${p.nr}. DE: ${p.de}\n   Model: ${p.muster}\n   Learner: ${p.antwort || '(leer)'}`)
+              .map((p: { nr: number; de: string; muster: string; antwort: string }) => `${p.nr}. Task: ${p.de}\n   One possible translation: ${p.muster}\n   Learner: ${p.antwort || '(empty)'}`)
               .join('\n'),
           },
         ],
-        2000
+        /* ausführlicheres Feedback + Nachdenken brauchen Platz */
+        6000,
+        {
+          schema: {
+            type: 'object',
+            properties: {
+              ergebnisse: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    nr: { type: 'integer' },
+                    urteil: { type: 'string', enum: ['gruen', 'gelb', 'rot'] },
+                    korrektur: { type: 'string' },
+                    hinweis: { type: 'string' },
+                  },
+                  required: ['nr', 'urteil', 'korrektur', 'hinweis'],
+                  additionalProperties: false,
+                },
+              },
+              fazit: { type: 'string' },
+            },
+            required: ['ergebnisse', 'fazit'],
+            additionalProperties: false,
+          },
+        }
       )
       let ergebnisse: { nr: number; urteil: string; korrektur: string; hinweis: string }[] = []
       let fazit = ''
@@ -1855,9 +1935,10 @@ Deno.serve(async (req) => {
           nr: Number(e.nr) || 0,
           urteil: ['gruen', 'gelb', 'rot'].includes(String(e.urteil)) ? String(e.urteil) : 'gelb',
           korrektur: typeof e.korrektur === 'string' ? e.korrektur.slice(0, 300) : '',
-          hinweis: typeof e.hinweis === 'string' ? e.hinweis.slice(0, 300) : '',
+          /* 2-3 Sätze statt einem: mehr Platz */
+          hinweis: typeof e.hinweis === 'string' ? e.hinweis.slice(0, 700) : '',
         }))
-        fazit = typeof j?.fazit === 'string' ? j.fazit.slice(0, 400) : ''
+        fazit = typeof j?.fazit === 'string' ? j.fazit.slice(0, 700) : ''
       } catch {
         /* unbrauchbar -> leer */
       }
@@ -2494,6 +2575,6 @@ Deno.serve(async (req) => {
     console.error(e)
     /* stand: welche Fassung des Satz-Baukastens deployt ist — bei
        Fehlersuche über das Nachtlauf-Protokoll sonst nicht erkennbar */
-    return json({ error: 'internal', stand: 'baukasten-7', detail: String(e) }, 500)
+    return json({ error: 'internal', stand: 'baukasten-8', detail: String(e) }, 500)
   }
 })

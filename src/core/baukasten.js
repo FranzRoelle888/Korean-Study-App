@@ -455,6 +455,38 @@ function prueferDe(alle) {
   }
 }
 
+/* ---------- Kennt der Lerner dieses Wort? (genauer Abgleich) ----------
+   Seit Fassung 8 meldet das Modell zu jedem Satz ALLE Inhaltswörter in
+   der Grundform. Ob eines davon schon in der Bibliothek steht, lässt
+   sich damit GENAU nachschlagen — Grundform gegen Grundform — statt
+   wie oben am gebeugten Satz zu raten. Was nicht drinsteht, wird zur
+   Hilfe unter der Aufgabe („소금 = Salz").
+   Großzügig nur an zwei Stellen: 공부 kennt, wer 공부하다 hat (und
+   umgekehrt), und bei mehrteiligen Einträgen („다음 달") zählt jedes
+   Teil. */
+const GRUND_KO = new Set(['있다', '없다', '하다', '되다', '이다', '아니다', '싶다', '않다'])
+function kenner(alle, deutsch) {
+  const sauber = (w) => (deutsch ? ohneArtikel(w) : norm(w)).replace(/[?!.…~]+$/, '')
+  const formen = new Set()
+  for (const w of alle) {
+    const ganz = sauber(w.ko)
+    if (!ganz) continue
+    formen.add(ganz)
+    for (const teil of ganz.split(' ')) formen.add(teil)
+    if (deutsch && w.plural) formen.add(sauber(w.plural))
+  }
+  const einzeln = (l) => {
+    if (deutsch) return FREI_DE.has(l) || formen.has(l)
+    if (FREI.includes(l) || GRUND_KO.has(l) || formen.has(l)) return true
+    /* 공부 <-> 공부하다 */
+    return (l.endsWith('하다') && formen.has(l.slice(0, -2))) || formen.has(l + '하다')
+  }
+  return (wort) => {
+    const l = sauber(wort)
+    return !l || einzeln(l) || l.split(' ').every((teil) => einzeln(teil))
+  }
+}
+
 /* saetze: Antwort der Function [{ nr, de, en?, ko, woerter, muster, hilfe }]
    („de" ist immer die Aufgabe, „ko" immer die Lösung in der Lernsprache)
    -> { saetze: die besten `anzahl`, verworfen: [Text] }
@@ -471,6 +503,7 @@ export function pruefeSaetze({ saetze, kit, bibliothek = [], plan = [], anzahl, 
   const deutsch = sprache === 'de'
   const alle = [...kit.pflicht, ...kit.auswahl, ...kit.grundstock, ...bibliothek]
   const pruefer = deutsch ? prueferDe(alle) : prueferKo(alle)
+  const kennt = kenner(alle, deutsch)
   const hatHangul = (t) => /[가-힣]/.test(t)
   const sauber = []
   const knapp = []
@@ -481,7 +514,9 @@ export function pruefeSaetze({ saetze, kit, bibliothek = [], plan = [], anzahl, 
     if (deutsch ? !hatHangul(s.de) || hatHangul(s.ko) : hatHangul(s.de) || !hatHangul(s.ko)) continue
     const fremd = pruefer.fremdIn(s.ko)
     const hilfe = (Array.isArray(s.hilfe) ? s.hilfe : [])
-      .filter((h) => h?.wort && h?.bedeutung && !pruefer.kennt(h.wort))
+      /* das Modell meldet alle Inhaltswörter — Hilfe wird nur, was
+         nicht in der Bibliothek steht; jedes Wort höchstens einmal */
+      .filter((h, i, liste) => h?.wort && h?.bedeutung && !kennt(h.wort) && liste.findIndex((x) => x?.wort === h.wort) === i)
       .map((h) => ({ wort: String(h.wort), bedeutung: String(h.bedeutung) }))
     const unerklaert = fremd.filter((tok) => !hilfe.some((h) => pruefer.deckt(h.wort, tok)))
     const satz = {
@@ -498,7 +533,14 @@ export function pruefeSaetze({ saetze, kit, bibliothek = [], plan = [], anzahl, 
     else if (unerklaert.length <= 1 && hilfe.length <= 3) knapp.push(satz)
     if (unerklaert.length) verworfen.push(`${s.ko} (${unerklaert.join(', ')})`)
   }
-  return { saetze: [...sauber, ...knapp].slice(0, anzahl), verworfen }
+  /* Sätze ganz ohne fremdes Wort zuerst, dann die mit einem, dann zwei
+     (Franz 11.10.: zu viele Wörter außerhalb der Liste) — genommen wird
+     von vorn. Die Reihenfolge in der Runde bleibt danach die des Modells. */
+  const fremdZahl = (x) => (x.hilfe ? x.hilfe.length : 0)
+  const wahl = [...[...sauber].sort((x, y) => fremdZahl(x) - fremdZahl(y)), ...knapp].slice(0, anzahl)
+  const reihenfolge = [...sauber, ...knapp]
+  wahl.sort((x, y) => reihenfolge.indexOf(x) - reihenfolge.indexOf(y))
+  return { saetze: wahl, verworfen }
 }
 
 /* Aus den Bank-Zeilen der letzten 14 Tage (neueste zuerst) das
