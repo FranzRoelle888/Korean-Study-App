@@ -1526,7 +1526,17 @@ Deno.serve(async (req) => {
         : []
       const stufeB = ['leicht', 'mittel', 'schwer'].includes(body.schwierigkeit) ? body.schwierigkeit : 'mittel'
       const wunschB = typeof body.wunsch === 'string' ? body.wunsch.trim().slice(0, 200) : ''
-      if (plan.length < 2 || grundstock.length + pflicht.length + auswahl.length < 15) return json({ error: 'empty' }, 400)
+      /* Fassung 9: SCHWERPUNKTE für die ganze Runde statt ein Muster je
+         Satz. Schickt eine ältere App nur den Plan, werden die
+         Schwerpunkte aus ihm gezogen. */
+      const schwerpunkte: string[] = (
+        Array.isArray(body.schwerpunkte)
+          ? body.schwerpunkte.slice(0, 5).map((m: unknown) => String(m).trim().slice(0, 60))
+          : [...new Set(plan.flatMap((p: { muster: string[] }) => p.muster))].slice(0, 3)
+      ).filter(Boolean) as string[]
+      const gebraucht = Number.isInteger(body.anzahl) && body.anzahl >= 1 && body.anzahl <= 5 ? body.anzahl : Math.max(1, plan.length - 1)
+      const extraB = Number.isInteger(body.extra) && body.extra >= 0 && body.extra <= 3 ? body.extra : 2
+      if (!schwerpunkte.length || grundstock.length + pflicht.length + auswahl.length < 15) return json({ error: 'empty' }, 400)
 
       /* Ein Nummernkreis ueber alle drei Ringe: das Modell meldet die
          benutzten Woerter als ZAHLEN — eine gebeugte Form kann so nie
@@ -1536,28 +1546,29 @@ Deno.serve(async (req) => {
       const ab = (n: number) => (w: W, i: number) => zeile(w, n + i)
       const laenge =
         stufeB === 'leicht'
-          ? 'EASY: 4-6 words per sentence, simple statements, exactly the one required pattern.'
+          ? 'EASY: 4-6 words per sentence, simple statements, about ONE learning word per sentence.'
           : stufeB === 'schwer'
-            ? 'HARD: 9-13 words per sentence. Each sentence uses BOTH of its required patterns and has at least two of {time, place, object, reason}. At least one question and one negation in the round.'
-            : 'MEDIUM: 6-8 words per sentence. Besides the required pattern you MAY add one more pattern from the allowed list where it is natural. At least one question in the round.'
+            ? 'HARD: 9-13 words per sentence, about TWO learning words per sentence. Most sentences join two clauses or combine two patterns, and have at least two of {time, place, object, reason}. At least one question and one negation in the round.'
+            : 'MEDIUM: 6-8 words per sentence, one or two learning words per sentence. At least one question in the round.'
 
-      /* VIERTE FASSUNG (09.10.) — beide Seiten, Fremdwörter mit Hilfe.
-         Was die Proben gezeigt haben:
-         1. Mit Vor-Denken und kleinem Budget: 30 s, nichts Lesbares.
-         2. Ohne Vor-Denken, Muster fest je Satz: schnell, aber jeder
-            fünfte Satz erzwungen oder falsch übersetzt.
-         3. Das Modell paart Muster und Pflicht-Wörter selbst
-            („verteilung" als erster Schritt der Antwort): schnell gut
-            brauchbar (~10 s), gründlich durchweg gut (20-60 s).
-         Zwei Gangarten: gruendlich = mit Vor-Denken, für alles, worauf
-         niemand wartet; sonst schnell.
-         Neu in dieser Fassung:
-         - 해인s Seite (de/sb) läuft über denselben Weg: Lösung Deutsch,
-           Aufgabe Koreanisch UND Englisch.
-         - Fremdwörter sind in kleiner Menge erwünscht (Franz 09.10.),
-           aber nie ohne Hilfe: das Modell meldet jedes Wort außerhalb
-           des Baukastens mit Bedeutung („neue_woerter"); die App zeigt
-           unter der Aufgabe an, was der Lerner davon noch nicht kennt. */
+      /* NEUNTE FASSUNG (14.10.) — weniger Vorgaben, dafür Auswahl.
+         Was die Proben bis Fassung 8 gezeigt haben: Pflicht-Wort in
+         JEDEM Satz + ein festes Muster je Satz + kaum Fremdwörter war
+         zu viel Zwang — heraus kamen Sätze wie „Ich kann wahrscheinlich
+         auf diesem Platz sitzen" (아마 + 자리 + -을 수 있다 zusammengepresst)
+         und ein Deutsch, das man dem Koreanischen Wort für Wort ansah.
+         Jetzt (Entwurf Franz 14.10.):
+         - Der INHALT darf verspielt sein („Ich mag den grünen Hund sehr"),
+           aber der AUFBAU muss sein wie bei einem Muttersprachler.
+         - Lernwörter sind ein ANGEBOT (doppelt so viele wie nötig).
+         - 2-4 SCHWERPUNKT-Muster für die ganze Runde, jedes mindestens
+           einmal; sonst jede abgehakte Grammatik.
+         - Höchstens ein fremdes Wort je Satz (die App zeigt die Hilfe).
+         - Die Übersetzung klingt natürlich, nicht Wort für Wort.
+         - Das Modell schreibt zwei Sätze MEHR und benotet jeden ehrlich
+           (1-3); die App behält die besten (core/baukasten.js).
+         Zwei Gangarten wie bisher: gruendlich = mit Vor-Denken (Nachtlauf,
+         vorgeladene Spielrunde), sonst schnell. */
       const gruendlich = body.gruendlich === true
       const lerntKoB = profile === 'ko'
       const zielB = lerntKoB ? 'Korean' : 'German'
@@ -1565,22 +1576,15 @@ Deno.serve(async (req) => {
       /* Kennung dieser Fassung — steht in Diagnose UND Fehlermeldung,
          damit im Protokoll sichtbar ist, welcher Stand der Function
          gerade deployt ist (zweimal war das beim Testen unklar) */
-      const FASSUNG = 8
-      const satzZahl = plan.length
-      const topf = [...new Set(plan.flatMap((p: { muster: string[] }) => p.muster))] as string[]
-      const jeSatz = Math.max(1, ...plan.map((p: { muster: string[] }) => p.muster.length))
-      if (!topf.length) return json({ error: 'empty' }, 400)
-      /* Nur abgehakte Muster (Franz 09.10.): Hat jemand wenige abgehakt,
-         ist der Topf kleiner als die Zahl der Sätze — dann dürfen sich
-         Muster wiederholen, statt dass das Modell fremde dazunimmt. */
-      const topfReicht = topf.length >= satzZahl * jeSatz
+      const FASSUNG = 9
+      const satzZahl = Math.min(7, gebraucht + extraB)
+      const topf = schwerpunkte
       const nummernListe = { type: 'array', items: { type: 'integer' } }
       /* LISTEN statt fester Fächer s1…s6 (Fassung 6): Mit festen Fächern
          steht jede Satz-Form sechsfach in der Antwortform, und die API
          lehnte sie ab („compiled grammar is too large") — auch nach dem
-         Verkleinern. Eine Liste beschreibt den Satz nur EINMAL. Dass
-         genug Sätze kommen, sichert jetzt die Nummer (nr 1…N) zusammen
-         mit dem Verteil-Schritt davor; gezählt wird unten im Code. */
+         Verkleinern. Eine Liste beschreibt den Satz nur EINMAL. Gezählt
+         wird unten im Code. */
       const listeVon = (felder: Record<string, unknown>) => ({
         type: 'array',
         items: {
@@ -1592,37 +1596,47 @@ Deno.serve(async (req) => {
       })
       const ersteP = grundstock.length + 1
       const letzteP = grundstock.length + pflicht.length
-      /* ALLE Inhaltswörter mit Bedeutung (Fassung 8, Franz 11.10.).
-         Vorher sollte das Modell nur die Wörter AUSSERHALB des Baukastens
-         melden — das tat es unzuverlässig, und Franz bekam Sätze mit
-         fremden Wörtern ohne Übersetzung. Jetzt meldet es schlicht jedes
-         Inhaltswort in der Grundform; ob Franz bzw. 해인 es schon kennt,
-         entscheidet die App durch einen genauen Abgleich mit der ganzen
-         Bibliothek (core/baukasten.js). Was fehlt, steht als Hilfe unter
-         der Aufgabe.
-         Bewusst ein einfacher TEXT („소금 = Salz; 넣다 = hineintun") und
-         keine Liste von Objekten — damit war die Antwortform der API zu
-         groß („compiled grammar is too large", Probe 09.10.). */
+      /* ALLE Inhaltswörter mit Bedeutung (Fassung 8, Franz 11.10.): ob
+         Franz bzw. 해인 ein Wort schon kennt, entscheidet die App durch
+         einen genauen Abgleich mit der ganzen Bibliothek. Was fehlt,
+         steht als Hilfe unter der Aufgabe. Bewusst ein einfacher TEXT
+         und keine Liste von Objekten — sonst wird die Antwortform der
+         API zu groß („compiled grammar is too large", Probe 09.10.). */
       const neueWoerter = {
         type: 'string',
         description: `ALL content words of the sentence (nouns, verbs, adjectives, adverbs — not particles, pronouns, numbers or auxiliaries) in dictionary form${lerntKoB ? '' : ', nouns with their article'}, each as "word = meaning in ${hilfsSprache}", separated by "; ".`,
       }
+      /* Die strenge Selbstnote. Als Zahl mit Beschreibung, nicht als
+         Auswahlliste — jede Auswahlliste macht die Antwortform größer. */
+      const note = {
+        type: 'integer',
+        description: `Strict self-check, 1-3. 3 = a native speaker of ${zielB} would build exactly this sentence (word choice, ${lerntKoB ? 'particles, verb endings' : 'cases, verb position'}, word order, words that really go together) AND the translation sounds natural. 2 = correct but a bit stiff. 1 = odd, forced or wrong somewhere. Be honest: sentences rated 1 are dropped, which is fine.`,
+      }
+      const musterFeld = {
+        type: 'array',
+        items: { type: 'string' },
+        description: 'The focus pattern(s) this sentence uses, copied exactly from the focus list. Empty list if it uses none.',
+      }
       /* Die Reihenfolge der Felder ist die Reihenfolge, in der das Modell
-         schreibt: erst die Wörter festlegen, dann der Satz in der
-         Lernsprache, dann die Übersetzung(en) */
+         schreibt: erst Wörter und Muster festlegen, dann der Satz in der
+         Lernsprache, dann die Übersetzung(en), zuletzt die Note */
       const satzFelder = lerntKoB
         ? {
             kit_nummern: nummernListe,
-            koreanisch: { type: 'string', description: 'The Korean sentence, in Hangul.' },
+            muster: musterFeld,
+            koreanisch: { type: 'string', description: 'The Korean sentence, in Hangul, polite 해요체.' },
             neue_woerter: neueWoerter,
-            deutsch: { type: 'string', description: 'Exactly that sentence in German. Latin letters only, no Hangul.' },
+            deutsch: { type: 'string', description: 'The same sentence in natural everyday German — what a German would actually say, not word for word. Latin letters only, no Hangul.' },
+            note,
           }
         : {
             kit_nummern: nummernListe,
+            muster: musterFeld,
             deutsch: { type: 'string', description: 'The German sentence (nouns with correct article and case).' },
             neue_woerter: neueWoerter,
-            koreanisch: { type: 'string', description: 'Exactly that sentence in natural Korean (Hangul). The speech level may follow the German: informal for "du" is fine.' },
-            englisch: { type: 'string', description: 'Exactly that sentence in English.' },
+            koreanisch: { type: 'string', description: 'The same sentence in natural Korean (Hangul), the way a Korean would say it — not word for word. Informal speech for "du" is fine.' },
+            englisch: { type: 'string', description: 'The same sentence in natural English.' },
+            note,
           }
 
       const frage = (mitSchema: boolean) => callModel(
@@ -1630,23 +1644,24 @@ Deno.serve(async (req) => {
           lerntKoB
             ? 'You write translation exercises for a German adult learning Korean (A1-A2). He reads a German sentence and writes it in Korean.'
             : 'You write translation exercises for 해인, a Korean adult learning German (A1-A2, preparing for the Goethe A2 exam). She reads a sentence in Korean and English and writes it in German.',
-          `You get a small KIT of numbered ${zielB} words in three rings and a POOL of grammar patterns. You write ${zielB} sentences plus their translation.`,
+          `You get a KIT of numbered ${zielB} words in three rings and a few FOCUS PATTERNS for this round. You write ${zielB} sentences plus their translation.`,
           'RULES:',
-          `- SENSE COMES FIRST. Every sentence is a plain, plausible everyday statement or question that a native speaker of ${zielB} would actually say, and it makes sense on its own. Never combine words into something odd just to use them, and never bend a pattern into a place where it does not belong.`,
+          `- BUILT LIKE A NATIVE SPEAKER — this is the most important rule. The CONTENT may be playful or unusual ("I really like the green dog" is fine); it does not have to be an everyday situation. But the CONSTRUCTION must be exactly what a native speaker of ${zielB} would build to say that: ${lerntKoB ? 'the right particles and verb endings' : 'the right cases, articles and verb position'}, natural word order, words that really go together, and every word in its real meaning. Never force a word or a pattern into a place where a native speaker would say it differently — pick other words instead.`,
           `- Build the ${zielB} sentence from kit words (any ring). ${lerntKoB ? 'Conjugation, polite endings and particles are fine.' : 'Inflection, conjugation, plural, cases and separable prefixes are fine.'} No proper nouns${lerntKoB ? '' : ' except country and city names'}.`,
-          `- You MAY use a content word that is not in the kit when the sentence needs it to sound natural — at most ONE per sentence and at most TWO in the whole round, and only a very common everyday word. Stay inside the kit wherever you can: every word outside the learner's own list has to be shown to them as a hint.`,
+          `- LEARNING WORDS (ring 1) are an OFFER — there are about twice as many as you need. Pick the ones that fit naturally; skip any that would make a sentence odd. Never use one learning word twice in the round.`,
+          `- You MAY use ONE content word per sentence that is not in the kit, when the sentence needs it — only a common everyday word. It is shown to the learner as a hint, so prefer kit words where they fit just as well.`,
           lerntKoB
             ? '- Always free and NOT kit words: particles, pronouns, question words, negation, numbers of both systems with clock times, prices and ages, 있다/없다/이다/하다/되다, and the short connectors 그리고/그래서/하지만/그런데.'
             : '- Always free and NOT kit words: articles, pronouns, possessives, negation, prepositions, conjunctions, question words, numbers, sein/haben/werden and the modal verbs.',
-          '- REQUIRED words: every sentence contains at least one required word, and no required word is used twice. Place as many as fit naturally — leaving one out is better than forcing it.',
-          `- PATTERN POOL: every sentence visibly uses its pattern(s) from the pool${topfReicht ? ', and no pool pattern is used twice' : '; the pool is small, so patterns may repeat — but use every pool pattern at least once'}. Besides that, only grammar from the ALLOWED PATTERNS list. ${lerntKoB ? 'Polite 해요체 throughout — the learner always answers in the 요 form.' : 'Everyday spoken German; nouns always with the right article. Address people with "du" (she learns the informal form first) — use "Sie" only when the pattern itself is about it.'}`,
-          '- ONE sentence per slot (two short clauses only when the pattern itself joins clauses). Vary the subject (I / you / we / he / she / people).',
-          `- The translation says EXACTLY what the ${zielB} sentence says — same meaning, same tense, same subject. If your ${zielB} came out different from what you intended, translate it as it stands.`,
+          `- FOCUS PATTERNS: each one appears in at least one sentence, where it fits naturally. Other sentences may use any pattern from the ALLOWED PATTERNS list — and only grammar from that list. ${lerntKoB ? 'Polite 해요체 throughout — the learner always answers in the 요 form.' : 'Everyday spoken German; nouns always with the right article. Address people with "du" (she learns the informal form first) — use "Sie" only when the pattern itself is about it.'}`,
+          '- ONE sentence per item (two short clauses only when a pattern joins clauses). Vary the subject (I / you / we / he / she / people).',
+          `- The translation means EXACTLY the same — same tense, same subject — but is phrased the way a native speaker would naturally say it, not word for word${lerntKoB ? ' (German nouns with the article German needs)' : ''}. If the ${zielB} sentence cannot be translated naturally, the ${zielB} sentence itself is odd: rewrite it.`,
           /* Musterlösungen einfach halten (Franz 04.09.) — hier eigens
              formuliert: der Baustein MUSTER_EINFACH steht weiter unten
              im Code und nennt feste deutsche Grammatik, die mit der
              Muster-Liste dieser Aktion kollidieren würde */
           '- Keep every sentence SIMPLE and reachable for an A1-A2 learner: common everyday words, short, plain but natural — not eloquent, not native-polished.',
+          `- You write ${extraB} sentences MORE than the learner needs; the app keeps the best. So rate each sentence honestly in "note".`,
           '',
           'ALLOWED PATTERNS:',
           erlaubt.map((g: { muster: string; name: string; beispiel: string }) => `${g.muster} (${g.name}) e.g. ${g.beispiel}`).join('\n'),
@@ -1661,25 +1676,24 @@ Deno.serve(async (req) => {
               `DIFFICULTY — ${laenge}`,
               wunschB ? `LEARNER'S WISH for this round (follow it as far as the kit allows): "${wunschB}"` : '',
               '',
-              `KIT RING 1 — REQUIRED WORDS (numbers ${ersteP}-${letzteP}):`,
+              `KIT RING 1 — LEARNING WORDS, an offer (numbers ${ersteP}-${letzteP}):`,
               pflicht.map(ab(grundstock.length)).join('; '),
               '',
               'KIT RING 2 — OPTIONAL WORDS (use where they fit):',
               auswahl.length ? auswahl.map(ab(grundstock.length + pflicht.length)).join('; ') : '(none)',
               '',
-              `PATTERN POOL (${jeSatz} per sentence${topfReicht ? ', each at most once' : ', repeats allowed'}):`,
+              'FOCUS PATTERNS (each at least once in the round):',
               topf.join('  |  '),
               '',
-              `Write EXACTLY ${satzZahl} sentences, numbered "nr" 1…${satzZahl}. Both lists below must have exactly ${satzZahl} entries — never stop early. HOW TO ANSWER — work in this order:`,
-              `1. "verteilung": for every sentence, choose ${jeSatz === 1 ? 'ONE pattern' : `${jeSatz} patterns`} from the pool and the required word(s) (numbers ${ersteP}-${letzteP}) that go NATURALLY with it — think of a concrete everyday sentence for each pairing before you commit.`,
+              `Write EXACTLY ${satzZahl} sentences in "saetze", numbered "nr" 1…${satzZahl} — never stop early. For every sentence, in this order:`,
               lerntKoB
-                ? '2. "saetze": for every sentence, first "kit_nummern" = the numbers of ALL kit words the sentence uses, then "koreanisch" = the Korean sentence, then "neue_woerter" = ALL its content words in dictionary form as "word = meaning; word = meaning", then "deutsch" = exactly that sentence in GERMAN (Latin letters; this is what the learner reads; it must never contain Korean).'
-                : '2. "saetze": for every sentence, first "kit_nummern" = the numbers of ALL kit words the sentence uses, then "deutsch" = the German sentence, then "neue_woerter" = ALL its content words in dictionary form as "word = meaning; word = meaning", then "koreanisch" and "englisch" = exactly that sentence in Korean and in English. Both are what the learner reads; they must match each other and the German exactly.',
+                ? '"kit_nummern" = the numbers of ALL kit words the sentence uses, "muster" = the focus pattern(s) it uses, "koreanisch" = the Korean sentence, "neue_woerter" = ALL its content words in dictionary form as "word = meaning; word = meaning", "deutsch" = the same sentence in natural GERMAN (Latin letters; this is what the learner reads; never Korean), "note" = your strict 1-3 rating.'
+                : '"kit_nummern" = the numbers of ALL kit words the sentence uses, "muster" = the focus pattern(s) it uses, "deutsch" = the German sentence, "neue_woerter" = ALL its content words in dictionary form as "word = meaning; word = meaning", "koreanisch" and "englisch" = the same sentence in natural Korean and English (what the learner reads; they must match each other and the German), "note" = your strict 1-3 rating.',
               /* nur im Notfall-Gang ohne erzwungene Form: die Form
                  ausgeschrieben, damit trotzdem lesbares JSON kommt */
               mitSchema
                 ? ''
-                : `Reply with ONLY this JSON, nothing before or after it: {"verteilung":[{"nr":1,"muster":["<pattern from the pool>"],"pflicht_nummern":[<numbers>]}, …],"saetze":[{"nr":1,"kit_nummern":[<numbers>],${lerntKoB ? '"koreanisch":"…","neue_woerter":"word = meaning; …","deutsch":"…"' : '"deutsch":"…","neue_woerter":"word = meaning; …","koreanisch":"…","englisch":"…"'}}, …]}`,
+                : `Reply with ONLY this JSON, nothing before or after it: {"saetze":[{"nr":1,"kit_nummern":[<numbers>],"muster":["<focus pattern>"],${lerntKoB ? '"koreanisch":"…","neue_woerter":"word = meaning; …","deutsch":"…"' : '"deutsch":"…","neue_woerter":"word = meaning; …","koreanisch":"…","englisch":"…"'},"note":3}, …]}`,
             ]
               .filter((z) => z !== '')
               .join('\n'),
@@ -1696,15 +1710,9 @@ Deno.serve(async (req) => {
           schema: !mitSchema ? undefined : {
             type: 'object',
             properties: {
-              verteilung: listeVon({
-                /* ohne feste Auswahlliste — geprüft wird unten im Code
-                   gegen den Topf */
-                muster: { type: 'array', items: { type: 'string' }, description: 'Pattern(s) for this sentence, copied exactly from the pattern pool.' },
-                pflicht_nummern: nummernListe,
-              }),
               saetze: listeVon(satzFelder),
             },
-            required: ['verteilung', 'saetze'],
+            required: ['saetze'],
             additionalProperties: false,
           },
         }
@@ -1728,7 +1736,7 @@ Deno.serve(async (req) => {
       /* Rückgabe wie überall in der Satz-Challenge: "de" ist immer die
          AUFGABE (Sprache, die man kann), "ko" immer die LÖSUNG (Sprache,
          die man lernt) — bei 해인 also de = Koreanisch, ko = Deutsch. */
-      type SatzB = { nr: number; de: string; en?: string; ko: string; woerter: string[]; muster: string[]; hilfe: { wort: string; bedeutung: string }[] }
+      type SatzB = { nr: number; de: string; en?: string; ko: string; woerter: string[]; muster: string[]; hilfe: { wort: string; bedeutung: string }[]; note?: number }
       const saetzeB: SatzB[] = []
       let grundB = 'ok'
       let falscheSprache = 0
@@ -1741,7 +1749,6 @@ Deno.serve(async (req) => {
         const bis = text.lastIndexOf('}')
         const j = JSON.parse(von >= 0 && bis > von ? text.slice(von, bis + 1) : text)
         const roh = Array.isArray(j?.saetze) ? j.saetze.slice(0, satzZahl) : []
-        const verteilt = Array.isArray(j?.verteilung) ? j.verteilung : []
         roh.forEach((s: Record<string, unknown>, i: number) => {
           /* die Nummer des Modells gilt, wenn sie plausibel ist — sonst
              die Position in der Liste */
@@ -1760,9 +1767,10 @@ Deno.serve(async (req) => {
             ? s.kit_nummern.map((n: unknown) => Number(n)).filter((n: number) => Number.isInteger(n) && n >= 1 && n <= alle.length)
             : []
           const woerter = [...new Set(nummern.map((n: number) => alle[n - 1].ko))] as string[]
-          /* welches Muster das Modell diesem Satz gegeben hat */
-          const gewaehlt = (verteilt.find((v: { nr?: unknown }) => Number(v?.nr) === nr) ?? verteilt[i])?.muster
-          const muster = (Array.isArray(gewaehlt) ? gewaehlt.map(String).filter((m: string) => topf.includes(m)) : []).slice(0, jeSatz)
+          /* welche Schwerpunkte der Satz übt (nur echte aus der Liste) */
+          const muster = Array.isArray(s?.muster) ? [...new Set(s.muster.map(String).filter((m: string) => topf.includes(m)))].slice(0, 3) as string[] : []
+          /* die Selbstnote 1-3; die App sortiert danach */
+          const noteS = Number(s?.note)
           /* „소금 = Salz; 공원 = Park" -> [{ wort, bedeutung }] */
           const hilfe = kurz(s?.neue_woerter, 600)
             .split(/[;\n]/)
@@ -1777,6 +1785,7 @@ Deno.serve(async (req) => {
             : { nr, de: koreanisch, ko: deutsch, woerter, muster, hilfe }
           const englisch = lerntKoB ? '' : kurz(s?.englisch, 200)
           if (englisch) satz.en = englisch
+          if ([1, 2, 3].includes(noteS)) satz.note = noteS
           saetzeB.push(satz)
         })
         if (!saetzeB.length) grundB = falscheSprache ? 'falsche-sprache' : 'keine-saetze'
@@ -2575,6 +2584,6 @@ Deno.serve(async (req) => {
     console.error(e)
     /* stand: welche Fassung des Satz-Baukastens deployt ist — bei
        Fehlersuche über das Nachtlauf-Protokoll sonst nicht erkennbar */
-    return json({ error: 'internal', stand: 'baukasten-8', detail: String(e) }, 500)
+    return json({ error: 'internal', stand: 'baukasten-9', detail: String(e) }, 500)
   }
 })

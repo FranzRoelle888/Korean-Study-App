@@ -203,11 +203,12 @@ async function ladeVerlauf(profile) {
   return leseVerlauf(zeilen)
 }
 
-/* Eine Runde aus dem Baukasten: EIN Aufruf für 3 oder 5 Sätze (plus
-   ein Reserve-Satz). Die Schwierigkeit wirkt an drei Stellen — in der
-   Wortauswahl (mehr Pflicht-Wörter, seltenere Auswahl), in den Mustern
-   (leicht: eines aus Stufe 1, schwer: zwei je Satz mit Verbindungen)
-   und in der Satzlänge, die die Function vorgibt.
+/* Eine Runde aus dem Baukasten: EIN Aufruf für 3 oder 5 Sätze (das
+   Modell schreibt zwei mehr, die App behält die besten). Die
+   Schwierigkeit wirkt an drei Stellen — in der Wortauswahl (größeres
+   Lernwort-Angebot, seltenere Auswahl), in den Schwerpunkt-Mustern
+   (leicht: aus Stufe 1, schwer: eines mehr, mit Verbindungen) und in
+   der Satzlänge, die die Function vorgibt.
    Läuft der Aufruf in die 25-Sekunden-Grenze oder reißt das Netz, gibt
    es genau EINEN zweiten Versuch — nie wegen der Satzqualität.
    -> { saetze: [{ de, ko, woerter, grammatik }], verworfen } */
@@ -221,6 +222,7 @@ export async function baukastenRunde({ profile, words, anzahl = 5, schwierigkeit
   const musterWahl = waehleMuster({
     grammatik,
     saetze: anzahl + 1,
+    anzahl,
     schwierigkeit,
     musterZuletzt: verlauf.musterZuletzt,
     letztePflicht: verlauf.letztePflicht,
@@ -239,7 +241,8 @@ export async function baukastenRunde({ profile, words, anzahl = 5, schwierigkeit
   if (kit.pflicht.length + kit.auswahl.length + kit.grundstock.length < 15) throw new Error('zu-wenig-woerter')
 
   const anfrage = baueAnfrage({ profile, kit, musterWahl, anzahl, schwierigkeit, wunsch, gruendlich })
-  const warte = gruendlich ? 55000 : 25000
+  /* Fassung 9 schreibt zwei Sätze mehr — etwas mehr Zeit für beide Gänge */
+  const warte = gruendlich ? 90000 : 30000
   let res
   try {
     res = await trainerSatzBaukasten(anfrage, warte)
@@ -248,7 +251,15 @@ export async function baukastenRunde({ profile, words, anzahl = 5, schwierigkeit
     if (!technisch || gruendlich) throw e
     res = await trainerSatzBaukasten(anfrage, warte)
   }
-  const { saetze, verworfen } = pruefeSaetze({ saetze: res?.saetze, kit, bibliothek: words, plan: musterWahl.plan, anzahl, sprache })
+  const { saetze, verworfen } = pruefeSaetze({
+    saetze: res?.saetze,
+    kit,
+    bibliothek: words,
+    plan: musterWahl.plan,
+    schwerpunkte: musterWahl.schwerpunkte,
+    anzahl,
+    sprache,
+  })
   if (!saetze.length) throw new Error(`leer:${res?.grund || '?'}`)
   if (verworfen.length) console.warn('Baukasten: fremde Wörter in', verworfen.slice(0, 4))
   if (merken) merkeSpielRunde(profile, saetze)
@@ -281,11 +292,11 @@ export function ladeVor({ profile, words, anzahl, stufe }) {
     /* egal */
   }
   laedtVor = true
-  /* Das Spiel läuft im SCHNELLEN Gang (Entscheidung Franz 09.10.) —
-     der gründliche bleibt der Tages-Challenge aus dem Nachtlauf
-     vorbehalten. Vorgeladen wird trotzdem: dann steht die nächste
-     Runde beim Tipp auf den Knopf schon da. */
-  baukastenRunde({ profile, words, anzahl, schwierigkeit: stufe, merken: true })
+  /* Vorgeladen wird im GRÜNDLICHEN Gang (Franz 14.10.): Auf diese
+     Runde wartet niemand, also darf das Modell vordenken — bessere
+     Sätze für ein paar Cent mehr. Nur wenn nichts vorgeladen ist,
+     baut das Spiel live im schnellen Gang. */
+  baukastenRunde({ profile, words, anzahl, schwierigkeit: stufe, merken: true, gruendlich: true })
     .then((r) => {
       if (r.saetze.length >= Math.min(3, anzahl)) {
         localStorage.setItem(VOR_KEY(profile), JSON.stringify({ t: Date.now(), anzahl, stufe, saetze: r.saetze }))

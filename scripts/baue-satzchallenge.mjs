@@ -282,14 +282,15 @@ async function erzeugeBaukasten(profil, words, cards, grammatik, verlaufZeilen, 
   const musterWahl = waehleMuster({
     grammatik,
     saetze: 6,
+    anzahl: 5,
     schwierigkeit: 'mittel',
     musterZuletzt: verlauf.musterZuletzt,
     letztePflicht: verlauf.letztePflicht,
     sprache,
   })
-  console.log(`  Baukasten ${nr}: Pflicht ${kit.pflicht.length} · Auswahl ${kit.auswahl.length} · Grundstock ${kit.grundstock.length}`)
-  console.log(`    Pflicht-Woerter: ${kit.pflicht.map((w) => w.ko).join(', ')}`)
-  console.log(`    Muster-Topf:     ${musterWahl.plan.map((m) => m.join(' + ')).join(' | ')}`)
+  console.log(`  Baukasten ${nr}: Lernwort-Angebot ${kit.pflicht.length} · Auswahl ${kit.auswahl.length} · Grundstock ${kit.grundstock.length}`)
+  console.log(`    Lernwort-Angebot: ${kit.pflicht.map((w) => w.ko).join(', ')}`)
+  console.log(`    Schwerpunkte:     ${musterWahl.schwerpunkte.join(' | ')}`)
   const start = Date.now()
   let res
   try {
@@ -311,19 +312,20 @@ async function erzeugeBaukasten(profil, words, cards, grammatik, verlaufZeilen, 
     return null
   }
   const sekunden = ((Date.now() - start) / 1000).toFixed(1)
-  const { saetze, verworfen } = pruefeSaetze({
+  const { saetze, verworfen, schwach } = pruefeSaetze({
     saetze: res?.saetze,
     kit,
     /* geprueft wird gegen die ganze Bibliothek, nicht nur den Baukasten */
     bibliothek: words.map((w) => ({ ko: w.ko, pos: w.pos, plural: w.plural })),
     plan: musterWahl.plan,
+    schwerpunkte: musterWahl.schwerpunkte,
     anzahl: 5,
     sprache,
   })
   const drin = new Set(saetze.flatMap((s) => s.woerter.map(norm)))
   const pflichtDrin = kit.pflicht.filter((w) => drin.has(norm(w.ko))).length
   console.log(
-    `    ${sekunden} s · ${(res?.saetze || []).length} geschrieben · ${saetze.length} genommen · Pflicht-Woerter drin ${pflichtDrin}/${kit.pflicht.length}`
+    `    ${sekunden} s · ${(res?.saetze || []).length} geschrieben · ${saetze.length} genommen · Lernwoerter genutzt ${pflichtDrin}/${kit.pflicht.length}`
   )
   const d = res?.diagnose
   if (d) {
@@ -334,6 +336,7 @@ async function erzeugeBaukasten(profil, words, cards, grammatik, verlaufZeilen, 
         (d.anfang ? ` · Antwort-Anfang: ${JSON.stringify(d.anfang)}` : '')
     )
   }
+  for (const k of schwach || []) console.log(`    Selbstnote 1, aussortiert: ${k}`)
   for (const v of verworfen) console.log(`    Fremdwort OHNE Hilfe: ${v}`)
   for (const s of saetze) if (s.hilfe) console.log(`    Hilfe zu „${s.ko}": ${s.hilfe.map((h) => `${h.wort} = ${h.bedeutung}`).join(' · ')}`)
   for (const s of saetze) console.log(`    ${s.de}\n      -> ${s.ko}   [${s.grammatik.join(' + ')}]`)

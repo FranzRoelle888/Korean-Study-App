@@ -29,10 +29,16 @@ import { rechneHaeyo, rechneAttributiv } from './haeyo.js'
 /* ---------- Die Stellschrauben ----------
    Startwerte vom 09.10. — nach der Probe hier drehen, nirgends sonst. */
 export const RINGE = {
-  /* Pflicht-Wörter je Satz, nach Schwierigkeit (Übersetzungsspiel):
-     bei 5 Sätzen 5 / 8 / 10, bei 3 Sätzen 3 / 5 / 6. Die Tages-Challenge
-     läuft immer auf „mittel". */
-  pflichtJeSatz: { leicht: 1, mittel: 1.6, schwer: 2 },
+  /* Lernwörter-ANGEBOT je Satz, nach Schwierigkeit (Fassung 9, Franz
+     14.10.): doppelt so viele, wie gebraucht werden — das Modell nimmt,
+     was natürlich passt, statt jedes Wort in einen Satz zu zwingen.
+     Bei 5 Sätzen 10 / 15 / 20, bei 3 Sätzen 6 / 9 / 12. Die
+     Tages-Challenge läuft immer auf „mittel". (Im Code heißt der Ring
+     weiter „pflicht" — so kennt ihn auch die Function.) */
+  pflichtJeSatz: { leicht: 2, mittel: 3, schwer: 4 },
+  /* so viele Sätze schreibt das Modell MEHR, als gebraucht werden — die
+     App behält die besten */
+  extraSaetze: 2,
   /* „leicht" zieht die Auswahl aus den häufigeren 60 % der Bibliothek,
      „schwer" aus den selteneren 60 % */
   auswahlAnteil: 0.6,
@@ -221,7 +227,7 @@ export function baueBaukasten({ words, cards, zuletzt = new Set(), anzahl = 5, s
    musterZuletzt: Map muster -> Zeitpunkt (ms) der letzten Challenge
    letztePflicht: Set der Pflicht-Muster der letzten 3 Challenges
    -> { erlaubt: [{ muster, name, beispiel }], plan: [[muster, …], …] } */
-export function waehleMuster({ grammatik, saetze = 6, schwierigkeit = 'mittel', musterZuletzt = new Map(), letztePflicht = new Set(), sprache = 'ko' }) {
+export function waehleMuster({ grammatik, saetze = 6, anzahl = saetze - 1, schwierigkeit = 'mittel', musterZuletzt = new Map(), letztePflicht = new Set(), sprache = 'ko' }) {
   const { fundament: FUNDAMENT, niePflicht: NIE_PFLICHT, verbinder: VERBINDER, leicht: LEICHT } = GRAMMATIK[sprache === 'de' ? 'de' : 'ko']
   /* Erlaubt ist NUR, was in der Grammatik-Liste abgehakt ist — auf
      beiden Seiten (Entscheidung Franz 09.10.). Kein Auffüllen mit
@@ -277,7 +283,16 @@ export function waehleMuster({ grammatik, saetze = 6, schwierigkeit = 'mittel', 
       plan[i].push(g.muster)
     }
   }
-  return { erlaubt: erlaubt.map((g) => ({ muster: g.muster, name: g.name, beispiel: g.beispiel })), plan }
+  /* SCHWERPUNKTE der Runde (Fassung 9, Franz 14.10.): nicht mehr ein
+     Muster je Satz, sondern 2 (bei 3 Sätzen) bzw. 3 (bei 5) für die
+     ganze Runde — jedes kommt mindestens einmal vor, dort wo es passt.
+     „schwer" bekommt eines dazu; der Plan oben stellt bei „schwer"
+     die verbindenden Muster (weil, aber, wenn …) nach vorn.
+     Der Plan selbst geht weiter mit, damit eine noch nicht neu
+     deployte Function (Fassung 8) die Anfrage auch versteht. */
+  const zahl = (anzahl <= 3 ? 2 : 3) + (schwierigkeit === 'schwer' ? 1 : 0)
+  const schwerpunkte = [...new Set(plan.flat())].slice(0, zahl)
+  return { erlaubt: erlaubt.map((g) => ({ muster: g.muster, name: g.name, beispiel: g.beispiel })), plan, schwerpunkte }
 }
 
 /* ---------- Die Anfrage an die Trainer-Function ---------- */
@@ -300,7 +315,11 @@ export function baueAnfrage({ profile, kit, musterWahl, anzahl, schwierigkeit, w
     pflicht: kit.pflicht.map(({ ko, en }) => ({ ko, en })),
     auswahl: kit.auswahl.map(({ ko, en }) => ({ ko, en })),
     erlaubt: musterWahl.erlaubt,
-    /* ein Satz mehr als gebraucht — die eine Reserve */
+    /* Fassung 9: Schwerpunkte für die ganze Runde; das Modell schreibt
+       `extra` Sätze mehr, die App behält die besten */
+    schwerpunkte: musterWahl.schwerpunkte,
+    extra: RINGE.extraSaetze,
+    /* nur noch für eine Function in Fassung 8 (ein Satz Reserve) */
     plan: musterWahl.plan.slice(0, anzahl + 1).map((muster) => ({ muster })),
   }
 }
@@ -499,17 +518,32 @@ function kenner(alle, deutsch) {
      sauber   jedes fremde Wort ist erklärt, höchstens zwei je Satz
      knapp    genau ein fremdes Wort OHNE Erklärung — füllt nur auf,
               wenn sonst zu wenige Sätze da wären */
-export function pruefeSaetze({ saetze, kit, bibliothek = [], plan = [], anzahl, sprache = 'ko' }) {
+/* AUSWAHL DER BESTEN (Fassung 9, Franz 14.10.): Das Modell schreibt
+   zwei Sätze mehr als gebraucht und gibt jedem eine ehrliche Note
+   („würde ein Muttersprachler den Satz genau so bauen?" 3 = ja,
+   2 = etwas steif, 1 = schief). Note 1 fliegt raus. Dann zählt, in
+   dieser Reihenfolge: Note — jeder Schwerpunkt mindestens einmal —
+   möglichst viele Lernwörter — möglichst wenige fremde Wörter.
+   Fehlt die Note (Function noch in Fassung 8), gilt 2. */
+export function pruefeSaetze({ saetze, kit, bibliothek = [], plan = [], schwerpunkte = [], anzahl, sprache = 'ko' }) {
   const deutsch = sprache === 'de'
   const alle = [...kit.pflicht, ...kit.auswahl, ...kit.grundstock, ...bibliothek]
   const pruefer = deutsch ? prueferDe(alle) : prueferKo(alle)
   const kennt = kenner(alle, deutsch)
+  const lernwort = new Set(kit.pflicht.map((w) => norm(w.ko)))
   const hatHangul = (t) => /[가-힣]/.test(t)
   const sauber = []
   const knapp = []
   const verworfen = []
+  const schwach = []
+  const info = new Map() /* Satz -> { note, lern, fremd } fürs Sortieren */
   for (const s of saetze || []) {
     if (!s?.de || !s?.ko) continue
+    const note = [1, 2, 3].includes(Number(s.note)) ? Number(s.note) : 2
+    if (note === 1) {
+      schwach.push(s.ko)
+      continue
+    }
     /* Aufgabe in der bekannten, Lösung in der Lernsprache — nie vertauscht */
     if (deutsch ? !hatHangul(s.de) || hatHangul(s.ko) : hatHangul(s.de) || !hatHangul(s.ko)) continue
     const fremd = pruefer.fremdIn(s.ko)
@@ -524,23 +558,40 @@ export function pruefeSaetze({ saetze, kit, bibliothek = [], plan = [], anzahl, 
       ...(s.en ? { en: s.en } : {}),
       ko: s.ko,
       woerter: Array.isArray(s.woerter) ? s.woerter : [],
-      /* Das Muster hat das Modell dem Satz aus dem Topf zugeteilt; fehlt
-         die Angabe, gilt die Reihenfolge des Plans */
-      grammatik: Array.isArray(s.muster) && s.muster.length ? s.muster : (plan[(Number(s.nr) || 0) - 1] ?? []),
+      /* Welche Schwerpunkte der Satz übt, meldet das Modell (leer ist
+         seit Fassung 9 erlaubt); fehlt die Angabe ganz, gilt der Plan */
+      grammatik: Array.isArray(s.muster) ? s.muster : (plan[(Number(s.nr) || 0) - 1] ?? []),
       ...(hilfe.length ? { hilfe } : {}),
     }
+    info.set(satz, { note, lern: satz.woerter.filter((w) => lernwort.has(norm(w))).length, fremd: hilfe.length })
     if (unerklaert.length === 0 && hilfe.length <= 2) sauber.push(satz)
     else if (unerklaert.length <= 1 && hilfe.length <= 3) knapp.push(satz)
     if (unerklaert.length) verworfen.push(`${s.ko} (${unerklaert.join(', ')})`)
   }
-  /* Sätze ganz ohne fremdes Wort zuerst, dann die mit einem, dann zwei
-     (Franz 11.10.: zu viele Wörter außerhalb der Liste) — genommen wird
-     von vorn. Die Reihenfolge in der Runde bleibt danach die des Modells. */
-  const fremdZahl = (x) => (x.hilfe ? x.hilfe.length : 0)
-  const wahl = [...[...sauber].sort((x, y) => fremdZahl(x) - fremdZahl(y)), ...knapp].slice(0, anzahl)
+  /* Rangfolge: bessere Note, dann mehr Lernwörter, dann weniger fremde
+     Wörter (Franz 11.10.: zu viele Wörter außerhalb der Liste) */
+  const rang = (x, y) => {
+    const a = info.get(x)
+    const b = info.get(y)
+    return b.note - a.note || b.lern - a.lern || a.fremd - b.fremd
+  }
+  const geordnet = [...sauber].sort(rang)
+  const wahl = []
+  /* erst je Schwerpunkt der beste Satz, der ihn übt … */
+  for (const m of schwerpunkte) {
+    if (wahl.length >= anzahl || wahl.some((x) => x.grammatik.includes(m))) continue
+    const treffer = geordnet.find((x) => !wahl.includes(x) && x.grammatik.includes(m))
+    if (treffer) wahl.push(treffer)
+  }
+  /* … dann nach Rang auffüllen; „knapp" nur, wenn sonst zu wenig da ist */
+  for (const x of [...geordnet, ...knapp.sort(rang)]) {
+    if (wahl.length >= anzahl) break
+    if (!wahl.includes(x)) wahl.push(x)
+  }
+  /* Die Reihenfolge in der Runde bleibt die des Modells */
   const reihenfolge = [...sauber, ...knapp]
   wahl.sort((x, y) => reihenfolge.indexOf(x) - reihenfolge.indexOf(y))
-  return { saetze: wahl, verworfen }
+  return { saetze: wahl, verworfen, schwach }
 }
 
 /* Aus den Bank-Zeilen der letzten 14 Tage (neueste zuerst) das
