@@ -5,6 +5,7 @@ import { Bedeutung, WortVergleich } from '../../shared/motorTeile'
 import { istRichtig } from '../../core/vergleich'
 import { bedeutung, laengenKlasse } from '../../core/motor'
 import { ZEITRAEUME, fuerZeitraum } from '../../core/extraRunde'
+import { mischeListe } from '../../core/szenen'
 
 /* ============================================================
    EXTRA-RUNDE (Franz 07./08.09.) — freiwilliges Nachfestigen
@@ -41,7 +42,9 @@ function ExtraRunde({ material, onDone, onExit, profile, t }) {
   function starten() {
     const liste = fuerZeitraum(material, tage)
     if (!liste.length) return
-    setQueue(liste.map((m) => ({ ...m, zurueck: 0 })))
+    /* gemischt (Franz 14.10.): vorher kamen die Woerter nach Tagen
+       sortiert, also immer in derselben Reihenfolge */
+    setQueue(mischeListe(liste).map((m) => ({ ...m, zurueck: 0 })))
     setGesamt(liste.length)
     setErledigt(0)
     setFehlIds([])
