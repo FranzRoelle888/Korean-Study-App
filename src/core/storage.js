@@ -6,6 +6,7 @@ import {
   HOER_ERSTER_TERMIN,
   PRODUKTION_ERFOLGE,
   PRODUKTION_INTERVALL,
+  hoerKartenAn,
 } from './motor'
 import { fsrsSchritt } from './fsrs'
 import { PROFILES, DEFAULT_PROFILE } from './profiles'
@@ -917,7 +918,8 @@ export function verarbeiteBewertung(karte, rating, alleKarten) {
   if (istErkennen) {
     /* Hoer-Karte: Fehlschlaege in Folge zaehlen (2 -> naechstes Mal
        Text + Audio, dann wieder von null) */
-    if (k.modus === 'audio') {
+    const hoerAn = hoerKartenAn(activeProfile)
+    if (hoerAn && k.modus === 'audio') {
       const vorher = karte.hoerFehler || 0
       /* Stand 2 hiess: DIESE Runde lief mit Text + Audio -> danach
          beginnt die Zaehlung neu, egal wie es ausging */
@@ -947,7 +949,8 @@ export function verarbeiteBewertung(karte, rating, alleKarten) {
          Karte zur Hoer-Karte — Stabilitaet halbiert, erster Hoer-
          Termin binnen 7 Tagen. Lazy: nur bei einer erfolgreichen
          Wiederholung, kein Schwall am Umstellungstag. */
-      if (k.modus !== 'audio' && (k.stab ?? 0) >= HOER_SCHWELLE) {
+      /* bei Franz aus (motor.js, HOER_KARTEN) */
+      if (hoerAn && k.modus !== 'audio' && (k.stab ?? 0) >= HOER_SCHWELLE) {
         k.modus = 'audio'
         k.hoerFehler = 0
         k.stab = k.stab / 2
@@ -967,6 +970,8 @@ export function verarbeiteBewertung(karte, rating, alleKarten) {
    Stimme da ist — der Streak haengt nie am Audio (Regel 3). */
 export function hoerKarteMitText(karte) {
   if (karte.modus !== 'audio') return true
+  /* Hör-Karten auf dieser Seite aus: alte Hör-Karten sind Lese-Karten */
+  if (!hoerKartenAn(activeProfile)) return true
   if ((karte.hoerFehler || 0) >= 2) return true
   if (typeof navigator !== 'undefined' && navigator.onLine === false) return true
   return false

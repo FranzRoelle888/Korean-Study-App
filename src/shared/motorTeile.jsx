@@ -355,7 +355,7 @@ export function ZaehlChip({ word, t, className = '' }) {
   )
 }
 
-export function StufenPunkte({ stufe, t }) {
+export function StufenPunkte({ stufe, t, hoeren = true }) {
   const s = stufe || { erkennen: 0, produktion: 0, hoeren: 0 }
   const punkt = (wert, label) => (
     <span
@@ -368,7 +368,8 @@ export function StufenPunkte({ stufe, t }) {
     <span className="stufen-punkte">
       {punkt(s.erkennen, t.stufeErkennen)}
       {punkt(s.produktion, t.stufeProduktion)}
-      {punkt(s.hoeren, t.stufeHoeren)}
+      {/* ohne Hör-Karten (Franz) kein dritter Punkt */}
+      {hoeren && punkt(s.hoeren, t.stufeHoeren)}
     </span>
   )
 }

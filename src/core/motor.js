@@ -16,6 +16,17 @@ import { normKo } from './hangul.js'
 /* Seit 06.09. auf beiden Seiten (해인 mit 3 neuen Woertern/Tag) */
 export const istMotor = (profileId) => profileId === 'ko' || profileId === 'de' || profileId === 'sb'
 
+/* HÖR-KARTEN AN/AUS je Seite (Franz 22.10.): Franz tippte bei Hör-
+   Karten praktisch immer auf „zum Text" — die Verwandlung (Stabilität
+   halbiert, Termin binnen 7 Tagen) brachte ihm nur Extra-Durchläufe.
+   Bei ihm deshalb AUS: keine neuen Verwandlungen, und Karten, die in
+   der Datenbank schon als „audio" stehen, laufen als normale
+   Lese-Karten weiter — Termin, Stabilität und Historie unverändert.
+   Bewusst KEIN Umschreiben der Datenbank: Zurück auf true, und alles
+   ist wie vorher. 해인 (und die Sandbox) behalten die Hör-Karten. */
+const HOER_KARTEN = { ko: false, de: true, sb: true }
+export const hoerKartenAn = (profileId) => HOER_KARTEN[profileId] ?? true
+
 /* Stabilität, ab der die Erkennen-Karte zur Hör-Karte wird (Tage) */
 export const HOER_SCHWELLE = 21
 /* Nach dem Wechsel: erster Hör-Termin spätestens in so vielen Tagen */
@@ -153,15 +164,17 @@ export function gleichbedeutende(words, word) {
    0 = noch nicht da · 1 = aktiv · 2 = gefestigt
    Erkennen gefestigt = Karte ist schon Hör-Karte oder stab ≥ 21;
    Produktion gefestigt = stab ≥ 21; Hören gefestigt = Hör-Karte mit
-   mindestens einer bestandenen Hör-Wiederholung. */
-export function stufenFuer(cards) {
+   mindestens einer bestandenen Hör-Wiederholung.
+   hoeren = false (Hör-Karten auf dieser Seite aus): die Hör-Stufe
+   bleibt immer 0, Erkennen zählt wie gehabt. */
+export function stufenFuer(cards, { hoeren = true } = {}) {
   const map = {}
   for (const c of cards) {
     const s = map[c.wordId] ?? { erkennen: 0, produktion: 0, hoeren: 0 }
     if (c.front === 'ko' || c.front === 'flip') {
       const fest = c.modus === 'audio' || (c.stab ?? 0) >= HOER_SCHWELLE
       s.erkennen = fest ? 2 : 1
-      if (c.modus === 'audio') s.hoeren = c.hoerFehler === 0 && c.lastReviewed ? 2 : 1
+      if (hoeren && c.modus === 'audio') s.hoeren = c.hoerFehler === 0 && c.lastReviewed ? 2 : 1
     } else {
       s.produktion = (c.stab ?? 0) >= HOER_SCHWELLE ? 2 : 1
     }

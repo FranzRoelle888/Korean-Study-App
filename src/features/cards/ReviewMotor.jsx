@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { previewInterval, formatInterval, hoerKarteMitText } from '../../core/storage'
-import { vorschlaege, trifftBedeutung, bedeutung, laengenKlasse, homonyme } from '../../core/motor'
+import { vorschlaege, trifftBedeutung, bedeutung, laengenKlasse, homonyme, hoerKartenAn } from '../../core/motor'
 import { istRichtig } from '../../core/vergleich'
 import Confetti from '../../shared/Confetti'
 import { MoonIcon, CardRidge, CardSkyline } from '../../shared/icons'
@@ -291,7 +291,7 @@ function ReviewMotor({ initialQueue, words, onRate, onUndo, onExit, profile, t, 
                 <HanjaZeile hanja={card.hanja} ko={card.ko} className="verbergbar" />
               )}
               <ZaehlChip word={card} t={t} className="verbergbar" />
-              {card.modus === 'audio' && (
+              {card.modus === 'audio' && hoerKartenAn(profile.id) && (
                 <span className="hoer-hinweis verbergbar">{t.hoerMitText}</span>
               )}
               <span className="verbergbar">

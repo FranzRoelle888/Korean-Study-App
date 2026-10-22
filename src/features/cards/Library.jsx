@@ -5,7 +5,7 @@ import { ArtikelWort } from '../../shared/ArtikelWort'
 import { SpeakButton, prewarmSpeech } from '../../shared/tts'
 import { trainerUebersetzung } from '../trainer/trainerApi'
 import { HanjaZeile, StufenPunkte, InfoText, ZaehlChip, KasusChip, RegisterChip, HaeyoZeile } from '../../shared/motorTeile'
-import { istMotor, stufenFuer, bedeutung } from '../../core/motor'
+import { istMotor, stufenFuer, bedeutung, hoerKartenAn } from '../../core/motor'
 import { haeyoVon } from '../../core/haeyo'
 
 /* ============================================================
@@ -249,7 +249,7 @@ function Library({ vocab, cards, onAdd, onEdit, onDelete, trickyIds, profile, t,
 
   /* Vokabel-Motor V2 (Franz): Stufen-Punkte je Wort aus den Karten */
   const motor = istMotor(profile.id)
-  const stufen = motor ? stufenFuer(cards || []) : null
+  const stufen = motor ? stufenFuer(cards || [], { hoeren: hoerKartenAn(profile.id) }) : null
 
   const q = query.trim().toLowerCase()
   const byTricky = trickyOnly && trickyIds ? vocab.filter((v) => trickyIds.has(v.id)) : vocab
@@ -605,7 +605,7 @@ function VocabRow({ vocab, onEdit, onDelete, tricky, stufe, profile, t }) {
         </span>
         <span className="vocab-en">
           {stufe ? bedeutung(vocab) : vocab.en}
-          {stufe && <StufenPunkte stufe={stufe} t={t} />}
+          {stufe && <StufenPunkte stufe={stufe} t={t} hoeren={hoerKartenAn(profile.id)} />}
         </span>
       </div>
       <div className="row-actions">

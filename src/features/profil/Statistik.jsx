@@ -3,7 +3,7 @@ import { loadDailyLog, loadPartnerLog, computeStreak, doneDaysSet } from '../../
 import { PROFILES, otherProfile, istNotizbuch } from '../../core/profiles'
 import { BaerIcon, HaseIcon } from '../../shared/sticker'
 import { targetTextFor } from '../../shared/i18n'
-import { istMotor, stufenFuer, vorratKandidaten } from '../../core/motor'
+import { istMotor, stufenFuer, vorratKandidaten, hoerKartenAn } from '../../core/motor'
 
 /* ============================================================
    STATISTIK — der gemeinsame Lern-Kalender (Wunsch Franz, 05.09.)
@@ -25,7 +25,7 @@ export function StatistikInhalt({ profile, t, words, cards = [], vorrat = [] }) 
   const motor = istMotor(profile.id)
   let stufenZahlen = null
   if (motor) {
-    const s = stufenFuer(cards)
+    const s = stufenFuer(cards, { hoeren: hoerKartenAn(profile.id) })
     const alle = Object.values(s)
     stufenZahlen = {
       erkennen: alle.filter((x) => x.erkennen > 0).length,
@@ -118,10 +118,13 @@ export function StatistikInhalt({ profile, t, words, cards = [], vorrat = [] }) 
             <span className="stat-zahl">✍️ {stufenZahlen.produktion}</span>
             <span className="stat-label">{t.stufeProduktion}</span>
           </div>
-          <div className="stat-chip">
-            <span className="stat-zahl">👂 {stufenZahlen.hoeren}</span>
-            <span className="stat-label">{t.stufeHoeren}</span>
-          </div>
+          {/* ohne Hör-Karten (Franz 22.10.) keine Hör-Zahl */}
+          {hoerKartenAn(profile.id) && (
+            <div className="stat-chip">
+              <span className="stat-zahl">👂 {stufenZahlen.hoeren}</span>
+              <span className="stat-label">{t.stufeHoeren}</span>
+            </div>
+          )}
           <div className="stat-chip">
             <span className="stat-zahl">📦 {stufenZahlen.vorrat}</span>
             <span className="stat-label">{t.statsVorrat}</span>

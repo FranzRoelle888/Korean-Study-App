@@ -89,6 +89,11 @@ Für sie greift nur die Hör-Verwandlung (§2.4).
 - **Offline / Audio fehlt / Autoplay blockiert:** Karte erscheint als
   Text-Karte, Modus bleibt `audio`. Der Streak leidet nie am Audio.
 - **Kein Rückweg** von `audio` nach `text` — Hören ist die Endstufe.
+- **Seit 22.10. bei Franz abgeschaltet** (`HOER_KARTEN` in
+  `src/core/motor.js`): keine neuen Verwandlungen; Karten, die in der
+  Datenbank schon `modus='audio'` tragen, laufen als normale
+  Erkennen-Karten weiter (Termin/Stabilität unverändert, Datenbank
+  unberührt). 해인 und Sandbox behalten die Hör-Karten. Siehe §10.
 
 ### 2.5 Datenmodell (Migration 015, additiv)
 
@@ -381,6 +386,12 @@ Bericht mit Strg+F-Selbstchecks für die Handgriffe.
   Inhalte vorab für alle bestehenden + nächste 300 inkl. TTS.
 - Mengen 5 / 130 / 100 + manueller Schalter.
 - Abend-Check und Sitzungs-Leiter: noch nicht.
+- **22.10. — Hör-Karten bei Franz aus.** Er tippte praktisch immer auf
+  „zum Text"; die Verwandlung (Stabilität halbiert, Termin ≤ 7 Tage)
+  kostete nur Extra-Durchläufe. Umsetzung als Schalter ohne
+  Datenbank-Änderung (rückgängig durch `ko: true`). Die halbierte
+  Stabilität bereits verwandelter Karten wird bewusst nicht
+  zurückgerechnet: lieber einmal zu früh als zu spät. 해인 behält sie.
 
 ## 11. Verfahren 2 — Vokabel-Qualität (09.09.)
 
