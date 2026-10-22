@@ -884,9 +884,28 @@ function applyRatingFsrs(card, rating) {
     reps = reps + 1
   }
 
-  /* Streuung gegen Termin-Klumpen — wie beim alten Weg */
-  let intervalDays = erg.intervalDays
-  if (intervalDays > 0) intervalDays = fuzzDays(intervalDays, seeded(card.id, reps, rating))
+  /* Termin: Streuung + feste Reihenfolge der drei Knöpfe (Franz 22.10.).
+     Vorher wurde für Barely / Got it / Instant EINZELN gewürfelt (±15 %)
+     — so konnte Got it über Instant landen, und bei zähen oder zu früh
+     gezeigten Karten lagen alle drei fast gleich. Jetzt:
+     1. EIN Würfelwurf je Karte und Wiederholung (ohne den Knopf im
+        Seed) — alle drei Knöpfe werden gleich weit verschoben, ihr
+        Abstand zueinander bleibt.
+     2. Reihenfolge garantiert: Got it ≥ Barely + 1, Instant ≥ Got it
+        × 1,2 (mindestens + 1 Tag).
+     Nur der TERMIN wird so geordnet — die Stabilität rechnet FSRS
+     unverfälscht weiter. Die Vorschau auf den Knöpfen ruft dieselbe
+     Funktion auf und zeigt deshalb genau, was danach passiert. */
+  let intervalDays = 0
+  if (rating !== 'again') {
+    const seed = seeded(card.id, card.reps, 'termin')
+    const roh = (g) =>
+      g === rating ? erg.intervalDays : fsrsSchritt({ stab, diff, elapsed, rating: g, ziel, hartDeckel }).intervalDays
+    const barely = fuzzDays(roh('hard'), seed)
+    const gotIt = Math.max(fuzzDays(roh('good'), seed), barely + 1)
+    const instant = Math.max(fuzzDays(roh('easy'), seed), gotIt + 1, Math.round(gotIt * 1.2))
+    intervalDays = rating === 'hard' ? barely : rating === 'good' ? gotIt : instant
+  }
 
   return {
     ...card,
@@ -1939,7 +1958,12 @@ export async function addSkills(list) {
 
 /* ---------- Intervall-Vorschau für die Buttons ---------- */
 export function previewInterval(card, rating) {
-  return applyRating(card, rating).intervalDays
+  /* Mit dem Lebenslauf (Franz 22.10.): wird die Karte bei diesem Knopf
+     zur Hör-Karte, kommt sie nach spätestens 7 Tagen wieder — die
+     Vorschau zeigte vorher den FSRS-Wert davor. Die Warmstart-Karte,
+     die verarbeiteBewertung evtl. mitliefert, ist hier egal. */
+  const nachher = applyRating(card, rating)
+  return verarbeiteBewertung(nachher, rating, []).karte.intervalDays
 }
 export function formatInterval(days) {
   if (days <= 0) return 'today'
